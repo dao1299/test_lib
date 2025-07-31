@@ -28,12 +28,12 @@ public class Te {
         locatorList.add(edtUsernameID);
 
         WebDriver driver = null;
-        NetatUIObject edtUsername = new NetatUIObject(locatorList);
+//        NetatUIObject edtUsername = new NetatUIObject(locatorList);
 
-        edtUsername.convertToWebElement(driver).click();
-
-
-        System.out.println(edtUsername.toPrettyJson());
+//        edtUsername.convertToWebElement(driver).click();
+//
+//
+//        System.out.println(edtUsername.toPrettyJson());
 
 
     }

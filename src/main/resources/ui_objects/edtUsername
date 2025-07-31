@@ -1,0 +1,24 @@
+{
+  "path": "ecommerce/customer/LoginPage/usernameField",
+  "name": "Username Input Field",
+  "type": "INPUT",
+  "locators": [
+    {
+      "strategy": "NAME",
+      "value": "email",
+      "priority": 1,
+      "isActive": true,
+      "reliability": 0.98
+    },
+    {
+      "strategy": "XPATH",
+      "value": "//input[@data-qa='login-email']",
+      "priority": 2,
+      "isActive": true,
+      "reliability": 0.95
+    }
+  ],
+  "properties": {
+    "waitTimeout": 15
+  }
+}

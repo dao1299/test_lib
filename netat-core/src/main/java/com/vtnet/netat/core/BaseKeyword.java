@@ -1,3 +1,4 @@
+// src/main/java/com/vtnet/netat/core/BaseKeyword.java
 package com.vtnet.netat.core;
 
 import com.vtnet.netat.core.annotations.NetatKeyword;
@@ -22,13 +23,13 @@ import java.util.concurrent.TimeUnit;
  */
 public abstract class BaseKeyword {
 
-    protected static final Logger logger = LoggerFactory.getLogger(BaseKeyword.class);
-    protected static NetatLogger netatLogger;
-    protected static ExecutionContext context;
+    // Loại bỏ các trường static 'context' và 'netatLogger' khỏi đây
+    // protected static final Logger logger = LoggerFactory.getLogger(BaseKeyword.class); // Giữ nguyên SLF4J logger nếu muốn
+    protected final Logger logger = LoggerFactory.getLogger(this.getClass()); // Khởi tạo non-static logger cho mỗi instance
 
     public BaseKeyword() {
-        this.netatLogger = NetatLogger.getInstance();
-        this.context = ExecutionContext.getInstance();
+        // Loại bỏ khởi tạo context và netatLogger ở đây.
+        // Chúng sẽ được lấy thông qua các getter static khi cần.
     }
 
     /**
@@ -49,11 +50,11 @@ public abstract class BaseKeyword {
 
         for (int attempt = 1; attempt <= maxRetries; attempt++) {
             try {
-                netatLogger.info("Executing keyword: {} (Attempt {}/{})",
+                getNetatLogger().info("Executing keyword: {} (Attempt {}/{})", // Dùng getNetatLogger()
                         annotation.name(), attempt, maxRetries);
 
                 if (params.length > 0) {
-                    netatLogger.debug("Parameters: {}", Arrays.toString(params));
+                    getNetatLogger().debug("Parameters: {}", Arrays.toString(params)); // Dùng getNetatLogger()
                 }
 
                 // Pre-execution hooks
@@ -61,7 +62,7 @@ public abstract class BaseKeyword {
 
                 // Set timeout if specified
                 if (annotation.timeout() > 0) {
-                    context.setTimeout(annotation.timeout(), TimeUnit.SECONDS);
+                    getContext().setTimeout(annotation.timeout(), TimeUnit.SECONDS); // Dùng getContext()
                 }
 
                 // Execute actual keyword logic
@@ -80,14 +81,14 @@ public abstract class BaseKeyword {
                 stepResult.setEndTime(LocalDateTime.now());
                 stepResult.setResult(result);
 
-                context.addStepResult(stepResult);
-                netatLogger.info("Keyword executed successfully: {}", annotation.name());
+                getContext().addStepResult(stepResult); // Dùng getContext()
+                getNetatLogger().info("Keyword executed successfully: {}", annotation.name()); // Dùng getNetatLogger()
 
                 return result;
 
             } catch (Exception e) {
                 lastException = e;
-                netatLogger.error("Keyword execution failed (Attempt {}/{}): {}",
+                getNetatLogger().error("Keyword execution failed (Attempt {}/{}): {}", // Dùng getNetatLogger()
                         attempt, maxRetries, e.getMessage());
 
                 // Take screenshot on failure
@@ -97,7 +98,7 @@ public abstract class BaseKeyword {
                                 annotation.name() + "_failed_attempt_" + attempt);
                         stepResult.setScreenshotPath(screenshotPath);
                     } catch (Exception screenshotEx) {
-                        netatLogger.warn("Failed to capture screenshot: {}", screenshotEx.getMessage());
+                        getNetatLogger().warn("Failed to capture screenshot: {}", screenshotEx.getMessage()); // Dùng getNetatLogger()
                     }
                 }
 
@@ -118,7 +119,7 @@ public abstract class BaseKeyword {
         stepResult.setEndTime(LocalDateTime.now());
         stepResult.setError(lastException);
 
-        context.addStepResult(stepResult);
+        getContext().addStepResult(stepResult); // Dùng getContext()
 
         throw new NetatException(
                 String.format("Keyword '%s' failed after %d attempts", annotation.name(), maxRetries),
@@ -136,7 +137,7 @@ public abstract class BaseKeyword {
      */
     protected void beforeKeywordExecution(NetatKeyword annotation, Object... params) {
         // Override in child classes if needed
-        context.setCurrentKeyword(annotation.name());
+        getContext().setCurrentKeyword(annotation.name()); // Dùng getContext()
     }
 
     /**
@@ -166,8 +167,8 @@ public abstract class BaseKeyword {
      * Determine if screenshot should be taken
      */
     private boolean shouldTakeScreenshot() {
-        return (context.getWebDriver() != null || context.getMobileDriver() != null)
-                && context.isScreenshotEnabled();
+        return (getContext().getWebDriver() != null || getContext().getMobileDriver() != null) // Dùng getContext()
+                && getContext().isScreenshotEnabled(); // Dùng getContext()
     }
 
     /**
@@ -175,8 +176,8 @@ public abstract class BaseKeyword {
      */
     private String captureScreenshot(String fileName) {
         try {
-            WebDriver webDriver = context.getWebDriver();
-            AppiumDriver mobileDriver = context.getMobileDriver();
+            WebDriver webDriver = getContext().getWebDriver(); // Dùng getContext()
+            AppiumDriver mobileDriver = getContext().getMobileDriver(); // Dùng getContext()
 
             if (webDriver != null) {
                 return ScreenshotUtils.captureWebScreenshot(webDriver, fileName);
@@ -184,20 +185,22 @@ public abstract class BaseKeyword {
                 return ScreenshotUtils.captureMobileScreenshot(mobileDriver, fileName);
             }
         } catch (Exception e) {
-            netatLogger.warn("Failed to capture screenshot: {}", e.getMessage());
+            getNetatLogger().warn("Failed to capture screenshot: {}", e.getMessage()); // Dùng getNetatLogger()
         }
         return null;
     }
 
     /**
-     * Utility method để log keyword execution
+     * Utility method để log keyword execution.
+     * Phương thức này cần dùng getNetatLogger() để đảm bảo thread-safety.
      */
     protected static void logKeywordExecution(String keywordName, Object... params) {
-        netatLogger.info("Executing: {} with parameters: {}", keywordName, Arrays.toString(params));
+        getNetatLogger().info("Executing: {} with parameters: {}", keywordName, Arrays.toString(params));
     }
 
     /**
-     * Utility method để validate parameters
+     * Utility method để validate parameters.
+     * Phương thức này cần dùng getNetatLogger() để đảm bảo thread-safety.
      */
     protected static void validateParameters(Object... params) {
         for (int i = 0; i < params.length; i++) {
@@ -208,23 +211,34 @@ public abstract class BaseKeyword {
     }
 
     /**
-     * Get current execution context
+     * Get current execution context.
+     * Phương thức này luôn gọi ExecutionContext.getInstance() để đảm bảo thread-safety.
      */
     protected static ExecutionContext getContext() {
-        return context;
+        return ExecutionContext.getInstance();
     }
 
     /**
-     * Get current web driver
+     * Get current NetatLogger.
+     * Phương thức này luôn gọi NetatLogger.getInstance() để đảm bảo thread-safety.
+     */
+    protected static NetatLogger getNetatLogger() {
+        return NetatLogger.getInstance();
+    }
+
+    /**
+     * Get current web driver.
+     * (Convenience method, gọi getContext().getWebDriver())
      */
     protected static WebDriver getWebDriver() {
-        return context.getWebDriver();
+        return getContext().getWebDriver();
     }
 
     /**
-     * Get current mobile driver
+     * Get current mobile driver.
+     * (Convenience method, gọi getContext().getMobileDriver())
      */
-    protected AppiumDriver getMobileDriver() {
-        return context.getMobileDriver();
+    protected static AppiumDriver getMobileDriver() {
+        return getContext().getMobileDriver();
     }
 }

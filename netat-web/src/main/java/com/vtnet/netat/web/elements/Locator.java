@@ -30,12 +30,12 @@ public class Locator {
     public static final String LOCATOR_AUTOMATION_ID = "automation id";
     public static final String LOCATOR_OCR = "ocr";
 
-    private String strategy;
-    private String value;
-    private List<String> type;
-    private boolean active;
-
-
+    private String strategy; // Tên chiến lược locator, ví dụ: "ID", "XPATH", "CSS"
+    private String value;    // Giá trị của locator, ví dụ: "login-btn", "//button[@id='login']"
+    private List<String> type; // Có thể giữ nguyên nếu muốn đa kiểu (ví dụ: ["web", "mobile"])
+    private boolean active;  // True nếu locator này đang hoạt động
+    private int priority;    // Độ ưu tiên của locator, số nhỏ hơn có ưu tiên cao hơn (ví dụ: 1 là cao nhất)
+    private double reliability; // Độ tin cậy của locator (ví dụ: 0.95)
 
     public List<String> getType() {
         return type;
@@ -52,8 +52,6 @@ public class Locator {
     public void setStrategy(String strategy) {
         this.strategy = strategy;
     }
-    
-    
 
     public String getValue() {
         return value;
@@ -71,6 +69,22 @@ public class Locator {
         this.active = active;
     }
 
+    public int getPriority() {
+        return priority;
+    }
+
+    public void setPriority(int priority) {
+        this.priority = priority;
+    }
+
+    public double getReliability() {
+        return reliability;
+    }
+
+    public void setReliability(double reliability) {
+        this.reliability = reliability;
+    }
+
     public String toJson() throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(this);
@@ -82,15 +96,17 @@ public class Locator {
     }
 
     public By convertToSeleniumBy() {
+        // Cần đảm bảo rằng các hằng số chiến lược được ánh xạ đúng với các phương thức By của Selenium
+        // và AppiumBy nếu bạn dùng chung class Locator cho cả web và mobile.
+        // Hiện tại các hằng số LOCATOR_ID và LOCATOR_ID_BASE có thể gây nhầm lẫn.
+        // Nên chuẩn hóa một bộ hằng số duy nhất.
         switch (strategy) {
             case LOCATOR_ID:
+            case LOCATOR_ID_BASE: // Nếu bạn muốn ID và ID_BASE đều map tới By.id
                 return By.id(value);
-            case LOCATOR_ID_BASE:
-                return AppiumBy.id(value);
             case LOCATOR_NAME:
+            case LOCATOR_NAME_BASE: // Tương tự cho Name
                 return By.name(value);
-            case LOCATOR_NAME_BASE:
-                return AppiumBy.name(value);
             case LOCATOR_LINKTEXT:
                 return By.linkText(value);
             case LOCATOR_PARTIAL_LINKTEXT:
@@ -98,15 +114,12 @@ public class Locator {
             case LOCATOR_TAG_NAME:
                 return By.tagName(value);
             case LOCATOR_CLASS:
+            case LOCATOR_CLASS_NAME: // Class và Class_Name đều map tới By.className
                 return By.className(value);
             case LOCATOR_CSS:
                 return By.cssSelector(value);
             case LOCATOR_XPATH:
                 return By.xpath(value);
-            case LOCATOR_IMAGE:
-                return AppiumBy.image(value);
-            case LOCATOR_CLASS_NAME:
-                return AppiumBy.className(value);
             case LOCATOR_ACCESSIBILITY_ID:
                 return AppiumBy.accessibilityId(value);
             case LOCATOR_ANDROID_UIAUTOMATOR:
@@ -115,6 +128,12 @@ public class Locator {
                 return AppiumBy.iOSNsPredicateString(value);
             case LOCATOR_IOS_CLASS_CHAIN:
                 return AppiumBy.iOSClassChain(value);
+            case LOCATOR_IMAGE:
+            case LOCATOR_JQUERY:
+            case LOCATOR_AUTOMATION_ID: // Có thể cần thư viện hoặc triển khai riêng cho các loại này
+            case LOCATOR_OCR:
+                System.err.println("Warning: Locator strategy '" + strategy + "' is not directly supported by Selenium/Appium's By class.");
+                return null;
             default:
                 return null;
         }

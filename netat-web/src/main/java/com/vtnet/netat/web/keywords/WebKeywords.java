@@ -5,6 +5,7 @@ import com.vtnet.netat.core.annotations.NetatKeyword;
 import com.vtnet.netat.core.exceptions.NetatException;
 import com.vtnet.netat.web.elements.NetatUIObject;
 import com.vtnet.netat.web.elements.NetatWebElement;
+import com.vtnet.netat.web.elements.UIObjectRepository; // Import UIObjectRepository
 import com.vtnet.netat.web.utils.WebDriverFactory;
 import org.openqa.selenium.*;
 
@@ -23,13 +24,17 @@ public class WebKeywords extends BaseKeyword {
                 case "Go To":
                     return goTo((String) params[0]);
                 case "Click Element":
-                    return clickElement((String) params[0]);
+                    return clickElement((NetatUIObject) params[0]);
                 case "Input Text":
-                    return inputText((String) params[0], (String) params[1]);
+                    return inputText((NetatUIObject) params[0], (String) params[1]);
                 case "Get Text":
-                    return getText((String) params[0]);
+                    return getText((NetatUIObject) params[0]);
                 case "Close Browser":
                     return closeBrowser();
+                case "Element Should Be Visible":
+                    elementShouldBeVisible((NetatUIObject) params[0]);
+                    return null; // void method
+                // Không cần case cho findUIObject vì nó không phải là keyword được gọi qua performKeywordAction
                 default:
                     throw new NetatException("Unknown keyword: " + methodName);
             }
@@ -57,9 +62,9 @@ public class WebKeywords extends BaseKeyword {
 
             if (url != null && !url.trim().isEmpty()) {
                 driver.get(url);
-                netatLogger.info("Browser opened and navigated to: {}", url);
+                getNetatLogger().info("Browser opened and navigated to: {}", url);
             } else {
-                netatLogger.info("Browser opened: {}", browserType);
+                getNetatLogger().info("Browser opened: {}", browserType);
             }
 
         } catch (Exception e) {
@@ -75,7 +80,7 @@ public class WebKeywords extends BaseKeyword {
             example = "Close Browser",
             screenshot = false
     )
-    public Object closeBrowser() {
+    public static Object closeBrowser() {
         logKeywordExecution("Close Browser");
 
         try {
@@ -83,12 +88,12 @@ public class WebKeywords extends BaseKeyword {
             if (driver != null) {
                 driver.quit();
                 getContext().setWebDriver(null);
-                netatLogger.info("Browser closed successfully");
+                getNetatLogger().info("Browser closed successfully");
             } else {
-                netatLogger.warn("No browser instance to close");
+                getNetatLogger().warn("No browser instance to close");
             }
         } catch (Exception e) {
-            netatLogger.warn("Error closing browser: {}", e.getMessage());
+            getNetatLogger().warn("Error closing browser: {}", e.getMessage());
         }
         return null;
     }
@@ -114,7 +119,7 @@ public class WebKeywords extends BaseKeyword {
             }
 
             driver.get(url);
-            netatLogger.info("Navigated to URL: {}", url);
+            getNetatLogger().info("Navigated to URL: {}", url);
 
         } catch (Exception e) {
             throw new NetatException("Failed to navigate to URL: " + url, e);
@@ -138,7 +143,7 @@ public class WebKeywords extends BaseKeyword {
             }
 
             String title = driver.getTitle();
-            netatLogger.info("Page title: {}", title);
+            getNetatLogger().info("Page title: {}", title);
             return title;
 
         } catch (Exception e) {
@@ -150,167 +155,160 @@ public class WebKeywords extends BaseKeyword {
 
     @NetatKeyword(
             name = "Click Element",
-            description = "Clicks on the specified element",
+            description = "Clicks on the specified UI element.",
             category = "INTERACTION",
-            parameters = {"locator"},
-            example = "Click Element | id=submit-button",
+            parameters = {"uiObject"},
+            example = "Click Element | WebKeywords.findUIObject(\"LoginPage/loginButton\")", // Cập nhật ví dụ
             timeout = 10,
             retryOnFailure = true,
             maxRetries = 3
     )
-    public Object clickElement(String locator) {
-        logKeywordExecution("Click Element", locator);
-        validateParameters(locator);
+    public static Object clickElement(NetatUIObject uiObject) {
+        logKeywordExecution("Click Element", uiObject.getPath());
+        validateParameters(uiObject);
 
         try {
-            NetatWebElement element = findElement(locator);
+            NetatWebElement element = findElement(uiObject);
             element.click();
-            netatLogger.info("Clicked element: {}", locator);
+            getNetatLogger().info("Clicked element for UIObject: {}", uiObject.getPath());
 
         } catch (Exception e) {
-            throw new NetatException("Failed to click element: " + locator, e);
+            throw new NetatException("Failed to click element for UIObject: " + uiObject.getPath(), e);
         }
         return null;
     }
 
     @NetatKeyword(
             name = "Input Text",
-            description = "Inputs text into the specified element (clears first)",
+            description = "Inputs text into the specified UI element (clears first).",
             category = "INTERACTION",
-            parameters = {"locator", "text"},
-            example = "Input Text | id=username | john.doe",
+            parameters = {"uiObject", "text"},
+            example = "Input Text | WebKeywords.findUIObject(\"LoginPage/usernameField\") | john.doe", // Cập nhật ví dụ
             timeout = 10
     )
-    public static Object inputText(String locator, String text) {
-        logKeywordExecution("Input Text", locator, text);
-        validateParameters(locator, text);
+    public static Object inputText(NetatUIObject uiObject, String text) {
+        logKeywordExecution("Input Text", uiObject.getPath(), text);
+        validateParameters(uiObject, text);
 
         try {
-            NetatWebElement element = findElement(locator);
+            NetatWebElement element = findElement(uiObject);
             element.sendKeys(text);
-            netatLogger.info("Input text '{}' to element: {}", text, locator);
+            getNetatLogger().info("Input text '{}' to element for UIObject: {}", text, uiObject.getPath());
 
         } catch (Exception e) {
-            throw new NetatException("Failed to input text to element: " + locator, e);
+            throw new NetatException("Failed to input text to element for UIObject: " + uiObject.getPath(), e);
         }
         return null;
     }
 
     @NetatKeyword(
             name = "Get Text",
-            description = "Gets text from the specified element",
+            description = "Gets text from the specified UI element.",
             category = "VERIFICATION",
-            parameters = {"locator"},
-            example = "Get Text | class=error-message",
+            parameters = {"uiObject"},
+            example = "Get Text | WebKeywords.findUIObject(\"DashboardPage/welcomeMessage\")", // Cập nhật ví dụ
             timeout = 10
     )
-    public String getText(String locator) {
-        logKeywordExecution("Get Text", locator);
-        validateParameters(locator);
+    public static String getText(NetatUIObject uiObject) {
+        logKeywordExecution("Get Text", uiObject.getPath());
+        validateParameters(uiObject);
 
         try {
-            NetatWebElement element = findElement(locator);
+            NetatWebElement element = findElement(uiObject);
             String text = element.getText();
-            netatLogger.info("Got text '{}' from element: {}", text, locator);
+            getNetatLogger().info("Got text '{}' from element for UIObject: {}", text, uiObject.getPath());
             return text;
 
         } catch (Exception e) {
-            throw new NetatException("Failed to get text from element: " + locator, e);
+            throw new NetatException("Failed to get text from element for UIObject: " + uiObject.getPath(), e);
         }
     }
 
     @NetatKeyword(
             name = "Element Should Be Visible",
-            description = "Verifies that the specified element is visible",
+            description = "Verifies that the specified UI element is visible.",
             category = "VERIFICATION",
-            parameters = {"locator"},
-            example = "Element Should Be Visible | id=welcome-message",
+            parameters = {"uiObject"},
+            example = "Element Should Be Visible | WebKeywords.findUIObject(\"DashboardPage/welcomeMessage\")", // Cập nhật ví dụ
             timeout = 10
     )
-    public static void elementShouldBeVisible(String locator) {
-        logKeywordExecution("Element Should Be Visible", locator);
-        validateParameters(locator);
+    public static void elementShouldBeVisible(NetatUIObject uiObject) {
+        logKeywordExecution("Element Should Be Visible", uiObject.getPath());
+        validateParameters(uiObject);
 
         try {
-            NetatWebElement element = findElement(locator);
+            NetatWebElement element = findElement(uiObject);
             if (!element.isDisplayed()) {
-                throw new NetatException("Element is not visible: " + locator);
+                throw new NetatException("Element is not visible for UIObject: " + uiObject.getPath());
             }
-            netatLogger.info("Element is visible: {}", locator);
+            getNetatLogger().info("Element is visible for UIObject: {}", uiObject.getPath());
 
         } catch (Exception e) {
-            throw new NetatException("Element visibility verification failed: " + locator, e);
+            throw new NetatException("Element visibility verification failed for UIObject: " + uiObject.getPath(), e);
+        }
+    }
+
+    // ==================== UI OBJECT RETRIEVAL METHOD ====================
+
+    /**
+     * Finds and returns a NetatUIObject from the UIObjectRepository based on its path.
+     * This method acts as a convenient entry point for test case writers to retrieve UI objects.
+     *
+     * @param objectPath The logical path of the UI object (e.g., "ecommerce/customer/LoginPage/loginButton").
+     * @return The NetatUIObject found and merged from the repository.
+     * @throws NetatException if the UI object is not found or an error occurs during retrieval/merging.
+     */
+    public static NetatUIObject findUIObject(String objectPath) { // Phương thức mới
+        logKeywordExecution("Find UI Object", objectPath); // Log việc tìm kiếm UIObject
+        validateParameters(objectPath); // Đảm bảo objectPath không null/rỗng
+
+        try {
+            return UIObjectRepository.getInstance().getUIObjectByPath(objectPath); // Gọi UIObjectRepository
+        } catch (NetatException e) {
+            // Bao bọc lại exception để cung cấp thêm ngữ cảnh
+            throw new NetatException("Failed to find UI object for path: " + objectPath, e);
         }
     }
 
     // ==================== HELPER METHODS ====================
 
     /**
-     * Find element by locator string
+     * Finds a {@link NetatWebElement} based on the provided {@link NetatUIObject}.
+     * This method utilizes the locator strategies and properties defined within the NetatUIObject.
+     *
+     * @param uiObject The NetatUIObject containing information about the element to find.
+     * @return A NetatWebElement instance representing the found element.
+     * @throws NetatException if no browser instance is available or the element cannot be found.
      */
-    private static NetatWebElement findElement(String locatorString) {
+    private static NetatWebElement findElement(NetatUIObject uiObject) {
         WebDriver driver = getWebDriver();
         if (driver == null) {
-            throw new NetatException("No browser instance available");
+            throw new NetatException("No browser instance available. Please open browser first.");
         }
 
-        By locator = parseLocator(locatorString);
-        WebElement element = driver.findElement(locator);
-        return new NetatWebElement(element, driver, locator);
-    }
-
-    /**
-     * Parse locator string to By object
-     * Supports: id=, name=, class=, tag=, xpath=, css=, linktext=, partiallinktext=
-     */
-    private static By parseLocator(String locatorString) {
-        if (locatorString == null || locatorString.trim().isEmpty()) {
-            throw new NetatException("Locator string cannot be null or empty");
+        if (uiObject == null) {
+            throw new NetatException("NetatUIObject cannot be null.");
         }
 
-        String locator = locatorString.trim();
-
-        if (locator.startsWith("id=")) {
-            return By.id(locator.substring(3));
-        } else if (locator.startsWith("name=")) {
-            return By.name(locator.substring(5));
-        } else if (locator.startsWith("class=")) {
-            return By.className(locator.substring(6));
-        } else if (locator.startsWith("tag=")) {
-            return By.tagName(locator.substring(4));
-        } else if (locator.startsWith("xpath=")) {
-            return By.xpath(locator.substring(6));
-        } else if (locator.startsWith("css=")) {
-            return By.cssSelector(locator.substring(4));
-        } else if (locator.startsWith("linktext=")) {
-            return By.linkText(locator.substring(9));
-        } else if (locator.startsWith("partiallinktext=")) {
-            return By.partialLinkText(locator.substring(16));
-        } else {
-            // Default to xpath if no prefix specified
-            return By.xpath(locator);
-        }
-    }
-
-    /**
-     * Get WebDriver from context
-     */
-    public static WebDriver getWebDriver() {
-        return getContext().getWebDriver();
-    }
-
-    /**
-     * Validate required parameters
-     */
-    public static void validateParameters(Object... params) {
-        for (Object param : params) {
-            if (param == null || (param instanceof String && ((String) param).trim().isEmpty())) {
-                throw new NetatException("Required parameter cannot be null or empty");
+        int waitTimeout = 30; // Default timeout
+        if (uiObject.getProperties() != null && uiObject.getProperties().containsKey("waitTimeout")) {
+            Object timeoutProp = uiObject.getProperties().get("waitTimeout");
+            if (timeoutProp instanceof Integer) {
+                waitTimeout = (Integer) timeoutProp;
+            } else if (timeoutProp instanceof String) {
+                try {
+                    waitTimeout = Integer.parseInt((String) timeoutProp);
+                } catch (NumberFormatException e) {
+                    getNetatLogger().warn("Invalid 'waitTimeout' format in UIObject properties for {}. Using default (30s).", uiObject.getPath());
+                }
             }
         }
-    }
 
-    public static void clickElementUIObject(NetatUIObject netatUIObject){
-//        WebElement element =
+        WebElement element = uiObject.convertToWebElementWithTimeout(driver, waitTimeout);
+        if (element == null) {
+            throw new NetatException("Failed to find WebElement for UIObject: " + uiObject.getPath() + " within " + waitTimeout + " seconds.");
+        }
+
+        return new NetatWebElement(element, driver, uiObject.getPrimaryLocator() != null ? uiObject.getPrimaryLocator().convertToSeleniumBy() : null);
     }
 }
