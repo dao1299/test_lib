@@ -20,7 +20,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!-- Dependency versions -->
-        <selenium.version>4.15.0</selenium.version>
+        <selenium.version>4.13.0</selenium.version>
         <appium.version>8.6.0</appium.version>
         <testng.version>7.8.0</testng.version>
         <slf4j.version>2.0.9</slf4j.version>
@@ -29,7 +29,7 @@
         <commons-io.version>2.13.0</commons-io.version>
         <jackson.version>2.15.2</jackson.version>
         <poi.version>5.2.4</poi.version>
-        <webdrivermanager.version>5.6.2</webdrivermanager.version>
+        <webdrivermanager.version>6.2.0</webdrivermanager.version>
 
         <!-- Plugin versions -->
         <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
@@ -47,6 +47,7 @@
         <module>netat-mobile</module>
         <module>netat-api</module>
         <module>netat-db</module>
+        <module>netat-driver</module>
     </modules>
 
     <dependencyManagement>
@@ -72,12 +73,6 @@
                 <version>${appium.version}</version>
             </dependency>
 
-            <!-- TestNG -->
-            <dependency>
-                <groupId>org.testng</groupId>
-                <artifactId>testng</artifactId>
-                <version>${testng.version}</version>
-            </dependency>
 
             <!-- Logging -->
             <dependency>
@@ -130,6 +125,10 @@
                 <artifactId>jackson-datatype-jsr310</artifactId>
                 <version>${jackson-datatype-jsr310.version}</version>
             </dependency>
+            <dependency>
+                <groupId>io.qameta.allure</groupId>
+                <artifactId>allure-testng</artifactId>
+                <version>2.27.0</version> </dependency>
         </dependencies>
     </dependencyManagement>
 

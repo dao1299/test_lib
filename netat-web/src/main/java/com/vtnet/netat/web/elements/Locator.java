@@ -10,27 +10,26 @@ import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Locator {
-    public static final String LOCATOR_ID = "ID";   //  prew3c locator (using css instead)
-    public static final String LOCATOR_ID_BASE = "id";
-    public static final String LOCATOR_NAME = "Name";   //  prew3c locator (using css instead)
-    public static final String LOCATOR_NAME_BASE = "name";
-    public static final String LOCATOR_LINKTEXT = "Linktext";
-    public static final String LOCATOR_PARTIAL_LINKTEXT = "Partial Linktext";
-    public static final String LOCATOR_TAG_NAME = "Tag Name";
-    public static final String LOCATOR_CLASS = "Class";
-    public static final String LOCATOR_CSS = "CSS";
-    public static final String LOCATOR_XPATH = "XPath";
-    public static final String LOCATOR_IMAGE = "Image";
-    public static final String LOCATOR_CLASS_NAME = "Class Name";
-    public static final String LOCATOR_ACCESSIBILITY_ID = "Accessibility ID";
-    public static final String LOCATOR_ANDROID_UIAUTOMATOR = "android uiautomator";
-    public static final String LOCATOR_IOS_PREDICATE_STRING = "ios predicate string";
-    public static final String LOCATOR_IOS_CLASS_CHAIN = "ios class chain";
-    public static final String LOCATOR_JQUERY = "Javascript Query Selector";
-    public static final String LOCATOR_AUTOMATION_ID = "automation id";
-    public static final String LOCATOR_OCR = "ocr";
+    public enum Strategy {
+        ID,
+        NAME,
+        XPATH,
+        CSS_SELECTOR,
+        CLASS_NAME,
+        LINK_TEXT,
+        PARTIAL_LINK_TEXT,
+        TAG_NAME,
+        ACCESSIBILITY_ID,
+        ANDROID_UIAUTOMATOR,
+        IOS_PREDICATE_STRING,
+        IOS_CLASS_CHAIN,
+        // Thêm các loại khác nếu cần
+        IMAGE,
+        JQUERY;
+    }
 
-    private String strategy; // Tên chiến lược locator, ví dụ: "ID", "XPATH", "CSS"
+    private Strategy strategy;
+
     private String value;    // Giá trị của locator, ví dụ: "login-btn", "//button[@id='login']"
     private List<String> type; // Có thể giữ nguyên nếu muốn đa kiểu (ví dụ: ["web", "mobile"])
     private boolean active;  // True nếu locator này đang hoạt động
@@ -45,11 +44,30 @@ public class Locator {
         this.type = type;
     }
 
-    public String getStrategy() {
+
+
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+
+
+    // Constructors (có thể thêm constructor không tham số nếu cần)
+    public Locator() {
+    }
+
+    public Locator(Strategy strategy, String value, int priority, boolean active, double reliability) {
+        this.strategy = strategy;
+        this.value = value;
+        this.priority = priority;
+        this.active = active;
+        this.reliability = reliability;
+    }
+
+    // --- Getters and Setters ---
+
+    public Strategy getStrategy() {
         return strategy;
     }
 
-    public void setStrategy(String strategy) {
+    public void setStrategy(Strategy strategy) {
         this.strategy = strategy;
     }
 
@@ -85,57 +103,88 @@ public class Locator {
         this.reliability = reliability;
     }
 
+    // --- JSON Conversion ---
+
+    /**
+     * Chuyển đổi đối tượng Locator hiện tại thành một chuỗi JSON.
+     * @return Chuỗi JSON đại diện cho đối tượng.
+     * @throws JsonProcessingException nếu có lỗi xảy ra trong quá trình chuyển đổi.
+     */
     public String toJson() throws JsonProcessingException {
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.writeValueAsString(this);
+        return MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(this);
     }
 
+    /**
+     * Tạo một đối tượng Locator từ một chuỗi JSON.
+     * @param json Chuỗi JSON đầu vào.
+     * @return Một đối tượng Locator.
+     * @throws JsonProcessingException nếu có lỗi xảy ra trong quá trình phân tích.
+     */
     public static Locator fromJson(String json) throws JsonProcessingException {
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(json, Locator.class);
+        return MAPPER.readValue(json, Locator.class);
     }
 
-    public By convertToSeleniumBy() {
-        // Cần đảm bảo rằng các hằng số chiến lược được ánh xạ đúng với các phương thức By của Selenium
-        // và AppiumBy nếu bạn dùng chung class Locator cho cả web và mobile.
-        // Hiện tại các hằng số LOCATOR_ID và LOCATOR_ID_BASE có thể gây nhầm lẫn.
-        // Nên chuẩn hóa một bộ hằng số duy nhất.
+    // --- Core Logic ---
+
+    /**
+     * Chuyển đổi thông tin của Locator thành đối tượng 'By' của Selenium/Appium.
+     * @return Một đối tượng 'By' tương ứng với chiến lược và giá trị của locator.
+     * @throws UnsupportedOperationException nếu chiến lược locator không được hỗ trợ.
+     */
+    public By convertToBy() {
+        if (this.value == null || this.value.trim().isEmpty()) {
+            throw new IllegalStateException("Giá trị (value) của locator không được để trống.");
+        }
+
         switch (strategy) {
-            case LOCATOR_ID:
-            case LOCATOR_ID_BASE: // Nếu bạn muốn ID và ID_BASE đều map tới By.id
+            case ID:
                 return By.id(value);
-            case LOCATOR_NAME:
-            case LOCATOR_NAME_BASE: // Tương tự cho Name
+            case NAME:
                 return By.name(value);
-            case LOCATOR_LINKTEXT:
-                return By.linkText(value);
-            case LOCATOR_PARTIAL_LINKTEXT:
-                return By.partialLinkText(value);
-            case LOCATOR_TAG_NAME:
-                return By.tagName(value);
-            case LOCATOR_CLASS:
-            case LOCATOR_CLASS_NAME: // Class và Class_Name đều map tới By.className
-                return By.className(value);
-            case LOCATOR_CSS:
-                return By.cssSelector(value);
-            case LOCATOR_XPATH:
+            case XPATH:
                 return By.xpath(value);
-            case LOCATOR_ACCESSIBILITY_ID:
+            case CSS_SELECTOR:
+                return By.cssSelector(value);
+            case CLASS_NAME:
+                return By.className(value);
+            case LINK_TEXT:
+                return By.linkText(value);
+            case PARTIAL_LINK_TEXT:
+                return By.partialLinkText(value);
+            case TAG_NAME:
+                return By.tagName(value);
+            case ACCESSIBILITY_ID:
                 return AppiumBy.accessibilityId(value);
-            case LOCATOR_ANDROID_UIAUTOMATOR:
+            case ANDROID_UIAUTOMATOR:
                 return AppiumBy.androidUIAutomator(value);
-            case LOCATOR_IOS_PREDICATE_STRING:
+            case IOS_PREDICATE_STRING:
                 return AppiumBy.iOSNsPredicateString(value);
-            case LOCATOR_IOS_CLASS_CHAIN:
+            case IOS_CLASS_CHAIN:
                 return AppiumBy.iOSClassChain(value);
-            case LOCATOR_IMAGE:
-            case LOCATOR_JQUERY:
-            case LOCATOR_AUTOMATION_ID: // Có thể cần thư viện hoặc triển khai riêng cho các loại này
-            case LOCATOR_OCR:
-                System.err.println("Warning: Locator strategy '" + strategy + "' is not directly supported by Selenium/Appium's By class.");
-                return null;
             default:
-                return null;
+                // Ném ra exception cho các chiến lược không được hỗ trợ để báo lỗi ngay lập tức.
+                throw new UnsupportedOperationException("Chiến lược locator '" + strategy + "' không được hỗ trợ.");
         }
     }
+
+    @Override
+    public String toString() {
+        return "Locator{" +
+                "strategy=" + strategy +
+                ", value='" + value + '\'' +
+                '}';
+    }
+
+    /**
+     * Converts any object to JSON string.
+     *
+     * @param object Object to convert
+     * @return JSON string representation of the object
+     * @throws JsonProcessingException if serialization fails
+     */
+    public static String convertObjectToJson(Object object) throws JsonProcessingException {
+        return MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(object);
+    }
+
+
 }
