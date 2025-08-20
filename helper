@@ -1,0 +1,5 @@
+mvn clean compile
+
+mvn exec:java@generate-keyword-metadata -pl netat-tools
+
+mvn install

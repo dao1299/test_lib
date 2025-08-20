@@ -1,0 +1,49 @@
+[ {
+  "name" : "sendKeys",
+  "description" : "Nhập một chuỗi văn bản vào một phần tử (ô input, textarea).",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  }, {
+    "type" : "String",
+    "name" : "text"
+  } ],
+  "example" : "sendKeys | LoginPage/username_input | my_user_name"
+}, {
+  "name" : "click",
+  "description" : "Thực hiện hành động click chuột vào một phần tử trên giao diện.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  } ],
+  "example" : "click | LoginPage/login_button |"
+}, {
+  "name" : "getText",
+  "description" : "Trả về chuỗi văn bản đang HIỂN THỊ của phần tử (giá trị tương đương WebElement#getText()). Keyword sẽ CHỜ cho đến khi phần tử ở trạng thái visible trước khi đọc text, giúp hạn chế lỗi do DOM chưa sẵn sàng.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  } ],
+  "example" : "getText | LoginPage/welcome_label"
+}, {
+  "name" : "openUrl",
+  "description" : "Mở một trang web với URL được chỉ định.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "url"
+  } ],
+  "example" : "openUrl | | https://google.com"
+}, {
+  "name" : "scrollToElement",
+  "description" : "Cuộn trang đến khi phần tử nằm trong vùng nhìn thấy (viewport) bằng JavaScript (scrollIntoView(true)). Không thực hiện thao tác click; chỉ đảm bảo phần tử xuất hiện trong tầm nhìn để các bước tiếp theo (click, sendKeys, assert...) ổn định hơn.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  } ],
+  "example" : "scrollToElement | Common/submit_button"
+} ]
