@@ -62,6 +62,13 @@ public final class ConfigReader {
         return properties.getProperty(key);
     }
 
+    public static String getProperty(String key,String defaultValue) {
+        if (!isLoaded) {
+            loadProperties();
+        }
+        return properties.getProperty(key) != null ? properties.getProperty(key) : defaultValue;
+    }
+
     public static Properties getProperties() {
         if (!isLoaded) {
             loadProperties();

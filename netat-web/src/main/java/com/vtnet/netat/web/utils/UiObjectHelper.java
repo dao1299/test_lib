@@ -20,7 +20,7 @@ public final class UiObjectHelper {
     // === THAY ĐỔI QUAN TRỌNG: ĐỊNH NGHĨA ĐƯỜNG DẪN GỐC CỐ ĐỊNH ===
     // Sử dụng src/main/resources/ui_objects là một chuẩn mực tốt hơn
     // vì nó tương thích với cách Maven đóng gói tài nguyên.
-    private static final String OBJECT_REPO_PATH = System.getProperty("user.dir") + "/src/main/resources/ui_objects";
+    private static final String OBJECT_REPO_PATH = System.getProperty("user.dir") + "/src/test/java/org/selenium/automationtest/object";
 
     /**
      * Phương thức chính và duy nhất người dùng sẽ sử dụng.

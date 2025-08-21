@@ -29,6 +29,18 @@
   } ],
   "example" : "getText | LoginPage/welcome_label"
 }, {
+  "name" : "sendKeys",
+  "description" : "",
+  "category" : "MOBILE",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  }, {
+    "type" : "String",
+    "name" : "text"
+  } ],
+  "example" : ""
+}, {
   "name" : "openUrl",
   "description" : "Mở một trang web với URL được chỉ định.",
   "category" : "WEB",
@@ -46,4 +58,13 @@
     "name" : "uiObject"
   } ],
   "example" : "scrollToElement | Common/submit_button"
+}, {
+  "name" : "tap",
+  "description" : "",
+  "category" : "MOBILE",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  } ],
+  "example" : ""
 } ]

@@ -1,6 +1,7 @@
 package com.vtnet.netat.web.elements;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.appium.java_client.AppiumBy;
@@ -18,16 +19,14 @@ public class Locator {
     private String value;
     private boolean active;
 
+    // --- THÊM TRƯỜNG MỚI ---
+    @JsonProperty("default") // Ánh xạ với key "default" trong JSON
+    private boolean isDefault;
+
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     // --- Constructors ---
     public Locator() {}
-
-    public Locator(Strategy strategy, String value, boolean active) {
-        this.strategy = strategy;
-        this.value = value;
-        this.active = active;
-    }
 
     // --- Getters and Setters ---
     public Strategy getStrategy() { return strategy; }
@@ -36,6 +35,10 @@ public class Locator {
     public void setValue(String value) { this.value = value; }
     public boolean isActive() { return active; }
     public void setActive(boolean active) { this.active = active; }
+
+    // Getter và Setter cho trường mới
+    public boolean isDefault() { return isDefault; }
+    public void setDefault(boolean isDefault) { this.isDefault = isDefault; }
 
     // --- Core & JSON Logic (Giữ nguyên) ---
 

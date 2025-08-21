@@ -20,13 +20,22 @@ public final class DriverManager {
         if (threadLocalDriver.get() == null) {
             ConfigReader.loadProperties(); // Đảm bảo cấu hình đã được tải
             String executionType = ConfigReader.getProperty("execution.type");
+            String platform = ConfigReader.getProperty("platform.name");
             log.info("Môi trường thực thi: {}", executionType.toUpperCase());
+            log.info("Nền tảng thực thi: {}", platform.toUpperCase());
 
             IDriverFactory factory;
-            if ("remote".equalsIgnoreCase(executionType)) {
-                factory = new RemoteDriverFactory();
-            } else {
-                factory = new LocalDriverFactory();
+            switch (platform.toLowerCase()) {
+                case "android":
+                case "ios":
+                    factory = new MobileDriverFactory();
+                    break;
+                case "chrome":
+                case "firefox":
+                default: // Web là mặc định
+                    ConfigReader.getProperties().setProperty("browser.name", platform);
+                    factory = new LocalDriverFactory();
+                    break;
             }
 
             WebDriver driver = factory.createDriver();
