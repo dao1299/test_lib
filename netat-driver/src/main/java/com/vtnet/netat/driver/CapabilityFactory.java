@@ -42,7 +42,10 @@ public class CapabilityFactory {
                 } else if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
                     capabilities.setCapability(capabilityName, Boolean.parseBoolean(value));
                 } else {
-                    capabilities.setCapability(capabilityName, value);
+                    String capabilityKey = capabilityName.replace("appium.","");
+                    System.out.println("Capability: "+capabilityKey+"| value: "+value);
+
+                    capabilities.setCapability(capabilityKey, value);
                 }
             }
         }

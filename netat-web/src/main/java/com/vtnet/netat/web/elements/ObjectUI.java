@@ -69,6 +69,8 @@ public class ObjectUI {
                 ", locators=" + (locators != null ? locators.size() : 0) + " locators" + '}';
     }
 
+
+
     public String toJson() {
         try {
             return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(this);
