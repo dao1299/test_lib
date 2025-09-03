@@ -33,7 +33,16 @@
             <artifactId>netat-mobile</artifactId>
             <version>${project.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>com.vtnet.netat</groupId>
+            <artifactId>netat-db</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vtnet.netat</groupId>
+            <artifactId>netat-driver</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.reflections</groupId>
             <artifactId>reflections</artifactId>

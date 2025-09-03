@@ -107,7 +107,7 @@ public class DatabaseKeyword extends BaseKeyword {
         }, profileName, query, expectedColumnNames, expectedData, queryParams);
     }
 
-    @NetatKeyword(name = "verifyDataByQueryFile", description = "Thực thi và kiểm chứng kết quả bằng file SQL và file dữ liệu.", category = "DB")
+    @NetatKeyword(name = "verifyDataByQueryFile", description = "Thực thi và kiểm chứng kết quả bằng file SQL và file dữ liệu.", category = "DB" , parameters = {"String: profileName","String: queryPath","String: dataFilePath"})
     @Step("Kiểm chứng dữ liệu trên [{0}] bằng file query [{1}] và file data [{2}]")
     public void verifyDataByQueryFile(String profileName, String queryPath, String dataFilePath) {
         execute(() -> {
