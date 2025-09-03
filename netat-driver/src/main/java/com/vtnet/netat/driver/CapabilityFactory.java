@@ -3,6 +3,7 @@ import io.appium.java_client.android.options.UiAutomator2Options;
 import io.appium.java_client.ios.options.XCUITestOptions;
 import org.openqa.selenium.MutableCapabilities;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.firefox.FirefoxOptions;
 
 import java.util.Arrays;
@@ -23,6 +24,9 @@ public class CapabilityFactory {
                 break;
             case "firefox":
                 capabilities = new FirefoxOptions();
+                break;
+            case "edge":
+                capabilities = new EdgeOptions();
                 break;
             case "chrome":
             default:
