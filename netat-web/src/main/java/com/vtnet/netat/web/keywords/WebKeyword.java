@@ -2,42 +2,30 @@ package com.vtnet.netat.web.keywords;
 
 import com.vtnet.netat.core.BaseUiKeyword;
 import com.vtnet.netat.core.annotations.NetatKeyword;
+import com.vtnet.netat.core.context.ExecutionContext;
 import com.vtnet.netat.core.ui.ObjectUI;
 import com.vtnet.netat.driver.ConfigReader;
 import com.vtnet.netat.driver.DriverManager;
 import com.vtnet.netat.web.ai.AiModelFactory;
 import dev.langchain4j.model.chat.ChatModel;
 import io.qameta.allure.Step;
+import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
-
-import java.time.Duration;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import org.openqa.selenium.Dimension;
-import org.openqa.selenium.SearchContext;
-import org.testng.Assert;
-import com.vtnet.netat.core.annotations.NetatKeyword;
-import io.qameta.allure.Step;
 import org.openqa.selenium.support.ui.Select;
-import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.Alert;
-import org.openqa.selenium.Cookie;
-import org.openqa.selenium.Dimension;
-import org.openqa.selenium.OutputType;
-import org.openqa.selenium.Point;
-import org.openqa.selenium.TakesScreenshot;
-import org.apache.commons.io.FileUtils;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.testng.Assert;
+import org.testng.asserts.SoftAssert;
+
 import java.io.File;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class WebKeyword extends BaseUiKeyword {
 
@@ -161,7 +149,7 @@ public class WebKeyword extends BaseUiKeyword {
         try {
             String prompt = PROMPT.replace("{element}", elementName).replace("{html}", html);
 //            logger.info("PROMPT: "+prompt);
-            String chatResponse  = model.chat(prompt.replace("{element}", elementName).replace("{html}", html)).trim();
+            String chatResponse = model.chat(prompt.replace("{element}", elementName).replace("{html}", html)).trim();
 //            logger.info("\n\nRESPONSE: "+chatResponse);
             Pattern pattern = Pattern.compile("(?s)```.*?\\n(.*?)\\n```");
             Matcher matcher = pattern.matcher(chatResponse);
@@ -411,7 +399,6 @@ public class WebKeyword extends BaseUiKeyword {
     }
 
 
-
     // =================================================================================
     // --- NHÓM KEYWORD KIỂM CHỨNG (ASSERTIONS) CHO WEB ---
     // =================================================================================
@@ -586,10 +573,26 @@ public class WebKeyword extends BaseUiKeyword {
         }, uiObject, expectedSelection, isSoft);
     }
 
-    @NetatKeyword(name = "assertElementSelected", description = "Kiểm tra checkbox/radio được chọn. Dừng nếu thất bại.", category = "WEB")
+    @NetatKeyword(name = "assertElementSelected", description = "Khẳng định checkbox/radio được chọn. Dừng nếu thất bại.", category = "WEB")
     @Step("Kiểm tra (Hard) phần tử {0.name} đã được chọn")
     public void assertElementSelected(ObjectUI uiObject) {
-        performSelectionAssertion(uiObject, true, false);
+        // Gọi execute() ở đây
+        execute(() -> {
+            // Gọi đến phương thức logic của LỚP CHA (BaseUiKeyword) bằng "super"
+            super.performSelectionAssertion(uiObject, true, false);
+            return null;
+        }, uiObject);
+    }
+
+    @NetatKeyword(name = "assertElementNotSelected", description = "Khẳng định checkbox/radio chưa được chọn. Dừng nếu thất bại.", category = "WEB")
+    @Step("Kiểm tra (Hard) phần tử {0.name} chưa được chọn")
+    public void assertElementNotSelected(ObjectUI uiObject) {
+        // Gọi execute() ở đây
+        execute(() -> {
+            // Gọi đến phương thức logic của LỚP CHA (BaseUiKeyword)
+            super.performSelectionAssertion(uiObject, false, false);
+            return null;
+        }, uiObject);
     }
 
     // ... bạn có thể bổ sung các keyword verifyElementSelected, assertElementNotSelected, ... tương tự
@@ -667,7 +670,10 @@ public class WebKeyword extends BaseUiKeyword {
             WebElement element = findElement(uiObject);
             JavascriptExecutor js = (JavascriptExecutor) DriverManager.getDriver();
             js.executeScript("arguments[0].style.border='3px solid red'", element);
-            try { Thread.sleep(500); } catch (InterruptedException e) {}
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+            }
             js.executeScript("arguments[0].style.border=''", element);
             return null;
         }, uiObject);
@@ -819,69 +825,143 @@ public class WebKeyword extends BaseUiKeyword {
     }
 
 // =================================================================================
-// --- ASSERT / VERIFY (HARD/SOFT) ---
-// =================================================================================
+    // --- ASSERT / VERIFY (HARD/SOFT) ---
+    // =================================================================================
 
-// --- Các keyword đã có: verifyText, verifyElementVisible, etc. ---
+    // --- Verify URL ---
+    @NetatKeyword(name = "verifyUrlHard", description = "So sánh URL của trang. Dừng lại nếu thất bại.", category = "WEB")
+    @Step("Kiểm tra (Hard) URL của trang là '{0}'")
+    public void verifyUrlHard(String expectedUrl) {
+        execute(() -> {
+            String actualUrl = DriverManager.getDriver().getCurrentUrl();
+            Assert.assertEquals(actualUrl, expectedUrl, "HARD ASSERT FAILED: URL của trang không khớp.");
+            return null;
+        }, expectedUrl);
+    }
 
+    @NetatKeyword(name = "verifyUrlSoft", description = "So sánh URL của trang. Tiếp tục nếu thất bại.", category = "WEB")
+    @Step("Kiểm tra (Soft) URL của trang là '{0}'")
+    public void verifyUrlSoft(String expectedUrl) {
+        execute(() -> {
+            String actualUrl = DriverManager.getDriver().getCurrentUrl();
+            SoftAssert softAssert = ExecutionContext.getInstance().getSoftAssert();
+            if (softAssert == null) {
+                softAssert = new SoftAssert();
+                ExecutionContext.getInstance().setSoftAssert(softAssert);
+            }
+            softAssert.assertEquals(actualUrl, expectedUrl, "SOFT ASSERT FAILED: URL của trang không khớp.");
+            return null;
+        }, expectedUrl);
+    }
+
+    // --- Verify Title ---
+    @NetatKeyword(name = "verifyTitleSoft", description = "So sánh tiêu đề của trang. Tiếp tục nếu thất bại.", category = "WEB")
+    @Step("Kiểm tra (Soft) tiêu đề trang là '{0}'")
+    public void verifyTitleSoft(String expectedTitle) {
+        execute(() -> {
+            String actualTitle = DriverManager.getDriver().getTitle();
+            SoftAssert softAssert = ExecutionContext.getInstance().getSoftAssert();
+            if (softAssert == null) {
+                softAssert = new SoftAssert();
+                ExecutionContext.getInstance().setSoftAssert(softAssert);
+            }
+            softAssert.assertEquals(actualTitle, expectedTitle, "SOFT ASSERT FAILED: Tiêu đề trang không khớp.");
+            return null;
+        }, expectedTitle);
+    }
+
+    // --- Verify Element Enabled/Disabled ---
     @NetatKeyword(name = "assertElementEnabled", description = "Khẳng định một phần tử đang ở trạng thái enabled. Dừng nếu thất bại.", category = "WEB")
     @Step("Kiểm tra (Hard) phần tử {0.name} là enabled")
     public void assertElementEnabled(ObjectUI uiObject) {
-        performStateAssertion(uiObject, true, false);
+        execute(() -> {
+            performStateAssertion(uiObject, true, false);
+            return null;
+        }, uiObject);
     }
 
     @NetatKeyword(name = "assertElementDisabled", description = "Khẳng định một phần tử đang ở trạng thái disabled. Dừng nếu thất bại.", category = "WEB")
     @Step("Kiểm tra (Hard) phần tử {0.name} là disabled")
     public void assertElementDisabled(ObjectUI uiObject) {
-        performStateAssertion(uiObject, false, false);
+        execute(() -> {
+            performStateAssertion(uiObject, false, false);
+            return null;
+        }, uiObject);
     }
 
     @NetatKeyword(name = "verifyElementEnabledSoft", description = "Kiểm tra một phần tử đang ở trạng thái enabled. Tiếp tục nếu thất bại.", category = "WEB")
     @Step("Kiểm tra (Soft) phần tử {0.name} là enabled")
     public void verifyElementEnabledSoft(ObjectUI uiObject) {
-        performStateAssertion(uiObject, true, true);
+        execute(() -> {
+            performStateAssertion(uiObject, true, true);
+            return null;
+        }, uiObject);
     }
 
     @NetatKeyword(name = "verifyElementDisabledSoft", description = "Kiểm tra một phần tử đang ở trạng thái disabled. Tiếp tục nếu thất bại.", category = "WEB")
     @Step("Kiểm tra (Soft) phần tử {0.name} là disabled")
     public void verifyElementDisabledSoft(ObjectUI uiObject) {
-        performStateAssertion(uiObject, false, true);
+        execute(() -> {
+            performStateAssertion(uiObject, false, true);
+            return null;
+        }, uiObject);
     }
 
+    // --- Verify Text Matches Regex ---
     @NetatKeyword(name = "verifyTextMatchesRegexHard", description = "So khớp văn bản của phần tử với một mẫu regex. Dừng nếu thất bại.", category = "WEB")
     @Step("Kiểm tra (Hard) văn bản của {0.name} khớp với regex '{1}'")
     public void verifyTextMatchesRegexHard(ObjectUI uiObject, String pattern) {
-        performRegexAssertion(uiObject, pattern, false);
+        execute(() -> {
+            performRegexAssertion(uiObject, pattern, false);
+            return null;
+        }, uiObject, pattern);
     }
 
     @NetatKeyword(name = "verifyTextMatchesRegexSoft", description = "So khớp văn bản của phần tử với một mẫu regex. Tiếp tục nếu thất bại.", category = "WEB")
     @Step("Kiểm tra (Soft) văn bản của {0.name} khớp với regex '{1}'")
     public void verifyTextMatchesRegexSoft(ObjectUI uiObject, String pattern) {
-        performRegexAssertion(uiObject, pattern, true);
+        execute(() -> {
+            performRegexAssertion(uiObject, pattern, true);
+            return null;
+        }, uiObject, pattern);
     }
 
+    // --- Verify Attribute Contains ---
     @NetatKeyword(name = "verifyAttributeContainsHard", description = "Kiểm tra thuộc tính của phần tử có chứa một chuỗi con. Dừng nếu thất bại.", category = "WEB")
     @Step("Kiểm tra (Hard) thuộc tính '{1}' của {0.name} chứa '{2}'")
     public void verifyAttributeContainsHard(ObjectUI uiObject, String attribute, String partialValue) {
-        performAttributeContainsAssertion(uiObject, attribute, partialValue, false);
+        execute(() -> {
+            performAttributeContainsAssertion(uiObject, attribute, partialValue, false);
+            return null;
+        }, uiObject, attribute, partialValue);
     }
 
     @NetatKeyword(name = "verifyAttributeContainsSoft", description = "Kiểm tra thuộc tính của phần tử có chứa một chuỗi con. Tiếp tục nếu thất bại.", category = "WEB")
     @Step("Kiểm tra (Soft) thuộc tính '{1}' của {0.name} chứa '{2}'")
     public void verifyAttributeContainsSoft(ObjectUI uiObject, String attribute, String partialValue) {
-        performAttributeContainsAssertion(uiObject, attribute, partialValue, true);
+        execute(() -> {
+            performAttributeContainsAssertion(uiObject, attribute, partialValue, true);
+            return null;
+        }, uiObject, attribute, partialValue);
     }
 
+    // --- Verify CSS Value ---
     @NetatKeyword(name = "verifyCssValueHard", description = "So sánh giá trị một thuộc tính CSS. Dừng nếu thất bại.", category = "WEB")
     @Step("Kiểm tra (Hard) CSS '{1}' của {0.name} là '{2}'")
     public void verifyCssValueHard(ObjectUI uiObject, String cssName, String expectedValue) {
-        performCssValueAssertion(uiObject, cssName, expectedValue, false);
+        execute(() -> {
+            performCssValueAssertion(uiObject, cssName, expectedValue, false);
+            return null;
+        }, uiObject, cssName, expectedValue);
     }
 
     @NetatKeyword(name = "verifyCssValueSoft", description = "So sánh giá trị một thuộc tính CSS. Tiếp tục nếu thất bại.", category = "WEB")
     @Step("Kiểm tra (Soft) CSS '{1}' của {0.name} là '{2}'")
     public void verifyCssValueSoft(ObjectUI uiObject, String cssName, String expectedValue) {
-        performCssValueAssertion(uiObject, cssName, expectedValue, true);
+        execute(() -> {
+            performCssValueAssertion(uiObject, cssName, expectedValue, true);
+            return null;
+        }, uiObject, cssName, expectedValue);
     }
 
 // =================================================================================

@@ -16,6 +16,7 @@ import java.util.List;
 /**
  * Lớp trừu tượng cơ sở cho tất cả các keyword liên quan đến UI (Web, Mobile).
  * Chứa logic chung để tìm kiếm phần tử và các hành động, kiểm chứng cơ bản.
+ * Lưu ý: Các phương thức trong lớp này không gọi cỗ máy 'execute()'. Việc gọi 'execute()' là trách nhiệm của các keyword public ở lớp con.
  */
 public abstract class BaseUiKeyword extends BaseKeyword {
 
@@ -51,7 +52,9 @@ public abstract class BaseUiKeyword extends BaseKeyword {
         throw new NoSuchElementException("Không thể tìm thấy phần tử '" + uiObject.getName() + "' bằng các locator đã định nghĩa.");
     }
 
-    // --- LOGIC CÁC HÀNH ĐỘNG CHUNG ---
+    // =================================================================================
+    // --- CÁC KEYWORD HÀNH ĐỘNG CHUNG (PUBLIC) ---
+    // =================================================================================
 
     public void click(ObjectUI uiObject) {
         execute(() -> {
@@ -81,170 +84,165 @@ public abstract class BaseUiKeyword extends BaseKeyword {
         }, uiObject);
     }
 
+    // =================================================================================
     // --- CÁC PHƯƠNG THỨC LOGIC ASSERT (PROTECTED) ĐỂ LỚP CON SỬ DỤNG ---
+    // =================================================================================
 
     protected void performVisibilityAssertion(ObjectUI uiObject, boolean expectedVisibility, boolean isSoft) {
-        execute(() -> {
-            boolean actualVisibility;
-            try {
-                WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(3));
-                wait.until(ExpectedConditions.visibilityOf(findElement(uiObject)));
-                actualVisibility = true;
-            } catch (Exception e) {
-                actualVisibility = false;
-            }
+        boolean actualVisibility;
+        try {
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(3));
+            wait.until(ExpectedConditions.visibilityOf(findElement(uiObject)));
+            actualVisibility = true;
+        } catch (Exception e) {
+            actualVisibility = false;
+        }
 
-            String message = String.format("Phần tử '%s' có hiển thị mong đợi là %b nhưng thực tế là %b.",
-                    uiObject.getName(), expectedVisibility, actualVisibility);
+        String message = String.format("Phần tử '%s' có hiển thị mong đợi là %b nhưng thực tế là %b.",
+                uiObject.getName(), expectedVisibility, actualVisibility);
 
-            if (isSoft) {
-                SoftAssert softAssert = ExecutionContext.getInstance().getSoftAssert();
-                if (softAssert == null) {
-                    softAssert = new SoftAssert();
-                    ExecutionContext.getInstance().setSoftAssert(softAssert);
-                }
-                softAssert.assertEquals(actualVisibility, expectedVisibility, "SOFT ASSERT FAILED: " + message);
-            } else {
-                Assert.assertEquals(actualVisibility, expectedVisibility, "HARD ASSERT FAILED: " + message);
+        if (isSoft) {
+            SoftAssert softAssert = ExecutionContext.getInstance().getSoftAssert();
+            if (softAssert == null) {
+                softAssert = new SoftAssert();
+                ExecutionContext.getInstance().setSoftAssert(softAssert);
             }
-            return null;
-        }, uiObject, expectedVisibility, isSoft);
+            softAssert.assertEquals(actualVisibility, expectedVisibility, "SOFT ASSERT FAILED: " + message);
+        } else {
+            Assert.assertEquals(actualVisibility, expectedVisibility, "HARD ASSERT FAILED: " + message);
+        }
     }
 
     protected void performTextAssertion(ObjectUI uiObject, String expectedText, boolean isSoft) {
-        execute(() -> {
-            String actualText = getText(uiObject);
-            String message = "Văn bản của phần tử '" + uiObject.getName() + "' không khớp.";
+        String actualText = getText(uiObject);
+        String message = "Văn bản của phần tử '" + uiObject.getName() + "' không khớp.";
 
-            if (isSoft) {
-                SoftAssert softAssert = ExecutionContext.getInstance().getSoftAssert();
-                if (softAssert == null) {
-                    softAssert = new SoftAssert();
-                    ExecutionContext.getInstance().setSoftAssert(softAssert);
-                }
-                softAssert.assertEquals(actualText, expectedText, "SOFT ASSERT FAILED: " + message);
-            } else {
-                Assert.assertEquals(actualText, expectedText, "HARD ASSERT FAILED: " + message);
+        if (isSoft) {
+            SoftAssert softAssert = ExecutionContext.getInstance().getSoftAssert();
+            if (softAssert == null) {
+                softAssert = new SoftAssert();
+                ExecutionContext.getInstance().setSoftAssert(softAssert);
             }
-            return null;
-        }, uiObject, expectedText, isSoft);
+            softAssert.assertEquals(actualText, expectedText, "SOFT ASSERT FAILED: " + message);
+        } else {
+            Assert.assertEquals(actualText, expectedText, "HARD ASSERT FAILED: " + message);
+        }
     }
 
     protected void performTextContainsAssertion(ObjectUI uiObject, String partialText, boolean isSoft) {
-        execute(() -> {
-            String actualText = getText(uiObject);
-            String message = "Văn bản của phần tử '" + uiObject.getName() + "' ('" + actualText + "') không chứa '" + partialText + "'.";
-            boolean isContains = actualText.contains(partialText);
+        String actualText = getText(uiObject);
+        boolean isContains = actualText.contains(partialText);
+        String message = "Văn bản của phần tử '" + uiObject.getName() + "' ('" + actualText + "') không chứa '" + partialText + "'.";
 
-            if (isSoft) {
-                SoftAssert softAssert = ExecutionContext.getInstance().getSoftAssert();
-                if (softAssert == null) {
-                    softAssert = new SoftAssert();
-                    ExecutionContext.getInstance().setSoftAssert(softAssert);
-                }
-                softAssert.assertTrue(isContains, "SOFT ASSERT FAILED: " + message);
-            } else {
-                Assert.assertTrue(isContains, "HARD ASSERT FAILED: " + message);
+        if (isSoft) {
+            SoftAssert softAssert = ExecutionContext.getInstance().getSoftAssert();
+            if (softAssert == null) {
+                softAssert = new SoftAssert();
+                ExecutionContext.getInstance().setSoftAssert(softAssert);
             }
-            return null;
-        }, uiObject, partialText, isSoft);
+            softAssert.assertTrue(isContains, "SOFT ASSERT FAILED: " + message);
+        } else {
+            Assert.assertTrue(isContains, "HARD ASSERT FAILED: " + message);
+        }
     }
 
     protected void performAttributeAssertion(ObjectUI uiObject, String attributeName, String expectedValue, boolean isSoft) {
-        execute(() -> {
-            WebElement element = findElement(uiObject);
-            String actualValue = element.getAttribute(attributeName);
-            String message = "Thuộc tính '" + attributeName + "' của phần tử '" + uiObject.getName() + "' không khớp.";
+        WebElement element = findElement(uiObject);
+        String actualValue = element.getAttribute(attributeName);
+        String message = "Thuộc tính '" + attributeName + "' của phần tử '" + uiObject.getName() + "' không khớp.";
 
-            if (isSoft) {
-                SoftAssert softAssert = ExecutionContext.getInstance().getSoftAssert();
-                if (softAssert == null) {
-                    softAssert = new SoftAssert();
-                    ExecutionContext.getInstance().setSoftAssert(softAssert);
-                }
-                softAssert.assertEquals(actualValue, expectedValue, "SOFT ASSERT FAILED: " + message);
-            } else {
-                Assert.assertEquals(actualValue, expectedValue, "HARD ASSERT FAILED: " + message);
+        if (isSoft) {
+            SoftAssert softAssert = ExecutionContext.getInstance().getSoftAssert();
+            if (softAssert == null) {
+                softAssert = new SoftAssert();
+                ExecutionContext.getInstance().setSoftAssert(softAssert);
             }
-            return null;
-        }, uiObject, attributeName, expectedValue, isSoft);
+            softAssert.assertEquals(actualValue, expectedValue, "SOFT ASSERT FAILED: " + message);
+        } else {
+            Assert.assertEquals(actualValue, expectedValue, "HARD ASSERT FAILED: " + message);
+        }
     }
 
     protected void performStateAssertion(ObjectUI uiObject, boolean expectedState, boolean isSoft) {
-        execute(() -> {
-            boolean actualState = findElement(uiObject).isEnabled();
-            String message = String.format("Trạng thái 'enabled' của '%s' mong đợi là %b nhưng thực tế là %b.",
-                    uiObject.getName(), expectedState, actualState);
-            if (isSoft) {
-                SoftAssert softAssert = ExecutionContext.getInstance().getSoftAssert();
-                if (softAssert == null) {
-                    softAssert = new SoftAssert();
-                    ExecutionContext.getInstance().setSoftAssert(softAssert);
-                }
-                softAssert.assertEquals(actualState, expectedState, "SOFT ASSERT FAILED: " + message);
-            } else {
-                Assert.assertEquals(actualState, expectedState, "HARD ASSERT FAILED: " + message);
+        boolean actualState = findElement(uiObject).isEnabled();
+        String message = String.format("Trạng thái 'enabled' của '%s' mong đợi là %b nhưng thực tế là %b.",
+                uiObject.getName(), expectedState, actualState);
+        if (isSoft) {
+            SoftAssert softAssert = ExecutionContext.getInstance().getSoftAssert();
+            if (softAssert == null) {
+                softAssert = new SoftAssert();
+                ExecutionContext.getInstance().setSoftAssert(softAssert);
             }
-            return null;
-        }, uiObject, expectedState, isSoft);
+            softAssert.assertEquals(actualState, expectedState, "SOFT ASSERT FAILED: " + message);
+        } else {
+            Assert.assertEquals(actualState, expectedState, "HARD ASSERT FAILED: " + message);
+        }
+    }
+
+    protected void performSelectionAssertion(ObjectUI uiObject, boolean expectedSelection, boolean isSoft) {
+        boolean actualSelection = findElement(uiObject).isSelected();
+        String message = String.format("Trạng thái lựa chọn của '%s' mong đợi là %b nhưng thực tế là %b.",
+                uiObject.getName(), expectedSelection, actualSelection);
+
+        if (isSoft) {
+            SoftAssert softAssert = ExecutionContext.getInstance().getSoftAssert();
+            if (softAssert == null) {
+                softAssert = new SoftAssert();
+                ExecutionContext.getInstance().setSoftAssert(softAssert);
+            }
+            softAssert.assertEquals(actualSelection, expectedSelection, "SOFT ASSERT FAILED: " + message);
+        } else {
+            Assert.assertEquals(actualSelection, expectedSelection, "HARD ASSERT FAILED: " + message);
+        }
     }
 
     protected void performRegexAssertion(ObjectUI uiObject, String pattern, boolean isSoft) {
-        execute(() -> {
-            String actualText = getText(uiObject);
-            boolean matches = actualText.matches(pattern);
-            String message = String.format("Văn bản '%s' của '%s' không khớp với mẫu regex '%s'.",
-                    actualText, uiObject.getName(), pattern);
-            if (isSoft) {
-                SoftAssert softAssert = ExecutionContext.getInstance().getSoftAssert();
-                if (softAssert == null) {
-                    softAssert = new SoftAssert();
-                    ExecutionContext.getInstance().setSoftAssert(softAssert);
-                }
-                softAssert.assertTrue(matches, "SOFT ASSERT FAILED: " + message);
-            } else {
-                Assert.assertTrue(matches, "HARD ASSERT FAILED: " + message);
+        String actualText = getText(uiObject);
+        boolean matches = actualText.matches(pattern);
+        String message = String.format("Văn bản '%s' của '%s' không khớp với mẫu regex '%s'.",
+                actualText, uiObject.getName(), pattern);
+        if (isSoft) {
+            SoftAssert softAssert = ExecutionContext.getInstance().getSoftAssert();
+            if (softAssert == null) {
+                softAssert = new SoftAssert();
+                ExecutionContext.getInstance().setSoftAssert(softAssert);
             }
-            return null;
-        }, uiObject, pattern, isSoft);
+            softAssert.assertTrue(matches, "SOFT ASSERT FAILED: " + message);
+        } else {
+            Assert.assertTrue(matches, "HARD ASSERT FAILED: " + message);
+        }
     }
 
     protected void performAttributeContainsAssertion(ObjectUI uiObject, String attribute, String partialValue, boolean isSoft) {
-        execute(() -> {
-            String actualValue = findElement(uiObject).getAttribute(attribute);
-            boolean contains = actualValue != null && actualValue.contains(partialValue);
-            String message = String.format("Thuộc tính '%s' ('%s') của '%s' không chứa chuỗi '%s'.",
-                    attribute, actualValue, uiObject.getName(), partialValue);
-            if (isSoft) {
-                SoftAssert softAssert = ExecutionContext.getInstance().getSoftAssert();
-                if (softAssert == null) {
-                    softAssert = new SoftAssert();
-                    ExecutionContext.getInstance().setSoftAssert(softAssert);
-                }
-                softAssert.assertTrue(contains, "SOFT ASSERT FAILED: " + message);
-            } else {
-                Assert.assertTrue(contains, "HARD ASSERT FAILED: " + message);
+        String actualValue = findElement(uiObject).getAttribute(attribute);
+        boolean contains = actualValue != null && actualValue.contains(partialValue);
+        String message = String.format("Thuộc tính '%s' ('%s') của '%s' không chứa chuỗi '%s'.",
+                attribute, actualValue, uiObject.getName(), partialValue);
+        if (isSoft) {
+            SoftAssert softAssert = ExecutionContext.getInstance().getSoftAssert();
+            if (softAssert == null) {
+                softAssert = new SoftAssert();
+                ExecutionContext.getInstance().setSoftAssert(softAssert);
             }
-            return null;
-        }, uiObject, attribute, partialValue, isSoft);
+            softAssert.assertTrue(contains, "SOFT ASSERT FAILED: " + message);
+        } else {
+            Assert.assertTrue(contains, "HARD ASSERT FAILED: " + message);
+        }
     }
 
     protected void performCssValueAssertion(ObjectUI uiObject, String cssName, String expectedValue, boolean isSoft) {
-        execute(() -> {
-            String actualValue = findElement(uiObject).getCssValue(cssName);
-            String message = String.format("Giá trị CSS '%s' của '%s' mong đợi là '%s' nhưng thực tế là '%s'.",
-                    cssName, uiObject.getName(), expectedValue, actualValue);
-            if (isSoft) {
-                SoftAssert softAssert = ExecutionContext.getInstance().getSoftAssert();
-                if (softAssert == null) {
-                    softAssert = new SoftAssert();
-                    ExecutionContext.getInstance().setSoftAssert(softAssert);
-                }
-                softAssert.assertEquals(actualValue, expectedValue, "SOFT ASSERT FAILED: " + message);
-            } else {
-                Assert.assertEquals(actualValue, expectedValue, "HARD ASSERT FAILED: " + message);
+        String actualValue = findElement(uiObject).getCssValue(cssName);
+        String message = String.format("Giá trị CSS '%s' của '%s' mong đợi là '%s' nhưng thực tế là '%s'.",
+                cssName, uiObject.getName(), expectedValue, actualValue);
+        if (isSoft) {
+            SoftAssert softAssert = ExecutionContext.getInstance().getSoftAssert();
+            if (softAssert == null) {
+                softAssert = new SoftAssert();
+                ExecutionContext.getInstance().setSoftAssert(softAssert);
             }
-            return null;
-        }, uiObject, cssName, expectedValue, isSoft);
+            softAssert.assertEquals(actualValue, expectedValue, "SOFT ASSERT FAILED: " + message);
+        } else {
+            Assert.assertEquals(actualValue, expectedValue, "HARD ASSERT FAILED: " + message);
+        }
     }
 }
