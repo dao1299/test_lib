@@ -1,4 +1,649 @@
 [ {
+  "name" : "switchToWindowByIndex",
+  "description" : "Chuyển sang tab/cửa sổ theo chỉ số (index).",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "int",
+    "name" : "index"
+  } ],
+  "example" : ""
+}, {
+  "name" : "assertElementDisabled",
+  "description" : "Khẳng định một phần tử đang ở trạng thái disabled. Dừng nếu thất bại.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  } ],
+  "example" : ""
+}, {
+  "name" : "switchToWindowByTitle",
+  "description" : "Chuyển sang cửa sổ hoặc tab có tiêu đề chính xác như mong đợi.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "windowTitle"
+  } ],
+  "example" : "switchToWindowByTitle | | Trang sản phẩm"
+}, {
+  "name" : "verifyElementVisibleHard",
+  "description" : "Kiểm tra phần tử có hiển thị. Dừng lại nếu thất bại.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  }, {
+    "type" : "boolean",
+    "name" : "isVisible"
+  } ],
+  "example" : ""
+}, {
+  "name" : "verifyRecordExists",
+  "description" : "Kiểm tra sự tồn tại của ít nhất một bản ghi.",
+  "category" : "DB",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "profileName"
+  }, {
+    "type" : "String",
+    "name" : "query"
+  }, {
+    "type" : "boolean",
+    "name" : "expectedExists"
+  }, {
+    "type" : "Object[]",
+    "name" : "params"
+  } ],
+  "example" : ""
+}, {
+  "name" : "verifyAttributeContainsSoft",
+  "description" : "Kiểm tra thuộc tính của phần tử có chứa một chuỗi con. Tiếp tục nếu thất bại.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  }, {
+    "type" : "String",
+    "name" : "attribute"
+  }, {
+    "type" : "String",
+    "name" : "partialValue"
+  } ],
+  "example" : ""
+}, {
+  "name" : "verifyTextContainsHard",
+  "description" : "Kiểm tra văn bản có chứa chuỗi con. Dừng lại nếu thất bại.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  }, {
+    "type" : "String",
+    "name" : "partialText"
+  } ],
+  "example" : ""
+}, {
+  "name" : "getAlertText",
+  "description" : "Lấy văn bản từ hộp thoại alert.",
+  "category" : "WEB",
+  "parameters" : [ ],
+  "example" : ""
+}, {
+  "name" : "contextClick",
+  "description" : "Thực hiện hành động click chuột phải vào một phần tử.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  } ],
+  "example" : "contextClick | Files/document_icon |"
+}, {
+  "name" : "uncheck",
+  "description" : "Bỏ chọn một checkbox nếu nó đang được chọn.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  } ],
+  "example" : ""
+}, {
+  "name" : "clearText",
+  "description" : "Xóa toàn bộ văn bản trong một ô input hoặc textarea.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  } ],
+  "example" : ""
+}, {
+  "name" : "getAttribute",
+  "description" : "Lấy giá trị của một thuộc tính (attribute) trên phần tử.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  }, {
+    "type" : "String",
+    "name" : "attributeName"
+  } ],
+  "example" : ""
+}, {
+  "name" : "executeUpdate",
+  "description" : "Thực thi câu lệnh INSERT, UPDATE, DELETE.",
+  "category" : "DB",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "profileName"
+  }, {
+    "type" : "String",
+    "name" : "query"
+  }, {
+    "type" : "Object[]",
+    "name" : "params"
+  } ],
+  "example" : ""
+}, {
+  "name" : "verifyTextContainsSoft",
+  "description" : "Kiểm tra văn bản có chứa chuỗi con. Tiếp tục nếu thất bại.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  }, {
+    "type" : "String",
+    "name" : "partialText"
+  } ],
+  "example" : ""
+}, {
+  "name" : "takeScreenshot",
+  "description" : "Chụp ảnh toàn bộ màn hình và lưu vào đường dẫn được chỉ định.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "filePath"
+  } ],
+  "example" : ""
+}, {
+  "name" : "scrollToBottom",
+  "description" : "Cuộn xuống cuối trang.",
+  "category" : "WEB",
+  "parameters" : [ ],
+  "example" : ""
+}, {
+  "name" : "verifyElementDisabledSoft",
+  "description" : "Kiểm tra một phần tử đang ở trạng thái disabled. Tiếp tục nếu thất bại.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  } ],
+  "example" : ""
+}, {
+  "name" : "takeElementScreenshot",
+  "description" : "Chụp ảnh của một phần tử cụ thể và lưu vào đường dẫn.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  }, {
+    "type" : "String",
+    "name" : "filePath"
+  } ],
+  "example" : ""
+}, {
+  "name" : "getText",
+  "description" : "Trả về chuỗi văn bản đang HIỂN THỊ của phần tử.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  } ],
+  "example" : "getText | LoginPage/welcome_label"
+}, {
+  "name" : "verifyElementAttributeSoft",
+  "description" : "Kiểm tra giá trị thuộc tính. Tiếp tục nếu thất bại.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  }, {
+    "type" : "String",
+    "name" : "attributeName"
+  }, {
+    "type" : "String",
+    "name" : "expectedValue"
+  } ],
+  "example" : ""
+}, {
+  "name" : "dragAndDropByOffset",
+  "description" : "Kéo một phần tử theo một độ lệch (x, y), hữu ích cho slider.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  }, {
+    "type" : "int",
+    "name" : "xOffset"
+  }, {
+    "type" : "int",
+    "name" : "yOffset"
+  } ],
+  "example" : ""
+}, {
+  "name" : "pressKeys",
+  "description" : "Gửi một chuỗi hoặc tổ hợp phím tới trình duyệt.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "String[]",
+    "name" : "keys"
+  } ],
+  "example" : ""
+}, {
+  "name" : "selectRadioByValue",
+  "description" : "Chọn một radio button trong nhóm dựa trên thuộc tính 'value'.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  }, {
+    "type" : "String",
+    "name" : "value"
+  } ],
+  "example" : ""
+}, {
+  "name" : "tap",
+  "description" : "",
+  "category" : "MOBILE",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  } ],
+  "example" : ""
+}, {
+  "name" : "switchToFrame",
+  "description" : "Chuyển ngữ cảnh điều khiển vào một iframe.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  } ],
+  "example" : "switchToFrame | HomePage/payment_iframe |"
+}, {
+  "name" : "executeQuery",
+  "description" : "Thực thi câu lệnh SELECT và trả về kết quả.",
+  "category" : "DB",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "profileName"
+  }, {
+    "type" : "String",
+    "name" : "query"
+  }, {
+    "type" : "Object[]",
+    "name" : "params"
+  } ],
+  "example" : ""
+}, {
+  "name" : "waitForUrlContains",
+  "description" : "Chờ cho đến khi URL hiện tại chứa một chuỗi con.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "partialUrl"
+  }, {
+    "type" : "int",
+    "name" : "timeoutInSeconds"
+  } ],
+  "example" : ""
+}, {
+  "name" : "verifyTextMatchesRegexHard",
+  "description" : "So khớp văn bản của phần tử với một mẫu regex. Dừng nếu thất bại.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  }, {
+    "type" : "String",
+    "name" : "pattern"
+  } ],
+  "example" : ""
+}, {
+  "name" : "sendKeysToAlert",
+  "description" : "Nhập văn bản vào hộp thoại prompt.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "text"
+  } ],
+  "example" : ""
+}, {
+  "name" : "switchToDefaultContent",
+  "description" : "Thoát khỏi tất cả các iframe và quay về trang chính.",
+  "category" : "WEB",
+  "parameters" : [ ],
+  "example" : ""
+}, {
+  "name" : "verifyTitleHard",
+  "description" : "Kiểm tra tiêu đề trang. Dừng lại nếu thất bại.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "expectedTitle"
+  } ],
+  "example" : ""
+}, {
+  "name" : "waitForTitleIs",
+  "description" : "Chờ cho đến khi tiêu đề trang chính xác như mong đợi.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "expectedTitle"
+  }, {
+    "type" : "int",
+    "name" : "timeoutInSeconds"
+  } ],
+  "example" : ""
+}, {
+  "name" : "switchToParentFrame",
+  "description" : "Thoát khỏi ngữ cảnh iframe hiện tại và quay về iframe cha gần nhất.",
+  "category" : "WEB",
+  "parameters" : [ ],
+  "example" : "switchToParentFrame | |"
+}, {
+  "name" : "resizeWindow",
+  "description" : "Thay đổi kích thước cửa sổ trình duyệt.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "int",
+    "name" : "width"
+  }, {
+    "type" : "int",
+    "name" : "height"
+  } ],
+  "example" : "resizeWindow | | 1280, 720"
+}, {
+  "name" : "verifyDataSQL",
+  "description" : "Thực thi và kiểm chứng kết quả với dữ liệu mong đợi.",
+  "category" : "DB",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "profileName"
+  }, {
+    "type" : "String",
+    "name" : "query"
+  }, {
+    "type" : "String[]",
+    "name" : "expectedColumnNames"
+  }, {
+    "type" : "Object[][]",
+    "name" : "expectedData"
+  }, {
+    "type" : "Object[]",
+    "name" : "queryParams"
+  } ],
+  "example" : ""
+}, {
+  "name" : "assertElementSelected",
+  "description" : "Kiểm tra checkbox/radio được chọn. Dừng nếu thất bại.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  } ],
+  "example" : ""
+}, {
+  "name" : "goForward",
+  "description" : "Đi tới trang tiếp theo trong lịch sử trình duyệt.",
+  "category" : "WEB",
+  "parameters" : [ ],
+  "example" : "goForward | |"
+}, {
+  "name" : "scrollToElement",
+  "description" : "Cuộn trang đến khi phần tử nằm trong vùng nhìn thấy.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  } ],
+  "example" : "scrollToElement | Common/submit_button"
+}, {
+  "name" : "getPageTitle",
+  "description" : "Lấy tiêu đề của trang hiện tại.",
+  "category" : "WEB",
+  "parameters" : [ ],
+  "example" : ""
+}, {
+  "name" : "verifyCssValueHard",
+  "description" : "So sánh giá trị một thuộc tính CSS. Dừng nếu thất bại.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  }, {
+    "type" : "String",
+    "name" : "cssName"
+  }, {
+    "type" : "String",
+    "name" : "expectedValue"
+  } ],
+  "example" : ""
+}, {
+  "name" : "refresh",
+  "description" : "Tải lại (làm mới) trang web hiện tại.",
+  "category" : "WEB",
+  "parameters" : [ ],
+  "example" : "refresh | |"
+}, {
+  "name" : "disconnectAllDatabases",
+  "description" : "Đóng tất cả các connection pool đang hoạt động.",
+  "category" : "DB",
+  "parameters" : [ ],
+  "example" : ""
+}, {
+  "name" : "getElementCount",
+  "description" : "Đếm số lượng phần tử khớp với locator.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  } ],
+  "example" : ""
+}, {
+  "name" : "waitForElementClickable",
+  "description" : "Chờ cho đến khi một phần tử hiển thị và sẵn sàng để được click.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  } ],
+  "example" : "waitForElementClickable | CheckoutPage/submit_button |"
+}, {
+  "name" : "verifyAttributeContainsHard",
+  "description" : "Kiểm tra thuộc tính của phần tử có chứa một chuỗi con. Dừng nếu thất bại.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  }, {
+    "type" : "String",
+    "name" : "attribute"
+  }, {
+    "type" : "String",
+    "name" : "partialValue"
+  } ],
+  "example" : ""
+}, {
+  "name" : "verifyTextSoft",
+  "description" : "So sánh văn bản chính xác. Tiếp tục nếu thất bại.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  }, {
+    "type" : "String",
+    "name" : "expectedText"
+  } ],
+  "example" : ""
+}, {
+  "name" : "getCssValue",
+  "description" : "Lấy giá trị của một thuộc tính CSS trên phần tử.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  }, {
+    "type" : "String",
+    "name" : "cssPropertyName"
+  } ],
+  "example" : ""
+}, {
+  "name" : "verifyDataByQueryFile",
+  "description" : "Thực thi và kiểm chứng kết quả bằng file SQL và file dữ liệu.",
+  "category" : "DB",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "profileName"
+  }, {
+    "type" : "String",
+    "name" : "queryPath"
+  }, {
+    "type" : "String",
+    "name" : "dataFilePath"
+  } ],
+  "example" : ""
+}, {
+  "name" : "waitForElementNotVisible",
+  "description" : "Chờ cho đến khi một phần tử không còn hiển thị trên giao diện.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  } ],
+  "example" : "waitForElementNotVisible | Common/loading_spinner |"
+}, {
+  "name" : "openNewTab",
+  "description" : "Mở một tab mới và chuyển sang tab đó.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "url"
+  } ],
+  "example" : ""
+}, {
+  "name" : "findElementInShadowDom",
+  "description" : "Tìm một phần tử nằm bên trong một Shadow DOM. Yêu cầu ObjectUI của Shadow Host và CSS Selector của phần tử bên trong.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "shadowHostObject"
+  }, {
+    "type" : "String",
+    "name" : "cssSelectorInShadow"
+  } ],
+  "example" : "findElementInShadowDom | Page/app_container | css=input#username"
+}, {
+  "name" : "goBack",
+  "description" : "Quay lại trang trước đó trong lịch sử trình duyệt.",
+  "category" : "WEB",
+  "parameters" : [ ],
+  "example" : "goBack | |"
+}, {
+  "name" : "verifyElementVisibleSoft",
+  "description" : "Kiểm tra phần tử có hiển thị. Tiếp tục nếu thất bại.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  }, {
+    "type" : "boolean",
+    "name" : "isVisible"
+  } ],
+  "example" : ""
+}, {
+  "name" : "verifyTextMatchesRegexSoft",
+  "description" : "So khớp văn bản của phần tử với một mẫu regex. Tiếp tục nếu thất bại.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  }, {
+    "type" : "String",
+    "name" : "pattern"
+  } ],
+  "example" : ""
+}, {
+  "name" : "dragAndDrop",
+  "description" : "Kéo một phần tử nguồn và thả vào vị trí của phần tử đích.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "sourceObject"
+  }, {
+    "type" : "ObjectUI",
+    "name" : "targetObject"
+  } ],
+  "example" : "dragAndDrop | Draggable/source_item | Droppable/target_area"
+}, {
+  "name" : "highlightElement",
+  "description" : "Làm nổi bật một phần tử trên trang để dễ dàng gỡ lỗi.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  } ],
+  "example" : ""
+}, {
+  "name" : "getCurrentUrl",
+  "description" : "Lấy URL của trang hiện tại.",
+  "category" : "WEB",
+  "parameters" : [ ],
+  "example" : ""
+}, {
+  "name" : "setLocalStorage",
+  "description" : "Ghi một cặp key/value vào Local Storage của trình duyệt.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "key"
+  }, {
+    "type" : "String",
+    "name" : "value"
+  } ],
+  "example" : ""
+}, {
+  "name" : "scrollToCoordinates",
+  "description" : "Cuộn trang đến một tọa độ (x, y) cụ thể.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "int",
+    "name" : "x"
+  }, {
+    "type" : "int",
+    "name" : "y"
+  } ],
+  "example" : "scrollToCoordinates | | 0, 500"
+}, {
+  "name" : "verifyElementEnabledSoft",
+  "description" : "Kiểm tra một phần tử đang ở trạng thái enabled. Tiếp tục nếu thất bại.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  } ],
+  "example" : ""
+}, {
+  "name" : "selectByIndex",
+  "description" : "Chọn một tùy chọn trong dropdown dựa trên chỉ số (index).",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  }, {
+    "type" : "int",
+    "name" : "index"
+  } ],
+  "example" : ""
+}, {
   "name" : "sendKeys",
   "description" : "Nhập một chuỗi văn bản vào một phần tử (ô input, textarea).",
   "category" : "WEB",
@@ -11,23 +656,35 @@
   } ],
   "example" : "sendKeys | LoginPage/username_input | my_user_name"
 }, {
-  "name" : "click",
-  "description" : "Thực hiện hành động click chuột vào một phần tử trên giao diện.",
+  "name" : "assertElementEnabled",
+  "description" : "Khẳng định một phần tử đang ở trạng thái enabled. Dừng nếu thất bại.",
   "category" : "WEB",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
   } ],
-  "example" : "click | LoginPage/login_button |"
+  "example" : ""
 }, {
-  "name" : "getText",
-  "description" : "Trả về chuỗi văn bản đang HIỂN THỊ của phần tử (giá trị tương đương WebElement#getText()). Keyword sẽ CHỜ cho đến khi phần tử ở trạng thái visible trước khi đọc text, giúp hạn chế lỗi do DOM chưa sẵn sàng.",
+  "name" : "assertAll",
+  "description" : "Tổng hợp tất cả các lỗi đã gặp trong chế độ Soft Assert. Nếu có lỗi, kịch bản sẽ FAILED tại đây.",
+  "category" : "ASSERTION",
+  "parameters" : [ ],
+  "example" : "assertAll | |"
+}, {
+  "name" : "verifyElementAttributeHard",
+  "description" : "Kiểm tra giá trị thuộc tính. Dừng lại nếu thất bại.",
   "category" : "WEB",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
+  }, {
+    "type" : "String",
+    "name" : "attributeName"
+  }, {
+    "type" : "String",
+    "name" : "expectedValue"
   } ],
-  "example" : "getText | LoginPage/welcome_label"
+  "example" : ""
 }, {
   "name" : "sendKeys",
   "description" : "",
@@ -41,6 +698,75 @@
   } ],
   "example" : ""
 }, {
+  "name" : "connectDatabase",
+  "description" : "Khởi tạo một connection pool dựa trên file profile.",
+  "category" : "DB",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "profilePath"
+  } ],
+  "example" : ""
+}, {
+  "name" : "click",
+  "description" : "Thực hiện hành động click chuột vào một phần tử trên giao diện.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  } ],
+  "example" : "click | LoginPage/login_button |"
+}, {
+  "name" : "waitForElementPresent",
+  "description" : "Chờ cho đến khi một phần tử tồn tại trong DOM.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  }, {
+    "type" : "int",
+    "name" : "timeoutInSeconds"
+  } ],
+  "example" : ""
+}, {
+  "name" : "verifyCssValueSoft",
+  "description" : "So sánh giá trị một thuộc tính CSS. Tiếp tục nếu thất bại.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  }, {
+    "type" : "String",
+    "name" : "cssName"
+  }, {
+    "type" : "String",
+    "name" : "expectedValue"
+  } ],
+  "example" : ""
+}, {
+  "name" : "check",
+  "description" : "Đảm bảo một checkbox hoặc radio button được chọn. Nếu chưa được chọn, sẽ click để chọn.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  } ],
+  "example" : "check | Form/terms_and_conditions_checkbox |"
+}, {
+  "name" : "pause",
+  "description" : "Tạm dừng kịch bản trong một khoảng thời gian tĩnh (tính bằng mili giây).",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "int",
+    "name" : "milliseconds"
+  } ],
+  "example" : ""
+}, {
+  "name" : "clearLocalStorage",
+  "description" : "Xóa toàn bộ dữ liệu trong Local Storage.",
+  "category" : "WEB",
+  "parameters" : [ ],
+  "example" : ""
+}, {
   "name" : "openUrl",
   "description" : "Mở một trang web với URL được chỉ định.",
   "category" : "WEB",
@@ -50,21 +776,45 @@
   } ],
   "example" : "openUrl | | https://google.com"
 }, {
-  "name" : "scrollToElement",
-  "description" : "Cuộn trang đến khi phần tử nằm trong vùng nhìn thấy (viewport) bằng JavaScript (scrollIntoView(true)). Không thực hiện thao tác click; chỉ đảm bảo phần tử xuất hiện trong tầm nhìn để các bước tiếp theo (click, sendKeys, assert...) ổn định hơn.",
+  "name" : "scrollToTop",
+  "description" : "Cuộn lên đầu trang.",
+  "category" : "WEB",
+  "parameters" : [ ],
+  "example" : ""
+}, {
+  "name" : "verifyTextHard",
+  "description" : "So sánh văn bản chính xác. Dừng lại nếu thất bại.",
   "category" : "WEB",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
+  }, {
+    "type" : "String",
+    "name" : "expectedText"
   } ],
-  "example" : "scrollToElement | Common/submit_button"
+  "example" : ""
 }, {
-  "name" : "tap",
-  "description" : "",
-  "category" : "MOBILE",
+  "name" : "waitForPageLoaded",
+  "description" : "Chờ cho trang tải xong hoàn toàn (document.readyState is complete).",
+  "category" : "WEB",
   "parameters" : [ {
-    "type" : "ObjectUI",
-    "name" : "uiObject"
+    "type" : "int",
+    "name" : "timeoutInSeconds"
+  } ],
+  "example" : ""
+}, {
+  "name" : "maximizeWindow",
+  "description" : "Phóng to cửa sổ trình duyệt.",
+  "category" : "WEB",
+  "parameters" : [ ],
+  "example" : ""
+}, {
+  "name" : "getLocalStorage",
+  "description" : "Đọc một giá trị từ Local Storage bằng key.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "key"
   } ],
   "example" : ""
 } ]

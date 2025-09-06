@@ -3,6 +3,7 @@ package com.vtnet.netat.core.context;
 import com.vtnet.netat.core.reporting.StepResult;
 import org.openqa.selenium.WebDriver;
 import io.appium.java_client.AppiumDriver;
+import org.testng.asserts.SoftAssert;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -228,9 +229,32 @@ public class ExecutionContext {
             }
             mobileDriver = null;
         }
-
+        softAssert = null;
+        isSoftAssert = false;
         stepResults.clear();
         testData.clear();
         // Keep global variables for next test
+    }
+
+    private SoftAssert softAssert;
+    private boolean isSoftAssert = false; // Mặc định là hard assert
+
+    // ... (constructor và các getter/setter khác)
+
+    // --- THÊM CÁC GETTER/SETTER MỚI ---
+    public SoftAssert getSoftAssert() {
+        return softAssert;
+    }
+
+    public void setSoftAssert(SoftAssert softAssert) {
+        this.softAssert = softAssert;
+    }
+
+    public boolean isSoftAssert() {
+        return isSoftAssert;
+    }
+
+    public void setSoftAssert(boolean softAssert) {
+        isSoftAssert = softAssert;
     }
 }

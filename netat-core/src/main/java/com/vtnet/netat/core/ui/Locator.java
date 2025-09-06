@@ -1,4 +1,4 @@
-package com.vtnet.netat.web.elements;
+package com.vtnet.netat.core.ui;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;

@@ -3,7 +3,7 @@ package com.vtnet.netat.mobile.keywords;
 
 import com.vtnet.netat.core.annotations.NetatKeyword;
 import com.vtnet.netat.driver.DriverManager;
-import com.vtnet.netat.web.elements.ObjectUI;
+import com.vtnet.netat.core.ui.ObjectUI;
 import io.appium.java_client.AppiumDriver;
 import io.qameta.allure.Step;
 import org.openqa.selenium.WebElement;

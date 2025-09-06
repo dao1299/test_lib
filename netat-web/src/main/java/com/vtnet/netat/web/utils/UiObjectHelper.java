@@ -1,8 +1,8 @@
 package com.vtnet.netat.web.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vtnet.netat.web.elements.Locator;
-import com.vtnet.netat.web.elements.ObjectUI;
+import com.vtnet.netat.core.ui.Locator;
+import com.vtnet.netat.core.ui.ObjectUI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,7 +54,11 @@ public final class UiObjectHelper {
 
             if (params != null && params.length > 0 && uiObject.getLocators() != null) {
                 for (Locator locator : uiObject.getLocators()) {
-                    String formattedValue = MessageFormat.format(locator.getValue(), (Object[]) params);
+                    String formattedValue = locator.getValue();
+                    for (int i = 0; i < params.length; i++) {
+                        String placeholder = "{" + i + "}";
+                        formattedValue = formattedValue.replace(placeholder, params[i]);
+                    }
                     locator.setValue(formattedValue);
                 }
             }

@@ -64,6 +64,22 @@
             <artifactId>reflections</artifactId>
             <version>0.10.2</version>
         </dependency>
-
+        <dependency>
+            <groupId>io.appium</groupId>
+            <artifactId>java-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.vtnet.netat</groupId>
+            <artifactId>netat-driver</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <scope>provided</scope> </dependency>
+        <dependency>
+            <groupId>io.qameta.allure</groupId>
+            <artifactId>allure-testng</artifactId>
+        </dependency>
     </dependencies>
 </project>

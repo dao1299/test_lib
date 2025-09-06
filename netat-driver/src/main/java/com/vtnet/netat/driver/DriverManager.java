@@ -17,15 +17,18 @@ public final class DriverManager {
 
     public static void initDriver() {
         if (threadLocalDriver.get() == null) {
-            ConfigReader.loadProperties(); // Đảm bảo cấu hình đã được tải
+            ConfigReader.loadProperties();
 
-            // Sử dụng "platform.name" làm key chính để quyết định
             String platform = ConfigReader.getProperty("platform.name");
+
+            if (platform == null || platform.trim().isEmpty()) {
+                throw new IllegalArgumentException("Thuộc tính 'platform.name' không được định nghĩa trong file cấu hình.");
+            }
+
             log.info("Nền tảng thực thi được yêu cầu: {}", platform.toUpperCase());
 
             IDriverFactory factory;
 
-            // Phân loại factory dựa trên nền tảng
             switch (platform.toLowerCase()) {
                 case "android":
                 case "ios":
@@ -34,8 +37,7 @@ public final class DriverManager {
                 case "chrome":
                 case "firefox":
                 case "edge":
-                    // Nếu là web, đặt lại thuộc tính browser.name để Local/Remote factory có thể dùng
-                    ConfigReader.getProperties().setProperty("browser.name", platform);
+                    // [TINH CHỈNH 2] Không cần set 'browser.name' nữa, các factory sẽ đọc trực tiếp 'platform.name'
                     String executionType = ConfigReader.getProperty("execution.type", "local");
                     if ("remote".equalsIgnoreCase(executionType)) {
                         factory = new RemoteDriverFactory();
@@ -49,13 +51,57 @@ public final class DriverManager {
 
             WebDriver driver = factory.createDriver();
 
-            // Không maximize cho mobile
             if (!(platform.equalsIgnoreCase("android") || platform.equalsIgnoreCase("ios"))) {
                 driver.manage().window().maximize();
             }
 
-            long defaultTimeout = Long.parseLong(ConfigReader.getProperty("timeout.default", "30"));
-            driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(defaultTimeout));
+            driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(0));
+
+            threadLocalDriver.set(driver);
+        }
+    }
+
+    public static void initDriver(String platform) {
+        if (threadLocalDriver.get() == null) {
+            ConfigReader.loadProperties();
+
+            if (platform == null || platform.trim().isEmpty()) {
+                throw new IllegalArgumentException("Tên platform không được để trống khi khởi tạo driver.");
+            }
+
+            log.info("Nền tảng thực thi được yêu cầu cho luồng này: {}", platform.toUpperCase());
+
+            // Ghi đè hoặc thiết lập thuộc tính platform.name cho luồng này
+            ConfigReader.getProperties().setProperty("platform.name", platform);
+
+            IDriverFactory factory;
+
+            switch (platform.toLowerCase()) {
+                case "android":
+                case "ios":
+                    factory = new MobileDriverFactory();
+                    break;
+                case "chrome":
+                case "firefox":
+                case "edge":
+                    String executionType = ConfigReader.getProperty("execution.type", "local");
+                    if ("remote".equalsIgnoreCase(executionType)) {
+                        factory = new RemoteDriverFactory();
+                    } else {
+                        factory = new LocalDriverFactory();
+                    }
+                    break;
+                default:
+                    throw new IllegalArgumentException("Nền tảng không được hỗ trợ: " + platform);
+            }
+
+            WebDriver driver = factory.createDriver();
+
+            if (!(platform.equalsIgnoreCase("android") || platform.equalsIgnoreCase("ios"))) {
+                driver.manage().window().maximize();
+            }
+
+            driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(0));
 
             threadLocalDriver.set(driver);
         }
