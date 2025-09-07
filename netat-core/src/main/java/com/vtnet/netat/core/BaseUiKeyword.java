@@ -78,9 +78,37 @@ public abstract class BaseUiKeyword extends BaseKeyword {
 
     public String getText(ObjectUI uiObject) {
         return execute(() -> {
+            // Tìm và chờ cho đến khi phần tử được hiển thị để đảm bảo nó đã sẵn sàng
             WebElement element = findElement(uiObject);
-            return new WebDriverWait(DriverManager.getDriver(), PRIMARY_TIMEOUT)
-                    .until(ExpectedConditions.visibilityOf(element)).getText();
+            new WebDriverWait(DriverManager.getDriver(), DEFAULT_TIMEOUT)
+                    .until(ExpectedConditions.visibilityOf(element));
+
+            String text;
+            String tagName = element.getTagName().toLowerCase();
+
+            // **Ưu tiên 1: Lấy thuộc tính 'value' cho các thẻ input, textarea, select**
+            // Đây là trường hợp phổ biến nhất mà .getText() của Selenium không xử lý được.
+            if ("input".equals(tagName) || "textarea".equals(tagName) || "select".equals(tagName)) {
+                text = element.getAttribute("value");
+            } else {
+                // **Ưu tiên 2: Lấy văn bản hiển thị thông thường**
+                text = element.getText();
+            }
+
+            // **Ưu tiên 3 (Dự phòng): Nếu các cách trên không trả về giá trị, thử lấy qua JavaScript**
+            // 'textContent' và 'innerText' có thể lấy được văn bản ẩn hoặc các nội dung phức tạp hơn.
+            if (text == null || text.trim().isEmpty()) {
+                try {
+                    JavascriptExecutor js = (JavascriptExecutor) DriverManager.getDriver();
+                    text = (String) js.executeScript("return arguments[0].textContent || arguments[0].innerText;", element);
+                } catch (Exception e) {
+                    logger.warn("Không thể lấy text bằng JavaScript. Trả về chuỗi rỗng.");
+                    text = ""; // Trả về rỗng nếu có lỗi xảy ra
+                }
+            }
+
+            // Trả về kết quả, đảm bảo không bao giờ là null và đã được cắt khoảng trắng thừa
+            return text != null ? text.trim() : "";
         }, uiObject);
     }
 

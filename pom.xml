@@ -20,7 +20,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!-- Dependency versions -->
-        <selenium.version>4.13.0</selenium.version>
+        <selenium.version>4.22.0</selenium.version>
+        <selenium.http.jdk.client.version>4.13.0</selenium.http.jdk.client.version>
         <appium.version>8.6.0</appium.version>
         <testng.version>7.8.0</testng.version>
         <slf4j.version>2.0.9</slf4j.version>
@@ -65,7 +66,7 @@
             <dependency>
                 <groupId>org.seleniumhq.selenium</groupId>
                 <artifactId>selenium-http-jdk-client</artifactId>
-                <version>${selenium.version}</version>
+                <version>${selenium.http.jdk.client.version}</version>
             </dependency>
 
             <!-- Appium Java Client -->
