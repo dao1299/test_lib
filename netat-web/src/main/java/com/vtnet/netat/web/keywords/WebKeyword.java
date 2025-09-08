@@ -303,6 +303,58 @@ public class WebKeyword extends BaseUiKeyword {
     }
 
     @NetatKeyword(
+            name = "doubleClick",
+            description = "Thực hiện hành động click chuột hai lần (double-click) vào một phần tử.",
+            category = "WEB",
+            parameters = {"ObjectUI: uiObject - Phần tử cần thực hiện double-click."},
+            example = "webKeyword.doubleClick(editIconObject);"
+    )
+    @Step("Double-click vào phần tử: {0.name}")
+    public void doubleClick(ObjectUI uiObject) {
+        execute(() -> {
+            WebElement element = findElement(uiObject);
+            new Actions(DriverManager.getDriver()).doubleClick(element).perform();
+            return null;
+        }, uiObject);
+    }
+
+    @NetatKeyword(
+            name = "hover",
+            description = "Di chuyển con trỏ chuột đến vị trí của một phần tử để hiển thị các menu con, tooltip, hoặc các hiệu ứng khác.",
+            category = "WEB",
+            parameters = {"ObjectUI: uiObject - Phần tử cần di chuột đến."},
+            example = "webKeyword.hover(userMenuObject);"
+    )
+    @Step("Di chuột đến phần tử: {0.name}")
+    public void hover(ObjectUI uiObject) {
+        execute(() -> {
+            WebElement element = findElement(uiObject);
+            new Actions(DriverManager.getDriver()).moveToElement(element).perform();
+            return null;
+        }, uiObject);
+    }
+
+    @NetatKeyword(
+            name = "uploadFile",
+            description = "Tải lên một file từ máy local bằng cách gửi đường dẫn file vào một phần tử <input type='file'>.",
+            category = "WEB",
+            parameters = {
+                    "ObjectUI: uiObject - Phần tử input (type='file') để tải file lên.",
+                    "String: filePath - Đường dẫn tuyệt đối đến file cần tải lên trên máy."
+            },
+            example = "webKeyword.uploadFile(avatarUploadInput, \"C:/Users/Tester/Pictures/avatar.jpg\");"
+    )
+    @Step("Tải file '{1}' lên phần tử {0.name}")
+    public void uploadFile(ObjectUI uiObject, String filePath) {
+        execute(() -> {
+            // Với input type="file", không cần click, chỉ cần sendKeys đường dẫn file
+            WebElement element = findElement(uiObject);
+            element.sendKeys(filePath);
+            return null;
+        }, uiObject, filePath);
+    }
+
+    @NetatKeyword(
             name = "dragAndDrop",
             description = "Thực hiện thao tác kéo một phần tử (nguồn) và thả nó vào vị trí của một phần tử khác (đích).",
             category = "WEB",
@@ -400,6 +452,44 @@ public class WebKeyword extends BaseUiKeyword {
             }
             throw new NoSuchElementException("Không tìm thấy radio button với value: " + value);
         }, uiObject, value);
+    }
+
+    @NetatKeyword(
+            name = "selectByValue",
+            description = "Chọn một tùy chọn trong dropdown dựa trên giá trị của thuộc tính 'value'.",
+            category = "WEB",
+            parameters = {
+                    "ObjectUI: uiObject - Phần tử dropdown (thẻ select).",
+                    "String: value - Giá trị thuộc tính 'value' của tùy chọn cần chọn."
+            },
+            example = "webKeyword.selectByValue(cityDropdown, \"HN\");"
+    )
+    @Step("Chọn tùy chọn có value '{1}' cho dropdown {0.name}")
+    public void selectByValue(ObjectUI uiObject, String value) {
+        execute(() -> {
+            Select select = new Select(findElement(uiObject));
+            select.selectByValue(value);
+            return null;
+        }, uiObject, value);
+    }
+
+    @NetatKeyword(
+            name = "selectByVisibleText",
+            description = "Chọn một tùy chọn trong dropdown dựa trên văn bản hiển thị của nó.",
+            category = "WEB",
+            parameters = {
+                    "ObjectUI: uiObject - Phần tử dropdown (thẻ select).",
+                    "String: text - Văn bản hiển thị của tùy chọn cần chọn."
+            },
+            example = "webKeyword.selectByVisibleText(countryDropdown, \"Việt Nam\");"
+    )
+    @Step("Chọn tùy chọn có văn bản '{1}' cho dropdown {0.name}")
+    public void selectByVisibleText(ObjectUI uiObject, String text) {
+        execute(() -> {
+            Select select = new Select(findElement(uiObject));
+            select.selectByVisibleText(text);
+            return null;
+        }, uiObject, text);
     }
 
     // =================================================================================
@@ -1299,6 +1389,33 @@ public class WebKeyword extends BaseUiKeyword {
             ((JavascriptExecutor) DriverManager.getDriver()).executeScript("localStorage.clear();");
             return null;
         });
+    }
+
+    @NetatKeyword(
+            name = "deleteAllCookies",
+            description = "Xóa tất cả các cookie của phiên làm việc hiện tại trên trình duyệt.",
+            category = "WEB",
+            parameters = {"Không có tham số."},
+            example = "webKeyword.deleteAllCookies();"
+    )
+    @Step("Xóa tất cả cookies")
+    public void deleteAllCookies() {
+        execute(() -> {
+            DriverManager.getDriver().manage().deleteAllCookies();
+            return null;
+        });
+    }
+
+    @NetatKeyword(
+            name = "getCookie",
+            description = "Lấy thông tin của một cookie cụ thể dựa trên tên của nó.",
+            category = "WEB",
+            parameters = {"String: cookieName - Tên của cookie cần lấy."},
+            example = "Cookie sessionCookie = webKeyword.getCookie(\"session_id\");"
+    )
+    @Step("Lấy cookie có tên: {0}")
+    public Cookie getCookie(String cookieName) {
+        return execute(() -> DriverManager.getDriver().manage().getCookieNamed(cookieName), cookieName);
     }
 
     // =================================================================================
