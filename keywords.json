@@ -236,15 +236,6 @@
   } ],
   "example" : "webKeyword.dragAndDropByOffset(priceSliderHandle, 100, 0); // Kéo sang phải 100px"
 }, {
-  "name" : "pressKeys",
-  "description" : "Gửi một chuỗi ký tự hoặc một tổ hợp phím (ví dụ: Ctrl+C, Enter) tới phần tử đang được focus trên trình duyệt.",
-  "category" : "WEB",
-  "parameters" : [ {
-    "type" : "String[]",
-    "name" : "keys"
-  } ],
-  "example" : "webKeyword.pressKeys(Keys.CONTROL, \"a\"); // Gửi tổ hợp phím Ctrl + A"
-}, {
   "name" : "verifyElementAttributeSoft",
   "description" : "Kiểm tra giá trị của một thuộc tính (attribute) trên phần tử. Nếu giá trị không khớp, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
   "category" : "WEB",
@@ -898,6 +889,15 @@
     "name" : "expectedTitle"
   } ],
   "example" : "webKeyword.verifyTitleSoft(\"Giỏ hàng (1 sản phẩm)\");"
+}, {
+  "name" : "pressKeys",
+  "description" : "Gửi một chuỗi ký tự hoặc một tổ hợp phím (ví dụ: Ctrl+C, Enter) tới phần tử đang được focus trên trình duyệt.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "CharSequence[]",
+    "name" : "keys"
+  } ],
+  "example" : "webKeyword.pressKeys(Keys.CONTROL, \"a\"); // Gửi tổ hợp phím Ctrl + A"
 }, {
   "name" : "verifyTextHard",
   "description" : "So sánh văn bản của một phần tử với một chuỗi ký tự mong đợi (phải khớp chính xác). Nếu không khớp, kịch bản sẽ DỪNG LẠI.",

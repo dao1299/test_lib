@@ -399,13 +399,40 @@ public class WebKeyword extends BaseUiKeyword {
             name = "pressKeys",
             description = "Gửi một chuỗi ký tự hoặc một tổ hợp phím (ví dụ: Ctrl+C, Enter) tới phần tử đang được focus trên trình duyệt.",
             category = "WEB",
-            parameters = {"String...: keys - Một hoặc nhiều chuỗi ký tự hoặc phím đặc biệt từ `org.openqa.selenium.Keys`."},
+            parameters = {"CharSequence...: keys - Một hoặc nhiều chuỗi ký tự hoặc phím đặc biệt từ org.openqa.selenium.Keys."},
             example = "webKeyword.pressKeys(Keys.CONTROL, \"a\"); // Gửi tổ hợp phím Ctrl + A"
     )
     @Step("Gửi tổ hợp phím: {0}")
-    public void pressKeys(String... keys) {
+    public void pressKeys(CharSequence... keys) {
         execute(() -> {
-            new Actions(DriverManager.getDriver()).sendKeys(keys).perform();
+            Actions actions = new Actions(DriverManager.getDriver());
+
+            List<Keys> modifierKeys = new ArrayList<>();
+            List<CharSequence> regularKeys = new ArrayList<>();
+
+            for (CharSequence key : keys) {
+                if (key instanceof Keys && (key.equals(Keys.CONTROL) || key.equals(Keys.ALT) || key.equals(Keys.SHIFT))) {
+                    modifierKeys.add((Keys) key);
+                } else {
+                    regularKeys.add(key);
+                }
+            }
+            if (!modifierKeys.isEmpty()) {
+                for (Keys modifier : modifierKeys) {
+                    actions.keyDown(modifier);
+                }
+                for (CharSequence regularKey : regularKeys) {
+                    actions.sendKeys(regularKey);
+                }
+                for (Keys modifier : modifierKeys) {
+                    actions.keyUp(modifier);
+                }
+            } else {
+                for (CharSequence key : regularKeys) {
+                    actions.sendKeys(key);
+                }
+            }
+            actions.perform();
             return null;
         }, (Object[]) keys);
     }

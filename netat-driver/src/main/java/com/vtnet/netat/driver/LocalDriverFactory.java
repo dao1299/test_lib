@@ -63,8 +63,10 @@ public class LocalDriverFactory implements IDriverFactory {
                 driverPath = System.getProperty("webdriver.chrome.driver", System.getProperty("user.dir") + "\\driver\\chromedriver" + version + ".exe");
                 System.setProperty(driverPropertyKey, driverPath);
                 log.info("Sử dụng driver thủ công thông qua cài trực tiếp từ website tại: {}", driverPath);
+            }else{
+                log.info("Không có đường dẫn driver thủ công, Selenium Manager sẽ tự động xử lý.");
             }
-            log.info("Không có đường dẫn driver thủ công, Selenium Manager sẽ tự động xử lý.");
+
         }
 
         // --- KẾT THÚC PHẦN CẬP NHẬT ---
