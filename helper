@@ -1,5 +1,6 @@
-mvn clean compile
-
+Hướng dẫn update lib:
+git pull origin master
+mvn clean install
+===========================================================
+Build keyword.json:
 mvn exec:java@generate-keyword-metadata -pl netat-tools
-
-mvn install
