@@ -37,7 +37,6 @@
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-http-jdk-client</artifactId>
-            <version>4.13.0</version>
         </dependency>
 
         <!-- WebDriverManager for automatic driver management -->
