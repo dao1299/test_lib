@@ -13,12 +13,14 @@ public class MobileDriverFactory implements IDriverFactory {
     private static final Logger log = LoggerFactory.getLogger(MobileDriverFactory.class);
 
     @Override
-    public WebDriver createDriver() {
-        String platform = ConfigReader.getProperty("platform.name");
+    public WebDriver createDriver(String platform) { // Sửa 1: Thêm tham số 'platform'
         String appiumServerUrl = ConfigReader.getProperty("appium.server.url", "http://127.0.0.1:4723/");
+
+        // Sửa 2: Sử dụng tham số 'platform'
         log.info("Khởi tạo mobile driver cho nền tảng {} tại Appium Server: {}", platform, appiumServerUrl);
 
         try {
+            // Sửa 3: Truyền 'platform' vào CapabilityFactory
             MutableCapabilities capabilities = CapabilityFactory.getCapabilities(platform);
             URL url = new URL(appiumServerUrl);
 

@@ -15,52 +15,24 @@ public final class DriverManager {
         return threadLocalDriver.get();
     }
 
+    /**
+     * Khởi tạo driver với nền tảng mặc định từ file cấu hình.
+     */
     public static void initDriver() {
         if (threadLocalDriver.get() == null) {
             ConfigReader.loadProperties();
-
             String platform = ConfigReader.getProperty("platform.name");
-
             if (platform == null || platform.trim().isEmpty()) {
                 throw new IllegalArgumentException("Thuộc tính 'platform.name' không được định nghĩa trong file cấu hình.");
             }
-
-            log.info("Nền tảng thực thi được yêu cầu: {}", platform.toUpperCase());
-
-            IDriverFactory factory;
-
-            switch (platform.toLowerCase()) {
-                case "android":
-                case "ios":
-                    factory = new MobileDriverFactory();
-                    break;
-                case "chrome":
-                case "firefox":
-                case "edge":
-                    // [TINH CHỈNH 2] Không cần set 'browser.name' nữa, các factory sẽ đọc trực tiếp 'platform.name'
-                    String executionType = ConfigReader.getProperty("execution.type", "local");
-                    if ("remote".equalsIgnoreCase(executionType)) {
-                        factory = new RemoteDriverFactory();
-                    } else {
-                        factory = new LocalDriverFactory();
-                    }
-                    break;
-                default:
-                    throw new IllegalArgumentException("Nền tảng không được hỗ trợ: " + platform);
-            }
-
-            WebDriver driver = factory.createDriver();
-
-            if (!(platform.equalsIgnoreCase("android") || platform.equalsIgnoreCase("ios"))) {
-                driver.manage().window().maximize();
-            }
-
-            driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(0));
-
-            threadLocalDriver.set(driver);
+            // Gọi lại phương thức initDriver có tham số để tái sử dụng logic
+            initDriver(platform);
         }
     }
 
+    /**
+     * Khởi tạo driver với một nền tảng cụ thể (dùng cho parallel/cross-browser).
+     */
     public static void initDriver(String platform) {
         if (threadLocalDriver.get() == null) {
             ConfigReader.loadProperties();
@@ -71,9 +43,6 @@ public final class DriverManager {
 
             log.info("Nền tảng thực thi được yêu cầu cho luồng này: {}", platform.toUpperCase());
 
-            // Ghi đè hoặc thiết lập thuộc tính platform.name cho luồng này
-            ConfigReader.getProperties().setProperty("platform.name", platform);
-
             IDriverFactory factory;
 
             switch (platform.toLowerCase()) {
@@ -95,7 +64,8 @@ public final class DriverManager {
                     throw new IllegalArgumentException("Nền tảng không được hỗ trợ: " + platform);
             }
 
-            WebDriver driver = factory.createDriver();
+            // Truyền platform trực tiếp vào factory để tạo driver chính xác
+            WebDriver driver = factory.createDriver(platform);
 
             if (!(platform.equalsIgnoreCase("android") || platform.equalsIgnoreCase("ios"))) {
                 driver.manage().window().maximize();
@@ -107,6 +77,9 @@ public final class DriverManager {
         }
     }
 
+    /**
+     * Đóng driver của luồng hiện tại.
+     */
     public static void quitDriver() {
         WebDriver driver = threadLocalDriver.get();
         if (driver != null) {

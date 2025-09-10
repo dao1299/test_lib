@@ -13,13 +13,15 @@ public class RemoteDriverFactory implements IDriverFactory {
     private static final Logger log = LoggerFactory.getLogger(RemoteDriverFactory.class);
 
     @Override
-    public WebDriver createDriver() {
+    public WebDriver createDriver(String platform) {
         try {
             String gridUrl = ConfigReader.getProperty("grid.url");
-            String browser = ConfigReader.getProperty("browser.name");
-            log.info("Khởi tạo remote driver cho {} tại Grid: {}", browser, gridUrl);
 
-            MutableCapabilities capabilities = CapabilityFactory.getCapabilities(browser);
+
+            log.info("Khởi tạo remote driver cho {} tại Grid: {}", platform, gridUrl);
+
+
+            MutableCapabilities capabilities = CapabilityFactory.getCapabilities(platform);
 
             return new RemoteWebDriver(new URL(gridUrl), capabilities);
         } catch (MalformedURLException e) {
