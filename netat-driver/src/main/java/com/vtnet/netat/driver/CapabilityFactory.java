@@ -8,7 +8,6 @@ import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.firefox.FirefoxProfile;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -34,10 +33,10 @@ public class CapabilityFactory {
     }
 
     private static MutableCapabilities buildCapabilities(MutableCapabilities capabilities, String platform, Properties properties) {
-        // Tạo một map để xử lý các tùy chọn phức tạp như Firefox preferences
+        // Create a map to handle complex options like Firefox preferences
         Map<String, Object> firefoxPrefs = new HashMap<>();
 
-        // 1. Xử lý các tùy chọn (options) đặc thù cho từng trình duyệt
+        // 1. Handle browser-specific options
         String optionPrefix = platform + ".option.";
         for (String key : properties.stringPropertyNames()) {
             if (key.startsWith(optionPrefix)) {
@@ -56,7 +55,7 @@ public class CapabilityFactory {
                     } else if (optionType.equalsIgnoreCase("args")) {
                         ((FirefoxOptions) capabilities).addArguments(value.split(","));
                     } else if (optionType.startsWith("prefs.")) {
-                        // Gom tất cả các preferences của Firefox vào một map
+                        // Collect all Firefox preferences into a map
                         String prefKey = optionType.substring("prefs.".length());
                         firefoxPrefs.put(prefKey, convertPrefValue(value));
                     }
@@ -70,15 +69,18 @@ public class CapabilityFactory {
             }
         }
 
-        // Áp dụng các preferences cho Firefox nếu có
+        // Apply Firefox preferences if they exist
         if (capabilities instanceof FirefoxOptions && !firefoxPrefs.isEmpty()) {
-            ((FirefoxOptions) capabilities).addPreference("profile", new FirefoxProfile()); // Khởi tạo profile
+            // **Correction**: Create a FirefoxProfile, set preferences on it,
+            // and then set the entire profile to the options.
+            FirefoxProfile profile = new FirefoxProfile();
             for (Map.Entry<String, Object> entry : firefoxPrefs.entrySet()) {
-                ((FirefoxOptions) capabilities).addPreference(entry.getKey(), entry.getValue());
+                profile.setPreference(entry.getKey(), entry.getValue());
             }
+            ((FirefoxOptions) capabilities).setProfile(profile);
         }
 
-        // 2. Xử lý các capabilities chung (bắt đầu bằng "capability.")
+        // 2. Handle general capabilities (starting with "capability.")
         for (String key : properties.stringPropertyNames()) {
             if (key.startsWith("capability.")) {
                 String capabilityName = key.substring("capability.".length());
@@ -87,7 +89,7 @@ public class CapabilityFactory {
             }
         }
 
-        // 3. Xử lý đường dẫn ứng dụng Appium
+        // 3. Handle Appium app path
         String appName = ConfigReader.getProperty("app.name");
         if (appName != null && !appName.isEmpty()) {
             String appPath = System.getProperty("user.dir") + "/src/test/resources/apps/" + appName;
@@ -98,7 +100,7 @@ public class CapabilityFactory {
     }
 
     /**
-     * Chuyển đổi giá trị của preference từ String sang kiểu dữ liệu phù hợp (Boolean, Integer,...)
+     * Converts a preference value from a String to a suitable type (Boolean, Integer, etc.)
      */
     private static Object convertPrefValue(String value) {
         if ("true".equalsIgnoreCase(value)) {
@@ -110,7 +112,7 @@ public class CapabilityFactory {
         try {
             return Integer.parseInt(value);
         } catch (NumberFormatException e) {
-            // Không phải là số, trả về chuỗi gốc
+            // Not a number, return the original string
             return value;
         }
     }
