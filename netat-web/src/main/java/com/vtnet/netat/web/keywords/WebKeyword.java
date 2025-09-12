@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class WebKeyword extends BaseUiKeyword {
 
@@ -66,6 +67,22 @@ public class WebKeyword extends BaseUiKeyword {
             // 3. Nếu tất cả đều thất bại
             throw new NoSuchElementException("Không thể tìm thấy phần tử '" + uiObject.getName() + "' bằng bất kỳ phương pháp nào.");
         }
+    }
+
+    @NetatKeyword(
+            name = "findElements",
+            description = "Tìm và trả về một danh sách (List) tất cả các phần tử WebElement khớp với locator được cung cấp. Trả về danh sách rỗng nếu không tìm thấy, không ném ra exception.",
+            category = "WEB",
+            parameters = {"ObjectUI: uiObject - Đối tượng giao diện đại diện cho các phần tử cần tìm."},
+            example = "List<WebElement> productList = webKeyword.findElements(productListItemObject);"
+    )
+    @Step("Tìm danh sách các phần tử: {0.name}")
+    public List<WebElement> findElements(ObjectUI uiObject) {
+        return execute(() -> {
+            // Sử dụng locator đầu tiên được kích hoạt để tìm kiếm
+            By by = uiObject.getActiveLocators().get(0).convertToBy();
+            return DriverManager.getDriver().findElements(by);
+        }, uiObject);
     }
 
     private String getLocatorByAI(String elementName, String html) {
@@ -438,6 +455,22 @@ public class WebKeyword extends BaseUiKeyword {
     }
 
     @NetatKeyword(
+            name = "clickWithJavascript",
+            description = "Thực hiện click vào một phần tử bằng JavaScript. Hữu ích khi click thông thường không hoạt động.",
+            category = "WEB",
+            parameters = {"ObjectUI: uiObject - Phần tử cần click."},
+            example = "webKeyword.clickWithJavascript(hiddenButtonObject);"
+    )
+    @Step("Click vào phần tử {0.name} bằng JavaScript")
+    public void clickWithJavascript(ObjectUI uiObject) {
+        execute(() -> {
+            WebElement element = findElement(uiObject);
+            ((JavascriptExecutor) DriverManager.getDriver()).executeScript("arguments[0].click();", element);
+            return null;
+        }, uiObject);
+    }
+
+    @NetatKeyword(
             name = "selectByIndex",
             description = "Chọn một tùy chọn (option) trong một phần tử dropdown (thẻ select) dựa trên chỉ số của nó (bắt đầu từ 0).",
             category = "WEB",
@@ -517,6 +550,30 @@ public class WebKeyword extends BaseUiKeyword {
             select.selectByVisibleText(text);
             return null;
         }, uiObject, text);
+    }
+
+    // Thêm phương thức này vào bên trong class WebKeyword
+    @NetatKeyword(
+            name = "clickElementByIndex",
+            description = "Click vào một phần tử cụ thể trong một danh sách các phần tử dựa trên chỉ số (index) của nó (bắt đầu từ 0).",
+            category = "WEB",
+            parameters = {
+                    "ObjectUI: uiObject - Đối tượng giao diện đại diện cho danh sách phần tử.",
+                    "int: index - Vị trí của phần tử cần click (0 cho phần tử đầu tiên)."
+            },
+            example = "webKeyword.clickElementByIndex(searchResultLinks, 2); // Click vào link kết quả thứ 3"
+    )
+    @Step("Click vào phần tử ở vị trí {1} trong danh sách {0.name}")
+    public void clickElementByIndex(ObjectUI uiObject, int index) {
+        execute(() -> {
+            List<WebElement> elements = findElements(uiObject);
+            if (index >= 0 && index < elements.size()) {
+                elements.get(index).click();
+            } else {
+                throw new IndexOutOfBoundsException("Chỉ số (index) không hợp lệ: " + index + ". Danh sách chỉ có " + elements.size() + " phần tử.");
+            }
+            return null;
+        }, uiObject, index);
     }
 
     // =================================================================================
@@ -676,6 +733,25 @@ public class WebKeyword extends BaseUiKeyword {
         return execute(() -> {
             By by = uiObject.getActiveLocators().get(0).convertToBy();
             return DriverManager.getDriver().findElements(by).size();
+        }, uiObject);
+    }
+
+    // Thêm phương thức này vào bên trong class WebKeyword
+    @NetatKeyword(
+            name = "getTextFromElements",
+            description = "Lấy và trả về một danh sách (List) các chuỗi văn bản từ mỗi phần tử trong một danh sách các phần tử.",
+            category = "WEB",
+            parameters = {"ObjectUI: uiObject - Đối tượng giao diện đại diện cho các phần tử cần lấy văn bản."},
+            example = "List<String> productNames = webKeyword.getTextFromElements(productNameObject);"
+    )
+    @Step("Lấy văn bản từ danh sách các phần tử: {0.name}")
+    public List<String> getTextFromElements(ObjectUI uiObject) {
+        return execute(() -> {
+            List<WebElement> elements = findElements(uiObject);
+            // Sử dụng Stream API của Java 8 để xử lý một cách thanh lịch
+            return elements.stream()
+                    .map(WebElement::getText)
+                    .collect(Collectors.toList());
         }, uiObject);
     }
 
@@ -946,6 +1022,7 @@ public class WebKeyword extends BaseUiKeyword {
     public void verifyUrlSoft(String expectedUrl) {
         execute(() -> {
             String actualUrl = DriverManager.getDriver().getCurrentUrl();
+            logger.info("Kiểm tra tiêu đề: Mong đợi '{}', Thực tế: '{}'",expectedUrl,actualUrl);
             SoftAssert softAssert = ExecutionContext.getInstance().getSoftAssert();
             if (softAssert == null) {
                 softAssert = new SoftAssert();
@@ -1197,6 +1274,98 @@ public class WebKeyword extends BaseUiKeyword {
         }, uiObject, cssName, expectedValue);
     }
 
+    @NetatKeyword(
+            name = "verifyElementNotPresentHard",
+            description = "Khẳng định rằng một phần tử KHÔNG tồn tại trong DOM sau một khoảng thời gian chờ. Nếu phần tử vẫn tồn tại, kịch bản sẽ DỪNG LẠI.",
+            category = "WEB",
+            parameters = {
+                    "ObjectUI: uiObject - Phần tử cần kiểm tra.",
+                    "int: timeoutInSeconds - Thời gian chờ tối đa."
+            },
+            example = "webKeyword.verifyElementNotPresentHard(deletedItemObject, 5);"
+    )
+    @Step("Kiểm tra (Hard) phần tử {0.name} không tồn tại trong {1} giây")
+    public void verifyElementNotPresentHard(ObjectUI uiObject, int timeoutInSeconds) {
+        execute(() -> {
+            boolean isPresent = isElementPresent(uiObject, timeoutInSeconds);
+            Assert.assertFalse(isPresent, "HARD ASSERT FAILED: Phần tử '" + uiObject.getName() + "' vẫn tồn tại sau " + timeoutInSeconds + " giây.");
+            return null;
+        }, uiObject, timeoutInSeconds);
+    }
+
+    @NetatKeyword(
+            name = "verifyOptionSelectedByLabelHard",
+            description = "Khẳng định rằng tùy chọn có văn bản hiển thị (label) cụ thể đang được chọn trong dropdown.",
+            category = "WEB",
+            parameters = {
+                    "ObjectUI: uiObject - Phần tử dropdown (thẻ select).",
+                    "String: expectedLabel - Văn bản hiển thị của tùy chọn mong đợi."
+            },
+            example = "webKeyword.verifyOptionSelectedByLabelHard(countryDropdown, \"Việt Nam\");"
+    )
+    @Step("Kiểm tra (Hard) tùy chọn '{1}' đã được chọn trong dropdown {0.name}")
+    public void verifyOptionSelectedByLabelHard(ObjectUI uiObject, String expectedLabel) {
+        execute(() -> {
+            Select select = new Select(findElement(uiObject));
+            String actualLabel = select.getFirstSelectedOption().getText();
+            Assert.assertEquals(actualLabel, expectedLabel, "HARD ASSERT FAILED: Tùy chọn được chọn không khớp.");
+            return null;
+        }, uiObject, expectedLabel);
+    }
+
+    @NetatKeyword(
+            name = "isElementPresent",
+            description = "Kiểm tra xem một phần tử có tồn tại trong DOM hay không trong một khoảng thời gian chờ nhất định. Trả về true nếu tìm thấy, false nếu không tìm thấy và không ném ra exception.",
+            category = "WEB",
+            parameters = {
+                    "ObjectUI: uiObject - Phần tử cần tìm kiếm.",
+                    "int: timeoutInSeconds - Thời gian chờ tối đa (tính bằng giây)."
+            },
+            example = "boolean isErrorVisible = webKeyword.isElementPresent(errorMessageObject, 5);"
+    )
+    @Step("Kiểm tra sự tồn tại của phần tử {0.name} trong {1} giây")
+    public boolean isElementPresent(ObjectUI uiObject, int timeoutInSeconds) {
+        return execute(() -> {
+            WebDriver driver = DriverManager.getDriver();
+            // Sử dụng locator đầu tiên được kích hoạt để kiểm tra
+            By by = uiObject.getActiveLocators().get(0).convertToBy();
+
+            try {
+                // Tạm thời tắt implicit wait để WebDriverWait hoạt động chính xác
+                driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(0));
+
+                WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(timeoutInSeconds));
+                // Chờ cho đến khi danh sách các phần tử tìm thấy không còn rỗng
+                wait.until(d -> !d.findElements(by).isEmpty());
+
+                return true; // Tìm thấy phần tử
+            } catch (TimeoutException e) {
+                return false; // Hết thời gian chờ mà không tìm thấy
+            } finally {
+                // Framework NETAT mặc định implicit wait là 0 nên không cần khôi phục.
+            }
+        }, uiObject, timeoutInSeconds);
+    }
+
+    @NetatKeyword(
+            name = "verifyAlertPresent",
+            description = "Khẳng định rằng một hộp thoại alert đang hiển thị trong một khoảng thời gian chờ.",
+            category = "WEB",
+            parameters = {"int: timeoutInSeconds - Thời gian chờ tối đa."},
+            example = "webKeyword.verifyAlertPresent(5);"
+    )
+    @Step("Kiểm tra alert có xuất hiện trong {0} giây")
+    public void verifyAlertPresent(int timeoutInSeconds) {
+        execute(() -> {
+            try {
+                WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds));
+                wait.until(ExpectedConditions.alertIsPresent());
+            } catch (Exception e) {
+                throw new AssertionError("HARD ASSERT FAILED: Hộp thoại alert không xuất hiện sau " + timeoutInSeconds + " giây.");
+            }
+            return null;
+        }, timeoutInSeconds);
+    }
     // =================================================================================
     // --- 8. WINDOW, TAB & FRAME MANAGEMENT ---
     // =================================================================================
@@ -1307,6 +1476,34 @@ public class WebKeyword extends BaseUiKeyword {
             }
             return null;
         }, url);
+    }
+
+    @NetatKeyword(
+            name = "clickAndSwitchToNewTab",
+            description = "Click vào một phần tử (thường là link) và tự động chuyển sự điều khiển sang tab/cửa sổ mới vừa được mở ra.",
+            category = "WEB",
+            parameters = {"ObjectUI: uiObject - Phần tử link cần click."},
+            example = "webKeyword.clickAndSwitchToNewTab(externalLinkObject);"
+    )
+    @Step("Click và chuyển sang tab mới từ phần tử: {0.name}")
+    public void clickAndSwitchToNewTab(ObjectUI uiObject) {
+        execute(() -> {
+            WebDriver driver = DriverManager.getDriver();
+            String originalHandle = driver.getWindowHandle();
+
+            findElement(uiObject).click();
+
+            // Chờ cho đến khi có cửa sổ mới xuất hiện
+            new WebDriverWait(driver, DEFAULT_TIMEOUT).until(ExpectedConditions.numberOfWindowsToBe(2));
+
+            for (String handle : driver.getWindowHandles()) {
+                if (!handle.equals(originalHandle)) {
+                    driver.switchTo().window(handle);
+                    break;
+                }
+            }
+            return null;
+        }, uiObject);
     }
 
     // =================================================================================

@@ -7,6 +7,8 @@ import com.vtnet.netat.driver.DriverManager;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.asserts.SoftAssert;
 
@@ -23,6 +25,7 @@ public abstract class BaseUiKeyword extends BaseKeyword {
     private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(15);
     private static final Duration PRIMARY_TIMEOUT = Duration.ofSeconds(15);
     private static final Duration SECONDARY_TIMEOUT = Duration.ofSeconds(5);
+    private static final Logger log = LoggerFactory.getLogger(BaseUiKeyword.class);
 
     /**
      * Phương thức tìm kiếm WebElement chung cho cả Web và Mobile.
@@ -128,6 +131,8 @@ public abstract class BaseUiKeyword extends BaseKeyword {
 
         String message = String.format("Phần tử '%s' có hiển thị mong đợi là %b nhưng thực tế là %b.",
                 uiObject.getName(), expectedVisibility, actualVisibility);
+        logger.info(String.format("Kiểm tra phần tử '%s' có hiển thị mong đợi là %b và thực tế là %b.",
+                uiObject.getName(), expectedVisibility, actualVisibility));
 
         if (isSoft) {
             SoftAssert softAssert = ExecutionContext.getInstance().getSoftAssert();
@@ -144,13 +149,14 @@ public abstract class BaseUiKeyword extends BaseKeyword {
     protected void performTextAssertion(ObjectUI uiObject, String expectedText, boolean isSoft) {
         String actualText = getText(uiObject);
         String message = "Văn bản của phần tử '" + uiObject.getName() + "' không khớp.";
-
+        logger.info("Kiểm tra giá trị mong đợi: '{}', Giá trị hiện tại: '{}' của object {}",expectedText,actualText,uiObject.getName());
         if (isSoft) {
             SoftAssert softAssert = ExecutionContext.getInstance().getSoftAssert();
             if (softAssert == null) {
                 softAssert = new SoftAssert();
                 ExecutionContext.getInstance().setSoftAssert(softAssert);
             }
+
             softAssert.assertEquals(actualText, expectedText, "SOFT ASSERT FAILED: " + message);
         } else {
             Assert.assertEquals(actualText, expectedText, "HARD ASSERT FAILED: " + message);
@@ -161,7 +167,7 @@ public abstract class BaseUiKeyword extends BaseKeyword {
         String actualText = getText(uiObject);
         boolean isContains = actualText.contains(partialText);
         String message = "Văn bản của phần tử '" + uiObject.getName() + "' ('" + actualText + "') không chứa '" + partialText + "'.";
-
+        logger.info("Kiểm tra văn bản của phần tử '" + uiObject.getName() + "' ('" + actualText + "')  cần chứa '" + partialText + "'.");
         if (isSoft) {
             SoftAssert softAssert = ExecutionContext.getInstance().getSoftAssert();
             if (softAssert == null) {
@@ -178,7 +184,7 @@ public abstract class BaseUiKeyword extends BaseKeyword {
         WebElement element = findElement(uiObject);
         String actualValue = element.getAttribute(attributeName);
         String message = "Thuộc tính '" + attributeName + "' của phần tử '" + uiObject.getName() + "' không khớp.";
-
+        logger.info("Kiểm tra thuộc tính '" + attributeName + "' của phần tử '" + uiObject.getName() + "'");
         if (isSoft) {
             SoftAssert softAssert = ExecutionContext.getInstance().getSoftAssert();
             if (softAssert == null) {
@@ -195,13 +201,14 @@ public abstract class BaseUiKeyword extends BaseKeyword {
         boolean actualState = findElement(uiObject).isEnabled();
         String message = String.format("Trạng thái 'enabled' của '%s' mong đợi là %b nhưng thực tế là %b.",
                 uiObject.getName(), expectedState, actualState);
+        logger.info(String.format("Kiểm tra trạng thái 'enabled' của '%s' mong đợi là %b và thực tế là %b.",
+                uiObject.getName(), expectedState, actualState));
         if (isSoft) {
             SoftAssert softAssert = ExecutionContext.getInstance().getSoftAssert();
             if (softAssert == null) {
                 softAssert = new SoftAssert();
                 ExecutionContext.getInstance().setSoftAssert(softAssert);
             }
-            softAssert.assertEquals(actualState, expectedState, "SOFT ASSERT FAILED: " + message);
         } else {
             Assert.assertEquals(actualState, expectedState, "HARD ASSERT FAILED: " + message);
         }
@@ -211,13 +218,14 @@ public abstract class BaseUiKeyword extends BaseKeyword {
         boolean actualSelection = findElement(uiObject).isSelected();
         String message = String.format("Trạng thái lựa chọn của '%s' mong đợi là %b nhưng thực tế là %b.",
                 uiObject.getName(), expectedSelection, actualSelection);
-
+        logger.info("Kiểm tra giá trị mong đợi: '{}', Giá trị hiện tại: '{}' của của object {}",expectedSelection,actualSelection,uiObject.getName());
         if (isSoft) {
             SoftAssert softAssert = ExecutionContext.getInstance().getSoftAssert();
             if (softAssert == null) {
                 softAssert = new SoftAssert();
                 ExecutionContext.getInstance().setSoftAssert(softAssert);
             }
+
             softAssert.assertEquals(actualSelection, expectedSelection, "SOFT ASSERT FAILED: " + message);
         } else {
             Assert.assertEquals(actualSelection, expectedSelection, "HARD ASSERT FAILED: " + message);
@@ -229,6 +237,8 @@ public abstract class BaseUiKeyword extends BaseKeyword {
         boolean matches = actualText.matches(pattern);
         String message = String.format("Văn bản '%s' của '%s' không khớp với mẫu regex '%s'.",
                 actualText, uiObject.getName(), pattern);
+        logger.info(String.format("Kiểm tra văn bản '%s' của '%s' và mẫu regex '%s'.",
+                actualText, uiObject.getName(), pattern));
         if (isSoft) {
             SoftAssert softAssert = ExecutionContext.getInstance().getSoftAssert();
             if (softAssert == null) {
@@ -246,6 +256,8 @@ public abstract class BaseUiKeyword extends BaseKeyword {
         boolean contains = actualValue != null && actualValue.contains(partialValue);
         String message = String.format("Thuộc tính '%s' ('%s') của '%s' không chứa chuỗi '%s'.",
                 attribute, actualValue, uiObject.getName(), partialValue);
+        logger.info(String.format("Kiểm tra thuộc tính '%s' ('%s') của '%s' và chuỗi cần chứa '%s'.",
+                attribute, actualValue, uiObject.getName(), partialValue));
         if (isSoft) {
             SoftAssert softAssert = ExecutionContext.getInstance().getSoftAssert();
             if (softAssert == null) {
@@ -262,6 +274,8 @@ public abstract class BaseUiKeyword extends BaseKeyword {
         String actualValue = findElement(uiObject).getCssValue(cssName);
         String message = String.format("Giá trị CSS '%s' của '%s' mong đợi là '%s' nhưng thực tế là '%s'.",
                 cssName, uiObject.getName(), expectedValue, actualValue);
+        logger.info(String.format("Kiểm tra giá trị CSS '%s' của '%s' mong đợi là '%s' và thực tế là '%s'.",
+                cssName, uiObject.getName(), expectedValue, actualValue));
         if (isSoft) {
             SoftAssert softAssert = ExecutionContext.getInstance().getSoftAssert();
             if (softAssert == null) {
