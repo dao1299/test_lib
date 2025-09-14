@@ -1,7 +1,7 @@
 [ {
   "name" : "switchToWindowByIndex",
   "description" : "Chuyển sự điều khiển của WebDriver sang một tab hoặc cửa sổ khác dựa trên chỉ số (index) của nó (bắt đầu từ 0).",
-  "category" : "WEB",
+  "category" : "Web/Window&Frame",
   "parameters" : [ {
     "type" : "int",
     "name" : "index"
@@ -10,7 +10,7 @@
 }, {
   "name" : "assertElementDisabled",
   "description" : "Khẳng định rằng một phần tử đang ở trạng thái không thể tương tác (disabled). Nếu phần tử đang enabled, kịch bản sẽ DỪNG LẠI.",
-  "category" : "WEB",
+  "category" : "Web/Assert",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -19,7 +19,7 @@
 }, {
   "name" : "switchToWindowByTitle",
   "description" : "Duyệt qua tất cả các cửa sổ hoặc tab đang mở và chuyển sự điều khiển của WebDriver sang cửa sổ/tab có tiêu đề khớp chính xác với chuỗi được cung cấp.",
-  "category" : "WEB",
+  "category" : "Web/Window&Frame",
   "parameters" : [ {
     "type" : "String",
     "name" : "windowTitle"
@@ -28,13 +28,13 @@
 }, {
   "name" : "deleteAllCookies",
   "description" : "Xóa tất cả các cookie của phiên làm việc hiện tại trên trình duyệt.",
-  "category" : "WEB",
+  "category" : "Web/Storage",
   "parameters" : [ ],
   "example" : "webKeyword.deleteAllCookies();"
 }, {
   "name" : "verifyElementVisibleHard",
   "description" : "Kiểm tra một phần tử có đang hiển thị trên giao diện hay không. Nếu kiểm tra thất bại (phần tử không hiển thị như mong đợi), kịch bản sẽ DỪNG LẠI ngay lập tức.",
-  "category" : "WEB",
+  "category" : "Web/Assert",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -46,13 +46,13 @@
 }, {
   "name" : "closeBrowser",
   "description" : "Đóng hoàn toàn phiên trình duyệt hoặc thiết bị hiện tại và giải phóng tài nguyên.",
-  "category" : "DRIVER",
+  "category" : "Session/Lifecycle",
   "parameters" : [ ],
   "example" : "driverKeyword.closeBrowser();"
 }, {
   "name" : "clickAndSwitchToNewTab",
   "description" : "Click vào một phần tử (thường là link) và tự động chuyển sự điều khiển sang tab/cửa sổ mới vừa được mở ra.",
-  "category" : "WEB",
+  "category" : "Web/Window&Frame",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -61,7 +61,7 @@
 }, {
   "name" : "uncheck",
   "description" : "Kiểm tra và đảm bảo một checkbox đang ở trạng thái không được chọn. Nếu phần tử đang được chọn, keyword sẽ thực hiện click để bỏ chọn nó.",
-  "category" : "WEB",
+  "category" : "Web/Interaction",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -70,7 +70,7 @@
 }, {
   "name" : "clearText",
   "description" : "Xóa toàn bộ văn bản đang có trong một phần tử có thể nhập liệu như ô input hoặc textarea.",
-  "category" : "WEB",
+  "category" : "Web/Interaction",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -106,7 +106,7 @@
 }, {
   "name" : "verifyTextContainsSoft",
   "description" : "Kiểm tra văn bản của một phần tử có chứa một chuỗi con hay không. Nếu không chứa, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
-  "category" : "WEB",
+  "category" : "Web/Assert",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -124,7 +124,7 @@
 }, {
   "name" : "verifyUrlHard",
   "description" : "So sánh URL của trang hiện tại với một chuỗi mong đợi (phải khớp chính xác). Nếu không khớp, kịch bản sẽ DỪNG LẠI.",
-  "category" : "WEB",
+  "category" : "Web/Assert",
   "parameters" : [ {
     "type" : "String",
     "name" : "expectedUrl"
@@ -133,7 +133,7 @@
 }, {
   "name" : "getText",
   "description" : "Lấy và trả về văn bản của phần tử. Keyword này sẽ tự động thử nhiều cách: 1. Lấy thuộc tính 'value' (cho ô input, textarea). 2. Lấy văn bản hiển thị thông thường. 3. Lấy 'textContent' hoặc 'innerText' nếu 2 cách trên thất bại.",
-  "category" : "WEB",
+  "category" : "Web/Getter",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -142,7 +142,7 @@
 }, {
   "name" : "dragAndDropByOffset",
   "description" : "Kéo một phần tử theo một khoảng cách (độ lệch x, y) so với vị trí hiện tại của nó. Rất hữu ích cho các thanh trượt (slider).",
-  "category" : "WEB",
+  "category" : "Web/Interaction",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -157,7 +157,7 @@
 }, {
   "name" : "verifyElementAttributeSoft",
   "description" : "Kiểm tra giá trị của một thuộc tính (attribute) trên phần tử. Nếu giá trị không khớp, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
-  "category" : "WEB",
+  "category" : "Web/Assert",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -172,7 +172,7 @@
 }, {
   "name" : "switchToFrame",
   "description" : "Chuyển sự điều khiển của WebDriver vào một phần tử iframe trên trang. Mọi hành động sau đó sẽ được thực hiện trong ngữ cảnh của iframe này.",
-  "category" : "WEB",
+  "category" : "Web/Window&Frame",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -196,7 +196,7 @@
 }, {
   "name" : "waitForUrlContains",
   "description" : "Tạm dừng kịch bản cho đến khi URL của trang hiện tại chứa một chuỗi con được chỉ định.",
-  "category" : "WEB",
+  "category" : "Web/Wait",
   "parameters" : [ {
     "type" : "String",
     "name" : "partialUrl"
@@ -208,7 +208,7 @@
 }, {
   "name" : "sendKeysToAlert",
   "description" : "Chờ cho đến khi một hộp thoại prompt của trình duyệt xuất hiện và nhập một chuỗi văn bản vào đó.",
-  "category" : "WEB",
+  "category" : "Web/Alert",
   "parameters" : [ {
     "type" : "String",
     "name" : "text"
@@ -217,7 +217,7 @@
 }, {
   "name" : "verifyTitleHard",
   "description" : "Kiểm tra tiêu đề (title) của trang web hiện tại. Nếu tiêu đề không khớp chính xác, kịch bản sẽ DỪNG LẠI.",
-  "category" : "WEB",
+  "category" : "Web/Assert",
   "parameters" : [ {
     "type" : "String",
     "name" : "expectedTitle"
@@ -226,7 +226,7 @@
 }, {
   "name" : "switchToParentFrame",
   "description" : "Thoát khỏi ngữ cảnh iframe hiện tại và quay về iframe cha ngay trước nó. Nếu đang ở iframe cấp cao nhất, hành động này sẽ quay về nội dung chính của trang.",
-  "category" : "WEB",
+  "category" : "Web/Window&Frame",
   "parameters" : [ ],
   "example" : "webKeyword.switchToParentFrame();"
 }, {
@@ -253,7 +253,7 @@
 }, {
   "name" : "assertElementSelected",
   "description" : "Khẳng định rằng một phần tử (checkbox hoặc radio button) đang ở trạng thái được chọn. Nếu không, kịch bản sẽ DỪNG LẠI.",
-  "category" : "WEB",
+  "category" : "Web/Assert",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -262,7 +262,7 @@
 }, {
   "name" : "selectByValue",
   "description" : "Chọn một tùy chọn trong dropdown dựa trên giá trị của thuộc tính 'value'.",
-  "category" : "WEB",
+  "category" : "Web/Interaction",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -274,7 +274,7 @@
 }, {
   "name" : "scrollToElement",
   "description" : "Cuộn trang đến khi phần tử được chỉ định nằm trong vùng có thể nhìn thấy của trình duyệt. Rất cần thiết khi cần tương tác với các phần tử ở cuối trang.",
-  "category" : "WEB",
+  "category" : "Web/Interaction",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -283,7 +283,7 @@
 }, {
   "name" : "verifyCssValueHard",
   "description" : "So sánh giá trị của một thuộc tính CSS trên phần tử. Nếu không khớp, kịch bản sẽ DỪNG LẠI.",
-  "category" : "WEB",
+  "category" : "Web/Assert",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -298,7 +298,7 @@
 }, {
   "name" : "refresh",
   "description" : "Tải lại (làm mới) trang web hiện tại đang hiển thị trên trình duyệt. Tương đương với việc người dùng nhấn phím F5 hoặc nút 'Reload'.",
-  "category" : "WEB",
+  "category" : "Web/Browser",
   "parameters" : [ ],
   "example" : "webKeyword.refresh();"
 }, {
@@ -310,7 +310,7 @@
 }, {
   "name" : "getElementCount",
   "description" : "Đếm và trả về số lượng phần tử trên trang khớp với locator được cung cấp. Hữu ích để kiểm tra số lượng kết quả tìm kiếm, số hàng trong bảng,...",
-  "category" : "WEB",
+  "category" : "Web/Getter",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -319,7 +319,7 @@
 }, {
   "name" : "waitForElementClickable",
   "description" : "Tạm dừng kịch bản cho đến khi một phần tử không chỉ hiển thị mà còn ở trạng thái sẵn sàng để được click (enabled).",
-  "category" : "WEB",
+  "category" : "Web/Wait",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -343,13 +343,13 @@
 }, {
   "name" : "startBrowser",
   "description" : "Khởi tạo và mở một phiên trình duyệt (web) hoặc thiết bị (mobile) mới dựa trên cấu hình trong file properties. Nếu không có tham số, nó sẽ sử dụng 'platform.name' mặc định.",
-  "category" : "DRIVER",
+  "category" : "Session/Lifecycle",
   "parameters" : [ ],
   "example" : "// Khởi tạo trình duyệt mặc định\ndriverKeyword.startBrowser();"
 }, {
   "name" : "waitForElementNotVisible",
   "description" : "Tạm dừng kịch bản cho đến khi một phần tử không còn hiển thị trên giao diện. Rất hữu ích để chờ các biểu tượng loading hoặc thông báo tạm thời biến mất.",
-  "category" : "WEB",
+  "category" : "Web/Wait",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -358,7 +358,7 @@
 }, {
   "name" : "uploadFile",
   "description" : "Tải lên một file từ máy local bằng cách gửi đường dẫn file vào một phần tử <input type='file'>.",
-  "category" : "WEB",
+  "category" : "Web/Interaction",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -385,7 +385,7 @@
 }, {
   "name" : "verifyElementNotPresentHard",
   "description" : "Khẳng định rằng một phần tử KHÔNG tồn tại trong DOM sau một khoảng thời gian chờ. Nếu phần tử vẫn tồn tại, kịch bản sẽ DỪNG LẠI.",
-  "category" : "WEB",
+  "category" : "Web/Assert",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -397,13 +397,13 @@
 }, {
   "name" : "goBack",
   "description" : "Thực hiện hành động quay lại trang trước đó trong lịch sử của trình duyệt, tương đương với việc người dùng nhấn nút 'Back'.",
-  "category" : "WEB",
+  "category" : "Web/Browser",
   "parameters" : [ ],
   "example" : "webKeyword.goBack();"
 }, {
   "name" : "selectByVisibleText",
   "description" : "Chọn một tùy chọn trong dropdown dựa trên văn bản hiển thị của nó.",
-  "category" : "WEB",
+  "category" : "Web/Interaction",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -415,7 +415,7 @@
 }, {
   "name" : "dragAndDrop",
   "description" : "Thực hiện thao tác kéo một phần tử (nguồn) và thả nó vào vị trí của một phần tử khác (đích).",
-  "category" : "WEB",
+  "category" : "Web/Interaction",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "sourceObject"
@@ -424,6 +424,15 @@
     "name" : "targetObject"
   } ],
   "example" : "webKeyword.dragAndDrop(draggableItemObject, dropZoneObject);"
+}, {
+  "name" : "verifyAlertPresent",
+  "description" : "Khẳng định rằng một hộp thoại alert đang hiển thị trong một khoảng thời gian chờ.",
+  "category" : "Web/Assert",
+  "parameters" : [ {
+    "type" : "int",
+    "name" : "timeoutInSeconds"
+  } ],
+  "example" : "webKeyword.verifyAlertPresent(5);"
 }, {
   "name" : "executeCommand",
   "description" : "Thực thi một lệnh trên command line của hệ điều hành và chờ cho đến khi nó hoàn thành.",
@@ -436,13 +445,13 @@
 }, {
   "name" : "getCurrentUrl",
   "description" : "Lấy và trả về URL đầy đủ của trang web hiện tại mà trình duyệt đang hiển thị.",
-  "category" : "WEB",
+  "category" : "Web/Getter",
   "parameters" : [ ],
   "example" : "String pageUrl = webKeyword.getCurrentUrl();"
 }, {
   "name" : "setLocalStorage",
   "description" : "Ghi một cặp khóa-giá trị vào Local Storage của trình duyệt. Hữu ích để thiết lập trạng thái ứng dụng hoặc token.",
-  "category" : "WEB",
+  "category" : "Web/Storage",
   "parameters" : [ {
     "type" : "String",
     "name" : "key"
@@ -454,7 +463,7 @@
 }, {
   "name" : "scrollToCoordinates",
   "description" : "Cuộn trang web đến một tọa độ (x, y) cụ thể trong viewport.",
-  "category" : "WEB",
+  "category" : "Web/Interaction",
   "parameters" : [ {
     "type" : "int",
     "name" : "x"
@@ -466,7 +475,7 @@
 }, {
   "name" : "verifyElementEnabledSoft",
   "description" : "Kiểm tra một phần tử có đang ở trạng thái enabled hay không. Nếu không, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
-  "category" : "WEB",
+  "category" : "Web/Assert",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -475,7 +484,7 @@
 }, {
   "name" : "sendKeys",
   "description" : "Nhập một chuỗi văn bản vào một phần tử (thường là ô input hoặc textarea). Keyword sẽ tự động xóa nội dung có sẵn trong ô trước khi nhập văn bản mới.",
-  "category" : "WEB",
+  "category" : "Web/Interaction",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -493,7 +502,7 @@
 }, {
   "name" : "hover",
   "description" : "Di chuyển con trỏ chuột đến vị trí của một phần tử để hiển thị các menu con, tooltip, hoặc các hiệu ứng khác.",
-  "category" : "WEB",
+  "category" : "Web/Interaction",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -511,7 +520,7 @@
 }, {
   "name" : "verifyCssValueSoft",
   "description" : "So sánh giá trị của một thuộc tính CSS trên phần tử. Nếu không khớp, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
-  "category" : "WEB",
+  "category" : "Web/Assert",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -526,7 +535,7 @@
 }, {
   "name" : "check",
   "description" : "Kiểm tra và đảm bảo một checkbox hoặc radio button đang ở trạng thái được chọn. Nếu phần tử chưa được chọn, keyword sẽ thực hiện click để chọn nó.",
-  "category" : "WEB",
+  "category" : "Web/Interaction",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -535,7 +544,7 @@
 }, {
   "name" : "isElementPresent",
   "description" : "Kiểm tra xem một phần tử có tồn tại trong DOM hay không trong một khoảng thời gian chờ nhất định. Trả về true nếu tìm thấy, false nếu không tìm thấy và không ném ra exception.",
-  "category" : "WEB",
+  "category" : "Web/Assert",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -547,7 +556,7 @@
 }, {
   "name" : "pause",
   "description" : "Tạm dừng việc thực thi kịch bản trong một khoảng thời gian tĩnh. (Lưu ý: Chỉ nên dùng khi thực sự cần thiết, ưu tiên các keyword chờ động).",
-  "category" : "WEB",
+  "category" : "Web/Utility",
   "parameters" : [ {
     "type" : "int",
     "name" : "milliseconds"
@@ -556,7 +565,7 @@
 }, {
   "name" : "openUrl",
   "description" : "Điều hướng trình duyệt đến một địa chỉ web (URL) cụ thể.",
-  "category" : "WEB",
+  "category" : "Web/Browser",
   "parameters" : [ {
     "type" : "String",
     "name" : "url"
@@ -565,7 +574,7 @@
 }, {
   "name" : "verifyTitleSoft",
   "description" : "So sánh tiêu đề của trang hiện tại với một chuỗi mong đợi. Nếu không khớp, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
-  "category" : "WEB",
+  "category" : "Web/Assert",
   "parameters" : [ {
     "type" : "String",
     "name" : "expectedTitle"
@@ -574,13 +583,13 @@
 }, {
   "name" : "maximizeWindow",
   "description" : "Phóng to cửa sổ trình duyệt hiện tại ra kích thước lớn nhất có thể trên màn hình.",
-  "category" : "WEB",
+  "category" : "Web/Browser",
   "parameters" : [ ],
   "example" : "webKeyword.maximizeWindow();"
 }, {
   "name" : "waitForPageLoaded",
   "description" : "Tạm dừng kịch bản cho đến khi trang web tải xong hoàn toàn (trạng thái 'document.readyState' là 'complete').",
-  "category" : "WEB",
+  "category" : "Web/Wait",
   "parameters" : [ {
     "type" : "int",
     "name" : "timeoutInSeconds"
@@ -589,16 +598,25 @@
 }, {
   "name" : "getLocalStorage",
   "description" : "Đọc và trả về giá trị từ Local Storage của trình duyệt dựa trên một khóa (key) được cung cấp.",
-  "category" : "WEB",
+  "category" : "Web/Storage",
   "parameters" : [ {
     "type" : "String",
     "name" : "key"
   } ],
   "example" : "String userToken = webKeyword.getLocalStorage(\"user_token\");"
 }, {
+  "name" : "getTextFromElements",
+  "description" : "Lấy và trả về một danh sách (List) các chuỗi văn bản từ mỗi phần tử trong một danh sách các phần tử.",
+  "category" : "Web/Getter",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  } ],
+  "example" : "List<String> productNames = webKeyword.getTextFromElements(productNameObject);"
+}, {
   "name" : "verifyOptionSelectedByLabelHard",
   "description" : "Khẳng định rằng tùy chọn có văn bản hiển thị (label) cụ thể đang được chọn trong dropdown.",
-  "category" : "WEB",
+  "category" : "Web/Assert",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -628,7 +646,7 @@
 }, {
   "name" : "verifyAttributeContainsSoft",
   "description" : "Kiểm tra giá trị của một thuộc tính trên phần tử có chứa một chuỗi con hay không. Nếu không chứa, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
-  "category" : "WEB",
+  "category" : "Web/Assert",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -643,13 +661,13 @@
 }, {
   "name" : "getAlertText",
   "description" : "Chờ cho đến khi một hộp thoại alert, prompt, hoặc confirm của trình duyệt xuất hiện và lấy về nội dung văn bản của nó.",
-  "category" : "WEB",
+  "category" : "Web/Alert",
   "parameters" : [ ],
   "example" : "String alertMessage = webKeyword.getAlertText();"
 }, {
   "name" : "verifyTextContainsHard",
   "description" : "Kiểm tra văn bản của một phần tử có chứa một chuỗi con hay không. Nếu không chứa, kịch bản sẽ DỪNG LẠI.",
-  "category" : "WEB",
+  "category" : "Web/Assert",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -661,7 +679,7 @@
 }, {
   "name" : "contextClick",
   "description" : "Thực hiện hành động click chuột phải vào một phần tử. Thường dùng để mở các menu ngữ cảnh (context menu).",
-  "category" : "WEB",
+  "category" : "Web/Interaction",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -670,7 +688,7 @@
 }, {
   "name" : "takeScreenshot",
   "description" : "Chụp lại ảnh toàn bộ màn hình (viewport) của trình duyệt và lưu vào một file tại đường dẫn được chỉ định.",
-  "category" : "WEB",
+  "category" : "Web/Utility",
   "parameters" : [ {
     "type" : "String",
     "name" : "filePath"
@@ -679,7 +697,7 @@
 }, {
   "name" : "verifyElementDisabledSoft",
   "description" : "Kiểm tra một phần tử có đang ở trạng thái disabled hay không. Nếu không, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
-  "category" : "WEB",
+  "category" : "Web/Assert",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -688,7 +706,7 @@
 }, {
   "name" : "takeElementScreenshot",
   "description" : "Chụp ảnh chỉ riêng một phần tử cụ thể trên trang và lưu vào file tại đường dẫn được chỉ định.",
-  "category" : "WEB",
+  "category" : "Web/Utility",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -700,7 +718,7 @@
 }, {
   "name" : "selectRadioByValue",
   "description" : "Chọn một radio button trong một nhóm các radio button dựa trên giá trị của thuộc tính 'value'.",
-  "category" : "WEB",
+  "category" : "Web/Interaction",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -719,9 +737,18 @@
   } ],
   "example" : ""
 }, {
+  "name" : "findElements",
+  "description" : "Tìm và trả về một danh sách (List) tất cả các phần tử WebElement khớp với locator được cung cấp. Trả về danh sách rỗng nếu không tìm thấy, không ném ra exception.",
+  "category" : "WEB",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  } ],
+  "example" : "List<WebElement> productList = webKeyword.findElements(productListItemObject);"
+}, {
   "name" : "verifyTextMatchesRegexHard",
   "description" : "Kiểm tra văn bản của một phần tử có khớp với một biểu thức chính quy (regex) hay không. Nếu không khớp, kịch bản sẽ DỪNG LẠI.",
-  "category" : "WEB",
+  "category" : "Web/Assert",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -733,13 +760,13 @@
 }, {
   "name" : "switchToDefaultContent",
   "description" : "Chuyển sự điều khiển của WebDriver ra khỏi tất cả các iframe và quay về nội dung chính, cấp cao nhất của trang web.",
-  "category" : "WEB",
+  "category" : "Web/Window&Frame",
   "parameters" : [ ],
   "example" : "webKeyword.switchToDefaultContent();"
 }, {
   "name" : "waitForTitleIs",
   "description" : "Tạm dừng kịch bản cho đến khi tiêu đề của trang hiện tại khớp chính xác với chuỗi được chỉ định.",
-  "category" : "WEB",
+  "category" : "Web/Wait",
   "parameters" : [ {
     "type" : "String",
     "name" : "expectedTitle"
@@ -751,7 +778,7 @@
 }, {
   "name" : "resizeWindow",
   "description" : "Thay đổi kích thước của cửa sổ trình duyệt hiện tại theo chiều rộng và chiều cao được chỉ định.",
-  "category" : "WEB",
+  "category" : "Web/Browser",
   "parameters" : [ {
     "type" : "int",
     "name" : "width"
@@ -763,7 +790,7 @@
 }, {
   "name" : "goForward",
   "description" : "Thực hiện hành động đi tới trang tiếp theo trong lịch sử của trình duyệt, tương đương với việc người dùng nhấn nút 'Forward'.",
-  "category" : "WEB",
+  "category" : "Web/Browser",
   "parameters" : [ ],
   "example" : "webKeyword.goForward();"
 }, {
@@ -781,7 +808,7 @@
 }, {
   "name" : "startBrowser",
   "description" : "Khởi tạo và mở một phiên trình duyệt (web) hoặc thiết bị (mobile) mới dựa trên cấu hình trong file properties. Nếu không có tham số, nó sẽ sử dụng 'platform.name' mặc định.",
-  "category" : "DRIVER",
+  "category" : "Session/Lifecycle",
   "parameters" : [ {
     "type" : "String",
     "name" : "platform"
@@ -790,7 +817,7 @@
 }, {
   "name" : "getPageTitle",
   "description" : "Lấy và trả về tiêu đề (title) của trang web hiện tại.",
-  "category" : "WEB",
+  "category" : "Web/Getter",
   "parameters" : [ ],
   "example" : "String pageTitle = webKeyword.getPageTitle();"
 }, {
@@ -808,7 +835,7 @@
 }, {
   "name" : "verifyAttributeContainsHard",
   "description" : "Kiểm tra giá trị của một thuộc tính trên phần tử có chứa một chuỗi con hay không. Nếu không chứa, kịch bản sẽ DỪNG LẠI.",
-  "category" : "WEB",
+  "category" : "Web/Assert",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -823,7 +850,7 @@
 }, {
   "name" : "getCssValue",
   "description" : "Lấy giá trị của một thuộc tính CSS được áp dụng trên một phần tử.",
-  "category" : "WEB",
+  "category" : "Web/Getter",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -835,7 +862,7 @@
 }, {
   "name" : "verifyTextSoft",
   "description" : "So sánh văn bản của một phần tử với một chuỗi ký tự mong đợi (phải khớp chính xác). Nếu không khớp, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
-  "category" : "WEB",
+  "category" : "Web/Assert",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -847,7 +874,7 @@
 }, {
   "name" : "openNewTab",
   "description" : "Mở một tab mới trong trình duyệt và tự động chuyển sự điều khiển sang tab mới đó. Có thể tùy chọn mở một URL cụ thể trong tab mới.",
-  "category" : "WEB",
+  "category" : "Web/Window&Frame",
   "parameters" : [ {
     "type" : "String",
     "name" : "url"
@@ -865,7 +892,7 @@
 }, {
   "name" : "findElementInShadowDom",
   "description" : "Tìm kiếm và trả về một phần tử nằm bên trong một Shadow DOM. Yêu cầu cung cấp phần tử chủ (shadow host) và một CSS selector để định vị phần tử con.",
-  "category" : "WEB",
+  "category" : "Web/Interaction",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "shadowHostObject"
@@ -877,7 +904,7 @@
 }, {
   "name" : "verifyElementVisibleSoft",
   "description" : "Kiểm tra một phần tử có đang hiển thị trên giao diện hay không. Nếu kiểm tra thất bại, kịch bản sẽ ghi nhận lỗi nhưng vẫn TIẾP TỤC chạy các bước tiếp theo.",
-  "category" : "WEB",
+  "category" : "Web/Assert",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -889,7 +916,7 @@
 }, {
   "name" : "verifyTextMatchesRegexSoft",
   "description" : "Kiểm tra văn bản của một phần tử có khớp với một biểu thức chính quy (regex) hay không. Nếu không khớp, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
-  "category" : "WEB",
+  "category" : "Web/Assert",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -901,7 +928,7 @@
 }, {
   "name" : "highlightElement",
   "description" : "Tạm thời vẽ một đường viền màu đỏ xung quanh một phần tử trên trang để dễ dàng nhận biết và gỡ lỗi trong quá trình chạy kịch bản.",
-  "category" : "WEB",
+  "category" : "Web/Utility",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -910,16 +937,25 @@
 }, {
   "name" : "doubleClick",
   "description" : "Thực hiện hành động click chuột hai lần (double-click) vào một phần tử.",
-  "category" : "WEB",
+  "category" : "Web/Interaction",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
   } ],
   "example" : "webKeyword.doubleClick(editIconObject);"
 }, {
+  "name" : "clickWithJavascript",
+  "description" : "Thực hiện click vào một phần tử bằng JavaScript. Hữu ích khi click thông thường không hoạt động.",
+  "category" : "Web/Interaction",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  } ],
+  "example" : "webKeyword.clickWithJavascript(hiddenButtonObject);"
+}, {
   "name" : "selectByIndex",
   "description" : "Chọn một tùy chọn (option) trong một phần tử dropdown (thẻ select) dựa trên chỉ số của nó (bắt đầu từ 0).",
-  "category" : "WEB",
+  "category" : "Web/Interaction",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -931,7 +967,7 @@
 }, {
   "name" : "assertElementEnabled",
   "description" : "Khẳng định rằng một phần tử đang ở trạng thái có thể tương tác (enabled). Nếu phần tử bị vô hiệu hóa (disabled), kịch bản sẽ DỪNG LẠI.",
-  "category" : "WEB",
+  "category" : "Web/Assert",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -940,7 +976,7 @@
 }, {
   "name" : "verifyElementAttributeHard",
   "description" : "Kiểm tra giá trị của một thuộc tính (attribute) trên phần tử. Nếu giá trị không khớp, kịch bản sẽ DỪNG LẠI.",
-  "category" : "WEB",
+  "category" : "Web/Assert",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -955,7 +991,7 @@
 }, {
   "name" : "assertElementNotSelected",
   "description" : "Khẳng định rằng một phần tử (checkbox hoặc radio button) đang ở trạng thái không được chọn. Nếu đang được chọn, kịch bản sẽ DỪNG LẠI.",
-  "category" : "WEB",
+  "category" : "Web/Assert",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -976,7 +1012,7 @@
 }, {
   "name" : "click",
   "description" : "Thực hiện hành động click chuột vào một phần tử trên giao diện. Keyword sẽ tự động chờ cho đến khi phần tử sẵn sàng để được click.",
-  "category" : "WEB",
+  "category" : "Web/Interaction",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -985,7 +1021,7 @@
 }, {
   "name" : "waitForElementPresent",
   "description" : "Tạm dừng kịch bản cho đến khi một phần tử tồn tại trong DOM của trang, không nhất thiết phải hiển thị. Hữu ích để chờ các phần tử được tạo ra bởi JavaScript.",
-  "category" : "WEB",
+  "category" : "Web/Wait",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -995,9 +1031,21 @@
   } ],
   "example" : "webKeyword.waitForElementPresent(dynamicContentObject, 10);"
 }, {
+  "name" : "clickElementByIndex",
+  "description" : "Click vào một phần tử cụ thể trong một danh sách các phần tử dựa trên chỉ số (index) của nó (bắt đầu từ 0).",
+  "category" : "Web/Interaction",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject"
+  }, {
+    "type" : "int",
+    "name" : "index"
+  } ],
+  "example" : "webKeyword.clickElementByIndex(searchResultLinks, 2); // Click vào link kết quả thứ 3"
+}, {
   "name" : "getCookie",
   "description" : "Lấy thông tin của một cookie cụ thể dựa trên tên của nó.",
-  "category" : "WEB",
+  "category" : "Web/Storage",
   "parameters" : [ {
     "type" : "String",
     "name" : "cookieName"
@@ -1006,19 +1054,19 @@
 }, {
   "name" : "clearLocalStorage",
   "description" : "Xóa toàn bộ dữ liệu đang được lưu trữ trong Local Storage của trang web hiện tại.",
-  "category" : "WEB",
+  "category" : "Web/Storage",
   "parameters" : [ ],
   "example" : "webKeyword.clearLocalStorage();"
 }, {
   "name" : "scrollToTop",
   "description" : "Cuộn lên vị trí cao nhất (đầu trang) của trang web.",
-  "category" : "WEB",
+  "category" : "Web/Interaction",
   "parameters" : [ ],
   "example" : "webKeyword.scrollToTop();"
 }, {
   "name" : "pressKeys",
   "description" : "Gửi một chuỗi ký tự hoặc một tổ hợp phím (ví dụ: Ctrl+C, Enter) tới phần tử đang được focus trên trình duyệt.",
-  "category" : "WEB",
+  "category" : "Web/Interaction",
   "parameters" : [ {
     "type" : "CharSequence[]",
     "name" : "keys"
@@ -1027,7 +1075,7 @@
 }, {
   "name" : "verifyTextHard",
   "description" : "So sánh văn bản của một phần tử với một chuỗi ký tự mong đợi (phải khớp chính xác). Nếu không khớp, kịch bản sẽ DỪNG LẠI.",
-  "category" : "WEB",
+  "category" : "Web/Assert",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject"
@@ -1039,7 +1087,7 @@
 }, {
   "name" : "verifyUrlSoft",
   "description" : "So sánh URL của trang hiện tại với một chuỗi mong đợi. Nếu không khớp, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
-  "category" : "WEB",
+  "category" : "Web/Assert",
   "parameters" : [ {
     "type" : "String",
     "name" : "expectedUrl"

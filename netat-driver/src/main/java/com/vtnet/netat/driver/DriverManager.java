@@ -53,6 +53,7 @@ public final class DriverManager {
                 case "chrome":
                 case "firefox":
                 case "edge":
+                case "safari":
                     String executionType = ConfigReader.getProperty("execution.type", "local");
                     if ("remote".equalsIgnoreCase(executionType)) {
                         factory = new RemoteDriverFactory();

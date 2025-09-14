@@ -7,6 +7,7 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.firefox.FirefoxProfile;
+import org.openqa.selenium.safari.SafariOptions;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,6 +27,8 @@ public class CapabilityFactory {
                 return buildCapabilities(new FirefoxOptions(), "firefox", properties);
             case "edge":
                 return buildCapabilities(new EdgeOptions(), "edge", properties);
+            case "safari":
+                return buildCapabilities(new SafariOptions(), "safari", properties);
             case "chrome":
             default:
                 return buildCapabilities(new ChromeOptions(), "chrome", properties);

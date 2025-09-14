@@ -124,7 +124,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "openUrl",
             description = "Điều hướng trình duyệt đến một địa chỉ web (URL) cụ thể.",
-            category = "WEB",
+            category = "Web/Browser",
             parameters = {"String: url - Địa chỉ trang web đầy đủ cần mở (ví dụ: 'https://www.google.com')."},
             example = "webKeyword.openUrl(\"https://www.google.com\");"
     )
@@ -136,7 +136,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "goBack",
             description = "Thực hiện hành động quay lại trang trước đó trong lịch sử của trình duyệt, tương đương với việc người dùng nhấn nút 'Back'.",
-            category = "WEB",
+            category = "Web/Browser",
             parameters = {"Không có tham số."},
             example = "webKeyword.goBack();"
     )
@@ -151,7 +151,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "goForward",
             description = "Thực hiện hành động đi tới trang tiếp theo trong lịch sử của trình duyệt, tương đương với việc người dùng nhấn nút 'Forward'.",
-            category = "WEB",
+            category = "Web/Browser",
             parameters = {"Không có tham số."},
             example = "webKeyword.goForward();"
     )
@@ -166,7 +166,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "refresh",
             description = "Tải lại (làm mới) trang web hiện tại đang hiển thị trên trình duyệt. Tương đương với việc người dùng nhấn phím F5 hoặc nút 'Reload'.",
-            category = "WEB",
+            category = "Web/Browser",
             parameters = {"Không có tham số."},
             example = "webKeyword.refresh();"
     )
@@ -181,7 +181,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "maximizeWindow",
             description = "Phóng to cửa sổ trình duyệt hiện tại ra kích thước lớn nhất có thể trên màn hình.",
-            category = "WEB",
+            category = "Web/Browser",
             parameters = {"Không có tham số."},
             example = "webKeyword.maximizeWindow();"
     )
@@ -196,7 +196,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "resizeWindow",
             description = "Thay đổi kích thước của cửa sổ trình duyệt hiện tại theo chiều rộng và chiều cao được chỉ định.",
-            category = "WEB",
+            category = "Web/Browser",
             parameters = {
                     "int: width - Chiều rộng mới của cửa sổ (pixel).",
                     "int: height - Chiều cao mới của cửa sổ (pixel)."
@@ -221,7 +221,7 @@ public class WebKeyword extends BaseUiKeyword {
             name = "click",
             description = "Thực hiện hành động click chuột vào một phần tử trên giao diện. " +
                     "Keyword sẽ tự động chờ cho đến khi phần tử sẵn sàng để được click.",
-            category = "WEB",
+            category = "Web/Interaction",
             parameters = {"ObjectUI: uiObject - Đối tượng giao diện (nút bấm, liên kết,...) cần thực hiện hành động click."},
             example = "webKeyword.click(loginButtonObject);"
     )
@@ -235,7 +235,7 @@ public class WebKeyword extends BaseUiKeyword {
             name = "sendKeys",
             description = "Nhập một chuỗi văn bản vào một phần tử (thường là ô input hoặc textarea). " +
                     "Keyword sẽ tự động xóa nội dung có sẵn trong ô trước khi nhập văn bản mới.",
-            category = "WEB",
+            category = "Web/Interaction",
             parameters = {
                     "ObjectUI: uiObject - Ô input hoặc textarea cần nhập dữ liệu.",
                     "String: text - Chuỗi văn bản cần nhập vào phần tử."
@@ -250,7 +250,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "clearText",
             description = "Xóa toàn bộ văn bản đang có trong một phần tử có thể nhập liệu như ô input hoặc textarea.",
-            category = "WEB",
+            category = "Web/Interaction",
             parameters = {"ObjectUI: uiObject - Phần tử cần xóa nội dung."},
             example = "webKeyword.clearText(searchInputObject);"
     )
@@ -265,7 +265,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "check",
             description = "Kiểm tra và đảm bảo một checkbox hoặc radio button đang ở trạng thái được chọn. Nếu phần tử chưa được chọn, keyword sẽ thực hiện click để chọn nó.",
-            category = "WEB",
+            category = "Web/Interaction",
             parameters = {"ObjectUI: uiObject - Phần tử checkbox hoặc radio button cần kiểm tra và chọn."},
             example = "webKeyword.check(termsAndConditionsCheckbox);"
     )
@@ -283,7 +283,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "uncheck",
             description = "Kiểm tra và đảm bảo một checkbox đang ở trạng thái không được chọn. Nếu phần tử đang được chọn, keyword sẽ thực hiện click để bỏ chọn nó.",
-            category = "WEB",
+            category = "Web/Interaction",
             parameters = {"ObjectUI: uiObject - Phần tử checkbox cần bỏ chọn."},
             example = "webKeyword.uncheck(newsletterCheckbox);"
     )
@@ -305,7 +305,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "contextClick",
             description = "Thực hiện hành động click chuột phải vào một phần tử. Thường dùng để mở các menu ngữ cảnh (context menu).",
-            category = "WEB",
+            category = "Web/Interaction",
             parameters = {"ObjectUI: uiObject - Phần tử cần thực hiện hành động click chuột phải."},
             example = "webKeyword.contextClick(fileIconObject);"
     )
@@ -322,7 +322,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "doubleClick",
             description = "Thực hiện hành động click chuột hai lần (double-click) vào một phần tử.",
-            category = "WEB",
+            category = "Web/Interaction",
             parameters = {"ObjectUI: uiObject - Phần tử cần thực hiện double-click."},
             example = "webKeyword.doubleClick(editIconObject);"
     )
@@ -338,7 +338,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "hover",
             description = "Di chuyển con trỏ chuột đến vị trí của một phần tử để hiển thị các menu con, tooltip, hoặc các hiệu ứng khác.",
-            category = "WEB",
+            category = "Web/Interaction",
             parameters = {"ObjectUI: uiObject - Phần tử cần di chuột đến."},
             example = "webKeyword.hover(userMenuObject);"
     )
@@ -354,7 +354,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "uploadFile",
             description = "Tải lên một file từ máy local bằng cách gửi đường dẫn file vào một phần tử <input type='file'>.",
-            category = "WEB",
+            category = "Web/Interaction",
             parameters = {
                     "ObjectUI: uiObject - Phần tử input (type='file') để tải file lên.",
                     "String: filePath - Đường dẫn tuyệt đối đến file cần tải lên trên máy."
@@ -374,7 +374,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "dragAndDrop",
             description = "Thực hiện thao tác kéo một phần tử (nguồn) và thả nó vào vị trí của một phần tử khác (đích).",
-            category = "WEB",
+            category = "Web/Interaction",
             parameters = {
                     "ObjectUI: sourceObject - Phần tử nguồn cần được kéo đi.",
                     "ObjectUI: targetObject - Phần tử đích, nơi phần tử nguồn sẽ được thả vào."
@@ -395,7 +395,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "dragAndDropByOffset",
             description = "Kéo một phần tử theo một khoảng cách (độ lệch x, y) so với vị trí hiện tại của nó. Rất hữu ích cho các thanh trượt (slider).",
-            category = "WEB",
+            category = "Web/Interaction",
             parameters = {
                     "ObjectUI: uiObject - Phần tử cần kéo.",
                     "int: xOffset - Độ lệch theo trục ngang (pixel).",
@@ -415,7 +415,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "pressKeys",
             description = "Gửi một chuỗi ký tự hoặc một tổ hợp phím (ví dụ: Ctrl+C, Enter) tới phần tử đang được focus trên trình duyệt.",
-            category = "WEB",
+            category = "Web/Interaction",
             parameters = {"CharSequence...: keys - Một hoặc nhiều chuỗi ký tự hoặc phím đặc biệt từ org.openqa.selenium.Keys."},
             example = "webKeyword.pressKeys(Keys.CONTROL, \"a\"); // Gửi tổ hợp phím Ctrl + A"
     )
@@ -457,7 +457,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "clickWithJavascript",
             description = "Thực hiện click vào một phần tử bằng JavaScript. Hữu ích khi click thông thường không hoạt động.",
-            category = "WEB",
+            category = "Web/Interaction",
             parameters = {"ObjectUI: uiObject - Phần tử cần click."},
             example = "webKeyword.clickWithJavascript(hiddenButtonObject);"
     )
@@ -473,7 +473,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "selectByIndex",
             description = "Chọn một tùy chọn (option) trong một phần tử dropdown (thẻ select) dựa trên chỉ số của nó (bắt đầu từ 0).",
-            category = "WEB",
+            category = "Web/Interaction",
             parameters = {
                     "ObjectUI: uiObject - Phần tử dropdown (thẻ select).",
                     "int: index - Chỉ số của tùy chọn cần chọn (ví dụ: 0 cho tùy chọn đầu tiên)."
@@ -492,7 +492,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "selectRadioByValue",
             description = "Chọn một radio button trong một nhóm các radio button dựa trên giá trị của thuộc tính 'value'.",
-            category = "WEB",
+            category = "Web/Interaction",
             parameters = {
                     "ObjectUI: uiObject - Đại diện cho nhóm radio button (ví dụ locator chung là '//input[@name=\"gender\"]').",
                     "String: value - Giá trị trong thuộc tính 'value' của radio button cần chọn."
@@ -517,7 +517,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "selectByValue",
             description = "Chọn một tùy chọn trong dropdown dựa trên giá trị của thuộc tính 'value'.",
-            category = "WEB",
+            category = "Web/Interaction",
             parameters = {
                     "ObjectUI: uiObject - Phần tử dropdown (thẻ select).",
                     "String: value - Giá trị thuộc tính 'value' của tùy chọn cần chọn."
@@ -536,7 +536,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "selectByVisibleText",
             description = "Chọn một tùy chọn trong dropdown dựa trên văn bản hiển thị của nó.",
-            category = "WEB",
+            category = "Web/Interaction",
             parameters = {
                     "ObjectUI: uiObject - Phần tử dropdown (thẻ select).",
                     "String: text - Văn bản hiển thị của tùy chọn cần chọn."
@@ -556,7 +556,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "clickElementByIndex",
             description = "Click vào một phần tử cụ thể trong một danh sách các phần tử dựa trên chỉ số (index) của nó (bắt đầu từ 0).",
-            category = "WEB",
+            category = "Web/Interaction",
             parameters = {
                     "ObjectUI: uiObject - Đối tượng giao diện đại diện cho danh sách phần tử.",
                     "int: index - Vị trí của phần tử cần click (0 cho phần tử đầu tiên)."
@@ -584,7 +584,7 @@ public class WebKeyword extends BaseUiKeyword {
             name = "scrollToElement",
             description = "Cuộn trang đến khi phần tử được chỉ định nằm trong vùng có thể nhìn thấy của trình duyệt. " +
                     "Rất cần thiết khi cần tương tác với các phần tử ở cuối trang.",
-            category = "WEB",
+            category = "Web/Interaction",
             parameters = {"ObjectUI: uiObject - Phần tử đích cần cuộn đến."},
             example = "webKeyword.scrollToElement(footerSectionObject);"
     )
@@ -601,7 +601,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "scrollToCoordinates",
             description = "Cuộn trang web đến một tọa độ (x, y) cụ thể trong viewport.",
-            category = "WEB",
+            category = "Web/Interaction",
             parameters = {
                     "int: x - Tọa độ theo trục hoành (pixel).",
                     "int: y - Tọa độ theo trục tung (pixel)."
@@ -620,7 +620,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "scrollToTop",
             description = "Cuộn lên vị trí cao nhất (đầu trang) của trang web.",
-            category = "WEB",
+            category = "Web/Interaction",
             parameters = {"Không có tham số."},
             example = "webKeyword.scrollToTop();"
     )
@@ -635,7 +635,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "scrollToBottom",
             description = "Cuộn xuống vị trí thấp nhất (cuối trang) của trang web.",
-            category = "WEB",
+            category = "Web/Interaction",
             parameters = {"Không có tham số."},
             example = "webKeyword.scrollToBottom();"
     )
@@ -658,7 +658,7 @@ public class WebKeyword extends BaseUiKeyword {
                     "1. Lấy thuộc tính 'value' (cho ô input, textarea). " +
                     "2. Lấy văn bản hiển thị thông thường. " +
                     "3. Lấy 'textContent' hoặc 'innerText' nếu 2 cách trên thất bại.",
-            category = "WEB",
+            category = "Web/Getter",
             parameters = {"ObjectUI: uiObject - Phần tử chứa văn bản cần lấy."},
             example = "String text = webKeyword.getText(usernameInputObject);"
     )
@@ -670,7 +670,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "getAttribute",
             description = "Lấy và trả về giá trị của một thuộc tính (attribute) cụ thể trên một phần tử HTML.",
-            category = "WEB",
+            category = "Web/Getter",
             parameters = {
                     "ObjectUI: uiObject - Phần tử cần lấy thuộc tính.",
                     "String: attributeName - Tên của thuộc tính cần lấy giá trị (ví dụ: 'href', 'class', 'value')."
@@ -685,7 +685,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "getCssValue",
             description = "Lấy giá trị của một thuộc tính CSS được áp dụng trên một phần tử.",
-            category = "WEB",
+            category = "Web/Getter",
             parameters = {
                     "ObjectUI: uiObject - Phần tử cần lấy giá trị CSS.",
                     "String: cssPropertyName - Tên của thuộc tính CSS (ví dụ: 'color', 'font-size', 'background-color')."
@@ -700,7 +700,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "getCurrentUrl",
             description = "Lấy và trả về URL đầy đủ của trang web hiện tại mà trình duyệt đang hiển thị.",
-            category = "WEB",
+            category = "Web/Getter",
             parameters = {"Không có tham số."},
             example = "String pageUrl = webKeyword.getCurrentUrl();"
     )
@@ -712,7 +712,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "getPageTitle",
             description = "Lấy và trả về tiêu đề (title) của trang web hiện tại.",
-            category = "WEB",
+            category = "Web/Getter",
             parameters = {"Không có tham số."},
             example = "String pageTitle = webKeyword.getPageTitle();"
     )
@@ -724,7 +724,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "getElementCount",
             description = "Đếm và trả về số lượng phần tử trên trang khớp với locator được cung cấp. Hữu ích để kiểm tra số lượng kết quả tìm kiếm, số hàng trong bảng,...",
-            category = "WEB",
+            category = "Web/Getter",
             parameters = {"ObjectUI: uiObject - Đối tượng giao diện đại diện cho các phần tử cần đếm."},
             example = "int numberOfProducts = webKeyword.getElementCount(productListItemObject);"
     )
@@ -740,7 +740,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "getTextFromElements",
             description = "Lấy và trả về một danh sách (List) các chuỗi văn bản từ mỗi phần tử trong một danh sách các phần tử.",
-            category = "WEB",
+            category = "Web/Getter",
             parameters = {"ObjectUI: uiObject - Đối tượng giao diện đại diện cho các phần tử cần lấy văn bản."},
             example = "List<String> productNames = webKeyword.getTextFromElements(productNameObject);"
     )
@@ -762,7 +762,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "waitForElementClickable",
             description = "Tạm dừng kịch bản cho đến khi một phần tử không chỉ hiển thị mà còn ở trạng thái sẵn sàng để được click (enabled).",
-            category = "WEB",
+            category = "Web/Wait",
             parameters = {"ObjectUI: uiObject - Phần tử cần chờ để sẵn sàng click."},
             example = "webKeyword.waitForElementClickable(submitButtonObject);"
     )
@@ -778,7 +778,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "waitForElementNotVisible",
             description = "Tạm dừng kịch bản cho đến khi một phần tử không còn hiển thị trên giao diện. Rất hữu ích để chờ các biểu tượng loading hoặc thông báo tạm thời biến mất.",
-            category = "WEB",
+            category = "Web/Wait",
             parameters = {"ObjectUI: uiObject - Phần tử cần chờ cho đến khi nó biến mất."},
             example = "webKeyword.waitForElementNotVisible(loadingSpinnerObject);"
     )
@@ -795,7 +795,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "waitForElementPresent",
             description = "Tạm dừng kịch bản cho đến khi một phần tử tồn tại trong DOM của trang, không nhất thiết phải hiển thị. Hữu ích để chờ các phần tử được tạo ra bởi JavaScript.",
-            category = "WEB",
+            category = "Web/Wait",
             parameters = {
                     "ObjectUI: uiObject - Phần tử cần chờ cho đến khi nó tồn tại.",
                     "int: timeoutInSeconds - Thời gian chờ tối đa (tính bằng giây)."
@@ -814,7 +814,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "waitForPageLoaded",
             description = "Tạm dừng kịch bản cho đến khi trang web tải xong hoàn toàn (trạng thái 'document.readyState' là 'complete').",
-            category = "WEB",
+            category = "Web/Wait",
             parameters = {"int: timeoutInSeconds - Thời gian chờ tối đa (tính bằng giây)."},
             example = "webKeyword.waitForPageLoaded(30);"
     )
@@ -830,7 +830,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "waitForUrlContains",
             description = "Tạm dừng kịch bản cho đến khi URL của trang hiện tại chứa một chuỗi con được chỉ định.",
-            category = "WEB",
+            category = "Web/Wait",
             parameters = {
                     "String: partialUrl - Chuỗi con mà URL cần chứa.",
                     "int: timeoutInSeconds - Thời gian chờ tối đa (tính bằng giây)."
@@ -849,7 +849,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "waitForTitleIs",
             description = "Tạm dừng kịch bản cho đến khi tiêu đề của trang hiện tại khớp chính xác với chuỗi được chỉ định.",
-            category = "WEB",
+            category = "Web/Wait",
             parameters = {
                     "String: expectedTitle - Tiêu đề trang mong đợi.",
                     "int: timeoutInSeconds - Thời gian chờ tối đa (tính bằng giây)."
@@ -873,7 +873,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "verifyElementVisibleHard",
             description = "Kiểm tra một phần tử có đang hiển thị trên giao diện hay không. Nếu kiểm tra thất bại (phần tử không hiển thị như mong đợi), kịch bản sẽ DỪNG LẠI ngay lập tức.",
-            category = "WEB",
+            category = "Web/Assert",
             parameters = {
                     "ObjectUI: uiObject - Phần tử cần kiểm tra.",
                     "boolean: isVisible - Trạng thái hiển thị mong đợi (true cho hiển thị, false cho bị ẩn)."
@@ -888,7 +888,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "verifyElementVisibleSoft",
             description = "Kiểm tra một phần tử có đang hiển thị trên giao diện hay không. Nếu kiểm tra thất bại, kịch bản sẽ ghi nhận lỗi nhưng vẫn TIẾP TỤC chạy các bước tiếp theo.",
-            category = "WEB",
+            category = "Web/Assert",
             parameters = {
                     "ObjectUI: uiObject - Phần tử cần kiểm tra.",
                     "boolean: isVisible - Trạng thái hiển thị mong đợi (true cho hiển thị, false cho bị ẩn)."
@@ -904,7 +904,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "verifyTextHard",
             description = "So sánh văn bản của một phần tử với một chuỗi ký tự mong đợi (phải khớp chính xác). Nếu không khớp, kịch bản sẽ DỪNG LẠI.",
-            category = "WEB",
+            category = "Web/Assert",
             parameters = {
                     "ObjectUI: uiObject - Phần tử chứa văn bản cần kiểm tra.",
                     "String: expectedText - Chuỗi văn bản mong đợi."
@@ -919,7 +919,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "verifyTextSoft",
             description = "So sánh văn bản của một phần tử với một chuỗi ký tự mong đợi (phải khớp chính xác). Nếu không khớp, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
-            category = "WEB",
+            category = "Web/Assert",
             parameters = {
                     "ObjectUI: uiObject - Phần tử chứa văn bản cần kiểm tra.",
                     "String: expectedText - Chuỗi văn bản mong đợi."
@@ -934,7 +934,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "verifyTextContainsHard",
             description = "Kiểm tra văn bản của một phần tử có chứa một chuỗi con hay không. Nếu không chứa, kịch bản sẽ DỪNG LẠI.",
-            category = "WEB",
+            category = "Web/Assert",
             parameters = {
                     "ObjectUI: uiObject - Phần tử chứa văn bản cần kiểm tra.",
                     "String: partialText - Chuỗi văn bản con mong đợi."
@@ -949,7 +949,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "verifyTextContainsSoft",
             description = "Kiểm tra văn bản của một phần tử có chứa một chuỗi con hay không. Nếu không chứa, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
-            category = "WEB",
+            category = "Web/Assert",
             parameters = {
                     "ObjectUI: uiObject - Phần tử chứa văn bản cần kiểm tra.",
                     "String: partialText - Chuỗi văn bản con mong đợi."
@@ -965,7 +965,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "verifyElementAttributeHard",
             description = "Kiểm tra giá trị của một thuộc tính (attribute) trên phần tử. Nếu giá trị không khớp, kịch bản sẽ DỪNG LẠI.",
-            category = "WEB",
+            category = "Web/Assert",
             parameters = {
                     "ObjectUI: uiObject - Phần tử cần kiểm tra.",
                     "String: attributeName - Tên của thuộc tính (ví dụ: 'href', 'class', 'value').",
@@ -981,7 +981,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "verifyElementAttributeSoft",
             description = "Kiểm tra giá trị của một thuộc tính (attribute) trên phần tử. Nếu giá trị không khớp, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
-            category = "WEB",
+            category = "Web/Assert",
             parameters = {
                     "ObjectUI: uiObject - Phần tử cần kiểm tra.",
                     "String: attributeName - Tên của thuộc tính (ví dụ: 'href', 'class', 'value').",
@@ -998,7 +998,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "verifyUrlHard",
             description = "So sánh URL của trang hiện tại với một chuỗi mong đợi (phải khớp chính xác). Nếu không khớp, kịch bản sẽ DỪNG LẠI.",
-            category = "WEB",
+            category = "Web/Assert",
             parameters = {"String: expectedUrl - URL đầy đủ mong đợi."},
             example = "webKeyword.verifyUrlHard(\"https://example.com/login?status=success\");"
     )
@@ -1014,7 +1014,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "verifyUrlSoft",
             description = "So sánh URL của trang hiện tại với một chuỗi mong đợi. Nếu không khớp, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
-            category = "WEB",
+            category = "Web/Assert",
             parameters = {"String: expectedUrl - URL đầy đủ mong đợi."},
             example = "webKeyword.verifyUrlSoft(\"https://example.com/checkout/step1\");"
     )
@@ -1036,7 +1036,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "verifyTitleHard",
             description = "Kiểm tra tiêu đề (title) của trang web hiện tại. Nếu tiêu đề không khớp chính xác, kịch bản sẽ DỪNG LẠI.",
-            category = "WEB",
+            category = "Web/Assert",
             parameters = {"String: expectedTitle - Tiêu đề trang mong đợi."},
             example = "webKeyword.verifyTitleHard(\"Trang chủ - Website ABC\");"
     )
@@ -1052,7 +1052,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "verifyTitleSoft",
             description = "So sánh tiêu đề của trang hiện tại với một chuỗi mong đợi. Nếu không khớp, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
-            category = "WEB",
+            category = "Web/Assert",
             parameters = {"String: expectedTitle - Tiêu đề trang mong đợi."},
             example = "webKeyword.verifyTitleSoft(\"Giỏ hàng (1 sản phẩm)\");"
     )
@@ -1074,7 +1074,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "assertElementEnabled",
             description = "Khẳng định rằng một phần tử đang ở trạng thái có thể tương tác (enabled). Nếu phần tử bị vô hiệu hóa (disabled), kịch bản sẽ DỪNG LẠI.",
-            category = "WEB",
+            category = "Web/Assert",
             parameters = {"ObjectUI: uiObject - Phần tử cần kiểm tra."},
             example = "webKeyword.assertElementEnabled(submitButtonObject);"
     )
@@ -1089,7 +1089,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "assertElementDisabled",
             description = "Khẳng định rằng một phần tử đang ở trạng thái không thể tương tác (disabled). Nếu phần tử đang enabled, kịch bản sẽ DỪNG LẠI.",
-            category = "WEB",
+            category = "Web/Assert",
             parameters = {"ObjectUI: uiObject - Phần tử cần kiểm tra."},
             example = "webKeyword.assertElementDisabled(submitButtonBeforeFillForm);"
     )
@@ -1104,7 +1104,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "verifyElementEnabledSoft",
             description = "Kiểm tra một phần tử có đang ở trạng thái enabled hay không. Nếu không, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
-            category = "WEB",
+            category = "Web/Assert",
             parameters = {"ObjectUI: uiObject - Phần tử cần kiểm tra."},
             example = "webKeyword.verifyElementEnabledSoft(optionalFieldObject);"
     )
@@ -1119,7 +1119,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "verifyElementDisabledSoft",
             description = "Kiểm tra một phần tử có đang ở trạng thái disabled hay không. Nếu không, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
-            category = "WEB",
+            category = "Web/Assert",
             parameters = {"ObjectUI: uiObject - Phần tử cần kiểm tra."},
             example = "webKeyword.verifyElementDisabledSoft(lockedFeatureButton);"
     )
@@ -1134,7 +1134,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "assertElementSelected",
             description = "Khẳng định rằng một phần tử (checkbox hoặc radio button) đang ở trạng thái được chọn. Nếu không, kịch bản sẽ DỪNG LẠI.",
-            category = "WEB",
+            category = "Web/Assert",
             parameters = {"ObjectUI: uiObject - Phần tử checkbox hoặc radio button cần kiểm tra."},
             example = "webKeyword.assertElementSelected(rememberMeCheckbox);"
     )
@@ -1149,7 +1149,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "assertElementNotSelected",
             description = "Khẳng định rằng một phần tử (checkbox hoặc radio button) đang ở trạng thái không được chọn. Nếu đang được chọn, kịch bản sẽ DỪNG LẠI.",
-            category = "WEB",
+            category = "Web/Assert",
             parameters = {"ObjectUI: uiObject - Phần tử checkbox hoặc radio button cần kiểm tra."},
             example = "webKeyword.assertElementNotSelected(newsletterCheckbox);"
     )
@@ -1165,7 +1165,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "verifyTextMatchesRegexHard",
             description = "Kiểm tra văn bản của một phần tử có khớp với một biểu thức chính quy (regex) hay không. Nếu không khớp, kịch bản sẽ DỪNG LẠI.",
-            category = "WEB",
+            category = "Web/Assert",
             parameters = {
                     "ObjectUI: uiObject - Phần tử chứa văn bản cần kiểm tra.",
                     "String: pattern - Biểu thức chính quy để so khớp."
@@ -1183,7 +1183,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "verifyTextMatchesRegexSoft",
             description = "Kiểm tra văn bản của một phần tử có khớp với một biểu thức chính quy (regex) hay không. Nếu không khớp, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
-            category = "WEB",
+            category = "Web/Assert",
             parameters = {
                     "ObjectUI: uiObject - Phần tử chứa văn bản cần kiểm tra.",
                     "String: pattern - Biểu thức chính quy để so khớp."
@@ -1201,7 +1201,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "verifyAttributeContainsHard",
             description = "Kiểm tra giá trị của một thuộc tính trên phần tử có chứa một chuỗi con hay không. Nếu không chứa, kịch bản sẽ DỪNG LẠI.",
-            category = "WEB",
+            category = "Web/Assert",
             parameters = {
                     "ObjectUI: uiObject - Phần tử cần kiểm tra.",
                     "String: attribute - Tên của thuộc tính (ví dụ: 'class').",
@@ -1220,7 +1220,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "verifyAttributeContainsSoft",
             description = "Kiểm tra giá trị của một thuộc tính trên phần tử có chứa một chuỗi con hay không. Nếu không chứa, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
-            category = "WEB",
+            category = "Web/Assert",
             parameters = {
                     "ObjectUI: uiObject - Phần tử cần kiểm tra.",
                     "String: attribute - Tên của thuộc tính (ví dụ: 'class').",
@@ -1239,7 +1239,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "verifyCssValueHard",
             description = "So sánh giá trị của một thuộc tính CSS trên phần tử. Nếu không khớp, kịch bản sẽ DỪNG LẠI.",
-            category = "WEB",
+            category = "Web/Assert",
             parameters = {
                     "ObjectUI: uiObject - Phần tử cần kiểm tra.",
                     "String: cssName - Tên thuộc tính CSS (ví dụ: 'color').",
@@ -1258,7 +1258,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "verifyCssValueSoft",
             description = "So sánh giá trị của một thuộc tính CSS trên phần tử. Nếu không khớp, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
-            category = "WEB",
+            category = "Web/Assert",
             parameters = {
                     "ObjectUI: uiObject - Phần tử cần kiểm tra.",
                     "String: cssName - Tên thuộc tính CSS (ví dụ: 'font-weight').",
@@ -1277,7 +1277,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "verifyElementNotPresentHard",
             description = "Khẳng định rằng một phần tử KHÔNG tồn tại trong DOM sau một khoảng thời gian chờ. Nếu phần tử vẫn tồn tại, kịch bản sẽ DỪNG LẠI.",
-            category = "WEB",
+            category = "Web/Assert",
             parameters = {
                     "ObjectUI: uiObject - Phần tử cần kiểm tra.",
                     "int: timeoutInSeconds - Thời gian chờ tối đa."
@@ -1296,7 +1296,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "verifyOptionSelectedByLabelHard",
             description = "Khẳng định rằng tùy chọn có văn bản hiển thị (label) cụ thể đang được chọn trong dropdown.",
-            category = "WEB",
+            category = "Web/Assert",
             parameters = {
                     "ObjectUI: uiObject - Phần tử dropdown (thẻ select).",
                     "String: expectedLabel - Văn bản hiển thị của tùy chọn mong đợi."
@@ -1316,7 +1316,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "isElementPresent",
             description = "Kiểm tra xem một phần tử có tồn tại trong DOM hay không trong một khoảng thời gian chờ nhất định. Trả về true nếu tìm thấy, false nếu không tìm thấy và không ném ra exception.",
-            category = "WEB",
+            category = "Web/Assert",
             parameters = {
                     "ObjectUI: uiObject - Phần tử cần tìm kiếm.",
                     "int: timeoutInSeconds - Thời gian chờ tối đa (tính bằng giây)."
@@ -1350,7 +1350,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "verifyAlertPresent",
             description = "Khẳng định rằng một hộp thoại alert đang hiển thị trong một khoảng thời gian chờ.",
-            category = "WEB",
+            category = "Web/Assert",
             parameters = {"int: timeoutInSeconds - Thời gian chờ tối đa."},
             example = "webKeyword.verifyAlertPresent(5);"
     )
@@ -1373,7 +1373,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "switchToWindowByTitle",
             description = "Duyệt qua tất cả các cửa sổ hoặc tab đang mở và chuyển sự điều khiển của WebDriver sang cửa sổ/tab có tiêu đề khớp chính xác với chuỗi được cung cấp.",
-            category = "WEB",
+            category = "Web/Window&Frame",
             parameters = {"String: windowTitle - Tiêu đề chính xác của cửa sổ hoặc tab cần chuyển đến."},
             example = "webKeyword.switchToWindowByTitle(\"Sản phẩm ABC\");"
     )
@@ -1398,7 +1398,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "switchToWindowByIndex",
             description = "Chuyển sự điều khiển của WebDriver sang một tab hoặc cửa sổ khác dựa trên chỉ số (index) của nó (bắt đầu từ 0).",
-            category = "WEB",
+            category = "Web/Window&Frame",
             parameters = {"int: index - Chỉ số của cửa sổ/tab cần chuyển đến (0 là cửa sổ đầu tiên)."},
             example = "webKeyword.switchToWindowByIndex(1); // Chuyển sang tab thứ hai"
     )
@@ -1417,7 +1417,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "switchToFrame",
             description = "Chuyển sự điều khiển của WebDriver vào một phần tử iframe trên trang. Mọi hành động sau đó sẽ được thực hiện trong ngữ cảnh của iframe này.",
-            category = "WEB",
+            category = "Web/Window&Frame",
             parameters = {"ObjectUI: uiObject - Đối tượng giao diện đại diện cho thẻ iframe cần chuyển vào."},
             example = "webKeyword.switchToFrame(paymentIframeObject);"
     )
@@ -1433,7 +1433,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "switchToParentFrame",
             description = "Thoát khỏi ngữ cảnh iframe hiện tại và quay về iframe cha ngay trước nó. Nếu đang ở iframe cấp cao nhất, hành động này sẽ quay về nội dung chính của trang.",
-            category = "WEB",
+            category = "Web/Window&Frame",
             parameters = {"Không có tham số."},
             example = "webKeyword.switchToParentFrame();"
     )
@@ -1448,7 +1448,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "switchToDefaultContent",
             description = "Chuyển sự điều khiển của WebDriver ra khỏi tất cả các iframe và quay về nội dung chính, cấp cao nhất của trang web.",
-            category = "WEB",
+            category = "Web/Window&Frame",
             parameters = {"Không có tham số."},
             example = "webKeyword.switchToDefaultContent();"
     )
@@ -1463,7 +1463,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "openNewTab",
             description = "Mở một tab mới trong trình duyệt và tự động chuyển sự điều khiển sang tab mới đó. Có thể tùy chọn mở một URL cụ thể trong tab mới.",
-            category = "WEB",
+            category = "Web/Window&Frame",
             parameters = {"String: url - (Tùy chọn) URL để mở trong tab mới. Nếu để trống, sẽ mở tab trống."},
             example = "webKeyword.openNewTab(\"https://google.com\");"
     )
@@ -1481,7 +1481,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "clickAndSwitchToNewTab",
             description = "Click vào một phần tử (thường là link) và tự động chuyển sự điều khiển sang tab/cửa sổ mới vừa được mở ra.",
-            category = "WEB",
+            category = "Web/Window&Frame",
             parameters = {"ObjectUI: uiObject - Phần tử link cần click."},
             example = "webKeyword.clickAndSwitchToNewTab(externalLinkObject);"
     )
@@ -1513,7 +1513,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "getAlertText",
             description = "Chờ cho đến khi một hộp thoại alert, prompt, hoặc confirm của trình duyệt xuất hiện và lấy về nội dung văn bản của nó.",
-            category = "WEB",
+            category = "Web/Alert",
             parameters = {"Không có tham số."},
             example = "String alertMessage = webKeyword.getAlertText();"
     )
@@ -1529,7 +1529,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "sendKeysToAlert",
             description = "Chờ cho đến khi một hộp thoại prompt của trình duyệt xuất hiện và nhập một chuỗi văn bản vào đó.",
-            category = "WEB",
+            category = "Web/Alert",
             parameters = {"String: text - Chuỗi văn bản cần nhập vào hộp thoại."},
             example = "webKeyword.sendKeysToAlert(\"Tên của tôi\");"
     )
@@ -1550,7 +1550,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "findElementInShadowDom",
             description = "Tìm kiếm và trả về một phần tử nằm bên trong một Shadow DOM. Yêu cầu cung cấp phần tử chủ (shadow host) và một CSS selector để định vị phần tử con.",
-            category = "WEB",
+            category = "Web/Interaction",
             parameters = {
                     "ObjectUI: shadowHostObject - Phần tử chủ (host) chứa Shadow DOM.",
                     "String: cssSelectorInShadow - Chuỗi CSS selector để tìm phần tử bên trong Shadow DOM."
@@ -1573,7 +1573,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "setLocalStorage",
             description = "Ghi một cặp khóa-giá trị vào Local Storage của trình duyệt. Hữu ích để thiết lập trạng thái ứng dụng hoặc token.",
-            category = "WEB",
+            category = "Web/Storage",
             parameters = {
                     "String: key - Khóa (key) để lưu trữ.",
                     "String: value - Giá trị (value) tương ứng."
@@ -1591,7 +1591,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "getLocalStorage",
             description = "Đọc và trả về giá trị từ Local Storage của trình duyệt dựa trên một khóa (key) được cung cấp.",
-            category = "WEB",
+            category = "Web/Storage",
             parameters = {"String: key - Khóa (key) của giá trị cần đọc."},
             example = "String userToken = webKeyword.getLocalStorage(\"user_token\");"
     )
@@ -1603,7 +1603,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "clearLocalStorage",
             description = "Xóa toàn bộ dữ liệu đang được lưu trữ trong Local Storage của trang web hiện tại.",
-            category = "WEB",
+            category = "Web/Storage",
             parameters = {"Không có tham số."},
             example = "webKeyword.clearLocalStorage();"
     )
@@ -1618,7 +1618,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "deleteAllCookies",
             description = "Xóa tất cả các cookie của phiên làm việc hiện tại trên trình duyệt.",
-            category = "WEB",
+            category = "Web/Storage",
             parameters = {"Không có tham số."},
             example = "webKeyword.deleteAllCookies();"
     )
@@ -1633,7 +1633,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "getCookie",
             description = "Lấy thông tin của một cookie cụ thể dựa trên tên của nó.",
-            category = "WEB",
+            category = "Web/Storage",
             parameters = {"String: cookieName - Tên của cookie cần lấy."},
             example = "Cookie sessionCookie = webKeyword.getCookie(\"session_id\");"
     )
@@ -1649,7 +1649,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "takeScreenshot",
             description = "Chụp lại ảnh toàn bộ màn hình (viewport) của trình duyệt và lưu vào một file tại đường dẫn được chỉ định.",
-            category = "WEB",
+            category = "Web/Utility",
             parameters = {"String: filePath - Đường dẫn đầy đủ để lưu file ảnh (ví dụ: 'C:/screenshots/error.png')."},
             example = "webKeyword.takeScreenshot(\"D:/test-reports/screenshots/homepage.png\");"
     )
@@ -1669,7 +1669,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "takeElementScreenshot",
             description = "Chụp ảnh chỉ riêng một phần tử cụ thể trên trang và lưu vào file tại đường dẫn được chỉ định.",
-            category = "WEB",
+            category = "Web/Utility",
             parameters = {
                     "ObjectUI: uiObject - Phần tử cần chụp ảnh.",
                     "String: filePath - Đường dẫn đầy đủ để lưu file ảnh."
@@ -1692,7 +1692,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "highlightElement",
             description = "Tạm thời vẽ một đường viền màu đỏ xung quanh một phần tử trên trang để dễ dàng nhận biết và gỡ lỗi trong quá trình chạy kịch bản.",
-            category = "WEB",
+            category = "Web/Utility",
             parameters = {"ObjectUI: uiObject - Phần tử cần làm nổi bật."},
             example = "webKeyword.highlightElement(loginButtonObject);"
     )
@@ -1715,7 +1715,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "pause",
             description = "Tạm dừng việc thực thi kịch bản trong một khoảng thời gian tĩnh. (Lưu ý: Chỉ nên dùng khi thực sự cần thiết, ưu tiên các keyword chờ động).",
-            category = "WEB",
+            category = "Web/Utility",
             parameters = {"int: milliseconds - Thời gian cần tạm dừng (tính bằng mili giây)."},
             example = "webKeyword.pause(3000); // Dừng 3 giây"
     )

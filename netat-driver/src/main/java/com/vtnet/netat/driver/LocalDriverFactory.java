@@ -11,6 +11,8 @@ import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.GeckoDriverService;
 import org.openqa.selenium.firefox.FirefoxOptions;
+import org.openqa.selenium.safari.SafariDriver;
+import org.openqa.selenium.safari.SafariOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +40,8 @@ public class LocalDriverFactory implements IDriverFactory {
                         .usingDriverExecutable(new File(getDriverPath("webdriver.gecko.driver")))
                         .build();
                 return new FirefoxDriver(geckoService, (FirefoxOptions) capabilities);
-
+            case "safari":
+                return new SafariDriver((SafariOptions) capabilities);
             case "chrome":
             default:
                 ChromeDriverService chromeService = new ChromeDriverService.Builder()

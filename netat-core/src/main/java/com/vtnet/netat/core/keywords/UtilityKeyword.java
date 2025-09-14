@@ -31,7 +31,7 @@ public class UtilityKeyword extends BaseKeyword {
     @NetatKeyword(
             name = "getCurrentDateTime",
             description = "Lấy và trả về chuỗi ngày giờ hiện tại theo một định dạng cho trước.",
-            category = "UTILITY",
+            category = "Utility/DateTime",
             parameters = {"String: dateTimeFormat - Định dạng ngày giờ (ví dụ: 'dd/MM/yyyy HH:mm:ss')."},
             example = "String timestamp = utilityKeyword.getCurrentDateTime(\"yyyy-MM-dd_HH-mm-ss\");"
     )
@@ -47,7 +47,7 @@ public class UtilityKeyword extends BaseKeyword {
     @NetatKeyword(
             name = "extractTextByRegex",
             description = "Trích xuất một phần của chuỗi văn bản dựa trên một biểu thức chính quy (regex) và một nhóm (group) cụ thể.",
-            category = "UTILITY",
+            category = "Utility/String",
             parameters = {
                     "String: text - Chuỗi văn bản nguồn.",
                     "String: regex - Biểu thức chính quy để tìm kiếm.",
@@ -72,7 +72,7 @@ public class UtilityKeyword extends BaseKeyword {
     @NetatKeyword(
             name = "getValueFromJson",
             description = "Lấy một giá trị từ một chuỗi JSON bằng cách sử dụng cú pháp JSON Pointer (ví dụ: '/user/name').",
-            category = "UTILITY",
+            category = "Utility/String",
             parameters = {
                     "String: jsonString - Chuỗi JSON nguồn.",
                     "String: jsonPointer - Đường dẫn đến giá trị cần lấy."
@@ -95,7 +95,7 @@ public class UtilityKeyword extends BaseKeyword {
     @NetatKeyword(
             name = "getValueFromXml",
             description = "Lấy một giá trị từ một chuỗi XML bằng cách sử dụng một biểu thức XPath.",
-            category = "UTILITY",
+            category = "Utility/String",
             parameters = {
                     "String: xmlString - Chuỗi XML nguồn.",
                     "String: xpathExpression - Biểu thức XPath để tìm giá trị."
@@ -124,7 +124,7 @@ public class UtilityKeyword extends BaseKeyword {
     @NetatKeyword(
             name = "executeCommand",
             description = "Thực thi một lệnh trên command line của hệ điều hành và chờ cho đến khi nó hoàn thành.",
-            category = "UTILITY",
+            category = "Utility/Command",
             parameters = {"String...: command - Lệnh và các tham số của nó."},
             example = "utilityKeyword.executeCommand(\"taskkill\", \"/F\", \"/IM\", \"chrome.exe\");"
     )

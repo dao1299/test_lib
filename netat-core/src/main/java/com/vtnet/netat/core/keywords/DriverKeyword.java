@@ -15,7 +15,7 @@ public class DriverKeyword extends BaseKeyword {
             name = "startBrowser",
             description = "Khởi tạo và mở một phiên trình duyệt (web) hoặc thiết bị (mobile) mới dựa trên cấu hình trong file properties. " +
                     "Nếu không có tham số, nó sẽ sử dụng 'platform.name' mặc định.",
-            category = "DRIVER",
+            category = "Session/Lifecycle",
             parameters = {"Không có tham số."},
             example = "// Khởi tạo trình duyệt mặc định\n" +
                     "driverKeyword.startBrowser();"
@@ -33,7 +33,7 @@ public class DriverKeyword extends BaseKeyword {
             name = "startBrowser",
             description = "Khởi tạo và mở một phiên trình duyệt (web) hoặc thiết bị (mobile) mới dựa trên cấu hình trong file properties. " +
                     "Nếu không có tham số, nó sẽ sử dụng 'platform.name' mặc định.",
-            category = "DRIVER",
+            category = "Session/Lifecycle",
             parameters = {"String: platform (Tùy chọn) - Tên nền tảng cần khởi tạo (ví dụ: 'chrome', 'firefox')."},
             example = "// Chỉ định khởi tạo trình duyệt Firefox\n" +
                     "driverKeyword.startBrowser(\"firefox\");"
@@ -49,7 +49,7 @@ public class DriverKeyword extends BaseKeyword {
     @NetatKeyword(
             name = "closeBrowser",
             description = "Đóng hoàn toàn phiên trình duyệt hoặc thiết bị hiện tại và giải phóng tài nguyên.",
-            category = "DRIVER",
+            category = "Session/Lifecycle",
             parameters = {"Không có tham số."},
             example = "driverKeyword.closeBrowser();"
     )
