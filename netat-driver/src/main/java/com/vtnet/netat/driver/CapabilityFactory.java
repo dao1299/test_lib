@@ -36,10 +36,10 @@ public class CapabilityFactory {
     }
 
     private static MutableCapabilities buildCapabilities(MutableCapabilities capabilities, String platform, Properties properties) {
-        // Create a map to handle complex options like Firefox preferences
+        // Tạo một map để xử lý các tùy chọn phức tạp như Firefox preferences
         Map<String, Object> firefoxPrefs = new HashMap<>();
 
-        // 1. Handle browser-specific options
+        // 1. Xử lý các tùy chọn (options) đặc thù cho từng trình duyệt
         String optionPrefix = platform + ".option.";
         for (String key : properties.stringPropertyNames()) {
             if (key.startsWith(optionPrefix)) {
@@ -58,7 +58,7 @@ public class CapabilityFactory {
                     } else if (optionType.equalsIgnoreCase("args")) {
                         ((FirefoxOptions) capabilities).addArguments(value.split(","));
                     } else if (optionType.startsWith("prefs.")) {
-                        // Collect all Firefox preferences into a map
+                        // Gom tất cả các preferences của Firefox vào một map
                         String prefKey = optionType.substring("prefs.".length());
                         firefoxPrefs.put(prefKey, convertPrefValue(value));
                     }
@@ -72,10 +72,8 @@ public class CapabilityFactory {
             }
         }
 
-        // Apply Firefox preferences if they exist
+        // Áp dụng các preferences cho Firefox nếu có
         if (capabilities instanceof FirefoxOptions && !firefoxPrefs.isEmpty()) {
-            // **Correction**: Create a FirefoxProfile, set preferences on it,
-            // and then set the entire profile to the options.
             FirefoxProfile profile = new FirefoxProfile();
             for (Map.Entry<String, Object> entry : firefoxPrefs.entrySet()) {
                 profile.setPreference(entry.getKey(), entry.getValue());
@@ -83,21 +81,36 @@ public class CapabilityFactory {
             ((FirefoxOptions) capabilities).setProfile(profile);
         }
 
-        // 2. Handle general capabilities (starting with "capability.")
+        // 2. Xử lý các capabilities chung (bắt đầu bằng "capability.")
+        boolean hasAppPackage = false;
         for (String key : properties.stringPropertyNames()) {
             if (key.startsWith("capability.")) {
                 String capabilityName = key.substring("capability.".length());
                 String value = properties.getProperty(key);
+
+                // Ghi nhận nếu người dùng đã cung cấp appPackage
+                if (capabilityName.equals("appium.appPackage")) {
+                    hasAppPackage = true;
+                }
+
+                // Tự động chuyển đổi "appium.deviceName" thành "appium:deviceName"
+                if (capabilityName.startsWith("appium.")) {
+                    capabilityName = capabilityName.replaceFirst("\\.", ":");
+                }
+
                 capabilities.setCapability(capabilityName, convertPrefValue(value));
             }
         }
 
-        // 3. Handle Appium app path
+        // 3. Xử lý đường dẫn ứng dụng Appium
         String appName = ConfigReader.getProperty("app.name");
-        if (appName != null && !appName.isEmpty()) {
+        // Chỉ thiết lập đường dẫn app nếu app.name được cung cấp VÀ appPackage không được cung cấp
+        if (appName != null && !appName.isEmpty() && !hasAppPackage) {
             String appPath = System.getProperty("user.dir") + "/src/test/resources/apps/" + appName;
             capabilities.setCapability("appium:app", appPath);
         }
+
+        System.out.println("CAP: "+capabilities);
 
         return capabilities;
     }

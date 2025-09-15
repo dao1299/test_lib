@@ -9,9 +9,22 @@ public class AssertionKeyword extends BaseKeyword {
 
     @NetatKeyword(
             name = "assertAll",
-            description = "Tổng hợp tất cả các lỗi đã gặp trong chế độ Soft Assert. Nếu có lỗi, kịch bản sẽ FAILED tại đây.",
-            category = "ASSERTION",
-            example = "assertAll | |"
+            description = "Thực hiện kiểm tra tất cả các soft assertion đã được thu thập trước đó. Nếu có bất kỳ assertion nào thất bại, phương thức sẽ ném ra ngoại lệ với thông tin chi tiết về các lỗi. Sau khi gọi phương thức này, soft assert sẽ được reset về null.",
+            category = "Assertion",
+            parameters = {},
+            returnValue = "void: Không trả về giá trị",
+            example = "// Sau khi thực hiện nhiều soft assertion\n" +
+                    "softAssert.assertEquals(actualTitle, expectedTitle, \"Title không khớp\");\n" +
+                    "softAssert.assertTrue(isElementDisplayed, \"Element không hiển thị\");\n" +
+                    "// Thực hiện kiểm tra tất cả các assertion\n" +
+                    "assertAll();",
+            prerequisites = {"Đã thực hiện ít nhất một soft assertion trước đó",
+                    "ExecutionContext đã được khởi tạo"},
+            exceptions = {"AssertionError: Nếu có bất kỳ soft assertion nào thất bại"},
+            platform = "ALL",
+            systemImpact = "READ_ONLY",
+            stability = "STABLE",
+            tags = {"assertion", "validation", "softAssert"}
     )
     @Step("Tổng hợp kết quả Soft Assert")
     public void assertAll() {

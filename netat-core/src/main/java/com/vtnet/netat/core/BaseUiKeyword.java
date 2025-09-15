@@ -55,11 +55,18 @@ public abstract class BaseUiKeyword extends BaseKeyword {
         throw new NoSuchElementException("Không thể tìm thấy phần tử '" + uiObject.getName() + "' bằng các locator đã định nghĩa.");
     }
 
+    public List<WebElement> findElements(ObjectUI uiObject) {
+        return execute(() -> {
+            By by = uiObject.getActiveLocators().get(0).convertToBy();
+            return DriverManager.getDriver().findElements(by);
+        }, uiObject);
+    }
+
     // =================================================================================
     // --- CÁC KEYWORD HÀNH ĐỘNG CHUNG (PUBLIC) ---
     // =================================================================================
 
-    public void click(ObjectUI uiObject) {
+    protected void click(ObjectUI uiObject) {
         execute(() -> {
             WebElement element = findElement(uiObject);
             new WebDriverWait(DriverManager.getDriver(), PRIMARY_TIMEOUT)
@@ -68,7 +75,14 @@ public abstract class BaseUiKeyword extends BaseKeyword {
         }, uiObject);
     }
 
-    public void sendKeys(ObjectUI uiObject, String text) {
+    protected void clear(ObjectUI uiObject) {
+        execute(() -> {
+            findElement(uiObject).clear();
+            return null;
+        }, uiObject);
+    }
+
+    protected void sendKeys(ObjectUI uiObject, String text) {
         execute(() -> {
             WebElement element = findElement(uiObject);
             new WebDriverWait(DriverManager.getDriver(), PRIMARY_TIMEOUT)
@@ -79,7 +93,7 @@ public abstract class BaseUiKeyword extends BaseKeyword {
         }, uiObject, text);
     }
 
-    public String getText(ObjectUI uiObject) {
+    protected String getText(ObjectUI uiObject) {
         return execute(() -> {
             // Tìm và chờ cho đến khi phần tử được hiển thị để đảm bảo nó đã sẵn sàng
             WebElement element = findElement(uiObject);
@@ -113,6 +127,30 @@ public abstract class BaseUiKeyword extends BaseKeyword {
             // Trả về kết quả, đảm bảo không bao giờ là null và đã được cắt khoảng trắng thừa
             return text != null ? text.trim() : "";
         }, uiObject);
+    }
+
+    protected void waitForElementVisible(ObjectUI uiObject, int timeoutInSeconds) {
+        execute(() -> {
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds));
+            wait.until(ExpectedConditions.visibilityOf(findElement(uiObject)));
+            return null;
+        }, uiObject, timeoutInSeconds);
+    }
+
+    protected void waitForElementNotVisible(ObjectUI uiObject, int timeoutInSeconds) {
+        execute(() -> {
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds));
+            wait.until(ExpectedConditions.invisibilityOf(findElement(uiObject)));
+            return null;
+        }, uiObject, timeoutInSeconds);
+    }
+
+    protected void waitForElementClickable(ObjectUI uiObject, int timeoutInSeconds) {
+        execute(() -> {
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds));
+            wait.until(ExpectedConditions.elementToBeClickable(findElement(uiObject)));
+            return null;
+        }, uiObject, timeoutInSeconds);
     }
 
     // =================================================================================
@@ -285,6 +323,47 @@ public abstract class BaseUiKeyword extends BaseKeyword {
             softAssert.assertEquals(actualValue, expectedValue, "SOFT ASSERT FAILED: " + message);
         } else {
             Assert.assertEquals(actualValue, expectedValue, "HARD ASSERT FAILED: " + message);
+        }
+    }
+
+    public void verifyElementPresent(ObjectUI uiObject, int timeoutInSeconds) {
+        execute(() -> {
+            try {
+                WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds));
+                wait.until(d -> findElement(uiObject) != null);
+            } catch (Exception e) {
+                throw new AssertionError("HARD ASSERT FAILED: Phần tử '" + uiObject.getName() + "' không tồn tại.");
+            }
+            return null;
+        }, uiObject, timeoutInSeconds);
+    }
+
+    public void verifyElementVisibleHard(ObjectUI uiObject, boolean isVisible) {
+        performVisibilityAssertion(uiObject, isVisible, false);
+    }
+
+    public void verifyTextHard(ObjectUI uiObject, String expectedText) {
+        performTextAssertion(uiObject, expectedText, false);
+    }
+
+    /**
+     * Logic cốt lõi để kiểm tra sự tồn tại của phần tử.
+     * Được thiết kế để các lớp con gọi.
+     */
+    protected boolean _isElementPresent(ObjectUI uiObject, int timeoutInSeconds) {
+        WebDriver driver = DriverManager.getDriver();
+        By by = uiObject.getActiveLocators().get(0).convertToBy();
+
+        try {
+            driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(0));
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(timeoutInSeconds));
+            wait.until(d -> !d.findElements(by).isEmpty());
+            return true;
+        } catch (TimeoutException e) {
+            return false;
+        } finally {
+            // Khôi phục lại implicit wait về giá trị mặc định của framework (là 0)
+            driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(0));
         }
     }
 }

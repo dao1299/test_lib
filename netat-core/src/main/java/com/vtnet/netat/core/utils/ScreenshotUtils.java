@@ -1,125 +1,72 @@
 package com.vtnet.netat.core.utils;
 
+import com.vtnet.netat.driver.DriverManager;
 import io.appium.java_client.AppiumDriver;
+import io.qameta.allure.Allure;
+import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
-import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
-/**
- * Utility class cho screenshot operations
- */
 public class ScreenshotUtils {
 
     private static final String SCREENSHOT_DIR = System.getProperty("user.dir") + "/screenshots";
     private static final DateTimeFormatter TIMESTAMP_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
 
     static {
-        // Create screenshots directory if not exists
-        File screenshotDir = new File(SCREENSHOT_DIR);
-        if (!screenshotDir.exists()) {
-            screenshotDir.mkdirs();
-        }
+        // Tạo thư mục screenshots nếu chưa tồn tại
+        new File(SCREENSHOT_DIR).mkdirs();
     }
 
     /**
-     * Capture screenshot from WebDriver
+     * Phương thức chung để chụp ảnh màn hình, tự động phát hiện nền tảng (Web/Mobile).
+     * Đây là phương thức mà BaseKeyword sẽ gọi.
      */
-    public static String captureWebScreenshot(WebDriver driver, String fileName) throws IOException {
-        if (driver == null) {
-            throw new IllegalArgumentException("WebDriver cannot be null");
-        }
-
-        if (!(driver instanceof TakesScreenshot)) {
-            throw new IllegalArgumentException("WebDriver does not support screenshots");
-        }
-
-        TakesScreenshot takesScreenshot = (TakesScreenshot) driver;
-        File sourceFile = takesScreenshot.getScreenshotAs(OutputType.FILE);
-
-        String fullFileName = generateFileName(fileName);
-        File destFile = new File(SCREENSHOT_DIR, fullFileName);
-
-        FileUtils.copyFile(sourceFile, destFile);
-
-        return destFile.getAbsolutePath();
-    }
-
-    /**
-     * Capture screenshot from Mobile Driver
-     */
-    public static String captureMobileScreenshot(AppiumDriver driver, String fileName) throws IOException {
-        if (driver == null) {
-            throw new IllegalArgumentException("AppiumDriver cannot be null");
-        }
-
-        File sourceFile = driver.getScreenshotAs(OutputType.FILE);
-
-        String fullFileName = generateFileName(fileName);
-        File destFile = new File(SCREENSHOT_DIR, fullFileName);
-
-        FileUtils.copyFile(sourceFile, destFile);
-
-        return destFile.getAbsolutePath();
-    }
-
-    /**
-     * Capture screenshot as byte array
-     */
-    public static byte[] captureScreenshotAsBytes(WebDriver driver) {
+    public static void takeScreenshot(String fileName) {
+        WebDriver driver = DriverManager.getDriver();
         if (driver == null || !(driver instanceof TakesScreenshot)) {
-            return new byte[0];
-        }
-
-        TakesScreenshot takesScreenshot = (TakesScreenshot) driver;
-        return takesScreenshot.getScreenshotAs(OutputType.BYTES);
-    }
-
-    /**
-     * Generate unique filename for screenshot
-     */
-    private static String generateFileName(String baseName) {
-        String timestamp = LocalDateTime.now().format(TIMESTAMP_FORMAT);
-        String uuid = UUID.randomUUID().toString().substring(0, 8);
-
-        // Clean base name
-        String cleanBaseName = baseName != null ?
-                baseName.replaceAll("[^a-zA-Z0-9_-]", "_") : "screenshot";
-
-        return String.format("%s_%s_%s.png", cleanBaseName, timestamp, uuid);
-    }
-
-    /**
-     * Get screenshots directory path
-     */
-    public static String getScreenshotDirectory() {
-        return SCREENSHOT_DIR;
-    }
-
-    /**
-     * Clean up old screenshots (older than specified days)
-     */
-    public static void cleanupOldScreenshots(int daysOld) {
-        File screenshotDir = new File(SCREENSHOT_DIR);
-        if (!screenshotDir.exists()) {
+            System.err.println("Không thể chụp ảnh màn hình: Driver không hợp lệ hoặc không hỗ trợ.");
             return;
         }
 
-        long cutoffTime = System.currentTimeMillis() - (daysOld * 24L * 60L * 60L * 1000L);
+        try {
+            File sourceFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+            String fullFileName = generateFileName(fileName);
+            File destFile = new File(SCREENSHOT_DIR, fullFileName);
+            FileUtils.copyFile(sourceFile, destFile);
 
-        File[] files = screenshotDir.listFiles();
-        if (files != null) {
-            for (File file : files) {
-                if (file.isFile() && file.lastModified() < cutoffTime) {
-                    file.delete();
-                }
+            // Tự động đính kèm ảnh chụp màn hình vào báo cáo Allure
+            Path content = Paths.get(destFile.getAbsolutePath());
+            try (InputStream is = Files.newInputStream(content)) {
+                Allure.addAttachment(fileName, is);
             }
+
+        } catch (IOException e) {
+            System.err.println("Lỗi khi chụp hoặc lưu ảnh màn hình: " + e.getMessage());
         }
     }
+
+    /**
+     * Tạo tên file duy nhất cho ảnh chụp màn hình
+     */
+    private static String generateFileName(String baseName) {
+        String timestamp = LocalDateTime.now().format(TIMESTAMP_FORMAT);
+        // Dọn dẹp tên cơ sở
+        String cleanBaseName = baseName != null ?
+                baseName.replaceAll("[^a-zA-Z0-9_-]", "_") : "screenshot";
+        return String.format("%s_%s.png", cleanBaseName, timestamp);
+    }
+
+    // Các phương thức cũ hơn (captureWebScreenshot, captureMobileScreenshot, ...) có thể được giữ lại
+    // hoặc xóa đi nếu bạn thấy phương thức takeScreenshot mới đã đủ dùng.
 }
