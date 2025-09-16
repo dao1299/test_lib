@@ -15,19 +15,14 @@ public class DriverKeyword extends BaseKeyword {
 
     @NetatKeyword(
             name = "startBrowser",
-            description = "Khởi tạo và mở một phiên trình duyệt (web) hoặc thiết bị (mobile) mới dựa trên cấu hình trong file properties. " +
+            description = "Khởi tạo và mở một phiên trình duyệt (web) mới dựa trên cấu hình trong file properties. " +
                     "Nếu không có tham số, nó sẽ sử dụng 'platform.name' mặc định.",
-            category = "Session/Lifecycle",
+            category = "DriverKeyword",
             parameters = {},
-            returnValue = "void: Không trả về giá trị",
+            returnValue = "void - Không trả về giá trị",
             example = "// Khởi tạo trình duyệt mặc định\n" +
                     "driverKeyword.startBrowser();",
-            prerequisites = {"File cấu hình properties phải tồn tại và chứa các thiết lập cần thiết"},
-            exceptions = {"WebDriverException: Nếu không thể khởi tạo driver",
-                    "ConfigurationException: Nếu thiếu thông tin cấu hình cần thiết"},
-            platform = "ALL",
-            systemImpact = "MODIFY",
-            tags = {"browser", "session", "initialization"}
+            note = "Áp dụng cho web"
     )
     @Step("Khởi tạo trình duyệt/thiết bị")
     public void startBrowser() {
@@ -42,18 +37,16 @@ public class DriverKeyword extends BaseKeyword {
             name = "startBrowser",
             description = "Khởi tạo và mở một phiên trình duyệt (web) hoặc thiết bị (mobile) mới dựa trên cấu hình trong file properties. " +
                     "Tham số platform cho phép chỉ định loại trình duyệt hoặc thiết bị cụ thể cần khởi tạo.",
-            category = "Session/Lifecycle",
-            parameters = {"String: platform - Tên nền tảng cần khởi tạo (ví dụ: 'chrome', 'firefox', 'android', 'ios')."},
-            returnValue = "void: Không trả về giá trị",
+            category = "DriverKeyword",
+            parameters = {
+                    "platform: String - Tên nền tảng cần khởi tạo (ví dụ: 'chrome', 'firefox', 'android', 'ios')"
+            },
+            returnValue = "void - Không trả về giá trị",
             example = "// Chỉ định khởi tạo trình duyệt Firefox\n" +
                     "driverKeyword.startBrowser(\"firefox\");",
-            prerequisites = {"File cấu hình properties phải tồn tại và chứa các thiết lập cần thiết cho nền tảng được chỉ định"},
-            exceptions = {"WebDriverException: Nếu không thể khởi tạo driver",
-                    "ConfigurationException: Nếu thiếu thông tin cấu hình cần thiết",
-                    "IllegalArgumentException: Nếu nền tảng được chỉ định không được hỗ trợ"},
-            platform = "ALL",
-            systemImpact = "MODIFY",
-            tags = {"browser", "session", "initialization", "custom-platform"}
+            note = "File cấu hình properties phải tồn tại và chứa các thiết lập cần thiết cho nền tảng được chỉ định. " +
+                    "Có thể throw WebDriverException nếu không thể khởi tạo driver, ConfigurationException nếu thiếu thông tin cấu hình, " +
+                    "hoặc IllegalArgumentException nếu nền tảng không được hỗ trợ."
     )
     @Step("Khởi tạo trình duyệt/thiết bị: {0}")
     public void startBrowser(String platform) {
@@ -65,16 +58,14 @@ public class DriverKeyword extends BaseKeyword {
 
     @NetatKeyword(
             name = "closeBrowser",
-            description = "Đóng hoàn toàn phiên trình duyệt hoặc thiết bị hiện tại và giải phóng tài nguyên. Phương thức này nên được gọi ở cuối mỗi test case để tránh rò rỉ tài nguyên.",
-            category = "Session/Lifecycle",
+            description = "Đóng hoàn toàn phiên trình duyệt hoặc thiết bị hiện tại và giải phóng tài nguyên. " +
+                    "Phương thức này nên được gọi ở cuối mỗi test case để tránh rò rỉ tài nguyên.",
+            category = "DriverKeyword",
             parameters = {},
-            returnValue = "void: Không trả về giá trị",
-            example = "// Đóng trình duyệt sau khi hoàn thành test case\ndriverKeyword.closeBrowser();",
-            prerequisites = {"Đã khởi tạo trình duyệt hoặc thiết bị trước đó"},
-            exceptions = {"WebDriverException: Nếu có lỗi khi đóng trình duyệt"},
-            platform = "ALL",
-            systemImpact = "MODIFY",
-            tags = {"browser", "session", "cleanup"}
+            returnValue = "void - Không trả về giá trị",
+            example = "// Đóng trình duyệt sau khi hoàn thành test case\n" +
+                    "driverKeyword.closeBrowser();",
+            note = "Đã khởi tạo trình duyệt hoặc thiết bị trước đó. Có thể throw WebDriverException nếu có lỗi khi đóng trình duyệt."
     )
     @Step("Đóng trình duyệt/thiết bị")
     public void closeBrowser() {
@@ -86,19 +77,21 @@ public class DriverKeyword extends BaseKeyword {
 
     @NetatKeyword(
             name = "startApplication",
-            description = "Khởi chạy một phiên làm việc mới hoặc kích hoạt lại ứng dụng nếu nó đang chạy nền. Luôn đảm bảo ứng dụng đang ở foreground. " +
-                    "Nếu phiên làm việc đã tồn tại, phương thức sẽ kích hoạt lại ứng dụng bằng cách sử dụng appPackage hoặc bundleId từ file cấu hình.",
-            category = "Session/Lifecycle",
-            parameters = {"String: platformName (Tùy chọn) - Tên nền tảng di động ('android', 'ios')."},
-            returnValue = "void: Không trả về giá trị",
-            example = "// Khởi chạy ứng dụng trên Android\ndriverKeyword.startApplication(\"android\");",
-            prerequisites = {"File cấu hình properties phải chứa 'capability.appium.appPackage' (Android) hoặc 'capability.appium.bundleId' (iOS)",
-                    "Appium server phải đang chạy"},
-            exceptions = {"WebDriverException: Nếu không thể khởi tạo driver hoặc kích hoạt ứng dụng",
-                    "ConfigurationException: Nếu thiếu thông tin cấu hình cần thiết"},
-            platform = "ANDROID, IOS",
-            systemImpact = "MODIFY",
-            tags = {"mobile", "application", "session", "initialization"}
+            description = "Khởi chạy một phiên làm việc mới hoặc kích hoạt lại ứng dụng nếu nó đang chạy nền. " +
+                    "Luôn đảm bảo ứng dụng đang ở foreground. Nếu phiên làm việc đã tồn tại, phương thức sẽ kích hoạt lại ứng dụng " +
+                    "bằng cách sử dụng appPackage hoặc bundleId từ file cấu hình.",
+            category = "DriverKeyword",
+            parameters = {
+                    "platformName: String (optional) - Tên nền tảng di động ('android', 'ios')"
+            },
+            returnValue = "void - Không trả về giá trị",
+            example = "// Khởi chạy ứng dụng trên Android\n" +
+                    "driverKeyword.startApplication(\"android\");\n\n" +
+                    "// Khởi chạy ứng dụng với cấu hình mặc định\n" +
+                    "driverKeyword.startApplication();",
+            note = "Áp dụng cho Android và iOS. File cấu hình properties phải chứa 'capability.appium.appPackage' (Android) " +
+                    "hoặc 'capability.appium.bundleId' (iOS). Appium server phải đang chạy. Có thể throw WebDriverException " +
+                    "nếu không thể khởi tạo driver hoặc kích hoạt ứng dụng, ConfigurationException nếu thiếu thông tin cấu hình."
     )
     @Step("Khởi chạy hoặc kích hoạt ứng dụng: {0}")
     public void startApplication(String... platformName) {
@@ -137,15 +130,13 @@ public class DriverKeyword extends BaseKeyword {
             name = "closeSession",
             description = "Đóng hoàn toàn phiên làm việc hiện tại (cả trình duyệt web và ứng dụng di động) và giải phóng tài nguyên. " +
                     "Phương thức này nên được gọi ở cuối mỗi test case để đảm bảo tất cả tài nguyên được giải phóng đúng cách.",
-            category = "Session/Lifecycle",
+            category = "DriverKeyword",
             parameters = {},
-            returnValue = "void: Không trả về giá trị",
-            example = "// Đóng phiên làm việc sau khi hoàn thành test case\ndriverKeyword.closeSession();",
-            prerequisites = {"Đã khởi tạo phiên làm việc trước đó bằng startBrowser hoặc startApplication"},
-            exceptions = {"WebDriverException: Nếu có lỗi khi đóng phiên làm việc"},
-            platform = "ALL",
-            systemImpact = "MODIFY",
-            tags = {"browser", "mobile", "session", "cleanup"}
+            returnValue = "void - Không trả về giá trị",
+            example = "// Đóng phiên làm việc sau khi hoàn thành test case\n" +
+                    "driverKeyword.closeSession();",
+            note = "Áp dụng cho tất cả nền tảng (web và mobile). Đã khởi tạo phiên làm việc trước đó bằng startBrowser hoặc startApplication. " +
+                    "Có thể throw WebDriverException nếu có lỗi khi đóng phiên làm việc."
     )
     @Step("Đóng phiên làm việc (trình duyệt/thiết bị)")
     public void closeSession() {

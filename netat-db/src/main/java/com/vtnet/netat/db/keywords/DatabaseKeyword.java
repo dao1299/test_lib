@@ -3,8 +3,8 @@ package com.vtnet.netat.db.keywords;
 import com.vtnet.netat.core.BaseKeyword;
 import com.vtnet.netat.core.annotations.NetatKeyword;
 import com.vtnet.netat.core.utils.DataFileHelper;
-import com.vtnet.netat.db.connection.ConnectionManager;
 import com.vtnet.netat.db.config.DatabaseProfile;
+import com.vtnet.netat.db.connection.ConnectionManager;
 import com.vtnet.netat.db.utils.DatabaseHelper;
 import com.vtnet.netat.db.utils.QueryHelper;
 import io.qameta.allure.Step;
@@ -28,20 +28,19 @@ public class DatabaseKeyword extends BaseKeyword {
 
     @NetatKeyword(
             name = "connectDatabase",
-            description = "Khởi tạo một connection pool dựa trên file profile. File profile chứa các thông tin cấu hình kết nối như URL, username, password, driver class, và các thuộc tính kết nối khác.",
+            description = "Khởi tạo một connection pool dựa trên file profile. " +
+                    "File profile chứa các thông tin cấu hình kết nối như URL, username, password, driver class, và các thuộc tính kết nối khác.",
             category = "DB/Connection",
-            parameters = {"String: profilePath - Đường dẫn đến file profile chứa thông tin cấu hình kết nối CSDL."},
-            returnValue = "void: Không trả về giá trị",
+            parameters = {
+                    "profilePath: String - Đường dẫn đến file profile chứa thông tin cấu hình kết nối CSDL"
+            },
+            returnValue = "void - Không trả về giá trị",
             example = "// Khởi tạo kết nối đến cơ sở dữ liệu từ file cấu hình\n" +
                     "databaseKeyword.connectDatabase(\"profiles/mysql_dev.properties\");",
-            prerequisites = {"File profile phải tồn tại và chứa thông tin cấu hình hợp lệ"},
-            exceptions = {"SQLException: Nếu không thể thiết lập kết nối đến CSDL",
-                    "FileNotFoundException: Nếu không tìm thấy file profile",
-                    "ConfigurationException: Nếu thông tin cấu hình trong profile không hợp lệ"},
-            platform = "ALL",
-            systemImpact = "MODIFY",
-            stability = "STABLE",
-            tags = {"database", "connection", "setup"}
+            note = "Áp dụng cho tất cả nền tảng. File profile phải tồn tại và chứa thông tin cấu hình hợp lệ. " +
+                    "Có thể throw SQLException nếu không thể thiết lập kết nối đến CSDL, " +
+                    "FileNotFoundException nếu không tìm thấy file profile, " +
+                    "hoặc ConfigurationException nếu thông tin cấu hình trong profile không hợp lệ."
     )
     @Step("Khởi tạo kết nối CSDL từ profile: {0}")
     public void connectDatabase(String profilePath) {
@@ -54,18 +53,15 @@ public class DatabaseKeyword extends BaseKeyword {
 
     @NetatKeyword(
             name = "disconnectAllDatabases",
-            description = "Đóng tất cả các connection pool đang hoạt động và giải phóng tài nguyên. Nên gọi phương thức này ở cuối mỗi test case hoặc test suite để đảm bảo tất cả kết nối được đóng đúng cách.",
+            description = "Đóng tất cả các connection pool đang hoạt động và giải phóng tài nguyên. " +
+                    "Nên gọi phương thức này ở cuối mỗi test case hoặc test suite để đảm bảo tất cả kết nối được đóng đúng cách.",
             category = "DB/Connection",
             parameters = {},
-            returnValue = "void: Không trả về giá trị",
+            returnValue = "void - Không trả về giá trị",
             example = "// Đóng tất cả kết nối CSDL sau khi hoàn thành test\n" +
                     "databaseKeyword.disconnectAllDatabases();",
-            prerequisites = {"Đã khởi tạo ít nhất một kết nối CSDL trước đó"},
-            exceptions = {"SQLException: Nếu có lỗi khi đóng kết nối"},
-            platform = "ALL",
-            systemImpact = "MODIFY",
-            stability = "STABLE",
-            tags = {"database", "connection", "cleanup"}
+            note = "Áp dụng cho tất cả nền tảng. Đã khởi tạo ít nhất một kết nối CSDL trước đó. " +
+                    "Có thể throw SQLException nếu có lỗi khi đóng kết nối."
     )
     @Step("Đóng tất cả các kết nối CSDL")
     public void disconnectAllDatabases() {
@@ -81,14 +77,16 @@ public class DatabaseKeyword extends BaseKeyword {
 
     @NetatKeyword(
             name = "executeQuery",
-            description = "Thực thi câu lệnh SELECT và trả về kết quả dưới dạng danh sách các bản ghi. Mỗi bản ghi là một Map với key là tên cột và value là giá trị của cột đó. Hỗ trợ truyền tham số vào câu truy vấn để tránh SQL injection.",
+            description = "Thực thi câu lệnh SELECT và trả về kết quả dưới dạng danh sách các bản ghi. " +
+                    "Mỗi bản ghi là một Map với key là tên cột và value là giá trị của cột đó. " +
+                    "Hỗ trợ truyền tham số vào câu truy vấn để tránh SQL injection.",
             category = "DB/Execution",
             parameters = {
-                    "String: profileName - Tên của profile kết nối CSDL đã được khởi tạo trước đó.",
-                    "String: query - Câu lệnh SQL SELECT cần thực thi, có thể chứa các placeholder '?' cho tham số.",
-                    "Object...: params - Các tham số cần truyền vào câu truy vấn, theo thứ tự xuất hiện của các placeholder '?'."
+                    "profileName: String - Tên của profile kết nối CSDL đã được khởi tạo trước đó",
+                    "query: String - Câu lệnh SQL SELECT cần thực thi, có thể chứa các placeholder '?' cho tham số",
+                    "params: Object... - Các tham số cần truyền vào câu truy vấn, theo thứ tự xuất hiện của các placeholder '?'"
             },
-            returnValue = "List<Map<String, Object>>: Danh sách các bản ghi, mỗi bản ghi là một Map với key là tên cột và value là giá trị",
+            returnValue = "List<Map<String, Object>> - Danh sách các bản ghi, mỗi bản ghi là một Map với key là tên cột và value là giá trị",
             example = "// Thực thi câu lệnh SELECT với tham số\n" +
                     "List<Map<String, Object>> users = databaseKeyword.executeQuery(\n" +
                     "    \"mysql_dev\", \n" +
@@ -97,13 +95,9 @@ public class DatabaseKeyword extends BaseKeyword {
                     ");\n\n" +
                     "// Truy cập dữ liệu từ kết quả\n" +
                     "String username = users.get(0).get(\"username\").toString();",
-            prerequisites = {"Đã khởi tạo kết nối CSDL với profileName tương ứng"},
-            exceptions = {"SQLException: Nếu có lỗi khi thực thi câu truy vấn",
-                    "IllegalArgumentException: Nếu profileName không tồn tại"},
-            platform = "ALL",
-            systemImpact = "READ_ONLY",
-            stability = "STABLE",
-            tags = {"database", "query", "select"}
+            note = "Áp dụng cho tất cả nền tảng. Đã khởi tạo kết nối CSDL với profileName tương ứng. " +
+                    "Có thể throw SQLException nếu có lỗi khi thực thi câu truy vấn, " +
+                    "hoặc IllegalArgumentException nếu profileName không tồn tại."
     )
     @Step("Thực thi câu lệnh SELECT trên [{0}]: {1}")
     public List<Map<String, Object>> executeQuery(String profileName, String query, Object... params) {
@@ -112,14 +106,15 @@ public class DatabaseKeyword extends BaseKeyword {
 
     @NetatKeyword(
             name = "executeUpdate",
-            description = "Thực thi câu lệnh INSERT, UPDATE, DELETE và trả về số bản ghi bị ảnh hưởng. Hỗ trợ truyền tham số vào câu truy vấn để tránh SQL injection.",
+            description = "Thực thi câu lệnh INSERT, UPDATE, DELETE và trả về số bản ghi bị ảnh hưởng. " +
+                    "Hỗ trợ truyền tham số vào câu truy vấn để tránh SQL injection.",
             category = "DB/Execution",
             parameters = {
-                    "String: profileName - Tên của profile kết nối CSDL đã được khởi tạo trước đó.",
-                    "String: query - Câu lệnh SQL INSERT, UPDATE hoặc DELETE cần thực thi, có thể chứa các placeholder '?' cho tham số.",
-                    "Object...: params - Các tham số cần truyền vào câu truy vấn, theo thứ tự xuất hiện của các placeholder '?'."
+                    "profileName: String - Tên của profile kết nối CSDL đã được khởi tạo trước đó",
+                    "query: String - Câu lệnh SQL INSERT, UPDATE hoặc DELETE cần thực thi, có thể chứa các placeholder '?' cho tham số",
+                    "params: Object... - Các tham số cần truyền vào câu truy vấn, theo thứ tự xuất hiện của các placeholder '?'"
             },
-            returnValue = "int: Số bản ghi bị ảnh hưởng bởi câu lệnh",
+            returnValue = "int - Số bản ghi bị ảnh hưởng bởi câu lệnh",
             example = "// Thêm một bản ghi mới vào bảng users\n" +
                     "int rowsAffected = databaseKeyword.executeUpdate(\n" +
                     "    \"mysql_dev\", \n" +
@@ -128,13 +123,9 @@ public class DatabaseKeyword extends BaseKeyword {
                     ");\n\n" +
                     "// Kiểm tra xem có đúng một bản ghi được thêm vào không\n" +
                     "Assert.assertEquals(rowsAffected, 1);",
-            prerequisites = {"Đã khởi tạo kết nối CSDL với profileName tương ứng"},
-            exceptions = {"SQLException: Nếu có lỗi khi thực thi câu lệnh",
-                    "IllegalArgumentException: Nếu profileName không tồn tại"},
-            platform = "ALL",
-            systemImpact = "MODIFY",
-            stability = "STABLE",
-            tags = {"database", "update", "insert", "delete"}
+            note = "Áp dụng cho tất cả nền tảng. Đã khởi tạo kết nối CSDL với profileName tương ứng. " +
+                    "Có thể throw SQLException nếu có lỗi khi thực thi câu lệnh, " +
+                    "hoặc IllegalArgumentException nếu profileName không tồn tại."
     )
     @Step("Thực thi câu lệnh UPDATE trên [{0}]: {1}")
     public int executeUpdate(String profileName, String query, Object... params) {
@@ -155,15 +146,17 @@ public class DatabaseKeyword extends BaseKeyword {
 
     @NetatKeyword(
             name = "verifyRecordExists",
-            description = "Kiểm tra sự tồn tại của ít nhất một bản ghi thỏa mãn điều kiện trong câu truy vấn. Phương thức này thực thi câu lệnh SELECT và kiểm tra xem kết quả có trống không, sau đó so sánh với giá trị mong đợi.",
+            description = "Kiểm tra sự tồn tại của ít nhất một bản ghi thỏa mãn điều kiện trong câu truy vấn. " +
+                    "Phương thức này thực thi câu lệnh SELECT và kiểm tra xem kết quả có trống không, " +
+                    "sau đó so sánh với giá trị mong đợi.",
             category = "DB/Verification",
             parameters = {
-                    "String: profileName - Tên của profile kết nối CSDL đã được khởi tạo trước đó.",
-                    "String: query - Câu lệnh SQL SELECT cần thực thi để kiểm tra sự tồn tại của bản ghi.",
-                    "boolean: expectedExists - Giá trị mong đợi: true nếu mong đợi bản ghi tồn tại, false nếu mong đợi không tồn tại.",
-                    "Object...: params - Các tham số cần truyền vào câu truy vấn, theo thứ tự xuất hiện của các placeholder '?'."
+                    "profileName: String - Tên của profile kết nối CSDL đã được khởi tạo trước đó",
+                    "query: String - Câu lệnh SQL SELECT cần thực thi để kiểm tra sự tồn tại của bản ghi",
+                    "expectedExists: boolean - Giá trị mong đợi: true nếu mong đợi bản ghi tồn tại, false nếu mong đợi không tồn tại",
+                    "params: Object... - Các tham số cần truyền vào câu truy vấn, theo thứ tự xuất hiện của các placeholder '?'"
             },
-            returnValue = "void: Không trả về giá trị, nhưng sẽ ném AssertionError nếu kiểm chứng thất bại",
+            returnValue = "void - Không trả về giá trị, nhưng sẽ ném AssertionError nếu kiểm chứng thất bại",
             example = "// Kiểm tra xem người dùng với email cụ thể có tồn tại không\n" +
                     "databaseKeyword.verifyRecordExists(\n" +
                     "    \"mysql_dev\", \n" +
@@ -178,13 +171,9 @@ public class DatabaseKeyword extends BaseKeyword {
                     "    false, // Mong đợi không có bản ghi nào\n" +
                     "    \"cancelled\"\n" +
                     ");",
-            prerequisites = {"Đã khởi tạo kết nối CSDL với profileName tương ứng"},
-            exceptions = {"SQLException: Nếu có lỗi khi thực thi câu truy vấn",
-                    "AssertionError: Nếu kết quả kiểm chứng không khớp với giá trị mong đợi"},
-            platform = "ALL",
-            systemImpact = "READ_ONLY",
-            stability = "STABLE",
-            tags = {"database", "verification", "assertion"}
+            note = "Áp dụng cho tất cả nền tảng. Đã khởi tạo kết nối CSDL với profileName tương ứng. " +
+                    "Có thể throw SQLException nếu có lỗi khi thực thi câu truy vấn, " +
+                    "hoặc AssertionError nếu kết quả kiểm chứng không khớp với giá trị mong đợi."
     )
     @Step("Kiểm tra sự tồn tại của bản ghi trên [{0}] khớp với điều kiện: {1}")
     public void verifyRecordExists(String profileName, String query, boolean expectedExists, Object... params) {
@@ -197,16 +186,17 @@ public class DatabaseKeyword extends BaseKeyword {
 
     @NetatKeyword(
             name = "verifyDataSQL",
-            description = "Thực thi câu lệnh SQL và kiểm chứng kết quả với dữ liệu mong đợi. Phương thức này so sánh từng cột trong từng hàng của kết quả với dữ liệu mong đợi được cung cấp.",
+            description = "Thực thi câu lệnh SQL và kiểm chứng kết quả với dữ liệu mong đợi. " +
+                    "Phương thức này so sánh từng cột trong từng hàng của kết quả với dữ liệu mong đợi được cung cấp.",
             category = "DB/Verification",
             parameters = {
-                    "String: profileName - Tên của profile kết nối CSDL đã được khởi tạo trước đó.",
-                    "String: query - Câu lệnh SQL SELECT cần thực thi để lấy dữ liệu cần kiểm chứng.",
-                    "String[]: expectedColumnNames - Mảng các tên cột cần kiểm chứng.",
-                    "Object[][]: expectedData - Mảng 2 chiều chứa dữ liệu mong đợi, mỗi hàng tương ứng với một bản ghi và các cột tương ứng với expectedColumnNames.",
-                    "Object...: queryParams - Các tham số cần truyền vào câu truy vấn, theo thứ tự xuất hiện của các placeholder '?'."
+                    "profileName: String - Tên của profile kết nối CSDL đã được khởi tạo trước đó",
+                    "query: String - Câu lệnh SQL SELECT cần thực thi để lấy dữ liệu cần kiểm chứng",
+                    "expectedColumnNames: String[] - Mảng các tên cột cần kiểm chứng",
+                    "expectedData: Object[][] - Mảng 2 chiều chứa dữ liệu mong đợi, mỗi hàng tương ứng với một bản ghi và các cột tương ứng với expectedColumnNames",
+                    "queryParams: Object... - Các tham số cần truyền vào câu truy vấn, theo thứ tự xuất hiện của các placeholder '?'"
             },
-            returnValue = "void: Không trả về giá trị, nhưng sẽ ném AssertionError nếu kiểm chứng thất bại",
+            returnValue = "void - Không trả về giá trị, nhưng sẽ ném AssertionError nếu kiểm chứng thất bại",
             example = "// Kiểm tra dữ liệu người dùng\n" +
                     "String[] columns = {\"username\", \"email\", \"status\"};\n" +
                     "Object[][] expectedData = {\n" +
@@ -220,14 +210,10 @@ public class DatabaseKeyword extends BaseKeyword {
                     "    expectedData,\n" +
                     "    \"IT\"\n" +
                     ");",
-            prerequisites = {"Đã khởi tạo kết nối CSDL với profileName tương ứng"},
-            exceptions = {"SQLException: Nếu có lỗi khi thực thi câu truy vấn",
-                    "AssertionError: Nếu kết quả kiểm chứng không khớp với dữ liệu mong đợi",
-                    "IllegalArgumentException: Nếu cấu trúc dữ liệu mong đợi không hợp lệ"},
-            platform = "ALL",
-            systemImpact = "READ_ONLY",
-            stability = "STABLE",
-            tags = {"database", "verification", "assertion", "data-comparison"}
+            note = "Áp dụng cho tất cả nền tảng. Đã khởi tạo kết nối CSDL với profileName tương ứng. " +
+                    "Có thể throw SQLException nếu có lỗi khi thực thi câu truy vấn, " +
+                    "AssertionError nếu kết quả kiểm chứng không khớp với dữ liệu mong đợi, " +
+                    "hoặc IllegalArgumentException nếu cấu trúc dữ liệu mong đợi không hợp lệ."
     )
     @Step("Kiểm chứng dữ liệu trên [{0}] bằng câu lệnh SQL trực tiếp")
     public void verifyDataSQL(String profileName, String query, String[] expectedColumnNames, Object[][] expectedData, Object... queryParams) {
@@ -254,14 +240,16 @@ public class DatabaseKeyword extends BaseKeyword {
 
     @NetatKeyword(
             name = "verifyDataByQueryFile",
-            description = "Thực thi câu lệnh SQL từ file và kiểm chứng kết quả với dữ liệu từ file dữ liệu. Phương thức này tách biệt câu truy vấn và dữ liệu kiểm chứng vào các file riêng biệt, giúp quản lý test case dễ dàng hơn.",
+            description = "Thực thi câu lệnh SQL từ file và kiểm chứng kết quả với dữ liệu từ file dữ liệu. " +
+                    "Phương thức này tách biệt câu truy vấn và dữ liệu kiểm chứng vào các file riêng biệt, " +
+                    "giúp quản lý test case dễ dàng hơn.",
             category = "DB/Verification",
             parameters = {
-                    "String: profileName - Tên của profile kết nối CSDL đã được khởi tạo trước đó.",
-                    "String: queryPath - Đường dẫn đến file chứa câu lệnh SQL cần thực thi.",
-                    "String: dataFilePath - Đường dẫn đến file dữ liệu chứa các tham số truy vấn và dữ liệu mong đợi."
+                    "profileName: String - Tên của profile kết nối CSDL đã được khởi tạo trước đó",
+                    "queryPath: String - Đường dẫn đến file chứa câu lệnh SQL cần thực thi",
+                    "dataFilePath: String - Đường dẫn đến file dữ liệu chứa các tham số truy vấn và dữ liệu mong đợi"
             },
-            returnValue = "void: Không trả về giá trị, nhưng sẽ ném AssertionError nếu kiểm chứng thất bại",
+            returnValue = "void - Không trả về giá trị, nhưng sẽ ném AssertionError nếu kiểm chứng thất bại",
             example = "// Kiểm tra dữ liệu người dùng sử dụng file\n" +
                     "databaseKeyword.verifyDataByQueryFile(\n" +
                     "    \"mysql_dev\",\n" +
@@ -270,20 +258,12 @@ public class DatabaseKeyword extends BaseKeyword {
                     ");\n\n" +
                     "// File SQL có thể chứa: SELECT username, email, status FROM users WHERE department = ?\n" +
                     "// File dữ liệu có thể chứa: {param_1: \"IT\", username: \"john.doe\", email: \"john.doe@example.com\", status: \"active\"}",
-            prerequisites = {
-                    "Đã khởi tạo kết nối CSDL với profileName tương ứng",
-                    "File SQL và file dữ liệu phải tồn tại và có định dạng hợp lệ"
-            },
-            exceptions = {
-                    "SQLException: Nếu có lỗi khi thực thi câu truy vấn",
-                    "AssertionError: Nếu kết quả kiểm chứng không khớp với dữ liệu mong đợi",
-                    "FileNotFoundException: Nếu không tìm thấy file SQL hoặc file dữ liệu",
-                    "IOException: Nếu có lỗi khi đọc file"
-            },
-            platform = "ALL",
-            systemImpact = "READ_ONLY",
-            stability = "STABLE",
-            tags = {"database", "verification", "file-based", "data-driven"}
+            note = "Áp dụng cho tất cả nền tảng. Đã khởi tạo kết nối CSDL với profileName tương ứng, " +
+                    "File SQL và file dữ liệu phải tồn tại và có định dạng hợp lệ. " +
+                    "Có thể throw SQLException nếu có lỗi khi thực thi câu truy vấn, " +
+                    "AssertionError nếu kết quả kiểm chứng không khớp với dữ liệu mong đợi, " +
+                    "FileNotFoundException nếu không tìm thấy file SQL hoặc file dữ liệu, " +
+                    "hoặc IOException nếu có lỗi khi đọc file."
     )
     @Step("Kiểm chứng dữ liệu trên [{0}] bằng file query [{1}] và file data [{2}]")
     public void verifyDataByQueryFile(String profileName, String queryPath, String dataFilePath) {

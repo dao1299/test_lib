@@ -40,7 +40,7 @@ public abstract class BaseKeyword {
                 .map(p -> Objects.toString(p, "null"))
                 .collect(Collectors.joining(", "));
 
-        logger.info("🚀 KEYWORD START: {} | Parameters: [{}]", keywordName, paramsString);
+        logger.info("KEYWORD START: {} | Parameters: [{}]", keywordName, paramsString);
         long startTime = System.currentTimeMillis();
 
         try {

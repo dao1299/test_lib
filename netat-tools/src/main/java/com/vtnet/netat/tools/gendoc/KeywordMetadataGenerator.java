@@ -1,4 +1,5 @@
 package com.vtnet.netat.tools.gendoc;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.vtnet.netat.core.annotations.NetatKeyword;
@@ -30,48 +31,64 @@ public class KeywordMetadataGenerator {
             info.setCategory(annotation.category());
             info.setExample(annotation.example());
 
-            // Thêm các trường mới từ annotation
+            // Xử lý returnValue (định dạng mới: "Type - Description")
             info.setReturnValue(annotation.returnValue());
-            info.setPrerequisites(Arrays.asList(annotation.prerequisites()));
-            info.setExceptions(Arrays.asList(annotation.exceptions()));
-            info.setPlatform(annotation.platform());
-            info.setSystemImpact(annotation.systemImpact());
-            info.setStability(annotation.stability());
-            info.setTags(Arrays.asList(annotation.tags()));
+
+            // Xử lý note (thay thế cho prerequisites, exceptions, platform, systemImpact, stability, tags)
+            info.setNote(annotation.note());
 
             // Thêm thông tin về lớp và phương thức
             info.setClassName(method.getDeclaringClass().getName());
             info.setMethodName(method.getName());
             info.setReturnType(method.getReturnType().getSimpleName());
 
-            // 2. Xử lý thông tin tham số
+            // 2. Xử lý thông tin tham số (định dạng mới)
             List<ParameterInfo> parameterInfos = new ArrayList<>();
 
-            // Trước tiên, lấy các thông tin tham số từ annotation
+            // Lấy các thông tin tham số từ annotation (định dạng mới: "name: Type - Description")
             String[] annotationParams = annotation.parameters();
 
-            // Sau đó, kết hợp với thông tin từ phương thức thực tế
+            // Lấy thông tin từ phương thức thực tế
             Parameter[] methodParams = method.getParameters();
 
-            // Nếu số lượng tham số từ annotation khớp với số lượng tham số của phương thức
-            if (annotationParams.length == methodParams.length) {
+            // Xử lý trường hợp parameters rỗng (chỉ có {})
+            if (annotationParams.length == 1 && annotationParams[0].trim().isEmpty()) {
+                // Không có tham số, chỉ sử dụng thông tin từ phương thức nếu có
+                for (Parameter parameter : methodParams) {
+                    ParameterInfo paramInfo = new ParameterInfo();
+                    paramInfo.setType(parameter.getType().getSimpleName());
+                    paramInfo.setName(parameter.getName());
+                    paramInfo.setDescription("");
+                    parameterInfos.add(paramInfo);
+                }
+            } else if (annotationParams.length == methodParams.length) {
+                // Số lượng tham số từ annotation khớp với số lượng tham số của phương thức
                 for (int i = 0; i < methodParams.length; i++) {
                     ParameterInfo paramInfo = new ParameterInfo();
                     paramInfo.setType(methodParams[i].getType().getSimpleName());
                     paramInfo.setName(methodParams[i].getName());
 
-                    // Phân tích chuỗi mô tả tham số từ annotation
+                    // Phân tích chuỗi mô tả tham số từ annotation (định dạng mới: "name: Type - Description")
                     String annotationParamDesc = annotationParams[i];
-                    if (annotationParamDesc != null && !annotationParamDesc.isEmpty()) {
-                        // Thường có định dạng "Type: name - description"
+                    if (annotationParamDesc != null && !annotationParamDesc.trim().isEmpty()) {
+                        // Định dạng mới: "name: Type - Description"
                         String[] parts = annotationParamDesc.split(" - ", 2);
-                        if (parts.length > 0) {
-                            String typeAndName = parts[0];
-                            String[] typeNameParts = typeAndName.split(": ", 2);
-                            if (typeNameParts.length > 1) {
-                                paramInfo.setDescription(parts.length > 1 ? parts[1] : "");
-                            }
+                        if (parts.length > 1) {
+                            paramInfo.setDescription(parts[1]);
+                        } else {
+                            paramInfo.setDescription("");
                         }
+
+                        // Lấy tên và type từ phần đầu
+                        String nameAndType = parts[0];
+                        String[] nameTypeParts = nameAndType.split(": ", 2);
+                        if (nameTypeParts.length > 1) {
+                            // Có thể override tên nếu cần
+                            // paramInfo.setName(nameTypeParts[0]);
+                            // Type đã được lấy từ method parameter
+                        }
+                    } else {
+                        paramInfo.setDescription("");
                     }
 
                     parameterInfos.add(paramInfo);
@@ -82,6 +99,7 @@ public class KeywordMetadataGenerator {
                     ParameterInfo paramInfo = new ParameterInfo();
                     paramInfo.setType(parameter.getType().getSimpleName());
                     paramInfo.setName(parameter.getName());
+                    paramInfo.setDescription("");
                     parameterInfos.add(paramInfo);
                 }
             }
