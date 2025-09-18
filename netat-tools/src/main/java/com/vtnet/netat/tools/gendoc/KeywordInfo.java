@@ -6,6 +6,7 @@ class KeywordInfo {
     private String name;
     private String description;
     private String category;
+    private String subCategory;
     private String example;
     private String returnValue;
     private String note;
@@ -37,6 +38,14 @@ class KeywordInfo {
 
     public void setCategory(String category) {
         this.category = category;
+    }
+
+    public String getSubCategory() {
+        return subCategory;
+    }
+
+    public void setSubCategory(String subCategory) {
+        this.subCategory = subCategory;
     }
 
     public String getExample() {

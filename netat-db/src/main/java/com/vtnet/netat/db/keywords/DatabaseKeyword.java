@@ -17,20 +17,21 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Cung cấp một bộ các keyword để tương tác và kiểm thử cơ sở dữ liệu.
- * Kế thừa từ BaseKeyword để có các tính năng logging, retry, và reporting.
+ * Provides a set of keywords for interacting with and testing databases.
+ * Inherits from BaseKeyword to have logging, retry, and reporting features.
  */
 public class DatabaseKeyword extends BaseKeyword {
 
     // =================================================================================================
-    // KEYWORDS QUẢN LÝ KẾT NỐI
+    // CONNECTION MANAGEMENT KEYWORDS
     // =================================================================================================
 
     @NetatKeyword(
             name = "connectDatabase",
             description = "Khởi tạo một connection pool dựa trên file profile. " +
                     "File profile chứa các thông tin cấu hình kết nối như URL, username, password, driver class, và các thuộc tính kết nối khác.",
-            category = "DB/Connection",
+            category = "DB",
+subCategory="Connection",
             parameters = {
                     "profilePath: String - Đường dẫn đến file profile chứa thông tin cấu hình kết nối CSDL"
             },
@@ -42,7 +43,7 @@ public class DatabaseKeyword extends BaseKeyword {
                     "FileNotFoundException nếu không tìm thấy file profile, " +
                     "hoặc ConfigurationException nếu thông tin cấu hình trong profile không hợp lệ."
     )
-    @Step("Khởi tạo kết nối CSDL từ profile: {0}")
+    @Step("Initialize database connection from profile: {0}")
     public void connectDatabase(String profilePath) {
         execute(() -> {
             DatabaseProfile profile = DatabaseHelper.getProfile(profilePath);
@@ -55,7 +56,8 @@ public class DatabaseKeyword extends BaseKeyword {
             name = "disconnectAllDatabases",
             description = "Đóng tất cả các connection pool đang hoạt động và giải phóng tài nguyên. " +
                     "Nên gọi phương thức này ở cuối mỗi test case hoặc test suite để đảm bảo tất cả kết nối được đóng đúng cách.",
-            category = "DB/Connection",
+            category = "DB",
+subCategory="Connection",
             parameters = {},
             returnValue = "void - Không trả về giá trị",
             example = "// Đóng tất cả kết nối CSDL sau khi hoàn thành test\n" +
@@ -63,7 +65,7 @@ public class DatabaseKeyword extends BaseKeyword {
             note = "Áp dụng cho tất cả nền tảng. Đã khởi tạo ít nhất một kết nối CSDL trước đó. " +
                     "Có thể throw SQLException nếu có lỗi khi đóng kết nối."
     )
-    @Step("Đóng tất cả các kết nối CSDL")
+    @Step("Close all database connections")
     public void disconnectAllDatabases() {
         execute(() -> {
             ConnectionManager.closeAll();
@@ -72,7 +74,7 @@ public class DatabaseKeyword extends BaseKeyword {
     }
 
     // =================================================================================================
-    // KEYWORDS THỰC THI (PRO-CODE)
+    // EXECUTION KEYWORDS (PRO-CODE)
     // =================================================================================================
 
     @NetatKeyword(
@@ -80,7 +82,8 @@ public class DatabaseKeyword extends BaseKeyword {
             description = "Thực thi câu lệnh SELECT và trả về kết quả dưới dạng danh sách các bản ghi. " +
                     "Mỗi bản ghi là một Map với key là tên cột và value là giá trị của cột đó. " +
                     "Hỗ trợ truyền tham số vào câu truy vấn để tránh SQL injection.",
-            category = "DB/Execution",
+            category = "DB",
+subCategory="Execution",
             parameters = {
                     "profileName: String - Tên của profile kết nối CSDL đã được khởi tạo trước đó",
                     "query: String - Câu lệnh SQL SELECT cần thực thi, có thể chứa các placeholder '?' cho tham số",
@@ -99,7 +102,7 @@ public class DatabaseKeyword extends BaseKeyword {
                     "Có thể throw SQLException nếu có lỗi khi thực thi câu truy vấn, " +
                     "hoặc IllegalArgumentException nếu profileName không tồn tại."
     )
-    @Step("Thực thi câu lệnh SELECT trên [{0}]: {1}")
+    @Step("Execute SELECT statement on [{0}]: {1}")
     public List<Map<String, Object>> executeQuery(String profileName, String query, Object... params) {
         return execute(() -> executeQueryWithParams(profileName, query, params), profileName, query, params);
     }
@@ -108,7 +111,8 @@ public class DatabaseKeyword extends BaseKeyword {
             name = "executeUpdate",
             description = "Thực thi câu lệnh INSERT, UPDATE, DELETE và trả về số bản ghi bị ảnh hưởng. " +
                     "Hỗ trợ truyền tham số vào câu truy vấn để tránh SQL injection.",
-            category = "DB/Execution",
+            category = "DB",
+subCategory="Execution",
             parameters = {
                     "profileName: String - Tên của profile kết nối CSDL đã được khởi tạo trước đó",
                     "query: String - Câu lệnh SQL INSERT, UPDATE hoặc DELETE cần thực thi, có thể chứa các placeholder '?' cho tham số",
@@ -127,7 +131,7 @@ public class DatabaseKeyword extends BaseKeyword {
                     "Có thể throw SQLException nếu có lỗi khi thực thi câu lệnh, " +
                     "hoặc IllegalArgumentException nếu profileName không tồn tại."
     )
-    @Step("Thực thi câu lệnh UPDATE trên [{0}]: {1}")
+    @Step("Execute UPDATE statement on [{0}]: {1}")
     public int executeUpdate(String profileName, String query, Object... params) {
         return execute(() -> {
             try (Connection conn = ConnectionManager.getConnection(profileName);
@@ -141,7 +145,7 @@ public class DatabaseKeyword extends BaseKeyword {
     }
 
     // =================================================================================================
-    // KEYWORDS KIỂM CHỨNG (PRO-CODE & LOW-CODE)
+    // VERIFICATION KEYWORDS (PRO-CODE & LOW-CODE)
     // =================================================================================================
 
     @NetatKeyword(
@@ -149,7 +153,8 @@ public class DatabaseKeyword extends BaseKeyword {
             description = "Kiểm tra sự tồn tại của ít nhất một bản ghi thỏa mãn điều kiện trong câu truy vấn. " +
                     "Phương thức này thực thi câu lệnh SELECT và kiểm tra xem kết quả có trống không, " +
                     "sau đó so sánh với giá trị mong đợi.",
-            category = "DB/Verification",
+            category = "DB",
+subCategory="Verification",
             parameters = {
                     "profileName: String - Tên của profile kết nối CSDL đã được khởi tạo trước đó",
                     "query: String - Câu lệnh SQL SELECT cần thực thi để kiểm tra sự tồn tại của bản ghi",
@@ -175,11 +180,11 @@ public class DatabaseKeyword extends BaseKeyword {
                     "Có thể throw SQLException nếu có lỗi khi thực thi câu truy vấn, " +
                     "hoặc AssertionError nếu kết quả kiểm chứng không khớp với giá trị mong đợi."
     )
-    @Step("Kiểm tra sự tồn tại của bản ghi trên [{0}] khớp với điều kiện: {1}")
+    @Step("Check record existence on [{0}] matching condition: {1}")
     public void verifyRecordExists(String profileName, String query, boolean expectedExists, Object... params) {
         execute(() -> {
             List<Map<String, Object>> result = executeQueryWithParams(profileName, query, params);
-            Assert.assertEquals(!result.isEmpty(), expectedExists, "Kiểm tra sự tồn tại của bản ghi thất bại.");
+            Assert.assertEquals(!result.isEmpty(), expectedExists, "Record existence verification failed.");
             return null;
         }, profileName, query, expectedExists, params);
     }
@@ -188,7 +193,8 @@ public class DatabaseKeyword extends BaseKeyword {
             name = "verifyDataSQL",
             description = "Thực thi câu lệnh SQL và kiểm chứng kết quả với dữ liệu mong đợi. " +
                     "Phương thức này so sánh từng cột trong từng hàng của kết quả với dữ liệu mong đợi được cung cấp.",
-            category = "DB/Verification",
+            category = "DB",
+subCategory="Verification",
             parameters = {
                     "profileName: String - Tên của profile kết nối CSDL đã được khởi tạo trước đó",
                     "query: String - Câu lệnh SQL SELECT cần thực thi để lấy dữ liệu cần kiểm chứng",
@@ -215,23 +221,23 @@ public class DatabaseKeyword extends BaseKeyword {
                     "AssertionError nếu kết quả kiểm chứng không khớp với dữ liệu mong đợi, " +
                     "hoặc IllegalArgumentException nếu cấu trúc dữ liệu mong đợi không hợp lệ."
     )
-    @Step("Kiểm chứng dữ liệu trên [{0}] bằng câu lệnh SQL trực tiếp")
+    @Step("Verify data on [{0}] using direct SQL statement")
     public void verifyDataSQL(String profileName, String query, String[] expectedColumnNames, Object[][] expectedData, Object... queryParams) {
         execute(() -> {
             List<Map<String, Object>> actualResult = executeQueryWithParams(profileName, query, queryParams);
-            Assert.assertEquals(actualResult.size(), expectedData.length, "Lỗi kiểm chứng: Số lượng hàng trả về không khớp.");
+            Assert.assertEquals(actualResult.size(), expectedData.length, "Verification error: Number of returned rows does not match.");
 
             for (int i = 0; i < expectedData.length; i++) {
                 Map<String, Object> actualRow = actualResult.get(i);
                 Object[] expectedRow = expectedData[i];
-                Assert.assertEquals(expectedRow.length, expectedColumnNames.length, "Lỗi cấu hình: Số cột trong dữ liệu mong đợi không khớp với số cột header ở hàng " + (i + 1));
+                Assert.assertEquals(expectedRow.length, expectedColumnNames.length, "Configuration error: Number of columns in expected data does not match number of header columns at row " + (i + 1));
 
                 for (int j = 0; j < expectedColumnNames.length; j++) {
                     String columnName = expectedColumnNames[j];
                     Object expectedValue = expectedRow[j];
-                    Assert.assertTrue(actualRow.containsKey(columnName), "Cột '" + columnName + "' không tồn tại trong kết quả truy vấn.");
+                    Assert.assertTrue(actualRow.containsKey(columnName), "Column '" + columnName + "' does not exist in query result.");
                     Object actualValue = actualRow.get(columnName);
-                    Assert.assertEquals(String.valueOf(actualValue), String.valueOf(expectedValue), "Lỗi kiểm chứng ở hàng " + (i + 1) + ", cột '" + columnName + "' không khớp.");
+                    Assert.assertEquals(String.valueOf(actualValue), String.valueOf(expectedValue), "Verification error at row " + (i + 1) + ", column '" + columnName + "' does not match.");
                 }
             }
             return null;
@@ -243,7 +249,8 @@ public class DatabaseKeyword extends BaseKeyword {
             description = "Thực thi câu lệnh SQL từ file và kiểm chứng kết quả với dữ liệu từ file dữ liệu. " +
                     "Phương thức này tách biệt câu truy vấn và dữ liệu kiểm chứng vào các file riêng biệt, " +
                     "giúp quản lý test case dễ dàng hơn.",
-            category = "DB/Verification",
+            category = "DB",
+subCategory="Verification",
             parameters = {
                     "profileName: String - Tên của profile kết nối CSDL đã được khởi tạo trước đó",
                     "queryPath: String - Đường dẫn đến file chứa câu lệnh SQL cần thực thi",
@@ -265,12 +272,12 @@ public class DatabaseKeyword extends BaseKeyword {
                     "FileNotFoundException nếu không tìm thấy file SQL hoặc file dữ liệu, " +
                     "hoặc IOException nếu có lỗi khi đọc file."
     )
-    @Step("Kiểm chứng dữ liệu trên [{0}] bằng file query [{1}] và file data [{2}]")
+    @Step("Verify data on [{0}] using query file [{1}] and data file [{2}]")
     public void verifyDataByQueryFile(String profileName, String queryPath, String dataFilePath) {
         execute(() -> {
             String baseQuery = QueryHelper.getQuery(queryPath);
             Object[][] data = DataFileHelper.getTestData(dataFilePath);
-            Assert.assertTrue(data.length > 0, "File dữ liệu kiểm chứng không có dữ liệu: " + dataFilePath);
+            Assert.assertTrue(data.length > 0, "Verification data file has no data: " + dataFilePath);
             Map<String, String> expectedDataMap = (Map<String, String>) data[0][0];
 
             List<Object> queryParams = new ArrayList<>();
@@ -284,13 +291,13 @@ public class DatabaseKeyword extends BaseKeyword {
             }
 
             List<Map<String, Object>> result = executeQueryWithParams(profileName, baseQuery, queryParams.toArray());
-            Assert.assertFalse(result.isEmpty(), "Câu lệnh SELECT không trả về bản ghi nào.");
+            Assert.assertFalse(result.isEmpty(), "SELECT statement returned no records.");
             Map<String, Object> actualDataRow = result.get(0);
 
             for (Map.Entry<String, Object> entry : verificationData.entrySet()) {
                 String columnName = entry.getKey();
                 Object expectedValue = entry.getValue();
-                Assert.assertTrue(actualDataRow.containsKey(columnName), "Cột '" + columnName + "' không tồn tại.");
+                Assert.assertTrue(actualDataRow.containsKey(columnName), "Column '" + columnName + "' does not exist.");
                 Assert.assertEquals(String.valueOf(actualDataRow.get(columnName)), String.valueOf(expectedValue));
             }
             return null;
@@ -298,7 +305,7 @@ public class DatabaseKeyword extends BaseKeyword {
     }
 
     // =================================================================================================
-    // PHƯƠNG THỨC HỖ TRỢ (PRIVATE)
+    // SUPPORT METHODS (PRIVATE)
     // =================================================================================================
 
     private List<Map<String, Object>> executeQueryWithParams(String profileName, String query, Object... params) throws SQLException {

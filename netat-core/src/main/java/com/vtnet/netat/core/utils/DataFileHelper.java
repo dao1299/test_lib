@@ -14,13 +14,13 @@ public final class DataFileHelper {
 
     public static Object[][] getTestData(String relativeDataSourcePath) {
         String fullJsonPath = Paths.get(DATA_SOURCE_REPO_PATH, relativeDataSourcePath + ".json").toString();
-        log.info("Đang đọc file định nghĩa nguồn dữ liệu tại: {}", fullJsonPath);
+        log.info("Reading data source definition file at: {}", fullJsonPath);
         try {
             String jsonConfig = new String(Files.readAllBytes(Paths.get(fullJsonPath)));
             return DataUtils.getTestDataFromJson(jsonConfig);
         } catch (Exception e) {
-            log.error("Lỗi khi đọc hoặc xử lý file định nghĩa nguồn dữ liệu tại '{}'.", fullJsonPath, e);
-            throw new RuntimeException("Không thể lấy dữ liệu test từ: " + relativeDataSourcePath, e);
+            log.error("Critical error reading or processing data source definition file at '{}'.", fullJsonPath, e);
+            throw new RuntimeException("Cannot retrieve test data from: " + relativeDataSourcePath, e);
         }
     }
 }

@@ -19,7 +19,7 @@ public class AssertionKeyword extends BaseKeyword {
                     "// Thực hiện kiểm tra tất cả các assertion\n" +
                     "assertAll();"
     )
-    @Step("Tổng hợp kết quả Soft Assert")
+    @Step("Aggregate Soft Assert results")
     public void assertAll() {
         execute(() -> {
             ExecutionContext context = ExecutionContext.getInstance();

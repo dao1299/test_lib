@@ -1,12 +1,12 @@
 package com.vtnet.netat.web.ai;
 
 import com.vtnet.netat.driver.ConfigReader;
-
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.googleai.GoogleAiGeminiChatModel;
 import dev.langchain4j.model.openai.OpenAiChatModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.time.Duration;
 
 public class AiModelFactory {
@@ -16,12 +16,12 @@ public class AiModelFactory {
     public static ChatModel createModel() {
         String provider = ConfigReader.getProperty("ai.provider");
         if (provider == null || provider.trim().isEmpty()) {
-            log.warn("Nhà cung cấp AI (ai.provider) không được cấu hình. Bỏ qua.");
+            log.warn("AI provider (ai.provider) is not configured. Ignoring.");
             return null;
         }
 
         long timeout = Long.parseLong(ConfigReader.getProperty("ai.timeout.seconds", "60"));
-        log.info("Khởi tạo mô hình AI từ nhà cung cấp: {}", provider.toUpperCase());
+        log.info("Initializing AI model from provider: {}", provider.toUpperCase());
 
         switch (provider.toLowerCase()) {
             case "gemini":
@@ -45,7 +45,7 @@ public class AiModelFactory {
                         .timeout(Duration.ofSeconds(timeout))
                         .build();
             default:
-                log.error("Nhà cung cấp AI '{}' không được hỗ trợ.", provider);
+                log.error("AI provider '{}' is not supported.", provider);
                 return null;
         }
     }

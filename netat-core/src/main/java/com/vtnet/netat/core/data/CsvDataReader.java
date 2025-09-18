@@ -40,7 +40,7 @@ public class CsvDataReader { // Không cần implement IDataReader nữa để l
             }
 
         } catch (IOException e) {
-            throw new RuntimeException("Không thể đọc file CSV: " + filePath, e);
+            throw new RuntimeException("Unable to read CSV file: " + filePath, e);
         }
         return data;
     }

@@ -23,12 +23,12 @@ public final class DataUtils {
                 CsvDataReader reader = new CsvDataReader(); // Giả sử đã có CsvDataReader tương tự
                 testData = reader.readData(filePath, dataSource.getCsvSeparator(), dataSource.isContainsHeaders());
             } else {
-                throw new IllegalArgumentException("Driver không được hỗ trợ: " + dataSource.getDriver());
+                throw new IllegalArgumentException("Unsupported driver: " + dataSource.getDriver());
             }
 
             return convertToObjectArray(testData);
         } catch (IOException e) {
-            throw new RuntimeException("Không thể xử lý cấu hình JSON cho dữ liệu test.", e);
+            throw new RuntimeException("Unable to process JSON configuration for test data.", e);
         }
     }
 

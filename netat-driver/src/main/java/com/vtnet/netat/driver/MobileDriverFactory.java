@@ -17,7 +17,7 @@ public class MobileDriverFactory implements IDriverFactory {
         String appiumServerUrl = ConfigReader.getProperty("appium.server.url", "http://127.0.0.1:4723/");
 
         // Sửa 2: Sử dụng tham số 'platform'
-        log.info("Khởi tạo mobile driver cho nền tảng {} tại Appium Server: {}", platform, appiumServerUrl);
+        log.info("Initializing mobile driver for platform {} at Appium Server: {}", platform, appiumServerUrl);
 
         try {
             // Sửa 3: Truyền 'platform' vào CapabilityFactory
@@ -29,11 +29,11 @@ public class MobileDriverFactory implements IDriverFactory {
             } else if ("ios".equalsIgnoreCase(platform)) {
                 return new IOSDriver(url, capabilities);
             } else {
-                throw new IllegalArgumentException("Nền tảng di động không được hỗ trợ: " + platform);
+                throw new IllegalArgumentException("Unsupported mobile platform: " + platform);
             }
         } catch (Exception e) {
-            log.error("Không thể khởi tạo Appium driver.", e);
-            throw new RuntimeException("Không thể khởi tạo Appium driver.", e);
+            log.error("Unable to initialize Appium driver.", e);
+            throw new RuntimeException("Unable to initialize Appium driver.", e);
         }
     }
 }

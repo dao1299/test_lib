@@ -105,27 +105,27 @@ public class NetatLogger {
     // Special logging methods for test execution
     public void logKeywordStart(String keywordName, Object... parameters) {
         setContext();
-        logger.info("🚀 KEYWORD START: {} | Parameters: {}", keywordName, formatParameters(parameters));
+        logger.info("KEYWORD START: {} | Parameters: {}", keywordName, formatParameters(parameters));
         clearContext();
     }
 
     public void logKeywordEnd(String keywordName, boolean success, long durationMs) {
         setContext();
-        String status = success ? "✅ PASSED" : "❌ FAILED";
-        logger.info("🏁 KEYWORD END: {} | Status: {} | Duration: {}ms", keywordName, status, durationMs);
+        String status = success ? " PASSED" : " FAILED";
+        logger.info(" KEYWORD END: {} | Status: {} | Duration: {}ms", keywordName, status, durationMs);
         clearContext();
     }
 
     public void logTestCaseStart(String testCaseName) {
         setContext();
-        logger.info("📋 TEST CASE START: {}", testCaseName);
+        logger.info(" TEST CASE START: {}", testCaseName);
         clearContext();
     }
 
     public void logTestCaseEnd(String testCaseName, boolean success, long durationMs) {
         setContext();
-        String status = success ? "✅ PASSED" : "❌ FAILED";
-        logger.info("📊 TEST CASE END: {} | Status: {} | Duration: {}ms", testCaseName, status, durationMs);
+        String status = success ? " PASSED" : " FAILED";
+        logger.info(" TEST CASE END: {} | Status: {} | Duration: {}ms", testCaseName, status, durationMs);
         clearContext();
     }
 
@@ -137,8 +137,8 @@ public class NetatLogger {
 
     public void logAssertion(String assertion, boolean result) {
         setContext();
-        String status = result ? "✅ PASSED" : "❌ FAILED";
-        logger.info("🔍 ASSERTION: {} | Result: {}", assertion, status);
+        String status = result ? " PASSED" : " FAILED";
+        logger.info(" ASSERTION: {} | Result: {}", assertion, status);
         clearContext();
     }
 

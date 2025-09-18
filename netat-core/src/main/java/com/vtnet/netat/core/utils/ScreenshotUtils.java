@@ -29,13 +29,14 @@ public class ScreenshotUtils {
     }
 
     /**
-     * Phương thức chung để chụp ảnh màn hình, tự động phát hiện nền tảng (Web/Mobile).
+     * Phương thức chung để chụp ảnh màn hình, tự động phát hiện nền tảng
+     * (Web/Mobile).
      * Đây là phương thức mà BaseKeyword sẽ gọi.
      */
     public static void takeScreenshot(String fileName) {
         WebDriver driver = DriverManager.getDriver();
         if (driver == null || !(driver instanceof TakesScreenshot)) {
-            System.err.println("Không thể chụp ảnh màn hình: Driver không hợp lệ hoặc không hỗ trợ.");
+            System.err.println("Cannot take screenshot: Invalid or unsupported driver.");
             return;
         }
 
@@ -52,7 +53,7 @@ public class ScreenshotUtils {
             }
 
         } catch (IOException e) {
-            System.err.println("Lỗi khi chụp hoặc lưu ảnh màn hình: " + e.getMessage());
+            System.err.println("Error capturing or saving the screenshot: " + e.getMessage());
         }
     }
 
@@ -62,11 +63,11 @@ public class ScreenshotUtils {
     private static String generateFileName(String baseName) {
         String timestamp = LocalDateTime.now().format(TIMESTAMP_FORMAT);
         // Dọn dẹp tên cơ sở
-        String cleanBaseName = baseName != null ?
-                baseName.replaceAll("[^a-zA-Z0-9_-]", "_") : "screenshot";
+        String cleanBaseName = baseName != null ? baseName.replaceAll("[^a-zA-Z0-9_-]", "_") : "screenshot";
         return String.format("%s_%s.png", cleanBaseName, timestamp);
     }
 
-    // Các phương thức cũ hơn (captureWebScreenshot, captureMobileScreenshot, ...) có thể được giữ lại
+    // Các phương thức cũ hơn (captureWebScreenshot, captureMobileScreenshot, ...)
+    // có thể được giữ lại
     // hoặc xóa đi nếu bạn thấy phương thức takeScreenshot mới đã đủ dùng.
 }

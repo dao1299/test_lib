@@ -47,7 +47,7 @@ public final class UiObjectHelper {
      * Giữ nó ở private để người dùng không gọi trực tiếp.
      */
     private static ObjectUI readObjectFromFile(String jsonPath, String... params) {
-        log.debug("Đang xử lý ObjectUI từ path: '{}' với params: {}", jsonPath, (Object) params);
+        log.debug("Processing ObjectUI from path: '{}' with params: {}", jsonPath, (Object) params);
 
         try (InputStream inputStream = new FileInputStream(jsonPath)) {
             ObjectUI uiObject = MAPPER.readValue(inputStream, ObjectUI.class);
@@ -63,12 +63,12 @@ public final class UiObjectHelper {
                 }
             }
 
-            log.info("Lấy thành công ObjectUI '{}' từ path: {}", uiObject.getName(), jsonPath);
+            log.info("Successfully loaded ObjectUI '{}' from path: {}", uiObject.getName(), jsonPath);
             return uiObject;
 
         } catch (IOException e) {
-            log.error("Lỗi nghiêm trọng khi đọc hoặc xử lý file UI Object tại '{}'.", jsonPath, e);
-            throw new RuntimeException("Không thể lấy ObjectUI từ path: " + jsonPath, e);
+            log.error("Critical error while reading or processing UI Object file at '{}'.", jsonPath, e);
+            throw new RuntimeException("Unable to retrieve ObjectUI from path: " + jsonPath, e);
         }
     }
 }

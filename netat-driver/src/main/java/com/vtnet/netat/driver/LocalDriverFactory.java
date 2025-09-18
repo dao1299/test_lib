@@ -66,7 +66,7 @@ public class LocalDriverFactory implements IDriverFactory {
                 String version = new UpdateChromeHelper().updateAutomaticallyChromeDriver();
                 return System.getProperty("user.dir") + "/driver/chromedriver" + version + ".exe";
             }
-            throw new RuntimeException("Không tìm thấy đường dẫn cho driver: " + driverPropertyKey + " trong file cấu hình.");
+            throw new RuntimeException("Cannot find driver path for: " + driverPropertyKey + " in configuration file.");
         }
     }
 
@@ -76,7 +76,7 @@ public class LocalDriverFactory implements IDriverFactory {
 
         if (proxyHost != null && !proxyHost.isEmpty() && proxyPort != null && !proxyPort.isEmpty()) {
             String proxyUrl = proxyHost + ":" + proxyPort;
-            log.info("Cấu hình proxy cho việc tải driver: {}", proxyUrl);
+            log.info("Configure proxy for driver loading: {}", proxyUrl);
 
             System.setProperty("https.proxyHost", proxyHost);
             System.setProperty("https.proxyPort", proxyPort);

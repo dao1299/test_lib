@@ -29,6 +29,7 @@ public class KeywordMetadataGenerator {
             info.setName(annotation.name());
             info.setDescription(annotation.description());
             info.setCategory(annotation.category());
+            info.setSubCategory(annotation.subCategory());
             info.setExample(annotation.example());
 
             // Xử lý returnValue (định dạng mới: "Type - Description")
@@ -68,10 +69,9 @@ public class KeywordMetadataGenerator {
                     paramInfo.setType(methodParams[i].getType().getSimpleName());
                     paramInfo.setName(methodParams[i].getName());
 
-                    // Phân tích chuỗi mô tả tham số từ annotation (định dạng mới: "name: Type - Description")
                     String annotationParamDesc = annotationParams[i];
                     if (annotationParamDesc != null && !annotationParamDesc.trim().isEmpty()) {
-                        // Định dạng mới: "name: Type - Description"
+
                         String[] parts = annotationParamDesc.split(" - ", 2);
                         if (parts.length > 1) {
                             paramInfo.setDescription(parts[1]);

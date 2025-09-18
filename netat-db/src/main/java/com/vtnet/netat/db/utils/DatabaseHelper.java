@@ -18,7 +18,7 @@ public final class DatabaseHelper {
             String jsonContent = new String(Files.readAllBytes(Paths.get(fullPath)));
             return MAPPER.readValue(jsonContent, DatabaseProfile.class);
         } catch (Exception e) {
-            throw new RuntimeException("Không thể đọc file database profile: " + fullPath, e);
+            throw new RuntimeException("Unable to read database profile file: " + fullPath, e);
         }
     }
 }

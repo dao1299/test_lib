@@ -30,7 +30,7 @@ public abstract class BaseKeyword {
         Method callingKeywordMethod = findCallingKeywordMethod();
         if (callingKeywordMethod == null) {
             // Nếu không tìm thấy, ném ra lỗi rõ ràng thay vì NullPointerException
-            throw new IllegalStateException("Không thể tìm thấy phương thức có annotation @NetatKeyword trong chuỗi lời gọi.");
+            throw new IllegalStateException("Cannot find a method annotated with @NetatKeyword in the call stack.");
         }
         NetatKeyword annotation = callingKeywordMethod.getAnnotation(NetatKeyword.class);
         // =====================================
@@ -46,18 +46,18 @@ public abstract class BaseKeyword {
         try {
             T result = logic.call();
             long endTime = System.currentTimeMillis();
-            logger.info("✅ KEYWORD SUCCESS: {} | Duration: {}ms", keywordName, (endTime - startTime));
+            logger.info(" KEYWORD SUCCESS: {} | Duration: {}ms", keywordName, (endTime - startTime));
             Allure.step(keywordName, Status.PASSED);
             return result;
         } catch (Throwable e) {
             long endTime = System.currentTimeMillis();
-            logger.error("❌ KEYWORD FAILURE: {} | Duration: {}ms | Error: {}", keywordName, (endTime - startTime), e.getMessage());
+            logger.error(" KEYWORD FAILURE: {} | Duration: {}ms | Error: {}", keywordName, (endTime - startTime), e.getMessage());
             Allure.step(keywordName, Status.FAILED);
             ScreenshotUtils.takeScreenshot(keywordName + "_failure");
 
             SoftAssert softAssert = ExecutionContext.getInstance().getSoftAssert();
             if (softAssert != null) {
-                softAssert.fail("Keyword '" + keywordName + "' thất bại.", e);
+                softAssert.fail("Keyword '" + keywordName + "' failed.", e);
             }
 
             if (e instanceof Error) {

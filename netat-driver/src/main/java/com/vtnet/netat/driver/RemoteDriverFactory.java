@@ -18,15 +18,15 @@ public class RemoteDriverFactory implements IDriverFactory {
             String gridUrl = ConfigReader.getProperty("grid.url");
 
 
-            log.info("Khởi tạo remote driver cho {} tại Grid: {}", platform, gridUrl);
+            log.info("Initialize remote driver for {} at Grid: {}", platform, gridUrl);
 
 
             MutableCapabilities capabilities = CapabilityFactory.getCapabilities(platform);
 
             return new RemoteWebDriver(new URL(gridUrl), capabilities);
         } catch (MalformedURLException e) {
-            log.error("URL của Grid không hợp lệ.", e);
-            throw new RuntimeException("URL của Grid không hợp lệ.", e);
+            log.error("Grid URL is invalid.", e);
+            throw new RuntimeException("Grid URL is invalid.", e);
         }
     }
 }

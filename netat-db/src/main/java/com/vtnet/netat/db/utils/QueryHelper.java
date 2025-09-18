@@ -17,7 +17,7 @@ public final class QueryHelper {
         try {
             return new String(Files.readAllBytes(Paths.get(fullPath)));
         } catch (Exception e) {
-            throw new RuntimeException("Không thể đọc file query: " + fullPath, e);
+            throw new RuntimeException("Unable to read query file: " + fullPath, e);
         }
     }
 }

@@ -23,7 +23,7 @@ public final class DriverManager {
             ConfigReader.loadProperties();
             String platform = ConfigReader.getProperty("platform.name");
             if (platform == null || platform.trim().isEmpty()) {
-                throw new IllegalArgumentException("Thuộc tính 'platform.name' không được định nghĩa trong file cấu hình.");
+                throw new IllegalArgumentException("Property 'platform.name' is not defined in configuration file.");
             }
             // Gọi lại phương thức initDriver có tham số để tái sử dụng logic
             initDriver(platform);
@@ -38,10 +38,10 @@ public final class DriverManager {
             ConfigReader.loadProperties();
 
             if (platform == null || platform.trim().isEmpty()) {
-                throw new IllegalArgumentException("Tên platform không được để trống khi khởi tạo driver.");
+                throw new IllegalArgumentException("Platform name cannot be empty when initializing driver.");
             }
 
-            log.info("Nền tảng thực thi được yêu cầu cho luồng này: {}", platform.toUpperCase());
+            log.info("Platform requested for this thread: {}", platform.toUpperCase());
 
             IDriverFactory factory;
 
@@ -62,7 +62,7 @@ public final class DriverManager {
                     }
                     break;
                 default:
-                    throw new IllegalArgumentException("Nền tảng không được hỗ trợ: " + platform);
+                    throw new IllegalArgumentException("Platform not supported: " + platform);
             }
 
             // Truyền platform trực tiếp vào factory để tạo driver chính xác
@@ -84,7 +84,7 @@ public final class DriverManager {
     public static void quitDriver() {
         WebDriver driver = threadLocalDriver.get();
         if (driver != null) {
-            log.info("Đóng driver cho luồng: {}", Thread.currentThread().getId());
+            log.info("Closing driver for thread: {}", Thread.currentThread().getId());
             driver.quit();
             threadLocalDriver.remove();
         }

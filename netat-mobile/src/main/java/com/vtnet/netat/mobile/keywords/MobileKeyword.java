@@ -29,7 +29,7 @@ import java.util.NoSuchElementException;
 
 
 /**
- * Cung cấp bộ keyword nền tảng để tương tác và kiểm thử các ứng dụng di động.
+ * Provides a set of platform keywords for interacting with and testing mobile applications.
  */
 public class MobileKeyword extends BaseUiKeyword {
 
@@ -54,7 +54,7 @@ public class MobileKeyword extends BaseUiKeyword {
     }
 
     // =================================================================================
-    // --- 1. QUẢN LÝ VÒNG ĐỜI ỨNG DỤNG ---
+    // --- 1. APPLICATION LIFECYCLE MANAGEMENT ---
     // =================================================================================
 
     @NetatKeyword(
@@ -63,7 +63,8 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Đường dẫn phải trỏ đến một file hợp lệ và có thể truy cập từ máy thực thi test. " +
                     "Trên iOS, file .ipa phải được ký đúng cách để có thể cài đặt. " +
                     "Trên Android, thiết bị phải cho phép cài đặt từ nguồn không xác định.",
-            category = "Mobile/AppLifecycle",
+            category = "Mobile",
+            subCategory = "AppLifecycle",
             parameters = {
                     "appPath: String - Đường dẫn tuyệt đối đến file ứng dụng (.apk hoặc .ipa)"
             },
@@ -80,7 +81,7 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Có thể throw WebDriverException nếu không thể cài đặt ứng dụng, " +
                     "hoặc FileNotFoundException nếu không tìm thấy file ứng dụng."
     )
-    @Step("Cài đặt ứng dụng từ: {0}")
+    @Step("Install app from: {0}")
     public void installApp(String appPath) {
         execute(() -> {
             ((InteractsWithApps) DriverManager.getDriver()).installApp(appPath);
@@ -94,7 +95,8 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Trên Android, đây là package name (ví dụ: com.example.myapp). " +
                     "Trên iOS, đây là bundle ID (ví dụ: com.example.MyApp). " +
                     "Một số ứng dụng hệ thống không thể gỡ cài đặt ngay cả khi có quyền root/jailbreak.",
-            category = "Mobile/AppLifecycle",
+            category = "Mobile",
+            subCategory = "AppLifecycle",
             parameters = {
                     "appId: String - AppPackage (Android) hoặc BundleID (iOS) của ứng dụng cần gỡ cài đặt"
             },
@@ -111,7 +113,7 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Có thể throw WebDriverException nếu không thể gỡ cài đặt ứng dụng, " +
                     "hoặc IllegalArgumentException nếu appId không hợp lệ."
     )
-    @Step("Gỡ cài đặt ứng dụng: {0}")
+    @Step("Uninstall app: {0}")
     public void uninstallApp(String appId) {
         execute(() -> {
             ((InteractsWithApps) DriverManager.getDriver()).removeApp(appId);
@@ -125,7 +127,8 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Hữu ích khi cần chuyển đổi giữa các ứng dụng hoặc kích hoạt lại ứng dụng đang chạy nền. " +
                     "Ứng dụng phải đã được cài đặt trên thiết bị, nếu không sẽ gây ra lỗi. " +
                     "Không giống như startActivity trên Android, phương thức này hoạt động trên cả Android và iOS với cùng một cú pháp.",
-            category = "Mobile/AppLifecycle",
+            category = "Mobile",
+            subCategory = "AppLifecycle",
             parameters = {
                     "appId: String - AppPackage (Android) hoặc BundleID (iOS) của ứng dụng cần kích hoạt"
             },
@@ -143,7 +146,7 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Có thể throw WebDriverException nếu không thể kích hoạt ứng dụng, " +
                     "hoặc NoSuchAppException nếu ứng dụng không được cài đặt trên thiết bị."
     )
-    @Step("Kích hoạt ứng dụng: {0}")
+    @Step("Activate app: {0}")
     public void activateApp(String appId) {
         execute(() -> {
             ((InteractsWithApps) DriverManager.getDriver()).activateApp(appId);
@@ -158,7 +161,8 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Hữu ích khi cần kiểm tra khả năng khôi phục trạng thái của ứng dụng sau khi bị buộc dừng, " +
                     "hoặc để đảm bảo ứng dụng bắt đầu từ trạng thái sạch. " +
                     "Trả về true nếu ứng dụng đã được dừng thành công, false nếu ứng dụng không chạy.",
-            category = "Mobile/AppLifecycle",
+            category = "Mobile",
+            subCategory = "AppLifecycle",
             parameters = {
                     "appId: String - AppPackage (Android) hoặc BundleID (iOS) của ứng dụng cần dừng"
             },
@@ -176,7 +180,7 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Có thể throw WebDriverException nếu không thể dừng ứng dụng, " +
                     "hoặc IllegalArgumentException nếu appId không hợp lệ."
     )
-    @Step("Dừng ứng dụng: {0}")
+    @Step("Terminate app: {0}")
     public void terminateApp(String appId) {
         execute(() -> {
             ((InteractsWithApps) DriverManager.getDriver()).terminateApp(appId);
@@ -191,7 +195,8 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Phương thức này chỉ reset trạng thái đầu vào (input state) của ứng dụng, không phải toàn bộ dữ liệu. " +
                     "Để xóa hoàn toàn dữ liệu ứng dụng, nên sử dụng executeMobileCommand với 'mobile:clearApp' trên Android " +
                     "hoặc gỡ và cài đặt lại trên iOS.",
-            category = "Mobile/AppLifecycle",
+            category = "Mobile",
+            subCategory = "AppLifecycle",
             parameters = {},
             returnValue = "void - Không trả về giá trị",
             example = "// Reset ứng dụng về trạng thái ban đầu trước mỗi test case\n" +
@@ -204,11 +209,11 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Ứng dụng đã được khởi động trước đó. " +
                     "Có thể throw WebDriverException nếu không thể reset ứng dụng."
     )
-    @Step("Reset ứng dụng")
+    @Step("Reset app")
     public void resetApp() {
         execute(() -> {
-            // Lưu ý: resetApp không phải là một phần của InteractsWithApps,
-            // nó vẫn nằm trong AppiumDriver. Do đó, logic này vẫn đúng.
+            // Note: resetApp is not part of InteractsWithApps,
+            // it's still in AppiumDriver. So this logic is still correct.
             ((AppiumDriver) DriverManager.getDriver()).resetInputState();
             return null;
         });
@@ -220,7 +225,8 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Hữu ích để kiểm tra khả năng lưu trữ và khôi phục trạng thái của ứng dụng, " +
                     "hoặc để mô phỏng việc người dùng tạm thời chuyển sang ứng dụng khác. " +
                     "Nếu thời gian là -1, ứng dụng sẽ ở chế độ nền cho đến khi được kích hoạt lại bằng activateApp.",
-            category = "Mobile/AppLifecycle",
+            category = "Mobile",
+            subCategory = "AppLifecycle",
             parameters = {
                     "seconds: int - Số giây ứng dụng chạy nền. Sử dụng -1 để giữ ứng dụng ở nền vô thời hạn"
             },
@@ -239,7 +245,7 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Ứng dụng đang chạy ở foreground. " +
                     "Có thể throw WebDriverException nếu không thể đưa ứng dụng về background."
     )
-    @Step("Đưa ứng dụng về nền trong {0} giây")
+    @Step("Background app for {0} seconds")
     public void backgroundApp(int seconds) {
         execute(() -> {
             ((InteractsWithApps) DriverManager.getDriver()).runAppInBackground(Duration.ofSeconds(seconds));
@@ -248,7 +254,7 @@ public class MobileKeyword extends BaseUiKeyword {
     }
 
 // =================================================================================
-// --- 2. TƯƠNG TÁC PHẦN TỬ CƠ BẢN ---
+// --- 2. BASIC ELEMENT INTERACTION ---
 // =================================================================================
 
     @NetatKeyword(
@@ -256,7 +262,8 @@ public class MobileKeyword extends BaseUiKeyword {
             description = "Thực hiện một hành động chạm (tap) vào một phần tử trên màn hình. " +
                     "Đây là thao tác tương đương với click trên web nhưng được tối ưu cho thiết bị di động. " +
                     "Phương thức này sẽ đợi phần tử hiển thị và có thể tương tác trước khi thực hiện chạm.",
-            category = "Mobile/Interaction",
+            category = "Mobile",
+            subCategory = "Interaction",
             parameters = {
                     "uiObject: ObjectUI - Phần tử cần chạm vào"
             },
@@ -271,9 +278,9 @@ public class MobileKeyword extends BaseUiKeyword {
                     "NoSuchElementException nếu không tìm thấy phần tử, " +
                     "hoặc ElementNotInteractableException nếu phần tử không thể tương tác."
     )
-    @Step("Chạm vào phần tử: {0.name}")
+    @Step("Tap element: {0.name}")
     public void tap(ObjectUI uiObject) {
-        // Tái sử dụng logic click của lớp cha, Appium sẽ tự động diễn dịch thành 'tap'
+        // Reuse parent class click logic, Appium will automatically interpret as 'tap'
         super.click(uiObject);
     }
 
@@ -282,7 +289,8 @@ public class MobileKeyword extends BaseUiKeyword {
             description = "Nhập văn bản vào một ô input có thể chỉnh sửa. " +
                     "Chỉ hoạt động với các phần tử có thuộc tính 'editable' là true như TextField, EditText, TextArea, v.v. " +
                     "Không thể sử dụng với các phần tử không cho phép nhập liệu như Button, Label.",
-            category = "Mobile/Interaction",
+            category = "Mobile",
+            subCategory = "Interaction",
             parameters = {
                     "uiObject: ObjectUI - Đối tượng đầu vào có thể chỉnh sửa (như TextField, EditText)",
                     "text: String - Văn bản cần nhập vào phần tử"
@@ -298,7 +306,7 @@ public class MobileKeyword extends BaseUiKeyword {
                     "NoSuchElementException nếu không tìm thấy phần tử, " +
                     "hoặc ElementNotInteractableException nếu phần tử không thể tương tác hoặc không phải trường nhập liệu."
     )
-    @Step("Nhập văn bản '{1}' vào phần tử: {0.name}")
+    @Step("Send text '{1}' to element: {0.name}")
     public void sendText(ObjectUI uiObject, String text) {
         super.sendKeys(uiObject, text);
     }
@@ -308,7 +316,8 @@ public class MobileKeyword extends BaseUiKeyword {
             description = "Xóa văn bản trong một ô input có thể chỉnh sửa. " +
                     "Chỉ áp dụng cho các phần tử có thuộc tính 'editable' là true như TextField, EditText. " +
                     "Không hoạt động với các phần tử không phải là trường nhập liệu.",
-            category = "Mobile/Interaction",
+            category = "Mobile",
+            subCategory = "Interaction",
             parameters = {
                     "uiObject: ObjectUI - Phần tử input cần xóa văn bản"
             },
@@ -324,7 +333,7 @@ public class MobileKeyword extends BaseUiKeyword {
                     "NoSuchElementException nếu không tìm thấy phần tử, " +
                     "hoặc ElementNotInteractableException nếu phần tử không thể tương tác hoặc không phải trường nhập liệu."
     )
-    @Step("Xóa văn bản trong phần tử: {0.name}")
+    @Step("Clear text in element: {0.name}")
     public void clear(ObjectUI uiObject) {
         super.clear(uiObject);
     }
@@ -334,7 +343,8 @@ public class MobileKeyword extends BaseUiKeyword {
             description = "Thực hiện hành động chạm và giữ (long press) vào một phần tử trong một khoảng thời gian xác định. " +
                     "Hữu ích cho các thao tác như hiển thị menu ngữ cảnh, kéo thả, hoặc các tương tác đặc biệt yêu cầu nhấn giữ. " +
                     "Phương thức sẽ đợi phần tử hiển thị trước khi thực hiện.",
-            category = "Mobile/Interaction",
+            category = "Mobile",
+            subCategory = "Interaction",
             parameters = {
                     "uiObject: ObjectUI - Phần tử cần chạm và giữ",
                     "durationInSeconds: int - Thời gian giữ phần tử, tính bằng giây"
@@ -350,7 +360,7 @@ public class MobileKeyword extends BaseUiKeyword {
                     "NoSuchElementException nếu không tìm thấy phần tử, " +
                     "hoặc ElementNotInteractableException nếu phần tử không thể tương tác."
     )
-    @Step("Chạm và giữ phần tử {0.name} trong {1} giây")
+    @Step("Long press element {0.name} for {1} seconds")
     public void longPress(ObjectUI uiObject, int durationInSeconds) {
         execute(() -> {
             WebElement element = findElement(uiObject);
@@ -373,7 +383,8 @@ public class MobileKeyword extends BaseUiKeyword {
             description = "Ẩn bàn phím ảo nếu nó đang hiển thị trên màn hình. " +
                     "Hữu ích khi cần giải phóng không gian màn hình sau khi nhập liệu hoặc trước khi thực hiện các thao tác khác. " +
                     "Nếu bàn phím không hiển thị, phương thức này có thể gây ra lỗi trên một số thiết bị.",
-            category = "Mobile/Interaction",
+            category = "Mobile",
+            subCategory = "Interaction",
             parameters = {},
             returnValue = "void - Không trả về giá trị",
             example = "// Ẩn bàn phím sau khi nhập văn bản\n" +
@@ -382,7 +393,7 @@ public class MobileKeyword extends BaseUiKeyword {
             note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
                     "Có thể throw WebDriverException nếu không thể ẩn bàn phím hoặc bàn phím không hiển thị."
     )
-    @Step("Ẩn bàn phím")
+    @Step("Hide keyboard")
     public void hideKeyboard() {
         execute(() -> {
             ((HidesKeyboard) DriverManager.getDriver()).hideKeyboard();
@@ -395,7 +406,8 @@ public class MobileKeyword extends BaseUiKeyword {
             description = "Mô phỏng hành động nhấn nút 'Back' vật lý của thiết bị. " +
                     "Hữu ích để điều hướng ngược lại màn hình trước đó, đóng dialog, hoặc hủy thao tác hiện tại. " +
                     "Trên iOS, hành động này tương đương với việc nhấn nút quay lại ở góc trên bên trái của nhiều ứng dụng.",
-            category = "Mobile/Interaction",
+            category = "Mobile",
+            subCategory = "Interaction",
             parameters = {},
             returnValue = "void - Không trả về giá trị",
             example = "// Quay lại màn hình trước\n" +
@@ -405,7 +417,7 @@ public class MobileKeyword extends BaseUiKeyword {
             note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
                     "Có thể throw WebDriverException nếu không thể thực hiện hành động Back."
     )
-    @Step("Nhấn nút Back")
+    @Step("Press Back button")
     public void pressBack() {
         execute(() -> {
             DriverManager.getDriver().navigate().back();
@@ -414,7 +426,7 @@ public class MobileKeyword extends BaseUiKeyword {
     }
 
 // =================================================================================
-// --- 3. ĐỒNG BỘ HÓA (WAITS) ---
+// --- 3. SYNCHRONIZATION (WAITS) ---
 // =================================================================================
 
     @NetatKeyword(
@@ -423,7 +435,8 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Phần tử được coi là hiển thị khi nó tồn tại trong DOM và có thể nhìn thấy được (visible). " +
                     "Hữu ích khi cần đảm bảo một phần tử đã xuất hiện trước khi tương tác với nó. " +
                     "Nếu phần tử không hiển thị sau khi hết thời gian chờ, một TimeoutException sẽ được ném ra.",
-            category = "Mobile/Wait",
+            category = "Mobile",
+            subCategory = "Wait",
             parameters = {
                     "uiObject: ObjectUI - Phần tử cần chờ hiển thị",
                     "timeoutInSeconds: int - Thời gian tối đa (giây) để chờ phần tử hiển thị"
@@ -438,7 +451,7 @@ public class MobileKeyword extends BaseUiKeyword {
                     "StaleElementReferenceException nếu phần tử không còn gắn với DOM, " +
                     "hoặc NoSuchElementException nếu không tìm thấy phần tử trong DOM."
     )
-    @Step("Chờ phần tử {0.name} hiển thị trong {1} giây")
+    @Step("Wait for element {0.name} to be visible within {1} seconds")
     public void waitForVisible(ObjectUI uiObject, int timeoutInSeconds) {
         super.waitForElementVisible(uiObject, timeoutInSeconds);
     }
@@ -449,7 +462,8 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Phần tử được coi là không hiển thị khi nó không tồn tại trong DOM hoặc không thể nhìn thấy được (invisible). " +
                     "Hữu ích khi cần đảm bảo một phần tử đã biến mất (như màn hình loading) trước khi tiếp tục. " +
                     "Nếu phần tử vẫn hiển thị sau khi hết thời gian chờ, một TimeoutException sẽ được ném ra.",
-            category = "Mobile/Wait",
+            category = "Mobile",
+            subCategory = "Wait",
             parameters = {
                     "uiObject: ObjectUI - Phần tử cần chờ biến mất",
                     "timeoutInSeconds: int - Thời gian tối đa (giây) để chờ phần tử biến mất"
@@ -464,7 +478,7 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Có thể throw TimeoutException nếu phần tử vẫn hiển thị sau khi hết thời gian chờ, " +
                     "hoặc StaleElementReferenceException nếu phần tử không còn gắn với DOM."
     )
-    @Step("Chờ phần tử {0.name} biến mất trong {1} giây")
+    @Step("Wait for element {0.name} to disappear within {1} seconds")
     public void waitForNotVisible(ObjectUI uiObject, int timeoutInSeconds) {
         super.waitForElementNotVisible(uiObject, timeoutInSeconds);
     }
@@ -475,7 +489,8 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Phần tử được coi là clickable khi nó hiển thị và có thể tương tác được (không bị disabled). " +
                     "Khác với waitForVisible, phương thức này còn kiểm tra khả năng tương tác của phần tử. " +
                     "Nếu phần tử không clickable sau khi hết thời gian chờ, một TimeoutException sẽ được ném ra.",
-            category = "Mobile/Wait",
+            category = "Mobile",
+            subCategory = "Wait",
             parameters = {
                     "uiObject: ObjectUI - Phần tử cần chờ sẵn sàng để tương tác",
                     "timeoutInSeconds: int - Thời gian tối đa (giây) để chờ phần tử có thể tương tác"
@@ -490,13 +505,13 @@ public class MobileKeyword extends BaseUiKeyword {
                     "StaleElementReferenceException nếu phần tử không còn gắn với DOM, " +
                     "hoặc NoSuchElementException nếu không tìm thấy phần tử trong DOM."
     )
-    @Step("Chờ phần tử {0.name} sẵn sàng để chạm trong {1} giây")
+    @Step("Wait for element {0.name} to be clickable within {1} seconds")
     public void waitForClickable(ObjectUI uiObject, int timeoutInSeconds) {
         super.waitForElementClickable(uiObject, timeoutInSeconds);
     }
 
 // =================================================================================
-// --- 4. KIỂM CHỨNG (ASSERTIONS) ---
+// --- 4. ASSERTIONS ---
 // =================================================================================
 
     @NetatKeyword(
@@ -504,7 +519,8 @@ public class MobileKeyword extends BaseUiKeyword {
             description = "Khẳng định rằng một phần tử tồn tại trong cấu trúc DOM của màn hình, không nhất thiết phải hiển thị. " +
                     "Phương thức này kiểm tra ngay lập tức (timeout = 0) và ném AssertionError nếu phần tử không tồn tại. " +
                     "Chỉ kiểm tra sự tồn tại, không kiểm tra tính hiển thị của phần tử.",
-            category = "Mobile/Assertion",
+            category = "Mobile",
+            subCategory = "Assertion",
             parameters = {
                     "uiObject: ObjectUI - Phần tử cần kiểm tra sự tồn tại"
             },
@@ -516,9 +532,9 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Có thể throw AssertionError nếu phần tử không tồn tại trong DOM, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình điều khiển."
     )
-    @Step("Kiểm tra (Hard) sự tồn tại của phần tử: {0.name}")
+    @Step("Check (Hard) element existence: {0.name}")
     public void assertElementPresent(ObjectUI uiObject) {
-        super.verifyElementPresent(uiObject, 0); // timeout 0 để kiểm tra ngay lập tức
+        super.verifyElementPresent(uiObject, 0); // timeout 0 for immediate check
     }
 
     @NetatKeyword(
@@ -526,7 +542,8 @@ public class MobileKeyword extends BaseUiKeyword {
             description = "Khẳng định rằng một phần tử đang được hiển thị trên màn hình và người dùng có thể nhìn thấy. " +
                     "Khác với assertElementPresent, phương thức này kiểm tra cả sự tồn tại và tính hiển thị của phần tử. " +
                     "Nếu phần tử không tồn tại hoặc không hiển thị, một AssertionError sẽ được ném ra.",
-            category = "Mobile/Assertion",
+            category = "Mobile",
+            subCategory = "Assertion",
             parameters = {
                     "uiObject: ObjectUI - Phần tử cần kiểm tra tính hiển thị"
             },
@@ -539,7 +556,7 @@ public class MobileKeyword extends BaseUiKeyword {
                     "WebDriverException nếu có lỗi khi tương tác với trình điều khiển, " +
                     "hoặc StaleElementReferenceException nếu phần tử không còn gắn với DOM."
     )
-    @Step("Kiểm tra (Hard) phần tử {0.name} đang hiển thị")
+    @Step("Check (Hard) element {0.name} is visible")
     public void assertElementVisible(ObjectUI uiObject) {
         super.verifyElementVisibleHard(uiObject, true);
     }
@@ -549,7 +566,8 @@ public class MobileKeyword extends BaseUiKeyword {
             description = "Khẳng định rằng văn bản của một phần tử khớp chính xác với chuỗi mong đợi. " +
                     "Phương thức này trích xuất nội dung văn bản của phần tử và so sánh với giá trị mong đợi, ném AssertionError nếu không khớp. " +
                     "Hữu ích để kiểm tra nội dung văn bản, nhãn, thông báo lỗi hoặc các phần tử hiển thị khác.",
-            category = "Mobile/Assertion",
+            category = "Mobile",
+            subCategory = "Assertion",
             parameters = {
                     "uiObject: ObjectUI - Phần tử cần kiểm tra văn bản",
                     "expectedText: String - Chuỗi văn bản mong đợi để so sánh"
@@ -565,7 +583,7 @@ public class MobileKeyword extends BaseUiKeyword {
                     "NoSuchElementException nếu không tìm thấy phần tử, " +
                     "hoặc StaleElementReferenceException nếu phần tử không còn gắn với DOM."
     )
-    @Step("Kiểm tra (Hard) văn bản của {0.name} là '{1}'")
+    @Step("Check (Hard) text of {0.name} equals '{1}'")
     public void assertTextEquals(ObjectUI uiObject, String expectedText) {
         super.verifyTextHard(uiObject, expectedText);
     }
@@ -576,7 +594,8 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Phương thức này kiểm tra thuộc tính 'checked' của phần tử và ném AssertionError nếu phần tử không được chọn. " +
                     "Áp dụng cho các phần tử có thể chọn/bỏ chọn như checkbox, radio button, toggle switch. " +
                     "Phần tử phải hỗ trợ thuộc tính 'checked', nếu không có thể gây ra lỗi.",
-            category = "Mobile/Assertion",
+            category = "Mobile",
+            subCategory = "Assertion",
             parameters = {
                     "uiObject: ObjectUI - Phần tử cần kiểm tra trạng thái"
             },
@@ -590,13 +609,13 @@ public class MobileKeyword extends BaseUiKeyword {
                     "NoSuchElementException nếu không tìm thấy phần tử, " +
                     "hoặc WebDriverException nếu không thể truy cập thuộc tính 'checked'."
     )
-    @Step("Kiểm tra (Hard) phần tử {0.name} đang được chọn/bật")
+    @Step("Check (Hard) element {0.name} is checked/enabled")
     public void assertChecked(ObjectUI uiObject) {
         execute(() -> {
             WebElement element = findElement(uiObject);
-            // Appium dùng thuộc tính 'checked' cho cả Android và iOS
+            // Appium uses 'checked' attribute for both Android and iOS
             boolean isChecked = Boolean.parseBoolean(element.getAttribute("checked"));
-            Assert.assertTrue(isChecked, "HARD ASSERT FAILED: Phần tử '" + uiObject.getName() + "' không ở trạng thái được chọn/bật.");
+            Assert.assertTrue(isChecked, "HARD ASSERT FAILED: Element '" + uiObject.getName() + "' is not in checked/enabled state.");
             return null;
         }, uiObject);
     }
@@ -611,7 +630,8 @@ public class MobileKeyword extends BaseUiKeyword {
             description = "Thực hiện hành động vuốt trên màn hình từ điểm bắt đầu đến điểm kết thúc. " +
                     "Cho phép kiểm soát chính xác tọa độ bắt đầu, kết thúc và tốc độ vuốt. " +
                     "Tọa độ được tính theo pixel từ góc trên bên trái của màn hình (0,0).",
-            category = "Mobile/Gesture",
+            category = "Mobile",
+            subCategory = "Gesture",
             parameters = {
                     "startX: int - Tọa độ X điểm bắt đầu vuốt",
                     "startY: int - Tọa độ Y điểm bắt đầu vuốt",
@@ -628,7 +648,7 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Có thể throw WebDriverException nếu không thể thực hiện hành động vuốt, " +
                     "hoặc IllegalArgumentException nếu tọa độ nằm ngoài kích thước màn hình."
     )
-    @Step("Vuốt từ ({0},{1}) đến ({2},{3})")
+    @Step("Swipe from ({0},{1}) to ({2},{3})")
     public void swipe(int startX, int startY, int endX, int endY, int durationInMs) {
         execute(() -> {
             PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
@@ -646,7 +666,8 @@ public class MobileKeyword extends BaseUiKeyword {
             name = "swipeUp",
             description = "Thực hiện hành động vuốt lên trên màn hình, tương đương với thao tác cuộn xuống để xem nội dung bên dưới. " +
                     "Phương thức này tự động tính toán các tọa độ dựa trên kích thước màn hình thiết bị.",
-            category = "Mobile/Gesture",
+            category = "Mobile",
+            subCategory = "Gesture",
             parameters = {
                     "durationInMs: Integer... - (Tùy chọn) Thời gian thực hiện vuốt (ms). Mặc định là 500ms nếu không được chỉ định"
             },
@@ -658,7 +679,7 @@ public class MobileKeyword extends BaseUiKeyword {
             note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
                     "Có thể throw WebDriverException nếu không thể thực hiện hành động vuốt."
     )
-    @Step("Vuốt lên trên màn hình")
+    @Step("Swipe up")
     public void swipeUp(Integer... durationInMs) {
         int duration = (durationInMs != null && durationInMs.length > 0 && durationInMs[0] != null)
                 ? durationInMs[0]
@@ -677,7 +698,8 @@ public class MobileKeyword extends BaseUiKeyword {
             name = "swipeDown",
             description = "Thực hiện hành động vuốt xuống dưới màn hình, tương đương với thao tác cuộn lên để xem nội dung phía trên. " +
                     "Phương thức này tự động tính toán các tọa độ dựa trên kích thước màn hình thiết bị hiện tại.",
-            category = "Mobile/Gesture",
+            category = "Mobile",
+            subCategory = "Gesture",
             parameters = {
                     "durationInMs: Integer... - (Tùy chọn) Thời gian thực hiện vuốt (ms). Mặc định là 500ms nếu không được chỉ định"
             },
@@ -689,7 +711,7 @@ public class MobileKeyword extends BaseUiKeyword {
             note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
                     "Có thể throw WebDriverException nếu không thể thực hiện hành động vuốt."
     )
-    @Step("Vuốt xuống dưới màn hình")
+    @Step("Swipe down")
     public void swipeDown(Integer... durationInMs) {
         execute(() -> {
             Dimension size = DriverManager.getDriver().manage().window().getSize();
@@ -708,7 +730,8 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Phương thức này sẽ thực hiện tối đa 10 lần vuốt lên để tìm kiếm. " +
                     "Cách hoạt động khác nhau giữa Android (sử dụng UiScrollable) và iOS (sử dụng vuốt tuần tự). " +
                     "Trả về WebElement nếu tìm thấy, hoặc ném NoSuchElementException nếu không tìm thấy sau khi đã cuộn hết.",
-            category = "Mobile/Gesture",
+            category = "Mobile",
+            subCategory = "Gesture",
             parameters = {
                     "textToFind: String - Văn bản cần tìm kiếm trên màn hình. Có thể là toàn bộ hoặc một phần của văn bản hiển thị"
             },
@@ -723,7 +746,7 @@ public class MobileKeyword extends BaseUiKeyword {
                     "WebDriverException nếu có lỗi khi tương tác với trình điều khiển, " +
                     "hoặc IllegalStateException nếu không thể xác định nền tảng hoặc không hỗ trợ."
     )
-    @Step("Cuộn đến khi thấy văn bản: {0}")
+    @Step("Scroll to text: {0}")
     public WebElement scrollToText(String textToFind) {
         return execute(() -> {
             AppiumDriver driver = getAppiumDriver();
@@ -756,7 +779,7 @@ public class MobileKeyword extends BaseUiKeyword {
                     }
                 }
 
-                throw new NoSuchElementException("Không tìm thấy phần tử có văn bản: " + textToFind + " sau " + maxScrolls + " lần cuộn");
+                throw new NoSuchElementException("Could not find element with text: " + textToFind + " after " + maxScrolls + " scrolls");
             }
         }, textToFind);
     }
@@ -767,7 +790,8 @@ public class MobileKeyword extends BaseUiKeyword {
             description = "Kéo một phần tử từ vị trí nguồn và thả vào vị trí của phần tử đích. " +
                     "Hữu ích cho các thao tác như sắp xếp lại danh sách, di chuyển các phần tử trong giao diện, hoặc kéo thả vào vùng đích. " +
                     "Phương thức sẽ tự động tính toán tọa độ trung tâm của cả hai phần tử để thực hiện thao tác chính xác.",
-            category = "Mobile/Gesture",
+            category = "Mobile",
+            subCategory = "Gesture",
             parameters = {
                     "source: ObjectUI - Phần tử nguồn cần kéo",
                     "destination: ObjectUI - Phần tử đích để thả vào"
@@ -783,7 +807,7 @@ public class MobileKeyword extends BaseUiKeyword {
                     "WebDriverException nếu có lỗi khi thực hiện thao tác kéo thả, " +
                     "hoặc ElementNotInteractableException nếu không thể tương tác với phần tử nguồn hoặc đích."
     )
-    @Step("Kéo phần tử {0.name} và thả vào {1.name}")
+    @Step("Drag and drop {0.name} to {1.name}")
     public void dragAndDrop(ObjectUI source, ObjectUI destination) {
         execute(() -> {
             WebElement sourceElement = findElement(source);
@@ -804,7 +828,6 @@ public class MobileKeyword extends BaseUiKeyword {
     }
 
 
-
     // --- 2. XỬ LÝ WEBVIEW (HYBRID APP) ---
 
 //    @NetatKeyword(
@@ -814,7 +837,7 @@ public class MobileKeyword extends BaseUiKeyword {
 //            parameters = {"String: contextName - Tên của context cần chuyển đến (ví dụ: 'WEBVIEW_com.myapp')."},
 //            example = "mobileKeyword.switchToContext(\"WEBVIEW_1\");"
 //    )
-//    @Step("Chuyển sang context: {0}")
+//    @Step("Switch to context: {0}")
 //    public void switchToContext(String contextName) {
 //        execute(() -> {
 //            ((ContextAware) DriverManager.getDriver()).context(contextName);
@@ -830,7 +853,7 @@ public class MobileKeyword extends BaseUiKeyword {
 //            parameters = {},
 //            example = "mobileKeyword.switchToNativeContext();"
 //    )
-//    @Step("Chuyển về context gốc (NATIVE_APP)")
+//    @Step("Switch to native context (NATIVE_APP)")
 //    public void switchToNativeContext() {
 //        execute(() -> {
 //            ((ContextAware) DriverManager.getDriver()).context("NATIVE_APP");
@@ -847,7 +870,8 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Hữu ích để xử lý các hộp thoại cấp quyền hoặc thông báo hệ thống. " +
                     "Phương thức sẽ tìm kiếm các nút phổ biến và nhấn vào nút đầu tiên tìm thấy. " +
                     "Nếu không tìm thấy nút nào, một cảnh báo sẽ được ghi vào log.",
-            category = "Mobile/System",
+            category = "Mobile",
+            subCategory = "System",
             parameters = {},
             returnValue = "void - Không trả về giá trị",
             example = "// Chấp nhận hộp thoại yêu cầu quyền truy cập vị trí\n" +
@@ -860,7 +884,7 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Có thể throw WebDriverException nếu có lỗi khi tương tác với trình điều khiển, " +
                     "hoặc NoSuchElementException nếu không tìm thấy nút nào khớp với danh sách văn bản đã cho."
     )
-    @Step("Chấp nhận hộp thoại hệ thống")
+    @Step("Accept system dialog")
     public void acceptSystemDialog() {
         execute(() -> {
             List<String> buttonTexts = Arrays.asList("Allow", "OK", "Accept", "While using the app");
@@ -875,7 +899,8 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Hữu ích để từ chối các yêu cầu cấp quyền hoặc đóng các thông báo hệ thống không mong muốn. " +
                     "Phương thức sẽ tìm kiếm các nút phổ biến và nhấn vào nút đầu tiên tìm thấy. " +
                     "Nếu không tìm thấy nút nào, một cảnh báo sẽ được ghi vào log.",
-            category = "Mobile/System",
+            category = "Mobile",
+            subCategory = "System",
             parameters = {},
             returnValue = "void - Không trả về giá trị",
             example = "// Từ chối yêu cầu quyền truy cập vị trí\n" +
@@ -888,7 +913,7 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Có thể throw WebDriverException nếu có lỗi khi tương tác với trình điều khiển, " +
                     "hoặc NoSuchElementException nếu không tìm thấy nút nào khớp với danh sách văn bản đã cho."
     )
-    @Step("Từ chối hộp thoại hệ thống")
+    @Step("Deny system dialog")
     public void denySystemDialog() {
         execute(() -> {
             List<String> buttonTexts = Arrays.asList("Deny", "Cancel", "Don't allow");
@@ -906,7 +931,7 @@ public class MobileKeyword extends BaseUiKeyword {
             try {
                 By locator;
                 if ("android".equalsIgnoreCase(platform)) {
-                    locator = By.xpath("//*[@class='android.widget.Button' and (@text='" + text + "' or @text='" + text.toUpperCase() + "')]");
+                    locator = By.xpath("//*[(@text='" + text + "' or @text='" + text.toUpperCase() + "') or (@content-desc='" + text + "')]");
                 } else { // iOS
                     locator = AppiumBy.iOSNsPredicateString("type == 'XCUIElementTypeButton' AND (label == '" + text + "' OR label == '" + text.toUpperCase() + "')");
                 }
@@ -914,14 +939,14 @@ public class MobileKeyword extends BaseUiKeyword {
                 List<WebElement> elements = driver.findElements(locator);
                 if (!elements.isEmpty()) {
                     elements.get(0).click();
-                    logger.info("Đã nhấn vào nút hệ thống: '{}'", text);
+                    logger.info("Tapped system button: '{}'", text);
                     return;
                 }
             } catch (Exception e) {
-                logger.debug("Không thể nhấn nút '{}': {}", text, e.getMessage());
+                logger.debug("Unable to tap button '{}': {}", text, e.getMessage());
             }
         }
-        logger.warn("Không tìm thấy nút hệ thống nào với các văn bản đã cho: {}", possibleTexts);
+        logger.warn("No system buttons found for any of the provided texts: {}", possibleTexts);
     }
 
     @NetatKeyword(
@@ -930,7 +955,8 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Hữu ích khi cần tương tác với các phần tử không thể định vị bằng các locator thông thường, hoặc khi cần chạm vào một vị trí tương đối trên màn hình. " +
                     "Tọa độ được tính theo pixel từ góc trên bên trái của màn hình (0,0). " +
                     "Lưu ý: Tọa độ có thể khác nhau trên các thiết bị có kích thước màn hình khác nhau.",
-            category = "Mobile/Gesture",
+            category = "Mobile",
+            subCategory = "Gesture",
             parameters = {
                     "x: int - Tọa độ theo trục ngang (pixel)",
                     "y: int - Tọa độ theo trục dọc (pixel)"
@@ -946,7 +972,7 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Có thể throw WebDriverException nếu có lỗi khi thực hiện hành động chạm, " +
                     "hoặc IllegalArgumentException nếu tọa độ nằm ngoài kích thước màn hình."
     )
-    @Step("Chạm vào tọa độ ({0}, {1})")
+    @Step("Tap at coordinates ({0}, {1})")
     public void tapByCoordinates(int x, int y) {
         execute(() -> {
             PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
@@ -966,7 +992,8 @@ public class MobileKeyword extends BaseUiKeyword {
             description = "Thực hiện hành động chạm và giữ tại một tọa độ (x, y) trong một khoảng thời gian xác định. " +
                     "Hữu ích khi cần thực hiện các thao tác đặc biệt như hiển thị menu ngữ cảnh tại một vị trí cụ thể, hoặc khi tương tác với các phần tử không thể định vị bằng locator. " +
                     "Tọa độ được tính theo pixel từ góc trên bên trái của màn hình (0,0).",
-            category = "Mobile/Gesture",
+            category = "Mobile",
+            subCategory = "Gesture",
             parameters = {
                     "x: int - Tọa độ theo trục ngang (pixel)",
                     "y: int - Tọa độ theo trục dọc (pixel)",
@@ -983,7 +1010,7 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Có thể throw WebDriverException nếu có lỗi khi thực hiện hành động chạm và giữ, " +
                     "hoặc IllegalArgumentException nếu tọa độ nằm ngoài kích thước màn hình hoặc thời gian giữ không hợp lệ."
     )
-    @Step("Chạm và giữ tại tọa độ ({0}, {1}) trong {2} giây")
+    @Step("Long press at coordinates ({0}, {1}) for {2} seconds")
     public void longPressByCoordinates(int x, int y, int durationInSeconds) {
         execute(() -> {
             PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
@@ -1002,14 +1029,15 @@ public class MobileKeyword extends BaseUiKeyword {
 //    @NetatKeyword(
 //            name = "setGeoLocation",
 //            description = "Giả lập và thiết lập vị trí GPS của thiết bị.",
-//            category = "Mobile/System",
+//            category = "Mobile",
+//subCategory = "System",
 //            parameters = {
 //                    "double: latitude - Vĩ độ.",
 //                    "double: longitude - Kinh độ."
 //            },
 //            example = "mobileKeyword.setGeoLocation(21.028511, 105.804817); // Tọa độ Hà Nội"
 //    )
-//    @Step("Thiết lập vị trí GPS: Vĩ độ={0}, Kinh độ={1}")
+//    @Step("Set GPS location: Latitude={0}, Longitude={1}")
 //    public void setGeoLocation(double latitude, double longitude) {
 //        execute(() -> {
 //            Location location = new Location(latitude, longitude, 0); // altitude có thể để là 0
@@ -1019,46 +1047,69 @@ public class MobileKeyword extends BaseUiKeyword {
 //        }, latitude, longitude);
 //    }
 
-    @NetatKeyword(
-            name = "toggleAirplaneMode",
-            description = "Bật hoặc tắt chế độ máy bay trên thiết bị Android. " +
-                    "Mỗi lần gọi sẽ chuyển đổi trạng thái hiện tại (nếu đang bật sẽ tắt, nếu đang tắt sẽ bật). " +
-                    "Chỉ hoạt động trên Android, sẽ hiển thị cảnh báo nếu được gọi trên iOS. " +
-                    "Hữu ích khi cần kiểm tra hành vi ứng dụng trong điều kiện không có kết nối mạng.",
-            category = "Mobile/System",
-            parameters = {},
-            returnValue = "void - Không trả về giá trị",
-            example = "// Bật chế độ máy bay để kiểm tra xử lý offline\n" +
-                    "mobileKeyword.toggleAirplaneMode();\n" +
-                    "mobileKeyword.assertElementVisible(offlineMessage);\n\n" +
-                    "// Tắt chế độ máy bay để kiểm tra khả năng phục hồi kết nối\n" +
-                    "mobileKeyword.toggleAirplaneMode();\n" +
-                    "mobileKeyword.waitForVisible(syncCompleteIndicator, 15);",
-            note = "Áp dụng cho nền tảng Mobile (chỉ Android). Thiết bị Android đã được kết nối và cấu hình đúng với Appium. " +
-                    "Ứng dụng Appium phải có quyền thay đổi chế độ máy bay (cần quyền WRITE_SETTINGS) và thiết bị Android phải hỗ trợ chế độ máy bay. " +
-                    "Có thể throw WebDriverException nếu có lỗi khi tương tác với trình điều khiển, " +
-                    "UnsupportedOperationException nếu được gọi trên thiết bị iOS, " +
-                    "hoặc SecurityException nếu không có đủ quyền để thay đổi chế độ máy bay."
-    )
-    @Step("Bật/Tắt chế độ máy bay")
-    public void toggleAirplaneMode() {
-        execute(() -> {
-            AppiumDriver driver = (AppiumDriver) DriverManager.getDriver();
-            if (driver instanceof AndroidDriver) {
-                ((AndroidDriver) driver).toggleAirplaneMode();
-            } else {
-                logger.warn("Keyword 'toggleAirplaneMode' chỉ được hỗ trợ trên Android.");
-            }
-            return null;
-        });
-    }
+//    @NetatKeyword(
+//            name = "toggleAirplaneMode",
+//            description = "Bật hoặc tắt chế độ máy bay trên thiết bị Android. " +
+//                    "Mỗi lần gọi sẽ chuyển đổi trạng thái hiện tại (nếu đang bật sẽ tắt, nếu đang tắt sẽ bật). " +
+//                    "Chỉ hoạt động trên Android, sẽ hiển thị cảnh báo nếu được gọi trên iOS. " +
+//                    "Hữu ích khi cần kiểm tra hành vi ứng dụng trong điều kiện không có kết nối mạng.",
+//            category = "Mobile",
+//subCategory = "System",
+//            parameters = {},
+//            returnValue = "void - Không trả về giá trị",
+//            example = "// Bật chế độ máy bay để kiểm tra xử lý offline\n" +
+//                    "mobileKeyword.toggleAirplaneMode();\n" +
+//                    "mobileKeyword.assertElementVisible(offlineMessage);\n\n" +
+//                    "// Tắt chế độ máy bay để kiểm tra khả năng phục hồi kết nối\n" +
+//                    "mobileKeyword.toggleAirplaneMode();\n" +
+//                    "mobileKeyword.waitForVisible(syncCompleteIndicator, 15);",
+//            note = "Áp dụng cho nền tảng Mobile (chỉ Android). Thiết bị Android đã được kết nối và cấu hình đúng với Appium. " +
+//                    "Ứng dụng Appium phải có quyền thay đổi chế độ máy bay (cần quyền WRITE_SETTINGS) và thiết bị Android phải hỗ trợ chế độ máy bay. " +
+//                    "Có thể throw WebDriverException nếu có lỗi khi tương tác với trình điều khiển, " +
+//                    "UnsupportedOperationException nếu được gọi trên thiết bị iOS, " +
+//                    "hoặc SecurityException nếu không có đủ quyền để thay đổi chế độ máy bay."
+//    )
+//    @Step("Toggle airplane mode")
+//    public void toggleAirplaneMode() {
+//        execute(() -> {
+//            AppiumDriver driver = (AppiumDriver) DriverManager.getDriver();
+//            if (driver instanceof AndroidDriver) {
+//                AndroidDriver androidDriver = (AndroidDriver) driver;
+//                try {
+//                    // Kiểm tra trạng thái hiện tại
+//                    ConnectionState currentState = androidDriver.getConnection();
+//
+//                    if (currentState.isAirplaneModeEnabled()) {
+//                        // Tắt airplane mode
+//                        logger.info("Tắt airplane mode");
+//                        androidDriver.setConnection(new ConnectionStateBuilder()
+//                                        .withAirplaneModeDisabled()
+//                                .build());
+//                    } else {
+//                        // Bật airplane mode
+//                        logger.info("Bật airplane mode");
+//                        androidDriver.setConnection(new ConnectionStateBuilder()
+//                                .withAirplaneModeEnabled()
+//                                .build());
+//                    }
+//                } catch (Exception e) {
+//                    logger.error("Lỗi khi toggle airplane mode: " + e.getMessage());
+//                }
+//            } else {
+//                logger.warn("Airplane mode functionality is only supported on Android.");
+//            }
+//
+//            return null;
+//        });
+//    }
 
     @NetatKeyword(
             name = "takeScreenshot",
             description = "Chụp ảnh màn hình của thiết bị và lưu vào thư mục screenshots với tên file được chỉ định. " +
                     "Hữu ích khi cần ghi lại trạng thái màn hình tại các điểm quan trọng trong quá trình test, đặc biệt là khi gặp lỗi hoặc cần xác minh giao diện. " +
                     "Ảnh chụp màn hình sẽ được lưu với định dạng .png và tự động đính kèm vào báo cáo Allure nếu được cấu hình.",
-            category = "Mobile/System",
+            category = "Mobile",
+            subCategory = "System",
             parameters = {
                     "fileName: String - Tên file để lưu ảnh (không cần đuôi .png)"
             },
@@ -1080,7 +1131,7 @@ public class MobileKeyword extends BaseUiKeyword {
                     "IOException nếu không thể lưu ảnh vào thư mục chỉ định, " +
                     "hoặc IllegalArgumentException nếu tên file không hợp lệ."
     )
-    @Step("Chụp ảnh màn hình với tên file: {0}")
+    @Step("Take screenshot with filename: {0}")
     public void takeScreenshot(String fileName) {
         // Tái sử dụng lại tiện ích chung đã có trong netat-core
         execute(() -> {
@@ -1095,7 +1146,8 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Hữu ích khi cần chuẩn bị dữ liệu hoặc tài nguyên cho test case. " +
                     "Lưu ý: Đường dẫn trên thiết bị phải là đường dẫn mà ứng dụng có quyền ghi. " +
                     "Trên Android, thường là trong /sdcard/. Trên iOS, cần sử dụng bundle path.",
-            category = "Mobile/File",
+            category = "Mobile",
+            subCategory = "Utility",
             parameters = {
                     "devicePath: String - Đường dẫn đích trên thiết bị di động",
                     "localFilePath: String - Đường dẫn tuyệt đối đến file trên máy tính chạy test"
@@ -1112,14 +1164,14 @@ public class MobileKeyword extends BaseUiKeyword {
                     "IOException nếu không thể đọc file nguồn, IllegalArgumentException nếu đường dẫn không hợp lệ, " +
                     "hoặc SecurityException nếu không có quyền ghi vào đường dẫn đích."
     )
-    @Step("Đẩy file từ '{1}' vào thiết bị tại '{0}'")
+    @Step("Push file from '{1}' to device at '{0}'")
     public void pushFile(String devicePath, String localFilePath) {
         execute(() -> {
             try {
                 byte[] fileContent = Files.readAllBytes(Paths.get(localFilePath));
                 ((PushesFiles) DriverManager.getDriver()).pushFile(devicePath, fileContent);
             } catch (IOException e) {
-                throw new RuntimeException("Không thể đọc file từ đường dẫn: " + localFilePath, e);
+                throw new RuntimeException("Unable to read file from path: " + localFilePath, e);
             }
             return null;
         }, devicePath, localFilePath);
@@ -1131,7 +1183,8 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Hữu ích khi cần lấy các file log, dữ liệu hoặc tài nguyên từ thiết bị để phân tích hoặc xác minh. " +
                     "Lưu ý: Đường dẫn phải trỏ đến một file có thể truy cập được từ ứng dụng (với quyền thích hợp). " +
                     "Trên Android không root, thường chỉ có thể truy cập các file trong thư mục ứng dụng.",
-            category = "Mobile/File",
+            category = "Mobile",
+            subCategory = "Utility",
             parameters = {
                     "devicePath: String - Đường dẫn đến file trên thiết bị"
             },
@@ -1150,7 +1203,7 @@ public class MobileKeyword extends BaseUiKeyword {
                     "NoSuchFileException nếu file không tồn tại trên thiết bị, SecurityException nếu không có quyền đọc file, " +
                     "hoặc IllegalArgumentException nếu đường dẫn không hợp lệ."
     )
-    @Step("Kéo file từ thiết bị tại: {0}")
+    @Step("Pull file from device at: {0}")
     public String pullFile(String devicePath) {
         return execute(() -> {
             byte[] fileBase64 = ((PullsFiles) DriverManager.getDriver()).pullFile(devicePath);
@@ -1158,282 +1211,291 @@ public class MobileKeyword extends BaseUiKeyword {
         }, devicePath);
     }
 
-        @NetatKeyword(
-                name = "getClipboard",
-                description = "Lấy và trả về nội dung văn bản hiện tại của clipboard trên thiết bị. " +
-                        "Hữu ích khi cần kiểm tra nội dung đã được sao chép hoặc khi cần lấy dữ liệu từ clipboard để sử dụng trong các bước test tiếp theo. " +
-                        "Phương thức này trả về một chuỗi chứa nội dung văn bản của clipboard. " +
-                        "Lưu ý: Chỉ hỗ trợ nội dung văn bản, không hỗ trợ các loại dữ liệu khác như hình ảnh.",
-                category = "Mobile/System",
-                parameters = {},
-                returnValue = "String - Nội dung văn bản hiện có trong clipboard của thiết bị",
-                example = "// Kiểm tra nội dung đã được sao chép đúng\n" +
-                        "mobileKeyword.longPress(emailText, 2);\n" +
-                        "mobileKeyword.tap(copyOption);\n" +
-                        "String copiedText = mobileKeyword.getClipboard();\n" +
-                        "assert copiedText.equals(\"user@example.com\");\n\n" +
-                        "// Sao chép mã xác minh và sử dụng nó\n" +
-                        "mobileKeyword.tap(copyButton);\n" +
-                        "String code = mobileKeyword.getClipboard();\n" +
-                        "mobileKeyword.sendText(codeInput, code);",
-                note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
-                        "Ứng dụng phải có quyền truy cập clipboard và clipboard phải chứa nội dung văn bản (không phải hình ảnh hoặc dữ liệu nhị phân). " +
-                        "Có thể throw WebDriverException nếu có lỗi khi tương tác với trình điều khiển, " +
-                        "UnsupportedOperationException nếu thiết bị không hỗ trợ truy cập clipboard, " +
-                        "hoặc SecurityException nếu không có quyền truy cập clipboard."
-        )
-        @Step("Lấy nội dung từ clipboard")
-        public String getClipboard() {
-            return execute(() -> ((HasClipboard) DriverManager.getDriver()).getClipboardText());
-        }
+    @NetatKeyword(
+            name = "getClipboard",
+            description = "Lấy và trả về nội dung văn bản hiện tại của clipboard trên thiết bị. " +
+                    "Hữu ích khi cần kiểm tra nội dung đã được sao chép hoặc khi cần lấy dữ liệu từ clipboard để sử dụng trong các bước test tiếp theo. " +
+                    "Phương thức này trả về một chuỗi chứa nội dung văn bản của clipboard. " +
+                    "Lưu ý: Chỉ hỗ trợ nội dung văn bản, không hỗ trợ các loại dữ liệu khác như hình ảnh.",
+            category = "Mobile",
+            subCategory = "System",
+            parameters = {},
+            returnValue = "String - Nội dung văn bản hiện có trong clipboard của thiết bị",
+            example = "// Kiểm tra nội dung đã được sao chép đúng\n" +
+                    "mobileKeyword.longPress(emailText, 2);\n" +
+                    "mobileKeyword.tap(copyOption);\n" +
+                    "String copiedText = mobileKeyword.getClipboard();\n" +
+                    "assert copiedText.equals(\"user@example.com\");\n\n" +
+                    "// Sao chép mã xác minh và sử dụng nó\n" +
+                    "mobileKeyword.tap(copyButton);\n" +
+                    "String code = mobileKeyword.getClipboard();\n" +
+                    "mobileKeyword.sendText(codeInput, code);",
+            note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
+                    "Ứng dụng phải có quyền truy cập clipboard và clipboard phải chứa nội dung văn bản (không phải hình ảnh hoặc dữ liệu nhị phân). " +
+                    "Có thể throw WebDriverException nếu có lỗi khi tương tác với trình điều khiển, " +
+                    "UnsupportedOperationException nếu thiết bị không hỗ trợ truy cập clipboard, " +
+                    "hoặc SecurityException nếu không có quyền truy cập clipboard."
+    )
+    @Step("Get clipboard content")
+    public String getClipboard() {
+        return execute(() -> ((HasClipboard) DriverManager.getDriver()).getClipboardText());
+    }
 
-        @NetatKeyword(
-                name = "waitForText",
-                description = "Chờ cho đến khi văn bản của một phần tử khớp chính xác với chuỗi mong đợi hoặc cho đến khi hết thời gian chờ. " +
-                        "Hữu ích khi cần đảm bảo nội dung đã được cập nhật đúng trước khi tiếp tục. " +
-                        "Phương thức này kiểm tra chính xác nội dung văn bản, phân biệt chữ hoa/thường và khoảng trắng. " +
-                        "Nếu văn bản không khớp sau khi hết thời gian chờ, một TimeoutException sẽ được ném ra.",
-                category = "Mobile/Wait",
-                parameters = {
-                        "uiObject: ObjectUI - Phần tử cần kiểm tra văn bản",
-                        "expectedText: String - Văn bản mong đợi phải khớp chính xác",
-                        "timeoutInSeconds: int - Thời gian tối đa (giây) để chờ văn bản khớp"
-                },
-                returnValue = "void - Không trả về giá trị",
-                example = "// Chờ trạng thái đơn hàng cập nhật\n" +
-                        "mobileKeyword.waitForText(orderStatusLabel, \"Đã hoàn thành\", 15);\n\n" +
-                        "// Chờ số dư tài khoản cập nhật sau giao dịch\n" +
-                        "mobileKeyword.tap(transferButton);\n" +
-                        "mobileKeyword.waitForText(balanceAmount, \"1,250,000 VND\", 10);",
-                note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
-                        "Phần tử cần kiểm tra phải có thuộc tính văn bản (text) và phải tồn tại trong DOM (có thể chưa hiển thị). " +
-                        "Có thể throw TimeoutException nếu văn bản không khớp sau khi hết thời gian chờ, " +
-                        "StaleElementReferenceException nếu phần tử không còn gắn với DOM trong quá trình chờ, " +
-                        "hoặc NoSuchElementException nếu không tìm thấy phần tử trong DOM."
-        )
-        @Step("Chờ văn bản của {0.name} là '{1}' trong {2} giây")
-        public void waitForText(ObjectUI uiObject, String expectedText, int timeoutInSeconds) {
-            execute(() -> {
-                WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds));
-                wait.until(ExpectedConditions.textToBePresentInElement(findElement(uiObject), expectedText));
-                return null;
-            }, uiObject, expectedText, timeoutInSeconds);
-        }
+    @NetatKeyword(
+            name = "waitForText",
+            description = "Chờ cho đến khi văn bản của một phần tử khớp chính xác với chuỗi mong đợi hoặc cho đến khi hết thời gian chờ. " +
+                    "Hữu ích khi cần đảm bảo nội dung đã được cập nhật đúng trước khi tiếp tục. " +
+                    "Phương thức này kiểm tra chính xác nội dung văn bản, phân biệt chữ hoa/thường và khoảng trắng. " +
+                    "Nếu văn bản không khớp sau khi hết thời gian chờ, một TimeoutException sẽ được ném ra.",
+            category = "Mobile",
+            subCategory = "Wait",
+            parameters = {
+                    "uiObject: ObjectUI - Phần tử cần kiểm tra văn bản",
+                    "expectedText: String - Văn bản mong đợi phải khớp chính xác",
+                    "timeoutInSeconds: int - Thời gian tối đa (giây) để chờ văn bản khớp"
+            },
+            returnValue = "void - Không trả về giá trị",
+            example = "// Chờ trạng thái đơn hàng cập nhật\n" +
+                    "mobileKeyword.waitForText(orderStatusLabel, \"Đã hoàn thành\", 15);\n\n" +
+                    "// Chờ số dư tài khoản cập nhật sau giao dịch\n" +
+                    "mobileKeyword.tap(transferButton);\n" +
+                    "mobileKeyword.waitForText(balanceAmount, \"1,250,000 VND\", 10);",
+            note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
+                    "Phần tử cần kiểm tra phải có thuộc tính văn bản (text) và phải tồn tại trong DOM (có thể chưa hiển thị). " +
+                    "Có thể throw TimeoutException nếu văn bản không khớp sau khi hết thời gian chờ, " +
+                    "StaleElementReferenceException nếu phần tử không còn gắn với DOM trong quá trình chờ, " +
+                    "hoặc NoSuchElementException nếu không tìm thấy phần tử trong DOM."
+    )
+    @Step("Wait for text of {0.name} to be '{1}' within {2} seconds")
+    public void waitForText(ObjectUI uiObject, String expectedText, int timeoutInSeconds) {
+        execute(() -> {
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds));
+            wait.until(ExpectedConditions.textToBePresentInElement(findElement(uiObject), expectedText));
+            return null;
+        }, uiObject, expectedText, timeoutInSeconds);
+    }
 
-        @NetatKeyword(
-                name = "assertTextContains",
-                description = "Khẳng định rằng văn bản của một phần tử có chứa một chuỗi con. " +
-                        "Khác với assertTextEquals, phương thức này chỉ kiểm tra sự xuất hiện của chuỗi con trong văn bản, không yêu cầu khớp hoàn toàn. " +
-                        "Hữu ích khi nội dung có thể thay đổi nhưng vẫn chứa các phần quan trọng cần kiểm tra. " +
-                        "Phương thức phân biệt chữ hoa/thường.",
-                category = "Mobile/Assertion",
-                parameters = {
-                        "uiObject: ObjectUI - Phần tử cần kiểm tra văn bản",
-                        "partialText: String - Chuỗi con cần tìm trong văn bản của phần tử"
-                },
-                returnValue = "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
-                example = "// Kiểm tra thông báo chào mừng có chứa tên người dùng\n" +
-                        "mobileKeyword.assertTextContains(welcomeMessage, \"Xin chào\");\n\n" +
-                        "// Xác minh thông báo lỗi có chứa thông tin về mật khẩu\n" +
-                        "mobileKeyword.assertTextContains(errorMessage, \"mật khẩu không đúng\");",
-                note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
-                        "Phần tử cần kiểm tra phải tồn tại và có thuộc tính văn bản (text), và phải hiển thị trên màn hình để có thể đọc văn bản. " +
-                        "Có thể throw AssertionError nếu văn bản của phần tử không chứa chuỗi con mong đợi, " +
-                        "NoSuchElementException nếu không tìm thấy phần tử, " +
-                        "hoặc StaleElementReferenceException nếu phần tử không còn gắn với DOM."
-        )
-        @Step("Kiểm tra (Hard) văn bản của {0.name} có chứa '{1}'")
-        public void assertTextContains(ObjectUI uiObject, String partialText) {
-            // Gọi phương thức logic từ lớp cha
-            super.performTextContainsAssertion(uiObject, partialText, false);
-        }
+    @NetatKeyword(
+            name = "assertTextContains",
+            description = "Khẳng định rằng văn bản của một phần tử có chứa một chuỗi con. " +
+                    "Khác với assertTextEquals, phương thức này chỉ kiểm tra sự xuất hiện của chuỗi con trong văn bản, không yêu cầu khớp hoàn toàn. " +
+                    "Hữu ích khi nội dung có thể thay đổi nhưng vẫn chứa các phần quan trọng cần kiểm tra. " +
+                    "Phương thức phân biệt chữ hoa/thường.",
+            category = "Mobile",
+            subCategory = "Assertion",
+            parameters = {
+                    "uiObject: ObjectUI - Phần tử cần kiểm tra văn bản",
+                    "partialText: String - Chuỗi con cần tìm trong văn bản của phần tử"
+            },
+            returnValue = "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
+            example = "// Kiểm tra thông báo chào mừng có chứa tên người dùng\n" +
+                    "mobileKeyword.assertTextContains(welcomeMessage, \"Xin chào\");\n\n" +
+                    "// Xác minh thông báo lỗi có chứa thông tin về mật khẩu\n" +
+                    "mobileKeyword.assertTextContains(errorMessage, \"mật khẩu không đúng\");",
+            note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
+                    "Phần tử cần kiểm tra phải tồn tại và có thuộc tính văn bản (text), và phải hiển thị trên màn hình để có thể đọc văn bản. " +
+                    "Có thể throw AssertionError nếu văn bản của phần tử không chứa chuỗi con mong đợi, " +
+                    "NoSuchElementException nếu không tìm thấy phần tử, " +
+                    "hoặc StaleElementReferenceException nếu phần tử không còn gắn với DOM."
+    )
+    @Step("Check (Hard) if text of {0.name} contains '{1}'")
+    public void assertTextContains(ObjectUI uiObject, String partialText) {
+        // Gọi phương thức logic từ lớp cha
+        super.performTextContainsAssertion(uiObject, partialText, false);
+    }
 
-        @NetatKeyword(
-                name = "assertNotChecked",
-                description = "Khẳng định rằng một switch, checkbox hoặc radio button đang ở trạng thái không được chọn/tắt. " +
-                        "Phương thức này kiểm tra thuộc tính 'checked' của phần tử và ném AssertionError nếu phần tử đang được chọn. " +
-                        "Áp dụng cho các phần tử có thể chọn/bỏ chọn như checkbox, radio button, toggle switch. " +
-                        "Lưu ý: Phần tử phải hỗ trợ thuộc tính 'checked', nếu không có thể gây ra lỗi.",
-                category = "Mobile/Assertion",
-                parameters = {
-                        "uiObject: ObjectUI - Phần tử cần kiểm tra trạng thái"
-                },
-                returnValue = "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
-                example = "// Kiểm tra rằng tùy chọn chưa được chọn ban đầu\n" +
-                        "mobileKeyword.assertNotChecked(optionalFeatureCheckbox);\n\n" +
-                        "// Xác minh các radio button khác không được chọn\n" +
-                        "mobileKeyword.tap(option1RadioButton);\n" +
-                        "mobileKeyword.assertChecked(option1RadioButton);\n" +
-                        "mobileKeyword.assertNotChecked(option2RadioButton);",
-                note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
-                        "Phần tử cần kiểm tra phải tồn tại và có thuộc tính 'checked', và phải là loại có thể chọn/bỏ chọn (checkbox, radio button, switch). " +
-                        "Có thể throw AssertionError nếu phần tử đang ở trạng thái được chọn/bật, " +
-                        "NoSuchElementException nếu không tìm thấy phần tử, StaleElementReferenceException nếu phần tử không còn gắn với DOM, " +
-                        "hoặc WebDriverException nếu không thể lấy thuộc tính 'checked' của phần tử."
-        )
-        @Step("Kiểm tra (Hard) phần tử {0.name} đang không được chọn/tắt")
-        public void assertNotChecked(ObjectUI uiObject) {
-            execute(() -> {
-                WebElement element = findElement(uiObject);
-                boolean isChecked = Boolean.parseBoolean(element.getAttribute("checked"));
-                Assert.assertFalse(isChecked, "HARD ASSERT FAILED: Phần tử '" + uiObject.getName() + "' đang ở trạng thái được chọn/bật.");
-                return null;
-            }, uiObject);
-        }
+    @NetatKeyword(
+            name = "assertNotChecked",
+            description = "Khẳng định rằng một switch, checkbox hoặc radio button đang ở trạng thái không được chọn/tắt. " +
+                    "Phương thức này kiểm tra thuộc tính 'checked' của phần tử và ném AssertionError nếu phần tử đang được chọn. " +
+                    "Áp dụng cho các phần tử có thể chọn/bỏ chọn như checkbox, radio button, toggle switch. " +
+                    "Lưu ý: Phần tử phải hỗ trợ thuộc tính 'checked', nếu không có thể gây ra lỗi.",
+            category = "Mobile",
+            subCategory = "Assertion",
+            parameters = {
+                    "uiObject: ObjectUI - Phần tử cần kiểm tra trạng thái"
+            },
+            returnValue = "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
+            example = "// Kiểm tra rằng tùy chọn chưa được chọn ban đầu\n" +
+                    "mobileKeyword.assertNotChecked(optionalFeatureCheckbox);\n\n" +
+                    "// Xác minh các radio button khác không được chọn\n" +
+                    "mobileKeyword.tap(option1RadioButton);\n" +
+                    "mobileKeyword.assertChecked(option1RadioButton);\n" +
+                    "mobileKeyword.assertNotChecked(option2RadioButton);",
+            note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
+                    "Phần tử cần kiểm tra phải tồn tại và có thuộc tính 'checked', và phải là loại có thể chọn/bỏ chọn (checkbox, radio button, switch). " +
+                    "Có thể throw AssertionError nếu phần tử đang ở trạng thái được chọn/bật, " +
+                    "NoSuchElementException nếu không tìm thấy phần tử, StaleElementReferenceException nếu phần tử không còn gắn với DOM, " +
+                    "hoặc WebDriverException nếu không thể lấy thuộc tính 'checked' của phần tử."
+    )
+    @Step("Check (Hard) if element {0.name} is not checked/enabled")
+    public void assertNotChecked(ObjectUI uiObject) {
+        execute(() -> {
+            WebElement element = findElement(uiObject);
+            boolean isChecked = Boolean.parseBoolean(element.getAttribute("checked"));
+            Assert.assertFalse(isChecked, "HARD ASSERT FAILED: Element '" + uiObject.getName() + "' is in checked/enabled state.");
+            return null;
+        }, uiObject);
+    }
 
-        @NetatKeyword(
-                name = "assertEnabled",
-                description = "Khẳng định rằng một phần tử đang ở trạng thái có thể tương tác (enabled). " +
-                        "Phương thức này kiểm tra thuộc tính 'enabled' của phần tử và ném AssertionError nếu phần tử bị vô hiệu hóa (disabled). " +
-                        "Hữu ích khi cần đảm bảo một nút hoặc trường nhập liệu có thể tương tác được trước khi thực hiện các thao tác tiếp theo.",
-                category = "Mobile/Assertion",
-                parameters = {
-                        "uiObject: ObjectUI - Phần tử cần kiểm tra trạng thái"
-                },
-                returnValue = "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
-                example = "// Kiểm tra nút đăng nhập được kích hoạt sau khi nhập thông tin\n" +
-                        "mobileKeyword.sendText(usernameInput, \"user@example.com\");\n" +
-                        "mobileKeyword.sendText(passwordInput, \"password123\");\n" +
-                        "mobileKeyword.assertEnabled(loginButton);\n\n" +
-                        "// Xác minh nút tiếp tục được kích hoạt sau khi đồng ý điều khoản\n" +
-                        "mobileKeyword.tap(agreeToTermsCheckbox);\n" +
-                        "mobileKeyword.assertEnabled(continueButton);",
-                note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
-                        "Phần tử cần kiểm tra phải tồn tại và có thuộc tính 'enabled', và phải là loại có thể được kích hoạt/vô hiệu hóa (button, input, etc.). " +
-                        "Có thể throw AssertionError nếu phần tử đang ở trạng thái bị vô hiệu hóa (disabled), " +
-                        "NoSuchElementException nếu không tìm thấy phần tử, StaleElementReferenceException nếu phần tử không còn gắn với DOM, " +
-                        "hoặc WebDriverException nếu không thể lấy thuộc tính 'enabled' của phần tử."
-        )
-        @Step("Kiểm tra (Hard) phần tử {0.name} là enabled")
-        public void assertEnabled(ObjectUI uiObject) {
-            // Gọi phương thức logic từ lớp cha
-            super.performStateAssertion(uiObject, true, false);
-        }
+    @NetatKeyword(
+            name = "assertEnabled",
+            description = "Khẳng định rằng một phần tử đang ở trạng thái có thể tương tác (enabled). " +
+                    "Phương thức này kiểm tra thuộc tính 'enabled' của phần tử và ném AssertionError nếu phần tử bị vô hiệu hóa (disabled). " +
+                    "Hữu ích khi cần đảm bảo một nút hoặc trường nhập liệu có thể tương tác được trước khi thực hiện các thao tác tiếp theo.",
+            category = "Mobile",
+            subCategory = "Assertion",
+            parameters = {
+                    "uiObject: ObjectUI - Phần tử cần kiểm tra trạng thái"
+            },
+            returnValue = "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
+            example = "// Kiểm tra nút đăng nhập được kích hoạt sau khi nhập thông tin\n" +
+                    "mobileKeyword.sendText(usernameInput, \"user@example.com\");\n" +
+                    "mobileKeyword.sendText(passwordInput, \"password123\");\n" +
+                    "mobileKeyword.assertEnabled(loginButton);\n\n" +
+                    "// Xác minh nút tiếp tục được kích hoạt sau khi đồng ý điều khoản\n" +
+                    "mobileKeyword.tap(agreeToTermsCheckbox);\n" +
+                    "mobileKeyword.assertEnabled(continueButton);",
+            note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
+                    "Phần tử cần kiểm tra phải tồn tại và có thuộc tính 'enabled', và phải là loại có thể được kích hoạt/vô hiệu hóa (button, input, etc.). " +
+                    "Có thể throw AssertionError nếu phần tử đang ở trạng thái bị vô hiệu hóa (disabled), " +
+                    "NoSuchElementException nếu không tìm thấy phần tử, StaleElementReferenceException nếu phần tử không còn gắn với DOM, " +
+                    "hoặc WebDriverException nếu không thể lấy thuộc tính 'enabled' của phần tử."
+    )
+    @Step("Check (Hard) if element {0.name} is enabled")
+    public void assertEnabled(ObjectUI uiObject) {
+        // Gọi phương thức logic từ lớp cha
+        super.performStateAssertion(uiObject, true, false);
+    }
 
-        @NetatKeyword(
-                name = "assertElementNotPresent",
-                description = "Khẳng định rằng một phần tử KHÔNG tồn tại trong cấu trúc màn hình sau một khoảng thời gian chờ. " +
-                        "Hữu ích để xác minh rằng một phần tử đã bị xóa hoặc chưa được tạo. " +
-                        "Phương thức sẽ đợi trong khoảng thời gian chỉ định và kiểm tra xem phần tử có xuất hiện không, " +
-                        "nếu phần tử xuất hiện trong thời gian đó, một AssertionError sẽ được ném ra.",
-                category = "Mobile/Assertion",
-                parameters = {
-                        "uiObject: ObjectUI - Phần tử cần kiểm tra sự không tồn tại",
-                        "timeoutInSeconds: int - Thời gian tối đa (giây) để đợi và xác nhận phần tử không xuất hiện"
-                },
-                returnValue = "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
-                example = "// Kiểm tra thông báo lỗi không xuất hiện sau khi nhập đúng thông tin\n" +
-                        "mobileKeyword.assertElementNotPresent(errorMessage, 3);\n\n" +
-                        "// Xác minh màn hình loading đã biến mất sau khi tải xong\n" +
-                        "mobileKeyword.assertElementNotPresent(loadingSpinner, 10);",
-                note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
-                        "Locator của phần tử cần kiểm tra phải hợp lệ. " +
-                        "Có thể throw AssertionError nếu phần tử xuất hiện trong khoảng thời gian chờ, " +
-                        "hoặc WebDriverException nếu có lỗi khi tương tác với trình điều khiển."
-        )
-        @Step("Kiểm tra (Hard) phần tử {0.name} không tồn tại trong {1} giây")
-        public void assertElementNotPresent(ObjectUI uiObject, int timeoutInSeconds) {
-            execute(() -> {
-                boolean isPresent = isElementPresent(uiObject, timeoutInSeconds);
-                Assert.assertFalse(isPresent,
-                        "HARD ASSERT FAILED: Phần tử '" + uiObject.getName() + "' vẫn tồn tại sau " + timeoutInSeconds + " giây.");
-                return null;
-            }, uiObject, timeoutInSeconds);
-        }
+    @NetatKeyword(
+            name = "assertElementNotPresent",
+            description = "Khẳng định rằng một phần tử KHÔNG tồn tại trong cấu trúc màn hình sau một khoảng thời gian chờ. " +
+                    "Hữu ích để xác minh rằng một phần tử đã bị xóa hoặc chưa được tạo. " +
+                    "Phương thức sẽ đợi trong khoảng thời gian chỉ định và kiểm tra xem phần tử có xuất hiện không, " +
+                    "nếu phần tử xuất hiện trong thời gian đó, một AssertionError sẽ được ném ra.",
+            category = "Mobile",
+            subCategory = "Assertion",
+            parameters = {
+                    "uiObject: ObjectUI - Phần tử cần kiểm tra sự không tồn tại",
+                    "timeoutInSeconds: int - Thời gian tối đa (giây) để đợi và xác nhận phần tử không xuất hiện"
+            },
+            returnValue = "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
+            example = "// Kiểm tra thông báo lỗi không xuất hiện sau khi nhập đúng thông tin\n" +
+                    "mobileKeyword.assertElementNotPresent(errorMessage, 3);\n\n" +
+                    "// Xác minh màn hình loading đã biến mất sau khi tải xong\n" +
+                    "mobileKeyword.assertElementNotPresent(loadingSpinner, 10);",
+            note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
+                    "Locator của phần tử cần kiểm tra phải hợp lệ. " +
+                    "Có thể throw AssertionError nếu phần tử xuất hiện trong khoảng thời gian chờ, " +
+                    "hoặc WebDriverException nếu có lỗi khi tương tác với trình điều khiển."
+    )
+    @Step("Check (Hard) if element {0.name} is not present within {1} seconds")
+    public void assertElementNotPresent(ObjectUI uiObject, int timeoutInSeconds) {
+        execute(() -> {
+            boolean isPresent = isElementPresent(uiObject, timeoutInSeconds);
+            Assert.assertFalse(isPresent,
+                    "HARD ASSERT FAILED: Element '" + uiObject.getName() + "' is still present after " + timeoutInSeconds + " seconds.");
+            return null;
+        }, uiObject, timeoutInSeconds);
+    }
 
-        @NetatKeyword(
-                name = "isElementPresent",
-                description = "Kiểm tra xem một phần tử có tồn tại trên màn hình hay không trong một khoảng thời gian chờ nhất định. " +
-                        "Khác với các phương thức assertion, phương thức này trả về kết quả boolean (true/false) thay vì ném ra ngoại lệ, " +
-                        "giúp xử lý các trường hợp phần tử có thể xuất hiện hoặc không. " +
-                        "Hữu ích cho các điều kiện rẽ nhánh trong kịch bản test.",
-                category = "Mobile/Assert",
-                parameters = {
-                        "uiObject: ObjectUI - Phần tử cần tìm kiếm",
-                        "timeoutInSeconds: int - Thời gian chờ tối đa (tính bằng giây)"
-                },
-                returnValue = "boolean - true nếu phần tử tồn tại, false nếu không tìm thấy sau thời gian chờ",
-                example = "// Kiểm tra thông báo lỗi và xử lý tương ứng\n" +
-                        "boolean isErrorVisible = mobileKeyword.isElementPresent(errorMessage, 5);\n" +
-                        "if (isErrorVisible) {\n" +
-                        "    mobileKeyword.tap(dismissButton);\n" +
-                        "} else {\n" +
-                        "    mobileKeyword.tap(nextButton);\n" +
-                        "}\n\n" +
-                        "// Kiểm tra popup và bỏ qua nếu có\n" +
-                        "if (mobileKeyword.isElementPresent(rateAppPopup, 3)) {\n" +
-                        "    mobileKeyword.tap(remindMeLaterButton);\n" +
-                        "}",
-                note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
-                        "Locator của phần tử cần kiểm tra phải hợp lệ. " +
-                        "Có thể throw WebDriverException nếu có lỗi khi tương tác với trình điều khiển."
-        )
-        @Step("Kiểm tra sự tồn tại của phần tử {0.name} trong {1} giây")
-        public boolean isElementPresent(ObjectUI uiObject, int timeoutInSeconds) {
-            // Gọi cỗ máy execute() và bên trong gọi lại logic từ lớp cha
-            return execute(() -> super._isElementPresent(uiObject, timeoutInSeconds), uiObject, timeoutInSeconds);
-        }
+    @NetatKeyword(
+            name = "isElementPresent",
+            description = "Kiểm tra xem một phần tử có tồn tại trên màn hình hay không trong một khoảng thời gian chờ nhất định. " +
+                    "Khác với các phương thức assertion, phương thức này trả về kết quả boolean (true/false) thay vì ném ra ngoại lệ, " +
+                    "giúp xử lý các trường hợp phần tử có thể xuất hiện hoặc không. " +
+                    "Hữu ích cho các điều kiện rẽ nhánh trong kịch bản test.",
+            category = "Mobile/Assert",
+            parameters = {
+                    "uiObject: ObjectUI - Phần tử cần tìm kiếm",
+                    "timeoutInSeconds: int - Thời gian chờ tối đa (tính bằng giây)"
+            },
+            returnValue = "boolean - true nếu phần tử tồn tại, false nếu không tìm thấy sau thời gian chờ",
+            example = "// Kiểm tra thông báo lỗi và xử lý tương ứng\n" +
+                    "boolean isErrorVisible = mobileKeyword.isElementPresent(errorMessage, 5);\n" +
+                    "if (isErrorVisible) {\n" +
+                    "    mobileKeyword.tap(dismissButton);\n" +
+                    "} else {\n" +
+                    "    mobileKeyword.tap(nextButton);\n" +
+                    "}\n\n" +
+                    "// Kiểm tra popup và bỏ qua nếu có\n" +
+                    "if (mobileKeyword.isElementPresent(rateAppPopup, 3)) {\n" +
+                    "    mobileKeyword.tap(remindMeLaterButton);\n" +
+                    "}",
+            note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
+                    "Locator của phần tử cần kiểm tra phải hợp lệ. " +
+                    "Có thể throw WebDriverException nếu có lỗi khi tương tác với trình điều khiển."
+    )
+    @Step("Check if element {0.name} exists within {1} seconds")
+    public boolean isElementPresent(ObjectUI uiObject, int timeoutInSeconds) {
+        // Gọi cỗ máy execute() và bên trong gọi lại logic từ lớp cha
+        return execute(() -> super._isElementPresent(uiObject, timeoutInSeconds), uiObject, timeoutInSeconds);
+    }
 
-        @NetatKeyword(
-                name = "assertDisabled",
-                description = "Khẳng định rằng một phần tử đang ở trạng thái không thể tương tác (disabled). " +
-                        "Phương thức này kiểm tra thuộc tính 'enabled' của phần tử và ném AssertionError nếu phần tử đang được kích hoạt (enabled). " +
-                        "Hữu ích khi cần đảm bảo một nút hoặc trường nhập liệu đã bị vô hiệu hóa trong các trường hợp nhất định.",
-                category = "Mobile/Assertion",
-                parameters = {
-                        "uiObject: ObjectUI - Phần tử cần kiểm tra trạng thái"
-                },
-                returnValue = "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
-                example = "// Kiểm tra nút đăng nhập bị vô hiệu hóa khi chưa nhập thông tin\n" +
-                        "mobileKeyword.assertDisabled(loginButton);\n\n" +
-                        "// Xác minh trường nhập số tiền bị vô hiệu hóa khi chọn số tiền cố định\n" +
-                        "mobileKeyword.tap(fixedAmountOption);\n" +
-                        "mobileKeyword.assertDisabled(amountInput);",
-                note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
-                        "Phần tử cần kiểm tra phải tồn tại và có thuộc tính 'enabled', và phải là loại có thể được kích hoạt/vô hiệu hóa (button, input, etc.). " +
-                        "Có thể throw AssertionError nếu phần tử đang ở trạng thái được kích hoạt (enabled), " +
-                        "NoSuchElementException nếu không tìm thấy phần tử, StaleElementReferenceException nếu phần tử không còn gắn với DOM, " +
-                        "hoặc WebDriverException nếu không thể lấy thuộc tính 'enabled' của phần tử."
-        )
-        @Step("Kiểm tra (Hard) phần tử {0.name} là disabled")
-        public void assertDisabled(ObjectUI uiObject) {
-            super.performStateAssertion(uiObject, false, false);
-        }
+    @NetatKeyword(
+            name = "assertDisabled",
+            description = "Khẳng định rằng một phần tử đang ở trạng thái không thể tương tác (disabled). " +
+                    "Phương thức này kiểm tra thuộc tính 'enabled' của phần tử và ném AssertionError nếu phần tử đang được kích hoạt (enabled). " +
+                    "Hữu ích khi cần đảm bảo một nút hoặc trường nhập liệu đã bị vô hiệu hóa trong các trường hợp nhất định.",
+            category = "Mobile",
+            subCategory = "Assertion",
+            parameters = {
+                    "uiObject: ObjectUI - Phần tử cần kiểm tra trạng thái"
+            },
+            returnValue = "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
+            example = "// Kiểm tra nút đăng nhập bị vô hiệu hóa khi chưa nhập thông tin\n" +
+                    "mobileKeyword.assertDisabled(loginButton);\n\n" +
+                    "// Xác minh trường nhập số tiền bị vô hiệu hóa khi chọn số tiền cố định\n" +
+                    "mobileKeyword.tap(fixedAmountOption);\n" +
+                    "mobileKeyword.assertDisabled(amountInput);",
+            note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
+                    "Phần tử cần kiểm tra phải tồn tại và có thuộc tính 'enabled', và phải là loại có thể được kích hoạt/vô hiệu hóa (button, input, etc.). " +
+                    "Có thể throw AssertionError nếu phần tử đang ở trạng thái được kích hoạt (enabled), " +
+                    "NoSuchElementException nếu không tìm thấy phần tử, StaleElementReferenceException nếu phần tử không còn gắn với DOM, " +
+                    "hoặc WebDriverException nếu không thể lấy thuộc tính 'enabled' của phần tử."
+    )
+    @Step("Check (Hard) if element {0.name} is disabled")
+    public void assertDisabled(ObjectUI uiObject) {
+        super.performStateAssertion(uiObject, false, false);
+    }
 
-        @NetatKeyword(
-                name = "assertAttributeEquals",
-                description = "Khẳng định rằng một thuộc tính của phần tử có giá trị chính xác như mong đợi. " +
-                        "Hữu ích khi cần kiểm tra các thuộc tính đặc biệt như content-desc, resource-id, text, checked, v.v. " +
-                        "Phương thức này so sánh chính xác giá trị thuộc tính, phân biệt chữ hoa/thường và khoảng trắng.",
-                category = "Mobile/Assertion",
-                parameters = {
-                        "uiObject: ObjectUI - Phần tử cần kiểm tra thuộc tính",
-                        "attributeName: String - Tên thuộc tính cần kiểm tra (ví dụ: 'content-desc', 'text', 'resource-id')",
-                        "expectedValue: String - Giá trị mong đợi của thuộc tính"
-                },
-                returnValue = "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
-                example = "// Kiểm tra thuộc tính content-desc của nút\n" +
-                        "mobileKeyword.assertAttributeEquals(menuButton, \"content-desc\", \"Menu chính\");\n\n" +
-                        "// Xác minh resource-id của một phần tử\n" +
-                        "mobileKeyword.assertAttributeEquals(loginButton, \"resource-id\", \"com.example.myapp:id/login_button\");",
-                note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
-                        "Phần tử cần kiểm tra phải tồn tại, thuộc tính cần kiểm tra phải tồn tại trên phần tử, " +
-                        "và cần biết chính xác tên thuộc tính theo nền tảng (Android/iOS có thể khác nhau). " +
-                        "Có thể throw AssertionError nếu giá trị thuộc tính không khớp với giá trị mong đợi, " +
-                        "NoSuchElementException nếu không tìm thấy phần tử, StaleElementReferenceException nếu phần tử không còn gắn với DOM, " +
-                        "hoặc WebDriverException nếu không thể lấy thuộc tính của phần tử."
-        )
-        @Step("Kiểm tra (Hard) thuộc tính '{1}' của {0.name} là '{2}'")
-        public void assertAttributeEquals(ObjectUI uiObject, String attributeName, String expectedValue) {
-            super.performAttributeAssertion(uiObject, attributeName, expectedValue, false);
-        }
+    @NetatKeyword(
+            name = "assertAttributeEquals",
+            description = "Khẳng định rằng một thuộc tính của phần tử có giá trị chính xác như mong đợi. " +
+                    "Hữu ích khi cần kiểm tra các thuộc tính đặc biệt như content-desc, resource-id, text, checked, v.v. " +
+                    "Phương thức này so sánh chính xác giá trị thuộc tính, phân biệt chữ hoa/thường và khoảng trắng.",
+            category = "Mobile",
+            subCategory = "Assertion",
+            parameters = {
+                    "uiObject: ObjectUI - Phần tử cần kiểm tra thuộc tính",
+                    "attributeName: String - Tên thuộc tính cần kiểm tra (ví dụ: 'content-desc', 'text', 'resource-id')",
+                    "expectedValue: String - Giá trị mong đợi của thuộc tính"
+            },
+            returnValue = "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
+            example = "// Kiểm tra thuộc tính content-desc của nút\n" +
+                    "mobileKeyword.assertAttributeEquals(menuButton, \"content-desc\", \"Menu chính\");\n\n" +
+                    "// Xác minh resource-id của một phần tử\n" +
+                    "mobileKeyword.assertAttributeEquals(loginButton, \"resource-id\", \"com.example.myapp:id/login_button\");",
+            note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
+                    "Phần tử cần kiểm tra phải tồn tại, thuộc tính cần kiểm tra phải tồn tại trên phần tử, " +
+                    "và cần biết chính xác tên thuộc tính theo nền tảng (Android/iOS có thể khác nhau). " +
+                    "Có thể throw AssertionError nếu giá trị thuộc tính không khớp với giá trị mong đợi, " +
+                    "NoSuchElementException nếu không tìm thấy phần tử, StaleElementReferenceException nếu phần tử không còn gắn với DOM, " +
+                    "hoặc WebDriverException nếu không thể lấy thuộc tính của phần tử."
+    )
+    @Step("Check (Hard) attribute '{1}' of {0.name} is '{2}'")
+    public void assertAttributeEquals(ObjectUI uiObject, String attributeName, String expectedValue) {
+        super.performAttributeAssertion(uiObject, attributeName, expectedValue, false);
+    }
 
     @NetatKeyword(
             name = "assertAttributeContains",
             description = "Khẳng định rằng giá trị của một thuộc tính có chứa một chuỗi con. " +
                     "Khác với assertAttributeEquals, phương thức này chỉ kiểm tra sự xuất hiện của chuỗi con trong giá trị thuộc tính, không yêu cầu khớp hoàn toàn. " +
                     "Hữu ích khi giá trị thuộc tính có thể thay đổi nhưng vẫn chứa các phần quan trọng cần kiểm tra.",
-            category = "Mobile/Assertion",
+            category = "Mobile",
+            subCategory = "Assertion",
             parameters = {
                     "uiObject: ObjectUI - Phần tử cần kiểm tra thuộc tính",
                     "attributeName: String - Tên thuộc tính cần kiểm tra",
@@ -1451,7 +1513,7 @@ public class MobileKeyword extends BaseUiKeyword {
                     "NoSuchElementException nếu không tìm thấy phần tử, StaleElementReferenceException nếu phần tử không còn gắn với DOM, " +
                     "WebDriverException nếu không thể lấy thuộc tính của phần tử, hoặc NullPointerException nếu giá trị thuộc tính là null."
     )
-    @Step("Kiểm tra (Hard) thuộc tính '{1}' của {0.name} chứa '{2}'")
+    @Step("Check (Hard) if attribute '{1}' of {0.name} contains '{2}'")
     public void assertAttributeContains(ObjectUI uiObject, String attributeName, String partialValue) {
         super.performAttributeContainsAssertion(uiObject, attributeName, partialValue, false);
     }
@@ -1461,7 +1523,8 @@ public class MobileKeyword extends BaseUiKeyword {
             description = "Khẳng định rằng số lượng phần tử tìm thấy khớp với một con số mong đợi. " +
                     "Hữu ích khi cần kiểm tra số lượng các mục trong danh sách, số lượng tùy chọn, hoặc xác minh rằng một nhóm phần tử có số lượng chính xác. " +
                     "Phương thức này tìm tất cả các phần tử khớp với locator và so sánh số lượng với giá trị mong đợi.",
-            category = "Mobile/Assertion",
+            category = "Mobile",
+            subCategory = "Assertion",
             parameters = {
                     "uiObject: ObjectUI - Locator để tìm các phần tử",
                     "expectedCount: int - Số lượng phần tử mong đợi"
@@ -1478,12 +1541,12 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Có thể throw AssertionError nếu số lượng phần tử tìm thấy không khớp với số lượng mong đợi, " +
                     "WebDriverException nếu có lỗi khi tương tác với trình điều khiển, hoặc InvalidSelectorException nếu locator không hợp lệ."
     )
-    @Step("Kiểm tra (Hard) số lượng phần tử {0.name} là {1}")
+    @Step("Check (Hard) if element {0.name} has {1} items")
     public void assertElementCount(ObjectUI uiObject, int expectedCount) {
         execute(() -> {
             List<WebElement> elements = findElements(uiObject);
             Assert.assertEquals(elements.size(), expectedCount,
-                    "HARD ASSERT FAILED: Mong đợi tìm thấy " + expectedCount + " phần tử, nhưng thực tế tìm thấy " + elements.size() + ".");
+                    "HARD ASSERT FAILED: Expected to find " + expectedCount + " items, but found " + elements.size() + ".");
             return null;
         }, uiObject, expectedCount);
     }
@@ -1493,7 +1556,8 @@ public class MobileKeyword extends BaseUiKeyword {
             description = "So sánh văn bản của phần tử với nhiều tùy chọn linh hoạt: có thể bỏ qua sự khác biệt giữa chữ hoa/thường và/hoặc cắt khoảng trắng ở đầu/cuối. " +
                     "Hữu ích khi cần kiểm tra nội dung mà không quan tâm đến định dạng chính xác. " +
                     "Nếu văn bản không khớp theo các tùy chọn đã chọn, một AssertionError sẽ được ném ra.",
-            category = "Mobile/Assertion",
+            category = "Mobile",
+            subCategory = "Assertion",
             parameters = {
                     "uiObject: ObjectUI - Phần tử cần kiểm tra văn bản",
                     "expectedText: String - Chuỗi văn bản mong đợi",
@@ -1511,7 +1575,7 @@ public class MobileKeyword extends BaseUiKeyword {
                     "NoSuchElementException nếu không tìm thấy phần tử, StaleElementReferenceException nếu phần tử không còn gắn với DOM, " +
                     "WebDriverException nếu không thể lấy văn bản của phần tử, hoặc NullPointerException nếu văn bản của phần tử là null và expectedText không phải null."
     )
-    @Step("Kiểm tra văn bản của {0.name} là '{1}' (ignoreCase={2}, trim={3})")
+    @Step("Check (Hard) if text of {0.name} is '{1}' (ignoreCase={2}, trim={3})")
     public void assertTextWithOptions(ObjectUI uiObject, String expectedText, boolean ignoreCase, boolean trimText) {
         execute(() -> {
             String actualText = getText(uiObject);
@@ -1525,9 +1589,9 @@ public class MobileKeyword extends BaseUiKeyword {
             if (ignoreCase) {
                 boolean areEqual = (actualText == null && realExpectedText == null) ||
                         (actualText != null && actualText.equalsIgnoreCase(realExpectedText));
-                Assert.assertTrue(areEqual, "HARD ASSERT FAILED: Văn bản không khớp (bỏ qua hoa/thường). Mong đợi: '" + realExpectedText + "', Thực tế: '" + actualText + "'");
+                Assert.assertTrue(areEqual, "HARD ASSERT FAILED: Text does not match (ignoring case). Expected: '" + realExpectedText + "', Actual: '" + actualText + "'");
             } else {
-                Assert.assertEquals(actualText, realExpectedText, "HARD ASSERT FAILED: Văn bản không khớp.");
+                Assert.assertEquals(actualText, realExpectedText, "HARD ASSERT FAILED: Text does not match.");
             }
             return null;
         }, uiObject, expectedText, ignoreCase, trimText);
@@ -1539,7 +1603,8 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Hữu ích khi cần tính toán vị trí tương đối hoặc kiểm tra kích thước hiển thị của phần tử. " +
                     "Phương thức này trả về giá trị số nguyên đại diện cho chiều cao theo pixel của phần tử. " +
                     "Lưu ý: Phần tử phải hiển thị trên màn hình để có thể lấy được kích thước chính xác.",
-            category = "Mobile/Getter",
+            category = "Mobile",
+            subCategory = "Getter",
             parameters = {
                     "uiObject: ObjectUI - Phần tử cần lấy chiều cao"
             },
@@ -1554,7 +1619,7 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Có thể throw NoSuchElementException nếu không tìm thấy phần tử, " +
                     "StaleElementReferenceException nếu phần tử không còn gắn với DOM, hoặc WebDriverException nếu không thể lấy kích thước của phần tử."
     )
-    @Step("Lấy chiều cao của phần tử: {0.name}")
+    @Step("Get height of element: {0.name}")
     public int getElementHeight(ObjectUI uiObject) {
         return execute(() -> findElement(uiObject).getSize().getHeight(), uiObject);
     }
@@ -1565,7 +1630,8 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Hữu ích khi cần tính toán vị trí tương đối hoặc kiểm tra kích thước hiển thị của phần tử. " +
                     "Phương thức này trả về giá trị số nguyên đại diện cho chiều rộng theo pixel của phần tử. " +
                     "Lưu ý: Phần tử phải hiển thị trên màn hình để có thể lấy được kích thước chính xác.",
-            category = "Mobile/Getter",
+            category = "Mobile",
+            subCategory = "Getter",
             parameters = {
                     "uiObject: ObjectUI - Phần tử cần lấy chiều rộng"
             },
@@ -1580,7 +1646,7 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Có thể throw NoSuchElementException nếu không tìm thấy phần tử, " +
                     "StaleElementReferenceException nếu phần tử không còn gắn với DOM, hoặc WebDriverException nếu không thể lấy kích thước của phần tử."
     )
-    @Step("Lấy chiều rộng của phần tử: {0.name}")
+    @Step("Get width of element: {0.name}")
     public int getElementWidth(ObjectUI uiObject) {
         return execute(() -> findElement(uiObject).getSize().getWidth(), uiObject);
     }
@@ -1591,7 +1657,8 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Chỉ hoạt động trên Android, sẽ hiển thị cảnh báo nếu được gọi trên iOS. " +
                     "Tham số keyName phải là một giá trị hợp lệ từ enum AndroidKey. " +
                     "Hữu ích khi cần tương tác với các phím vật lý hoặc phím ảo của thiết bị.",
-            category = "Mobile/System",
+            category = "Mobile",
+            subCategory = "System",
             parameters = {
                     "keyName: String - Tên phím trong AndroidKey enum (ví dụ: 'HOME', 'BACK', 'VOLUME_UP')"
             },
@@ -1607,7 +1674,7 @@ public class MobileKeyword extends BaseUiKeyword {
                     "WebDriverException nếu không thể thực hiện hành động nhấn phím, " +
                     "hoặc UnsupportedCommandException nếu lệnh không được hỗ trợ trên thiết bị hiện tại."
     )
-    @Step("Nhấn phím hệ thống Android: {0}")
+    @Step("Press Android system key: {0}")
     public void pressKeyCode(String keyName) {
         execute(() -> {
             AppiumDriver driver = (AppiumDriver) DriverManager.getDriver();
@@ -1616,7 +1683,7 @@ public class MobileKeyword extends BaseUiKeyword {
                 AndroidKey key = AndroidKey.valueOf(keyName.toUpperCase());
                 ((AndroidDriver) driver).pressKey(new KeyEvent(key));
             } else {
-                logger.warn("Keyword 'pressKeyCode' chỉ được hỗ trợ trên Android.");
+                logger.warn("Keyword 'pressKeyCode' is only supported on Android.");
             }
             return null;
         }, keyName);
@@ -1628,7 +1695,8 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Hữu ích để đảm bảo ứng dụng hiển thị đúng hướng trước khi thực hiện các thao tác tiếp theo. " +
                     "Phương thức hoạt động trên cả Android và iOS. " +
                     "Nếu hướng màn hình không khớp với giá trị mong đợi, một AssertionError sẽ được ném ra.",
-            category = "Mobile/Assertion",
+            category = "Mobile",
+            subCategory = "Assertion",
             parameters = {
                     "expectedOrientation: String - Hướng màn hình mong đợi, phải là 'PORTRAIT' hoặc 'LANDSCAPE' (không phân biệt hoa/thường)"
             },
@@ -1645,7 +1713,7 @@ public class MobileKeyword extends BaseUiKeyword {
                     "UnsupportedOperationException nếu loại driver không được hỗ trợ, " +
                     "hoặc WebDriverException nếu không thể lấy thông tin hướng màn hình."
     )
-    @Step("Kiểm tra (Hard) hướng màn hình là: {0}")
+    @Step("Check (Hard) if device is in {0} orientation")
     public void verifyOrientation(String expectedOrientation) {
         execute(() -> {
             ScreenOrientation expected = ScreenOrientation.valueOf(expectedOrientation.toUpperCase());
@@ -1662,7 +1730,7 @@ public class MobileKeyword extends BaseUiKeyword {
                 throw new UnsupportedOperationException("Driver type not supported for orientation verification");
             }
 
-            Assert.assertEquals(actual, expected, "HARD ASSERT FAILED: Hướng màn hình không khớp.");
+            Assert.assertEquals(actual, expected, "HARD ASSERT FAILED: Device orientation does not match.");
             return null;
         }, expectedOrientation);
     }
@@ -1674,7 +1742,8 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Phương thức này tự động tính toán tọa độ cần chạm dựa trên kích thước và vị trí của slider. " +
                     "Hữu ích khi cần điều chỉnh các điều khiển như âm lượng, độ sáng, hoặc các giá trị số trong khoảng. " +
                     "Lưu ý: Giá trị phải nằm trong khoảng từ 0.0 đến 1.0, nếu không sẽ gây ra ngoại lệ.",
-            category = "Mobile/Interaction",
+            category = "Mobile",
+            subCategory = "Interaction",
             parameters = {
                     "uiObject: ObjectUI - Phần tử slider cần điều chỉnh",
                     "value: double - Giá trị cần thiết lập, từ 0.0 (nhỏ nhất/trái) đến 1.0 (lớn nhất/phải)"
@@ -1694,11 +1763,11 @@ public class MobileKeyword extends BaseUiKeyword {
                     "WebDriverException nếu không thể lấy vị trí hoặc kích thước của phần tử, " +
                     "hoặc ElementNotInteractableException nếu không thể tương tác với slider."
     )
-    @Step("Thiết lập giá trị cho slider {0.name} thành {1}")
+    @Step("Set slider {0.name} to {1}")
     public void setSliderValue(ObjectUI uiObject, double value) {
         execute(() -> {
             if (value < 0.0 || value > 1.0) {
-                throw new IllegalArgumentException("Giá trị của slider phải nằm trong khoảng từ 0.0 đến 1.0");
+                throw new IllegalArgumentException("Slider value must be between 0.0 and 1.0");
             }
             WebElement slider = findElement(uiObject);
             Point location = slider.getLocation();
@@ -1721,7 +1790,8 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Cung cấp sự linh hoạt tối đa cho các tình huống đặc thù hoặc các tính năng mới của Appium chưa được bao gồm trong framework. " +
                     "Phương thức này cho phép truyền các tham số phức tạp dưới dạng Map. " +
                     "Lưu ý: Cần hiểu rõ về lệnh Appium cụ thể trước khi sử dụng.",
-            category = "Mobile/System",
+            category = "Mobile",
+            subCategory = "System",
             parameters = {
                     "commandName: String - Tên lệnh Appium cần thực thi (ví dụ: 'mobile: clearApp', 'mobile: shell')",
                     "commandArgs: Map<String, Object> - Các tham số của lệnh dưới dạng key-value"
@@ -1746,10 +1816,104 @@ public class MobileKeyword extends BaseUiKeyword {
                     "SessionNotCreatedException nếu phiên Appium không còn hoạt động, " +
                     "hoặc NoSuchContextException nếu lệnh yêu cầu context không tồn tại."
     )
-    @Step("Thực thi lệnh mobile: {0}")
+    @Step("Execute mobile command: {0}")
     public Object executeMobileCommand(String commandName, Map<String, Object> commandArgs) {
         return execute(() -> {
             return ((AppiumDriver) DriverManager.getDriver()).executeScript(commandName, commandArgs);
         }, commandName, commandArgs);
     }
+
+    @NetatKeyword(
+            name = "pause",
+            description = "Tạm dừng việc thực thi kịch bản trong một khoảng thời gian tĩnh. (Lưu ý: Chỉ nên dùng khi thực sự cần thiết, ưu tiên các keyword chờ động).",
+            category = "Mobile",
+            subCategory = "Utility",
+            parameters = {
+                    "milliseconds: int - Thời gian cần tạm dừng (tính bằng mili giây)"
+            },
+            returnValue = "void - Không trả về giá trị",
+            example = "// Tạm dừng để đợi animation hoàn thành\n" +
+                    "mobileKeyword.pause(3000); // Đợi 3 giây cho quá trình xử lý\n",
+            note = "Áp dụng cho nền tảng Mobile. Không có điều kiện tiên quyết đặc biệt. " +
+                    "Có thể throw InterruptedException nếu luồng thực thi bị gián đoạn trong khi tạm dừng."
+    )
+    @Step("Pause for {0} ms")
+    public void pause(int milliseconds) {
+        execute(() -> {
+            try {
+                Thread.sleep(milliseconds);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            return null;
+        }, milliseconds);
+    }
+
+    @NetatKeyword(
+            name = "Get Current App Package",
+            description = "Lấy appPackage (Android) hoặc bundleId (iOS) của ứng dụng hiện tại đang được test",
+            category = "Mobile",
+            subCategory = "Applifecycle",
+            parameters = {},
+            returnValue = "String - Package name của ứng dụng Android hoặc bundle ID của ứng dụng iOS",
+            example = "String packageName = getCurrentAppPackage();",
+            note = "Keyword này hoạt động trên cả Android và iOS. Trên Android sẽ trả về package name, trên iOS sẽ trả về bundle ID từ capabilities."
+    )
+    @Step("Get current app package")
+    public String getCurrentAppPackage() {
+        return execute(() -> {
+            AppiumDriver driver = (AppiumDriver) DriverManager.getDriver();
+            if (driver instanceof AndroidDriver) {
+                return ((AndroidDriver) driver).getCurrentPackage();
+            } else { // Giả định là IOSDriver hoặc các driver khác
+                // Lấy từ capabilities, là một cách phổ biến
+                return (String) driver.getCapabilities().getCapability("bundleId");
+            }
+        });
+    }
+
+    @NetatKeyword(
+            name = "Get Current Activity",
+            description = "Lấy tên Activity hiện tại đang được hiển thị trên màn hình Android",
+            category = "Mobile",
+            subCategory = "AppLifecycle",
+            parameters = {},
+            returnValue = "String - Tên của Activity hiện tại, null nếu không phải Android",
+            example = "String activityName = getCurrentActivity();",
+            note = "Keyword này chỉ hoạt động trên Android. Trên iOS sẽ trả về null và ghi log cảnh báo. Activity name thường có định dạng như 'com.example.MainActivity'."
+    )
+    @Step("Get current Activity (Android)")
+    public String getCurrentActivity() {
+        return execute(() -> {
+            AppiumDriver driver = (AppiumDriver) DriverManager.getDriver();
+            if (driver instanceof AndroidDriver) {
+                return ((AndroidDriver) driver).currentActivity();
+            } else {
+                logger.warn("Keyword 'getCurrentActivity' is only supported on Android.");
+                return null; // Trả về null nếu không phải Android
+            }
+        });
+    }
+
+
+    @NetatKeyword(
+            name = "Is App Installed",
+            description = "Kiểm tra xem một ứng dụng có được cài đặt trên thiết bị hay không",
+            category = "Mobile",
+            subCategory = "Applifecycle",
+            parameters = {
+                    "appId: String - Package name (Android) hoặc bundle ID (iOS) của ứng dụng cần kiểm tra"
+            },
+            returnValue = "boolean - true nếu ứng dụng đã được cài đặt, false nếu chưa được cài đặt",
+            example = "boolean isInstalled = isAppInstalled(\"com.example.myapp\");",
+            note = "Keyword này hoạt động trên cả Android và iOS. Trên Android sử dụng package name (vd: com.android.chrome), trên iOS sử dụng bundle ID (vd: com.apple.mobilesafari)."
+    )
+    @Step("Check if app '{0}' is installed")
+    public boolean isAppInstalled(String appId) {
+        return execute(() -> {
+            // Ép kiểu driver sang InteractsWithApps để gọi phương thức isAppInstalled
+            return ((InteractsWithApps) DriverManager.getDriver()).isAppInstalled(appId);
+        }, appId);
+    }
+
 }

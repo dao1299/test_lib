@@ -24,6 +24,8 @@ public @interface NetatKeyword {
      */
     String category();
 
+    String subCategory() default "";
+
     /**
      * Danh sách các tham số đầu vào
      * Định dạng: "parameterName|parameterType|required|description"

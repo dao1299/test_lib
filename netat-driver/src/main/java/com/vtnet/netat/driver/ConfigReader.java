@@ -22,12 +22,12 @@ public final class ConfigReader {
                 if (defaultConfigStream == null) {
                     // Nếu người dùng không cung cấp file default, có thể bỏ qua hoặc báo lỗi.
                     // Trong trường hợp này, chúng ta báo lỗi để đảm bảo tính toàn vẹn.
-                    throw new IOException("Không tìm thấy file 'config/default.properties' trên classpath.");
+                    throw new IOException("'config/default.properties' not found on the classpath.");
                 }
                 properties.load(defaultConfigStream);
-                log.info("Đã tải cấu hình mặc định (default.properties).");
+                log.info("Loaded default configuration (default.properties).");
             } catch (IOException e) {
-                throw new RuntimeException("Không thể đọc file cấu hình mặc định.", e);
+                throw new RuntimeException("Unable to read default configuration file.", e);
             }
 
             String profile = System.getProperty("profile");
@@ -38,12 +38,12 @@ public final class ConfigReader {
                         Properties profileProps = new Properties();
                         profileProps.load(profileConfigStream);
                         properties.putAll(profileProps); // Ghi đè lên default
-                        log.info("Đã tải và ghi đè cấu hình từ profile: {}", profile);
+                        log.info("Loaded and overrode configuration from profile: {}", profile);
                     } else {
-                        log.warn("Đã chỉ định profile '{}' nhưng không tìm thấy file {}.", profile, profileFileName);
+                        log.warn("Profile '{}' specified but file {} was not found.", profile, profileFileName);
                     }
                 } catch (IOException e) {
-                    throw new RuntimeException("Không thể đọc file cấu hình của profile: " + profile, e);
+                    throw new RuntimeException("Unable to read configuration file for profile: " + profile, e);
                 }
             }
             isLoaded = true;

@@ -16,14 +16,14 @@ public class ExcelDataReader { // Không cần implement IDataReader nữa để
              Workbook workbook = WorkbookFactory.create(file)) {
 
             Sheet sheet = (sheetName != null && !sheetName.isEmpty()) ? workbook.getSheet(sheetName) : workbook.getSheetAt(0);
-            if (sheet == null) throw new RuntimeException("Không tìm thấy sheet trong file: " + filePath);
+            if (sheet == null) throw new RuntimeException("Sheet not found in file: " + filePath);
 
             List<String> headers = new ArrayList<>();
             int firstDataRowIndex = 0;
 
             if (containsHeaders) {
                 Row headerRow = sheet.getRow(0);
-                if (headerRow == null) throw new RuntimeException("File được cấu hình có header nhưng không tìm thấy hàng header.");
+                if (headerRow == null) throw new RuntimeException("File is configured to have headers but header row is missing.");
                 for (Cell cell : headerRow) {
                     headers.add(getCellValue(cell));
                 }
@@ -48,7 +48,7 @@ public class ExcelDataReader { // Không cần implement IDataReader nữa để
                 data.add(rowData);
             }
         } catch (IOException e) {
-            throw new RuntimeException("Không thể đọc file Excel: " + filePath, e);
+            throw new RuntimeException("Unable to read Excel file: " + filePath, e);
         }
         return data;
     }

@@ -24,7 +24,7 @@ public class DriverKeyword extends BaseKeyword {
                     "driverKeyword.startBrowser();",
             note = "Áp dụng cho web"
     )
-    @Step("Khởi tạo trình duyệt/thiết bị")
+    @Step("Initialize browser/device")
     public void startBrowser() {
         execute(() -> {
             DriverManager.initDriver();
@@ -48,7 +48,7 @@ public class DriverKeyword extends BaseKeyword {
                     "Có thể throw WebDriverException nếu không thể khởi tạo driver, ConfigurationException nếu thiếu thông tin cấu hình, " +
                     "hoặc IllegalArgumentException nếu nền tảng không được hỗ trợ."
     )
-    @Step("Khởi tạo trình duyệt/thiết bị: {0}")
+    @Step("Initialize browser/device: {0}")
     public void startBrowser(String platform) {
         execute(() -> {
             DriverManager.initDriver(platform);
@@ -67,7 +67,7 @@ public class DriverKeyword extends BaseKeyword {
                     "driverKeyword.closeBrowser();",
             note = "Đã khởi tạo trình duyệt hoặc thiết bị trước đó. Có thể throw WebDriverException nếu có lỗi khi đóng trình duyệt."
     )
-    @Step("Đóng trình duyệt/thiết bị")
+    @Step("Close browser/device")
     public void closeBrowser() {
         execute(() -> {
             DriverManager.quitDriver();
@@ -93,13 +93,13 @@ public class DriverKeyword extends BaseKeyword {
                     "hoặc 'capability.appium.bundleId' (iOS). Appium server phải đang chạy. Có thể throw WebDriverException " +
                     "nếu không thể khởi tạo driver hoặc kích hoạt ứng dụng, ConfigurationException nếu thiếu thông tin cấu hình."
     )
-    @Step("Khởi chạy hoặc kích hoạt ứng dụng: {0}")
+    @Step("Start or activate application: {0}")
     public void startApplication(String... platformName) {
         execute(() -> {
             // 1. Kiểm tra xem phiên làm việc đã tồn tại hay chưa
             if (DriverManager.getDriver() != null) {
                 // Nếu đã tồn tại, kích hoạt lại ứng dụng
-                logger.info("Phiên làm việc đã tồn tại. Kích hoạt lại ứng dụng để đưa ra foreground.");
+                logger.info("Session already exists. Reactivating application to bring to foreground.");
 
                 // Tự động đọc appPackage hoặc bundleId từ file cấu hình
                 String appId = ConfigReader.getProperty("capability.appium.appPackage");
@@ -110,12 +110,12 @@ public class DriverKeyword extends BaseKeyword {
                 if (appId != null && !appId.isEmpty()) {
                     ((InteractsWithApps) DriverManager.getDriver()).activateApp(appId);
                 } else {
-                    logger.warn("Không thể kích hoạt lại ứng dụng vì 'appPackage' hoặc 'bundleId' không được định nghĩa trong file cấu hình.");
+                    logger.warn("Cannot reactivate application because 'appPackage' or 'bundleId' is not defined in configuration file.");
                 }
 
             } else {
                 // Nếu chưa tồn tại, khởi tạo một phiên làm việc mới
-                logger.info("Chưa có phiên làm việc. Khởi tạo phiên mới.");
+                logger.info("No existing session. Initializing new session.");
                 if (platformName != null && platformName.length > 0 && !platformName[0].isEmpty()) {
                     DriverManager.initDriver(platformName[0]);
                 } else {
@@ -138,7 +138,7 @@ public class DriverKeyword extends BaseKeyword {
             note = "Áp dụng cho tất cả nền tảng (web và mobile). Đã khởi tạo phiên làm việc trước đó bằng startBrowser hoặc startApplication. " +
                     "Có thể throw WebDriverException nếu có lỗi khi đóng phiên làm việc."
     )
-    @Step("Đóng phiên làm việc (trình duyệt/thiết bị)")
+    @Step("Close session (browser/device)")
     public void closeSession() {
         execute(() -> {
             DriverManager.quitDriver();
