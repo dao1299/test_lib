@@ -31,6 +31,26 @@
     "description" : "element cần Verify"
   } ]
 }, {
+  "name" : "tapElementByIndex",
+  "description" : "Thực hiện thao tác tap vào một phần tử cụ thể trong danh sách dựa trên chỉ số (index). Chỉ số bắt đầu từ 0. Ném IndexOutOfBoundsException nếu index không hợp lệ.",
+  "category" : "Mobile",
+  "subCategory" : "Interaction",
+  "example" : "mobileKeyword.tapElementByIndex(menuItems, 2); // Tap vào phần tử thứ 3 trong danh sách",
+  "returnValue" : "void|No return value",
+  "note" : "",
+  "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
+  "methodName" : "tapElementByIndex",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "Đối tượng UI đại diện cho danh sách phần tử"
+  }, {
+    "type" : "int",
+    "name" : "index",
+    "description" : "Vị trí của phần tử cần tap (bắt đầu từ 0)"
+  } ]
+}, {
   "name" : "switchToWindowByTitle",
   "description" : "Duyệt qua tất cả các cửa sổ hoặc tab đang mở và chuyển sự điều khiển of WebDriver sang cửa sổ/tab có tiêu đề khớp chính xác với chuỗi được cung cấp.",
   "category" : "Web",
@@ -419,6 +439,26 @@
     "description" : "Các tham số cần truyền vào câu truy vấn, theo thứ tự xuất hiện của các placeholder '?'"
   } ]
 }, {
+  "name" : "Assert Less Than",
+  "description" : "Khẳng định rằng giá trị thực tế nhỏ hơn giá trị so sánh. Nếu không thỏa mãn, test case sẽ dừng lại và báo lỗi",
+  "category" : "Assertion",
+  "subCategory" : "",
+  "example" : "assertLessThan(5, 10); // 5 < 10",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Tự động xử lý so sánh giữa số và chuỗi số. Assertion sẽ fail nếu actualValue >= expectedValue.",
+  "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
+  "methodName" : "assertLessThan",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "Object",
+    "name" : "actualValue",
+    "description" : "Giá trị thực tế cần so sánh (số hoặc chuỗi số)"
+  }, {
+    "type" : "Object",
+    "name" : "expectedValue",
+    "description" : "Giá trị mong đợi để so sánh (actualValue phải nhỏ hơn giá trị này)"
+  } ]
+}, {
   "name" : "pressBack",
   "description" : "Mô phỏng hành động nhấn nút 'Back' vật lý của thiết bị. Hữu ích để điều hướng ngược lại màn hình trước đó, đóng dialog, hoặc hủy thao tác hiện tại. Trên iOS, hành động này tương đương với việc nhấn nút quay lại ở góc trên bên trái của nhiều ứng dụng.",
   "category" : "Mobile",
@@ -513,6 +553,22 @@
     "type" : "String",
     "name" : "appId",
     "description" : "Package name (Android) hoặc bundle ID (iOS) của ứng dụng cần kiểm tra"
+  } ]
+}, {
+  "name" : "getElementCount",
+  "description" : "Đếm và trả về số lượng phần tử trên màn hình khớp với locator được chỉ định. Hữu ích để kiểm tra số lượng item trong danh sách hoặc grid.",
+  "category" : "Mobile",
+  "subCategory" : "Getter",
+  "example" : "int numberOfItems = mobileKeyword.getElementCount(listItemObject);",
+  "returnValue" : "void|No return value",
+  "note" : "",
+  "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
+  "methodName" : "getElementCount",
+  "returnType" : "int",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "Đối tượng UI đại diện cho các phần tử cần đếm"
   } ]
 }, {
   "name" : "scrollToText",
@@ -701,8 +757,8 @@
 }, {
   "name" : "isElementPresent",
   "description" : "Kiểm tra xem một phần tử có tồn tại trên màn hình hay không trong một khoảng thời gian chờ nhất định. Khác với các phương thức assertion, phương thức này trả về kết quả boolean (true/false) thay vì ném ra ngoại lệ, giúp xử lý các trường hợp phần tử có thể xuất hiện hoặc không. Hữu ích cho các điều kiện rẽ nhánh trong kịch bản test.",
-  "category" : "Mobile/Assert",
-  "subCategory" : "",
+  "category" : "Mobile",
+  "subCategory" : "Assertion",
   "example" : "// Kiểm tra thông báo lỗi và xử lý tương ứng\nboolean isErrorVisible = mobileKeyword.isElementPresent(errorMessage, 5);\nif (isErrorVisible) {\n    mobileKeyword.tap(dismissButton);\n} else {\n    mobileKeyword.tap(nextButton);\n}\n\n// Kiểm tra popup và bỏ qua nếu có\nif (mobileKeyword.isElementPresent(rateAppPopup, 3)) {\n    mobileKeyword.tap(remindMeLaterButton);\n}",
   "returnValue" : "boolean - true nếu phần tử tồn tại, false nếu không tìm thấy sau thời gian chờ",
   "note" : "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. Locator của phần tử cần kiểm tra phải hợp lệ. Có thể throw WebDriverException nếu có lỗi khi tương tác với trình điều khiển.",
@@ -953,8 +1009,8 @@
 }, {
   "name" : "extractTextByRegex",
   "description" : "Trích xuất một phần của chuỗi văn bản dựa trên một biểu thức chính quy (regex) và một nhóm (group) cụ thể. Phương thức này tìm kiếm sự xuất hiện đầu tiên của mẫu regex trong chuỗi văn bản và trả về giá trị của nhóm được chỉ định.",
-  "category" : "Utility/String",
-  "subCategory" : "",
+  "category" : "Utility",
+  "subCategory" : "String",
   "example" : "// Lấy mã đơn hàng '12345' từ chuỗi 'Mã đơn hàng của bạn là DH-12345'\nString orderCode = utilityKeyword.extractTextByRegex(\"Mã đơn hàng của bạn là DH-12345\", \"DH-(\\\\d+)\", 1);\n// orderCode sẽ có giá trị \"12345\"",
   "returnValue" : "String - Chuỗi văn bản được trích xuất từ nhóm được chỉ định, hoặc null nếu không tìm thấy kết quả khớp",
   "note" : "Áp dụng cho tất cả nền tảng. Có thể throw PatternSyntaxException nếu biểu thức chính quy không hợp lệ, hoặc IndexOutOfBoundsException nếu chỉ số nhóm không tồn tại.",
@@ -1109,8 +1165,8 @@
 }, {
   "name" : "executeCommand",
   "description" : "Thực thi một lệnh trên command line của hệ điều hành và chờ cho đến khi nó hoàn thành. Phương thức này cho phép thực thi các lệnh hệ thống từ trong kịch bản kiểm thử, hữu ích cho các tác vụ như khởi động/dừng dịch vụ, xóa tệp, hoặc các tác vụ hệ thống khác.",
-  "category" : "Utility/Command",
-  "subCategory" : "",
+  "category" : "Utility",
+  "subCategory" : "Command",
   "example" : "// Dừng tất cả các tiến trình Chrome trên Windows\nutilityKeyword.executeCommand(\"taskkill\", \"/F\", \"/IM\", \"chrome.exe\");\n\n// Liệt kê các tệp trong thư mục hiện tại trên Linux/Mac\nutilityKeyword.executeCommand(\"ls\", \"-la\");",
   "returnValue" : "void - Không trả về giá trị",
   "note" : "Áp dụng cho tất cả nền tảng. Cần quyền thực thi lệnh trên hệ điều hành. Có thể throw IOException nếu có lỗi khi thực thi lệnh, hoặc SecurityException nếu không có quyền thực thi lệnh.",
@@ -1395,7 +1451,7 @@
     "description" : "Phần tử cần lấy chiều cao"
   } ]
 }, {
-  "name" : "Get Current Activity",
+  "name" : "getCurrentActivity",
   "description" : "Lấy tên Activity hiện tại đang được hiển thị trên màn hình Android",
   "category" : "Mobile",
   "subCategory" : "AppLifecycle",
@@ -1501,6 +1557,26 @@
     "type" : "int",
     "name" : "milliseconds",
     "description" : "Thời gian cần tạm dừng (tính bằng mili seconds)"
+  } ]
+}, {
+  "name" : "Assert Less Than Or Equal",
+  "description" : "Khẳng định rằng giá trị thực tế nhỏ hơn hoặc bằng giá trị so sánh. Nếu không thỏa mãn, test case sẽ dừng lại và báo lỗi",
+  "category" : "Assertion",
+  "subCategory" : "",
+  "example" : "assertLessThanOrEqual(10, 10); // 10 <= 10",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Tự động xử lý so sánh giữa số và chuỗi số. Assertion sẽ fail nếu actualValue > expectedValue.",
+  "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
+  "methodName" : "assertLessThanOrEqual",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "Object",
+    "name" : "actualValue",
+    "description" : "Giá trị thực tế cần so sánh (số hoặc chuỗi số)"
+  }, {
+    "type" : "Object",
+    "name" : "expectedValue",
+    "description" : "Giá trị mong đợi để so sánh (actualValue phải nhỏ hơn hoặc bằng giá trị này)"
   } ]
 }, {
   "name" : "uninstallApp",
@@ -1695,6 +1771,26 @@
     "description" : "Phần tử cần kiểm tra sự tồn tại"
   } ]
 }, {
+  "name" : "generateRandomIntegerNumber",
+  "description" : "Tạo ra một số nguyên ngẫu nhiên trong một khoảng cho trước (bao gồm cả min và max).",
+  "category" : "Utility",
+  "subCategory" : "Data Generation",
+  "example" : "int randomAge = utilityKeyword.generateRandomNumber(18, 65);",
+  "returnValue" : "int|Số nguyên ngẫu nhiên đã được tạo ra.",
+  "note" : "",
+  "className" : "com.vtnet.netat.core.keywords.UtilityKeyword",
+  "methodName" : "generateRandomIntegerNumber",
+  "returnType" : "int",
+  "parameters" : [ {
+    "type" : "int",
+    "name" : "min",
+    "description" : "Giá trị nhỏ nhất của khoảng."
+  }, {
+    "type" : "int",
+    "name" : "max",
+    "description" : "Giá trị lớn nhất của khoảng."
+  } ]
+}, {
   "name" : "verifyRecordExists",
   "description" : "Kiểm tra sự tồn tại của ít nhất một bản ghi thỏa mãn điều kiện trong câu truy vấn. Phương thức này thực thi câu lệnh SELECT và kiểm tra xem kết quả có trống không, sau đó so sánh với giá trị mong đợi.",
   "category" : "DB",
@@ -1721,6 +1817,26 @@
     "type" : "Object[]",
     "name" : "params",
     "description" : "Các tham số cần truyền vào câu truy vấn, theo thứ tự xuất hiện của các placeholder '?'"
+  } ]
+}, {
+  "name" : "generateRandomString",
+  "description" : "Tạo ra một chuỗi ký tự ngẫu nhiên với độ dài và loại ký tự được chỉ định.",
+  "category" : "Utility",
+  "subCategory" : "Data Generation",
+  "example" : "String randomEmail = utilityKeyword.generateRandomString(10, \"ALPHANUMERIC\") + \"@test.com\";",
+  "returnValue" : "String|Chuỗi ngẫu nhiên đã được tạo ra.",
+  "note" : "",
+  "className" : "com.vtnet.netat.core.keywords.UtilityKeyword",
+  "methodName" : "generateRandomString",
+  "returnType" : "String",
+  "parameters" : [ {
+    "type" : "int",
+    "name" : "length",
+    "description" : "Độ dài mong muốn của chuỗi."
+  }, {
+    "type" : "String",
+    "name" : "type",
+    "description" : "Loại ký tự: 'ALPHABETIC' (chỉ chữ), 'NUMERIC' (chỉ số), hoặc 'ALPHANUMERIC' (cả chữ và số)."
   } ]
 }, {
   "name" : "verifyAttributeContainsSoft",
@@ -1758,6 +1874,26 @@
   "methodName" : "getAlertText",
   "returnType" : "String",
   "parameters" : [ ]
+}, {
+  "name" : "Assert Greater Than Or Equal",
+  "description" : "Khẳng định rằng giá trị thực tế lớn hơn hoặc bằng giá trị so sánh. Nếu không thỏa mãn, test case sẽ dừng lại và báo lỗi",
+  "category" : "Assertion",
+  "subCategory" : "",
+  "example" : "assertGreaterThanOrEqual(10, 10); // 10 >= 10",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Tự động xử lý so sánh giữa số và chuỗi số. Assertion sẽ fail nếu actualValue < expectedValue.",
+  "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
+  "methodName" : "assertGreaterThanOrEqual",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "Object",
+    "name" : "actualValue",
+    "description" : "Giá trị thực tế cần so sánh (số hoặc chuỗi số)"
+  }, {
+    "type" : "Object",
+    "name" : "expectedValue",
+    "description" : "Giá trị mong đợi để so sánh (actualValue phải lớn hơn hoặc bằng giá trị này)"
+  } ]
 }, {
   "name" : "verifyTextContainsHard",
   "description" : "Verify text of một element có contains một chuỗi con hay không. Nếu không contains, kịch bản sẽ DỪNG LẠI.",
@@ -1917,8 +2053,8 @@
 }, {
   "name" : "findElements",
   "description" : "Tìm và trả về một danh sách (List) tất cả các element WebElement khớp với locator được cung cấp. Trả về danh sách rỗng nếu không tìm thấy, không ném ra exception.",
-  "category" : "Web/Finder",
-  "subCategory" : "",
+  "category" : "Web",
+  "subCategory" : "Interaction",
   "example" : "// Lấy danh sách tất cả các sản phẩm\nList<WebElement> productList = webKeyword.findElements(productListItemObject);\n\n// Đếm số lượng kết quả tìm kiếm\nint resultCount = webKeyword.findElements(searchResultObject).size();",
   "returnValue" : "List<WebElement> - Danh sách các element web khớp với locator, hoặc danh sách rỗng nếu không tìm thấy element nào",
   "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, và đối tượng ObjectUI phải có ít nhất một locator được định nghĩa. Có thể throw WebDriverException nếu có lỗi khi tương tác với trình duyệt, InvalidSelectorException nếu locator không hợp lệ, hoặc NullPointerException nếu uiObject is null hoặc không có locator nào được kích hoạt.",
@@ -1929,6 +2065,26 @@
     "type" : "ObjectUI",
     "name" : "uiObject",
     "description" : "Đối tượng giao diện đại diện cho các element cần tìm"
+  } ]
+}, {
+  "name" : "Assert Not Contains",
+  "description" : "Khẳng định rằng một chuỗi văn bản không chứa chuỗi con được chỉ định. Nếu có chứa, test case sẽ dừng lại và báo lỗi",
+  "category" : "Assertion",
+  "subCategory" : "",
+  "example" : "assertNotContains(\"Hello World\", \"Error\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Assertion này kiểm tra xem chuỗi nguồn không được chứa chuỗi con. Phân biệt chữ hoa chữ thường. Sẽ dừng test nếu tìm thấy chuỗi con.",
+  "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
+  "methodName" : "assertNotContains",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "sourceText",
+    "description" : "Chuỗi văn bản nguồn cần kiểm tra"
+  }, {
+    "type" : "String",
+    "name" : "substring",
+    "description" : "Chuỗi con không được phép có trong văn bản nguồn"
   } ]
 }, {
   "name" : "verifyTextMatchesRegexHard",
@@ -2019,6 +2175,22 @@
     "description" : "Thời gian tối đa (giây) để chờ phần tử có thể tương tác"
   } ]
 }, {
+  "name" : "getTextFromElements",
+  "description" : "Trích xuất và trả về danh sách các chuỗi văn bản từ tất cả phần tử khớp với locator. Mỗi phần tử trong danh sách sẽ được lấy text và thêm vào kết quả trả về.",
+  "category" : "Mobile",
+  "subCategory" : "Getter",
+  "example" : "List<String> itemNames = mobileKeyword.getTextFromElements(itemNameObject);",
+  "returnValue" : "void|No return value",
+  "note" : "",
+  "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
+  "methodName" : "getTextFromElements",
+  "returnType" : "List",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "Đối tượng UI đại diện cho các phần tử cần lấy văn bản"
+  } ]
+}, {
   "name" : "resizeWindow",
   "description" : "Thay đổi kích thước of cửa sổ trình duyệt hiện tại theo chiều rộng và chiều cao được chỉ định.",
   "category" : "Web",
@@ -2053,8 +2225,8 @@
 }, {
   "name" : "getValueFromJson",
   "description" : "Lấy một giá trị từ một chuỗi JSON bằng cách sử dụng cú pháp JSON Pointer. JSON Pointer là một chuỗi bắt đầu bằng dấu gạch chéo (/) và tiếp theo là tên thuộc tính, cho phép truy cập vào các phần tử lồng nhau trong cấu trúc JSON.",
-  "category" : "Utility/String",
-  "subCategory" : "",
+  "category" : "Utility",
+  "subCategory" : "String",
   "example" : "// Giả sử có chuỗi JSON: {\"data\":{\"user\":{\"name\":\"John Doe\",\"age\":30}}}\nString userName = utilityKeyword.getValueFromJson(jsonString, \"/data/user/name\");\n// userName sẽ có giá trị \"John Doe\"",
   "returnValue" : "String - Giá trị được truy xuất dưới dạng chuỗi, hoặc null nếu không tìm thấy",
   "note" : "Áp dụng cho tất cả nền tảng. Có thể throw JsonProcessingException nếu chuỗi JSON không hợp lệ, hoặc IllegalArgumentException nếu JSON Pointer không hợp lệ.",
@@ -2167,6 +2339,22 @@
     "description" : "Thời gian tối đa (giây) để chờ văn bản khớp"
   } ]
 }, {
+  "name" : "findElements",
+  "description" : "Tìm kiếm và trả về danh sách tất cả các phần tử WebElement khớp với locator được chỉ định. Trả về danh sách rỗng nếu không tìm thấy phần tử nào, không ném exception.",
+  "category" : "Mobile",
+  "subCategory" : "Interaction",
+  "example" : "List<WebElement> productList = mobileKeyword.findElements(productListItemObject);",
+  "returnValue" : "void|No return value",
+  "note" : "",
+  "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
+  "methodName" : "findElements",
+  "returnType" : "List",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "Đối tượng UI đại diện cho các phần tử cần tìm kiếm"
+  } ]
+}, {
   "name" : "assertChecked",
   "description" : "Khẳng định rằng một switch, checkbox hoặc radio button đang ở trạng thái được chọn/bật. Phương thức này kiểm tra thuộc tính 'checked' của phần tử và ném AssertionError nếu phần tử không được chọn. Áp dụng cho các phần tử có thể chọn/bỏ chọn như checkbox, radio button, toggle switch. Phần tử phải hỗ trợ thuộc tính 'checked', nếu không có thể gây ra lỗi.",
   "category" : "Mobile",
@@ -2185,8 +2373,8 @@
 }, {
   "name" : "getValueFromXml",
   "description" : "Lấy một giá trị từ một chuỗi XML bằng cách sử dụng một biểu thức XPath. XPath là một ngôn ngữ truy vấn cho phép chọn các nút trong tài liệu XML dựa trên các tiêu chí khác nhau như đường dẫn, thuộc tính, và vị trí.",
-  "category" : "Utility/String",
-  "subCategory" : "",
+  "category" : "Utility",
+  "subCategory" : "String",
   "example" : "// Giả sử có chuỗi XML: <books><book id=\"bk101\"><title>XML Developer's Guide</title></book></books>\nString bookTitle = utilityKeyword.getValueFromXml(xmlString, \"//book[@id='bk101']/title/text()\");\n// bookTitle sẽ có giá trị \"XML Developer's Guide\"",
   "returnValue" : "String - Giá trị được truy xuất từ tài liệu XML, hoặc null nếu không tìm thấy",
   "note" : "Áp dụng cho tất cả nền tảng. Có thể throw SAXException nếu chuỗi XML không hợp lệ, hoặc XPathExpressionException nếu biểu thức XPath không hợp lệ.",
@@ -2225,6 +2413,26 @@
     "type" : "String",
     "name" : "partialValue",
     "description" : "Chuỗi con mong đợi"
+  } ]
+}, {
+  "name" : "Assert Contains",
+  "description" : "Khẳng định rằng một chuỗi văn bản chứa chuỗi con được chỉ định. Nếu không chứa, test case sẽ dừng lại và báo lỗi",
+  "category" : "Assertion",
+  "subCategory" : "",
+  "example" : "assertContains(\"Hello World\", \"World\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Assertion này kiểm tra xem chuỗi nguồn có chứa chuỗi con hay không. Phân biệt chữ hoa chữ thường. Sẽ dừng test nếu không tìm thấy chuỗi con.",
+  "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
+  "methodName" : "assertContains",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "sourceText",
+    "description" : "Chuỗi văn bản nguồn cần kiểm tra"
+  }, {
+    "type" : "String",
+    "name" : "substring",
+    "description" : "Chuỗi con cần tìm trong văn bản nguồn"
   } ]
 }, {
   "name" : "getCssValue",
@@ -2279,6 +2487,42 @@
   "returnType" : "void",
   "parameters" : [ ]
 }, {
+  "name" : "Assert True",
+  "description" : "Khẳng định rằng một điều kiện có giá trị true. Nếu điều kiện là false, test case sẽ dừng lại và báo lỗi",
+  "category" : "Assertion",
+  "subCategory" : "",
+  "example" : "assertTrue(isElementVisible);",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Assertion này kiểm tra điều kiện boolean phải là true. Thường được sử dụng để kiểm tra trạng thái hoặc kết quả của các phép so sánh.",
+  "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
+  "methodName" : "assertTrue",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "boolean",
+    "name" : "condition",
+    "description" : "Điều kiện boolean cần kiểm tra (phải là true)"
+  } ]
+}, {
+  "name" : "Assert Greater Than",
+  "description" : "Khẳng định rằng giá trị thực tế lớn hơn giá trị so sánh. Nếu không thỏa mãn, test case sẽ dừng lại và báo lỗi",
+  "category" : "Assertion",
+  "subCategory" : "",
+  "example" : "assertGreaterThan(15, 10); // 15 > 10",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Tự động xử lý so sánh giữa số và chuỗi số. Assertion sẽ fail nếu actualValue <= expectedValue.",
+  "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
+  "methodName" : "assertGreaterThan",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "Object",
+    "name" : "actualValue",
+    "description" : "Giá trị thực tế cần so sánh (số hoặc chuỗi số)"
+  }, {
+    "type" : "Object",
+    "name" : "expectedValue",
+    "description" : "Giá trị mong đợi để so sánh (actualValue phải lớn hơn giá trị này)"
+  } ]
+}, {
   "name" : "openNewTab",
   "description" : "Mở một tab mới within trình duyệt và tự động chuyển sự điều khiển sang tab mới đó. Có thể option mở một URL cụ thể within tab mới.",
   "category" : "Web",
@@ -2297,8 +2541,8 @@
 }, {
   "name" : "getCurrentDateTime",
   "description" : "Lấy và trả về chuỗi ngày giờ hiện tại theo một định dạng cho trước. Sử dụng các mẫu định dạng chuẩn của Java như 'yyyy' cho năm, 'MM' cho tháng, 'dd' cho ngày, 'HH' cho giờ (24h), 'mm' cho phút và 'ss' cho giây.",
-  "category" : "Utility/DateTime",
-  "subCategory" : "",
+  "category" : "Utility",
+  "subCategory" : "DateTime",
   "example" : "// Lấy ngày giờ hiện tại với định dạng yyyy-MM-dd_HH-mm-ss\nString timestamp = utilityKeyword.getCurrentDateTime(\"yyyy-MM-dd_HH-mm-ss\");\n// Kết quả có thể là: 2025-09-15_11-30-45",
   "returnValue" : "String - Chuỗi ngày giờ hiện tại theo định dạng được chỉ định",
   "note" : "Áp dụng cho tất cả nền tảng. Có thể throw IllegalArgumentException nếu định dạng ngày giờ không hợp lệ.",
@@ -2385,6 +2629,26 @@
     "type" : "ObjectUI",
     "name" : "uiObject",
     "description" : "element cần làm nổi bật"
+  } ]
+}, {
+  "name" : "assertNotEquals",
+  "description" : "Khẳng định rằng hai giá trị không bằng nhau. Tự động xử lý so sánh giữa các kiểu dữ liệu khác nhau. Nếu chúng bằng nhau, kịch bản sẽ DỪNG LẠI.",
+  "category" : "Assertion",
+  "subCategory" : "",
+  "example" : "",
+  "returnValue" : "void|No return value",
+  "note" : "Keyword này so sánh giá trị sau khi đã chuyển đổi chúng sang dạng chuỗi ký tự.",
+  "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
+  "methodName" : "assertNotEquals",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "Object",
+    "name" : "actualValue",
+    "description" : "Giá trị thực tế."
+  }, {
+    "type" : "Object",
+    "name" : "unexpectedValue",
+    "description" : "Giá trị không mong muốn."
   } ]
 }, {
   "name" : "doubleClick",
@@ -2607,6 +2871,26 @@
     "description" : "element checkbox hoặc radio button cần Verify"
   } ]
 }, {
+  "name" : "assertEquals",
+  "description" : "Khẳng định rằng hai giá trị bằng nhau. Tự động xử lý so sánh giữa các kiểu dữ liệu khác nhau (ví dụ: số 1 và chuỗi \"1\"). Nếu không, kịch bản sẽ DỪNG LẠI.",
+  "category" : "Assertion",
+  "subCategory" : "",
+  "example" : "",
+  "returnValue" : "void|No return value",
+  "note" : "Keyword này so sánh giá trị sau khi đã chuyển đổi chúng sang dạng chuỗi ký tự.",
+  "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
+  "methodName" : "assertEquals",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "Object",
+    "name" : "actualValue",
+    "description" : "Giá trị thực tế (có thể là một biến)."
+  }, {
+    "type" : "Object",
+    "name" : "expectedValue",
+    "description" : "Giá trị mong đợi."
+  } ]
+}, {
   "name" : "assertAttributeEquals",
   "description" : "Khẳng định rằng một thuộc tính của phần tử có giá trị chính xác như mong đợi. Hữu ích khi cần kiểm tra các thuộc tính đặc biệt như content-desc, resource-id, text, checked, v.v. Phương thức này so sánh chính xác giá trị thuộc tính, phân biệt chữ hoa/thường và khoảng trắng.",
   "category" : "Mobile",
@@ -2687,6 +2971,38 @@
     "description" : "Vị trí of element cần click (0 cho element đầu tiên)"
   } ]
 }, {
+  "name" : "modifyDateTime",
+  "description" : "Thực hiện cộng hoặc trừ một khoảng thời gian (ngày, tháng, năm...) vào một mốc thời gian gốc và trả về kết quả dưới dạng chuỗi đã được định dạng.",
+  "category" : "Utility",
+  "subCategory" : "DateTime",
+  "example" : "// Lấy ngày của 7 ngày sau kể từ hôm nay\nutilityKeyword.modifyDateTime(\"NOW\", \"\", 7, \"DAYS\", \"dd/MM/yyyy\");\n\n// Lấy ngày của 3 tháng trước ngày '15/09/2025'\nutilityKeyword.modifyDateTime(\"15/09/2025\", \"dd/MM/yyyy\", -3, \"MONTHS\", \"dd/MM/yyyy\");",
+  "returnValue" : "String|Chuỗi ngày giờ mới sau khi đã tính toán, được định dạng theo outputFormat.",
+  "note" : "Tham số 'unit' không phân biệt chữ hoa/thường. Nếu định dạng ngày tháng đầu vào không chính xác, keyword sẽ gây ra lỗi.",
+  "className" : "com.vtnet.netat.core.keywords.UtilityKeyword",
+  "methodName" : "modifyDateTime",
+  "returnType" : "String",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "baseDateTimeString",
+    "description" : "Mốc thời gian gốc dưới dạng chuỗi, hoặc điền 'NOW' để sử dụng thời gian hiện tại."
+  }, {
+    "type" : "String",
+    "name" : "inputFormat",
+    "description" : "Định dạng của mốc thời gian gốc (ví dụ: 'dd/MM/yyyy'). Bỏ trống nếu mốc thời gian gốc là 'NOW'."
+  }, {
+    "type" : "int",
+    "name" : "amount",
+    "description" : "Số lượng đơn vị thời gian cần cộng (số dương) hoặc trừ (số âm)."
+  }, {
+    "type" : "String",
+    "name" : "unit",
+    "description" : "Đơn vị thời gian. Hỗ trợ: YEARS, MONTHS, DAYS, HOURS, MINUTES, SECONDS."
+  }, {
+    "type" : "String",
+    "name" : "outputFormat",
+    "description" : "Định dạng mong muốn cho chuỗi kết quả trả về."
+  } ]
+}, {
   "name" : "getCookie",
   "description" : "Lấy thông tin of một cookie cụ thể dựa trên tên of nó.",
   "category" : "Web",
@@ -2701,6 +3017,22 @@
     "type" : "String",
     "name" : "cookieName",
     "description" : "Tên of cookie cần lấy"
+  } ]
+}, {
+  "name" : "Assert False",
+  "description" : "Khẳng định rằng một điều kiện có giá trị false. Nếu điều kiện là true, test case sẽ dừng lại và báo lỗi",
+  "category" : "Assertion",
+  "subCategory" : "",
+  "example" : "assertFalse(isElementHidden);",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Assertion này kiểm tra điều kiện boolean phải là false. Thường được sử dụng để kiểm tra trạng thái phủ định hoặc kết quả của các phép so sánh.",
+  "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
+  "methodName" : "assertFalse",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "boolean",
+    "name" : "condition",
+    "description" : "Điều kiện boolean cần kiểm tra (phải là false)"
   } ]
 }, {
   "name" : "clearLocalStorage",

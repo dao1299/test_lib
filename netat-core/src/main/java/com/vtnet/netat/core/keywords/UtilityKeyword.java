@@ -4,7 +4,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vtnet.netat.core.BaseKeyword;
 import com.vtnet.netat.core.annotations.NetatKeyword;
+import com.vtnet.netat.core.context.ExecutionContext;
+import com.vtnet.netat.core.utils.SecureText;
 import io.qameta.allure.Step;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
@@ -17,6 +20,8 @@ import javax.xml.xpath.XPathFactory;
 import java.io.StringReader;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -102,5 +107,100 @@ public class UtilityKeyword extends BaseKeyword {
             }
             return null;
         }, (Object[]) command);
+    }
+
+    @NetatKeyword(
+            name = "generateRandomString",
+            description = "Tạo ra một chuỗi ký tự ngẫu nhiên với độ dài và loại ký tự được chỉ định.",
+            category = "Utility",
+            subCategory = "Data Generation",
+            parameters = {
+                    "length: int - Độ dài mong muốn của chuỗi.",
+                    "type: String - Loại ký tự: 'ALPHABETIC' (chỉ chữ), 'NUMERIC' (chỉ số), hoặc 'ALPHANUMERIC' (cả chữ và số)."
+            },
+            returnValue = "String|Chuỗi ngẫu nhiên đã được tạo ra.",
+            example = "String randomEmail = utilityKeyword.generateRandomString(10, \"ALPHANUMERIC\") + \"@test.com\";"
+    )
+    @Step("Generate random string of length {0} with type {1}")
+    public String generateRandomString(int length, String type) {
+        return execute(() -> {
+            switch (type.toUpperCase()) {
+                case "ALPHABETIC":
+                    return RandomStringUtils.randomAlphabetic(length);
+                case "NUMERIC":
+                    return RandomStringUtils.randomNumeric(length);
+                case "ALPHANUMERIC":
+                default:
+                    return RandomStringUtils.randomAlphanumeric(length);
+            }
+        }, length, type);
+    }
+
+    @NetatKeyword(
+            name = "generateRandomIntegerNumber",
+            description = "Tạo ra một số nguyên ngẫu nhiên trong một khoảng cho trước (bao gồm cả min và max).",
+            category = "Utility",
+            subCategory = "Data Generation",
+            parameters = {
+                    "min: int - Giá trị nhỏ nhất của khoảng.",
+                    "max: int - Giá trị lớn nhất của khoảng."
+            },
+            returnValue = "int|Số nguyên ngẫu nhiên đã được tạo ra.",
+            example = "int randomAge = utilityKeyword.generateRandomNumber(18, 65);"
+    )
+    @Step("Generate random number between {0} and {1}")
+    public int generateRandomIntegerNumber(int min, int max) {
+        return execute(() -> ThreadLocalRandom.current().nextInt(min, max + 1), min, max);
+    }
+
+
+    @NetatKeyword(
+            name = "modifyDateTime",
+            description = "Thực hiện cộng hoặc trừ một khoảng thời gian (ngày, tháng, năm...) vào một mốc thời gian gốc và trả về kết quả dưới dạng chuỗi đã được định dạng.",
+            category = "Utility",
+            subCategory = "DateTime",
+            parameters = {
+                    "baseDateTimeString: String - Mốc thời gian gốc dưới dạng chuỗi, hoặc điền 'NOW' để sử dụng thời gian hiện tại.",
+                    "inputFormat: String - Định dạng của mốc thời gian gốc (ví dụ: 'dd/MM/yyyy'). Bỏ trống nếu mốc thời gian gốc là 'NOW'.",
+                    "amount: int - Số lượng đơn vị thời gian cần cộng (số dương) hoặc trừ (số âm).",
+                    "unit: String - Đơn vị thời gian. Hỗ trợ: YEARS, MONTHS, DAYS, HOURS, MINUTES, SECONDS.",
+                    "outputFormat: String - Định dạng mong muốn cho chuỗi kết quả trả về."
+            },
+            returnValue = "String|Chuỗi ngày giờ mới sau khi đã tính toán, được định dạng theo outputFormat.",
+            example = "// Lấy ngày của 7 ngày sau kể từ hôm nay\n" +
+                    "utilityKeyword.modifyDateTime(\"NOW\", \"\", 7, \"DAYS\", \"dd/MM/yyyy\");\n\n" +
+                    "// Lấy ngày của 3 tháng trước ngày '15/09/2025'\n" +
+                    "utilityKeyword.modifyDateTime(\"15/09/2025\", \"dd/MM/yyyy\", -3, \"MONTHS\", \"dd/MM/yyyy\");",
+            note = "Tham số 'unit' không phân biệt chữ hoa/thường. Nếu định dạng ngày tháng đầu vào không chính xác, keyword sẽ gây ra lỗi."
+    )
+    @Step("Modify date-time: {0} by {2} {3}")
+    public String modifyDateTime(String baseDateTimeString, String inputFormat, int amount, String unit, String outputFormat) {
+        return execute(() -> {
+            LocalDateTime baseDateTime;
+
+            // Xác định ngày giờ gốc
+            if ("NOW".equalsIgnoreCase(baseDateTimeString)) {
+                baseDateTime = LocalDateTime.now();
+            } else {
+                DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern(inputFormat);
+                baseDateTime = LocalDateTime.parse(baseDateTimeString, inputFormatter);
+            }
+
+            // Chuyển đổi đơn vị từ String sang ChronoUnit
+            ChronoUnit chronoUnit;
+            try {
+                chronoUnit = ChronoUnit.valueOf(unit.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Unsupported time unit: " + unit + ". Supported values are: YEARS, MONTHS, DAYS, HOURS, MINUTES, SECONDS.");
+            }
+
+            // Thực hiện phép tính cộng/trừ
+            LocalDateTime resultDateTime = baseDateTime.plus(amount, chronoUnit);
+
+            // Định dạng và trả về kết quả
+            DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern(outputFormat);
+            return resultDateTime.format(outputFormatter);
+
+        }, baseDateTimeString, inputFormat, amount, unit, outputFormat);
     }
 }

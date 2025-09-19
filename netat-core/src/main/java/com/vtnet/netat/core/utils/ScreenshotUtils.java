@@ -1,12 +1,13 @@
 package com.vtnet.netat.core.utils;
 
+import com.vtnet.netat.core.logging.NetatLogger;
 import com.vtnet.netat.driver.DriverManager;
-import io.appium.java_client.AppiumDriver;
 import io.qameta.allure.Allure;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebDriverException;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,12 +17,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.UUID;
 
 public class ScreenshotUtils {
 
     private static final String SCREENSHOT_DIR = System.getProperty("user.dir") + "/screenshots";
     private static final DateTimeFormatter TIMESTAMP_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
+    private static final NetatLogger logger = NetatLogger.getInstance(ScreenshotUtils.class);
 
     static {
         // Tạo thư mục screenshots nếu chưa tồn tại
@@ -33,28 +34,56 @@ public class ScreenshotUtils {
      * (Web/Mobile).
      * Đây là phương thức mà BaseKeyword sẽ gọi.
      */
-    public static void takeScreenshot(String fileName) {
+    public static String takeScreenshot(String fileName) {
+        // Input validation
+        if (fileName == null || fileName.trim().isEmpty()) {
+            logger.warn("Invalid filename provided, using default name");
+            fileName = "screenshot_" + System.currentTimeMillis();
+        }
+
         WebDriver driver = DriverManager.getDriver();
-        if (driver == null || !(driver instanceof TakesScreenshot)) {
-            System.err.println("Cannot take screenshot: Invalid or unsupported driver.");
-            return;
+        if (driver == null) {
+            logger.error("Cannot take screenshot: Driver is null");
+            return null;
+        }
+
+        if (!(driver instanceof TakesScreenshot)) {
+            logger.error("Cannot take screenshot: Driver does not support screenshots");
+            return null;
         }
 
         try {
             File sourceFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
             String fullFileName = generateFileName(fileName);
             File destFile = new File(SCREENSHOT_DIR, fullFileName);
-            FileUtils.copyFile(sourceFile, destFile);
 
-            // Tự động đính kèm ảnh chụp màn hình vào báo cáo Allure
-            Path content = Paths.get(destFile.getAbsolutePath());
-            try (InputStream is = Files.newInputStream(content)) {
-                Allure.addAttachment(fileName, is);
+            // Ensure directory exists
+            if (!destFile.getParentFile().exists()) {
+                destFile.getParentFile().mkdirs();
             }
 
+            FileUtils.copyFile(sourceFile, destFile);
+            logger.info("Screenshot saved: {}", destFile.getAbsolutePath());
+
+            // Attach to Allure report
+            if (destFile.exists()) {
+                Path content = Paths.get(destFile.getAbsolutePath());
+                try (InputStream is = Files.newInputStream(content)) {
+                    Allure.addAttachment(fileName, is);
+                }
+            }
+
+            return destFile.getAbsolutePath();
+
+        } catch (WebDriverException e) {
+            logger.error("WebDriver error while taking screenshot: {}", e.getMessage());
         } catch (IOException e) {
-            System.err.println("Error capturing or saving the screenshot: " + e.getMessage());
+            logger.error("File I/O error while saving screenshot: {}", e.getMessage());
+        } catch (Exception e) {
+            logger.error("Unexpected error while taking screenshot: {}", e.getMessage());
         }
+
+        return null;
     }
 
     /**

@@ -24,8 +24,7 @@ public class LocalDriverFactory implements IDriverFactory {
     @Override
     public WebDriver createDriver(String platform) {
         setupProxy();
-        log.info("Khởi tạo driver local cho nền tảng: {}", platform);
-
+        log.info("Initializing local driver for platform: {}", platform);
         MutableCapabilities capabilities = CapabilityFactory.getCapabilities(platform);
 
         switch (platform.toLowerCase()) {
@@ -57,7 +56,7 @@ public class LocalDriverFactory implements IDriverFactory {
     private String getDriverPath(String driverPropertyKey) {
         String driverPath = ConfigReader.getProperty(driverPropertyKey);
         if (driverPath != null && !driverPath.isEmpty()) {
-            log.info("Sử dụng driver thủ công tại: {}", driverPath);
+            log.info("Using manual driver at: {}", driverPath);
             return driverPath;
         } else {
             // Xử lý UpdateChromeHelper hoặc các cơ chế khác nếu cần

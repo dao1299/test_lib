@@ -26,6 +26,7 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.*;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 
 /**
@@ -1406,7 +1407,8 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Khác với các phương thức assertion, phương thức này trả về kết quả boolean (true/false) thay vì ném ra ngoại lệ, " +
                     "giúp xử lý các trường hợp phần tử có thể xuất hiện hoặc không. " +
                     "Hữu ích cho các điều kiện rẽ nhánh trong kịch bản test.",
-            category = "Mobile/Assert",
+            category = "Mobile",
+            subCategory = "Assertion",
             parameters = {
                     "uiObject: ObjectUI - Phần tử cần tìm kiếm",
                     "timeoutInSeconds: int - Thời gian chờ tối đa (tính bằng giây)"
@@ -1873,7 +1875,7 @@ public class MobileKeyword extends BaseUiKeyword {
     }
 
     @NetatKeyword(
-            name = "Get Current Activity",
+            name = "getCurrentActivity",
             description = "Lấy tên Activity hiện tại đang được hiển thị trên màn hình Android",
             category = "Mobile",
             subCategory = "AppLifecycle",
@@ -1915,5 +1917,88 @@ public class MobileKeyword extends BaseUiKeyword {
             return ((InteractsWithApps) DriverManager.getDriver()).isAppInstalled(appId);
         }, appId);
     }
+
+    @NetatKeyword(
+            name = "findElements",
+            description = "Tìm kiếm và trả về danh sách tất cả các phần tử WebElement khớp với locator được chỉ định. " +
+                    "Trả về danh sách rỗng nếu không tìm thấy phần tử nào, không ném exception.",
+            category = "Mobile",
+            subCategory = "Interaction",
+            parameters = {"ObjectUI uiObject - Đối tượng UI đại diện cho các phần tử cần tìm kiếm"},
+            example = "List<WebElement> productList = mobileKeyword.findElements(productListItemObject);"
+    )
+    @Step("Find list of elements: {0.name}")
+    public List<WebElement> findElements(ObjectUI uiObject) {
+        return execute(() -> {
+            // Sử dụng locator đầu tiên được kích hoạt để tìm kiếm
+            By by = uiObject.getActiveLocators().get(0).convertToBy();
+            return DriverManager.getDriver().findElements(by);
+        }, uiObject);
+    }
+
+    @NetatKeyword(
+            name = "getElementCount",
+            description = "Đếm và trả về số lượng phần tử trên màn hình khớp với locator được chỉ định. " +
+                    "Hữu ích để kiểm tra số lượng item trong danh sách hoặc grid.",
+            category = "Mobile",
+            subCategory = "Getter",
+            parameters = {"ObjectUI uiObject - Đối tượng UI đại diện cho các phần tử cần đếm"},
+            example = "int numberOfItems = mobileKeyword.getElementCount(listItemObject);"
+    )
+    @Step("Count the number of elements of: {0.name}")
+    public int getElementCount(ObjectUI uiObject) {
+        return execute(() -> {
+            // Tái sử dụng keyword findElements để tối ưu code
+            return findElements(uiObject).size();
+        }, uiObject);
+    }
+
+    @NetatKeyword(
+            name = "getTextFromElements",
+            description = "Trích xuất và trả về danh sách các chuỗi văn bản từ tất cả phần tử khớp với locator. " +
+                    "Mỗi phần tử trong danh sách sẽ được lấy text và thêm vào kết quả trả về.",
+            category = "Mobile",
+            subCategory = "Getter",
+            parameters = {"ObjectUI uiObject - Đối tượng UI đại diện cho các phần tử cần lấy văn bản"},
+            example = "List<String> itemNames = mobileKeyword.getTextFromElements(itemNameObject);"
+    )
+    @Step("Get text from list element: {0.name}")
+    public List<String> getTextFromElements(ObjectUI uiObject) {
+        return execute(() -> {
+            List<WebElement> elements = findElements(uiObject);
+            // Sử dụng Stream API để xử lý một cách hiệu quả
+            return elements.stream()
+                    .map(WebElement::getText)
+                    .collect(Collectors.toList());
+        }, uiObject);
+    }
+
+    @NetatKeyword(
+            name = "tapElementByIndex",
+            description = "Thực hiện thao tác tap vào một phần tử cụ thể trong danh sách dựa trên chỉ số (index). " +
+                    "Chỉ số bắt đầu từ 0. Ném IndexOutOfBoundsException nếu index không hợp lệ.",
+            category = "Mobile",
+            subCategory = "Interaction",
+            parameters = {
+                    "ObjectUI uiObject - Đối tượng UI đại diện cho danh sách phần tử",
+                    "int index - Vị trí của phần tử cần tap (bắt đầu từ 0)"
+            },
+            example = "mobileKeyword.tapElementByIndex(menuItems, 2); // Tap vào phần tử thứ 3 trong danh sách"
+    )
+    @Step("Tap on the element at position {1} in the list {0.name}")
+    public void tapElementByIndex(ObjectUI uiObject, int index) {
+        execute(() -> {
+            List<WebElement> elements = findElements(uiObject);
+            if (index >= 0 && index < elements.size()) {
+                elements.get(index).click(); // .click() được Appium tự động chuyển đổi thành .tap()
+            } else {
+                throw new IndexOutOfBoundsException(
+                        String.format("Invalid index: %d. List has only %d elements.", index, elements.size())
+                );
+            }
+            return null;
+        }, uiObject, index);
+    }
+
 
 }

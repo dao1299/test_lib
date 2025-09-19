@@ -3,6 +3,7 @@ import com.vtnet.netat.core.BaseUiKeyword;
 import com.vtnet.netat.core.annotations.NetatKeyword;
 import com.vtnet.netat.core.context.ExecutionContext;
 import com.vtnet.netat.core.ui.ObjectUI;
+import com.vtnet.netat.core.utils.SecureText;
 import com.vtnet.netat.driver.ConfigReader;
 import com.vtnet.netat.driver.DriverManager;
 import com.vtnet.netat.web.ai.AiModelFactory;
@@ -104,7 +105,8 @@ public class WebKeyword extends BaseUiKeyword {
             name = "findElements",
             description = "Tìm và trả về một danh sách (List) tất cả các element WebElement khớp với locator được cung cấp. " +
                     "Trả về danh sách rỗng nếu không tìm thấy, không ném ra exception.",
-            category = "Web/Finder",
+            category = "Web",
+            subCategory = "Interaction",
             parameters = {
                     "uiObject: ObjectUI - Đối tượng giao diện đại diện cho các element cần tìm"
             },
@@ -3000,5 +3002,4 @@ public class WebKeyword extends BaseUiKeyword {
             return null;
         }, milliseconds);
     }
-
 }
