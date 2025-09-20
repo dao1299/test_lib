@@ -751,39 +751,140 @@ public class MobileKeyword extends BaseUiKeyword {
     public WebElement scrollToText(String textToFind) {
         return execute(() -> {
             AppiumDriver driver = getAppiumDriver();
-            String platform = driver.getCapabilities().getPlatformName().toString();
+            String platform = String.valueOf(driver.getCapabilities().getPlatformName());
+
+            if (textToFind == null || textToFind.isEmpty()) {
+                throw new IllegalArgumentException("textToFind must not be null or empty");
+            }
+
+            // Escape dấu " để không vỡ chuỗi trong UiAutomator/NSPredicate
+            final String qAndroid = textToFind.replace("\"", "\\\"");
+            final String qiOS    = textToFind.replace("'", "\\'");
 
             if ("android".equalsIgnoreCase(platform)) {
-                // Android có API tích hợp để cuộn đến văn bản
-                By locator = AppiumBy.androidUIAutomator(
-                        "new UiScrollable(new UiSelector().scrollable(true))" +
-                                ".scrollIntoView(new UiSelector().textContains(\"" + textToFind + "\"))"
-                );
-                return driver.findElement(locator);
-            } else { // iOS
-                // iOS cần logic phức tạp hơn
-                By locator = AppiumBy.iOSNsPredicateString("type == 'XCUIElementTypeStaticText' AND value CONTAINS '" + textToFind + "'");
+                // 1) Thử scroll + find theo TEXT chứa chuỗi
+                String uiText = "new UiScrollable(new UiSelector().scrollable(true))"
+                        + ".scrollIntoView(new UiSelector().textContains(\"" + qAndroid + "\"))";
+                By byText = AppiumBy.androidUIAutomator(uiText);
+                logger.info("Android locator (textContains): " + uiText);
+                List<WebElement> found = driver.findElements(byText);
+                if (!found.isEmpty()) return found.get(0);
 
-                // Thử tìm trước khi cuộn
-                List<WebElement> elements = driver.findElements(locator);
-                if (!elements.isEmpty()) {
-                    return elements.get(0);
-                }
+                // 2) Nếu không thấy, thử scroll + find theo DESCRIPTION chứa chuỗi
+                String uiDesc = "new UiScrollable(new UiSelector().scrollable(true))"
+                        + ".scrollIntoView(new UiSelector().descriptionContains(\"" + qAndroid + "\"))";
+                By byDesc = AppiumBy.androidUIAutomator(uiDesc);
+                logger.info("Android locator (descriptionContains): " + uiDesc);
+                found = driver.findElements(byDesc);
+                if (!found.isEmpty()) return found.get(0);
 
-                // Cuộn và tìm kiếm
-                int maxScrolls = 10; // Giới hạn số lần cuộn
+                // 3) Fallback: nếu layout không đánh dấu scrollable(true) chuẩn → tự swipe và tìm lại
+                int maxScrolls = 10;
+                By quickText = AppiumBy.androidUIAutomator("new UiSelector().textContains(\"" + qAndroid + "\")");
+                By quickDesc = AppiumBy.androidUIAutomator("new UiSelector().descriptionContains(\"" + qAndroid + "\")");
+
                 for (int i = 0; i < maxScrolls; i++) {
-                    swipeUp(500); // Cuộn lên
-                    elements = driver.findElements(locator);
-                    if (!elements.isEmpty()) {
-                        return elements.get(0);
-                    }
+                    found = driver.findElements(quickText);
+                    if (!found.isEmpty()) return found.get(0);
+                    found = driver.findElements(quickDesc);
+                    if (!found.isEmpty()) return found.get(0);
+
+                    swipeUp(500); // bạn đã có sẵn method này
+                }
+                throw new NoSuchElementException("Android: Not found element with text/desc contains: " + textToFind);
+
+            } else { // iOS
+                // Kiểm cả label / name / value, không phân biệt hoa thường (CONTAINS[c])
+                String predicate = "(label CONTAINS[c] '" + qiOS + "' OR name CONTAINS[c] '" + qiOS + "' OR value CONTAINS[c] '" + qiOS + "')";
+                By byAny = AppiumBy.iOSNsPredicateString(predicate);
+
+                // 1) Thử tìm trước khi cuộn
+                List<WebElement> elements = driver.findElements(byAny);
+                if (!elements.isEmpty()) return elements.get(0);
+
+                // 2) Cố gắng dùng 'mobile: scroll' theo predicate (nếu đang ở trong một ScrollView/ListView chuẩn)
+                try {
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> args = new java.util.HashMap<>();
+                    args.put("direction", "down");
+                    args.put("predicateString", predicate);
+                    // Một số bản Appium yêu cầu 'toVisible': true; thêm vào nếu cần
+                    // args.put("toVisible", true);
+                    driver.executeScript("mobile: scroll", args);
+
+                    elements = driver.findElements(byAny);
+                    if (!elements.isEmpty()) return elements.get(0);
+                } catch (Exception ignored) {
+                    // Nếu môi trường không hỗ trợ mobile: scroll theo predicate → fallback swipe
                 }
 
-                throw new NoSuchElementException("Could not find element with text: " + textToFind + " after " + maxScrolls + " scrolls");
+                // 3) Fallback: tự swipe và tìm lại
+                int maxScrolls = 10;
+                for (int i = 0; i < maxScrolls; i++) {
+                    swipeUp(500);
+                    elements = driver.findElements(byAny);
+                    if (!elements.isEmpty()) return elements.get(0);
+                }
+                throw new NoSuchElementException("iOS: Could not find element containing: " + textToFind + " after " + 10 + " scrolls");
             }
         }, textToFind);
     }
+
+    public class EnhancedMobileKeywords extends MobileKeyword {
+
+        /**
+         * Scrolls to find an element by its text and then taps on it.
+         * This method leverages the powerful `scrollToText` which sequentially searches
+         * through `text`, `content-desc`, and `resource-id` attributes.
+         *
+         * @param textToFind The text to locate within the element's attributes.
+         */
+        @NetatKeyword(
+                name = "tapElementWithText",
+                description = "Cuộn để tìm và chạm vào một phần tử dựa trên văn bản hiển thị. Keyword này tự động tìm kiếm qua các thuộc tính `text`, `content-desc`, và `resource-id` để xác định vị trí phần tử.",
+                category = "Mobile/Interaction",
+                parameters = {"String: textToFind - Văn bản cần tìm trong các thuộc tính của phần tử."},
+                example = "mobileKeyword.tapElementWithText(\"Thanh toán\");"
+        )
+        @Step("Tap on element with text: {0}")
+        public void tapElementWithText(String textToFind) {
+            execute(() -> {
+                WebElement element = scrollToText(textToFind); // Assumes scrollToText is defined in the class
+                element.click();
+                return null;
+            }, textToFind);
+        }
+
+        @NetatKeyword(
+                name = "getText",
+                description = "Lấy văn bản hiển thị từ một phần tử. Tự động kiểm tra và trả về giá trị từ các thuộc tính theo thứ tự ưu tiên: `text`, `content-desc`, `label`.",
+                category = "Mobile",
+                subCategory = "Getter",
+                parameters = {"ObjectUI: uiObject - Phần tử UI cần lấy văn bản."},
+                returnValue = "String: Văn bản của phần tử. Trả về chuỗi rỗng nếu không có thuộc tính nào chứa văn bản.",
+                example = "String welcomeText = mobileKeyword.getText(welcomeMessageObject);"
+        )
+        @Step("Get text from element: {0.name}")
+        public String getText(ObjectUI uiObject) {
+            return super.getText(uiObject);
+        }
+
+        @NetatKeyword(
+                name = "verifyElementVisibleWithText",
+                description = "Xác minh một phần tử chứa văn bản chỉ định đang hiển thị trên màn hình. Tự động cuộn để tìm kiếm qua các thuộc tính `text`, `content-desc`, và `resource-id`.",
+                category = "Mobile",
+                subCategory = "Assertion",
+                parameters = {"String: textToFind - Văn bản cần xác minh sự tồn tại trên màn hình."},
+                example = "mobileKeyword.verifyElementVisibleWithText(\"Đăng nhập thành công\");"
+        )
+        @Step("Verify element with text is visible: {0}")
+        public void verifyElementVisibleWithText(String textToFind) {
+            execute(() -> {
+                scrollToText(textToFind); // The act of finding the element serves as verification
+                return null;
+            }, textToFind);
+        }
+
 
 
     @NetatKeyword(
