@@ -72,8 +72,14 @@ public abstract class BaseUiKeyword extends BaseKeyword {
     protected void click(ObjectUI uiObject) {
         execute(() -> {
             WebElement element = findElement(uiObject);
-            new WebDriverWait(DriverManager.getDriver(), PRIMARY_TIMEOUT)
-                    .until(ExpectedConditions.elementToBeClickable(element)).click();
+            try {
+                new WebDriverWait(DriverManager.getDriver(), PRIMARY_TIMEOUT)
+                        .until(ExpectedConditions.elementToBeClickable(element)).click();
+            } catch (ElementClickInterceptedException e) {
+                logger.warn("Normal click blocked. Try again with JavaScript for object: " + uiObject.getName());
+                JavascriptExecutor executor = (JavascriptExecutor) DriverManager.getDriver();
+                executor.executeScript("arguments[0].click();", element);
+            }
             return null;
         }, uiObject);
     }
