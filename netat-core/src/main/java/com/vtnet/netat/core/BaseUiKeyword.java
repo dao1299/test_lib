@@ -47,7 +47,9 @@ public abstract class BaseUiKeyword extends BaseKeyword {
             try {
                 By by = locator.convertToBy();
                 logger.info("Searching for element '{}' using locator: {} (Timeout: {}s)", uiObject.getName(), locator, timeout.getSeconds());
-                return wait.until(ExpectedConditions.presenceOfElementLocated(by));
+                WebElement element =  wait.until(ExpectedConditions.presenceOfElementLocated(by));
+                System.out.println(element);
+                return element;
             } catch (Exception e) {
                 logger.warn("Element '{}' not found with locator {}.", uiObject.getName(), locator);
             }
@@ -366,5 +368,12 @@ public abstract class BaseUiKeyword extends BaseKeyword {
             // Khôi phục lại implicit wait về giá trị mặc định của framework (là 0)
             driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(0));
         }
+    }
+
+    protected String getAttribute(ObjectUI uiObject, String attributeName) {
+        return execute(() -> {
+            WebElement element = findElement(uiObject);
+            return element.getAttribute(attributeName);
+        }, uiObject, attributeName);
     }
 }

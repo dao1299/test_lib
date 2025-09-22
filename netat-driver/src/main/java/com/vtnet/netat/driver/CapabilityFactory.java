@@ -132,4 +132,24 @@ public class CapabilityFactory {
             return value;
         }
     }
+
+    public static MutableCapabilities getCapabilities(String platform, Map<String, Object> overrideCapabilities) {
+        // 1. Lấy capabilities cơ sở từ file .properties
+        MutableCapabilities capabilities = getCapabilities(platform);
+
+        // 2. Ghi đè bằng các giá trị được cung cấp từ keyword
+        if (overrideCapabilities != null) {
+            for (Map.Entry<String, Object> entry : overrideCapabilities.entrySet()) {
+                String key = entry.getKey();
+                Object value = entry.getValue();
+
+                // Chuyển đổi key "appium.appPackage" thành "appium:appPackage" nếu cần
+                if (key.startsWith("appium.")) {
+                    key = key.replaceFirst("\\.", ":");
+                }
+                capabilities.setCapability(key, value);
+            }
+        }
+        return capabilities;
+    }
 }

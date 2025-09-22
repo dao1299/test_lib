@@ -2,29 +2,28 @@ package com.vtnet.netat.core.keywords;
 
 import com.vtnet.netat.core.BaseKeyword;
 import com.vtnet.netat.core.annotations.NetatKeyword;
-import com.vtnet.netat.driver.ConfigReader;
 import com.vtnet.netat.driver.DriverManager;
-import io.appium.java_client.InteractsWithApps;
 import io.qameta.allure.Step;
 
-/**
- * Cung cấp các keyword để quản lý vòng đời của trình duyệt hoặc thiết bị.
- * Các keyword này thường được sử dụng ở đầu và cuối của một kịch bản kiểm thử.
- */
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public class DriverKeyword extends BaseKeyword {
+
+    // Danh sách các nền tảng được hỗ trợ để kiểm tra
+    private static final List<String> WEB_PLATFORMS = Arrays.asList("chrome", "firefox", "edge", "safari");
+    private static final List<String> MOBILE_PLATFORMS = Arrays.asList("android", "ios");
 
     @NetatKeyword(
             name = "startBrowser",
-            description = "Khởi tạo và mở một phiên trình duyệt (web) mới dựa trên cấu hình trong file properties. " +
-                    "Nếu không có tham số, nó sẽ sử dụng 'platform.name' mặc định.",
-            category = "DriverKeyword",
-            parameters = {},
-            returnValue = "void - Không trả về giá trị",
-            example = "// Khởi tạo trình duyệt mặc định\n" +
-                    "driverKeyword.startBrowser();",
-            note = "Áp dụng cho web"
+            description = "Khởi tạo và mở một phiên trình duyệt WEB mới. Nếu không có tham số, sẽ sử dụng trình duyệt mặc định trong file cấu hình.",
+            category = "Session",
+            subCategory = "Lifecycle",
+            example = "driverKeyword.startBrowser();"
     )
-    @Step("Initialize browser/device")
+    @Step("Start default browser")
     public void startBrowser() {
         execute(() -> {
             DriverManager.initDriver();
@@ -32,111 +31,123 @@ public class DriverKeyword extends BaseKeyword {
         });
     }
 
-    // Nạp chồng (Overloading) phương thức để nhận tham số platform
     @NetatKeyword(
             name = "startBrowser",
-            description = "Khởi tạo và mở một phiên trình duyệt (web) hoặc thiết bị (mobile) mới dựa trên cấu hình trong file properties. " +
-                    "Tham số platform cho phép chỉ định loại trình duyệt hoặc thiết bị cụ thể cần khởi tạo.",
-            category = "DriverKeyword",
+            description = "Khởi tạo và mở một phiên trình duyệt WEB cụ thể.",
+            category = "Session",
+            subCategory = "Lifecycle",
             parameters = {
-                    "platform: String - Tên nền tảng cần khởi tạo (ví dụ: 'chrome', 'firefox', 'android', 'ios')"
+                    "platform: String - Tên nền tảng WEB cần khởi tạo (ví dụ: 'chrome', 'firefox')."
             },
-            returnValue = "void - Không trả về giá trị",
-            example = "// Chỉ định khởi tạo trình duyệt Firefox\n" +
-                    "driverKeyword.startBrowser(\"firefox\");",
-            note = "File cấu hình properties phải tồn tại và chứa các thiết lập cần thiết cho nền tảng được chỉ định. " +
-                    "Có thể throw WebDriverException nếu không thể khởi tạo driver, ConfigurationException nếu thiếu thông tin cấu hình, " +
-                    "hoặc IllegalArgumentException nếu nền tảng không được hỗ trợ."
+            example = "driverKeyword.startBrowser(\"firefox\");",
+            note = "Keyword này chỉ dành cho các nền tảng Web. Để khởi động ứng dụng di động, vui lòng sử dụng 'startApplicationByPath' hoặc 'startApplicationByPackage'."
     )
-    @Step("Initialize browser/device: {0}")
+    @Step("Start browser: {0}")
     public void startBrowser(String platform) {
         execute(() -> {
-            DriverManager.initDriver(platform);
+            if (platform == null || platform.trim().isEmpty()) {
+                throw new IllegalArgumentException("Platform name cannot be null or empty for startBrowser.");
+            }
+            String lowerCasePlatform = platform.toLowerCase();
+            if (MOBILE_PLATFORMS.contains(lowerCasePlatform)) {
+                throw new IllegalArgumentException("Invalid platform for startBrowser. '" + platform + "' is a mobile platform. Please use startApplicationByPath or startApplicationByPackage instead.");
+            }
+            DriverManager.initDriver(platform, null);
             return null;
         }, platform);
     }
 
     @NetatKeyword(
-            name = "closeBrowser",
-            description = "Đóng hoàn toàn phiên trình duyệt hoặc thiết bị hiện tại và giải phóng tài nguyên. " +
-                    "Phương thức này nên được gọi ở cuối mỗi test case để tránh rò rỉ tài nguyên.",
-            category = "DriverKeyword",
-            parameters = {},
-            returnValue = "void - Không trả về giá trị",
-            example = "// Đóng trình duyệt sau khi hoàn thành test case\n" +
-                    "driverKeyword.closeBrowser();",
-            note = "Đã khởi tạo trình duyệt hoặc thiết bị trước đó. Có thể throw WebDriverException nếu có lỗi khi đóng trình duyệt."
+            name = "startApplicationByPath",
+            description = "Cài đặt (nếu cần) và khởi chạy ứng dụng từ một đường dẫn file .apk hoặc .ipa.",
+            category = "Session",
+            subCategory = "Lifecycle",
+            parameters = {
+                    "platformName: String - Tên nền tảng di động ('android', 'ios').",
+                    "appPath: String - Đường dẫn tuyệt đối đến file ứng dụng."
+            },
+            example = "driverKeyword.startApplicationByPath(\"android\", \"C:/builds/app-debug.apk\");",
+            note = "Keyword này chỉ dành cho các nền tảng Mobile. Để khởi động trình duyệt web, vui lòng sử dụng 'startBrowser'."
     )
-    @Step("Close browser/device")
-    public void closeBrowser() {
+    @Step("Start application on {0} from path: {1}")
+    public void startApplicationByPath(String platformName, String appPath) {
         execute(() -> {
-            DriverManager.quitDriver();
+            if (platformName == null || platformName.trim().isEmpty()) {
+                throw new IllegalArgumentException("Platform name cannot be null or empty for startApplicationByPath.");
+            }
+            String lowerCasePlatform = platformName.toLowerCase();
+            if (WEB_PLATFORMS.contains(lowerCasePlatform)) {
+                throw new IllegalArgumentException("Invalid platform for startApplicationByPath. '" + platformName + "' is a web platform. Please use startBrowser instead.");
+            }
+            Map<String, Object> options = new HashMap<>();
+            options.put("app", appPath);
+            DriverManager.initDriver(platformName, options);
             return null;
-        });
+        }, platformName, appPath);
+    }
+
+    @NetatKeyword(
+            name = "startApplicationByPackage",
+            description = "Khởi chạy một ứng dụng đã được cài đặt sẵn trên thiết bị bằng appPackage và appActivity.",
+            category = "Session",
+            subCategory = "Lifecycle",
+            parameters = {
+                    "platformName: String - Tên nền tảng di động ('android', 'ios').",
+                    "appPackage: String - Tên package của ứng dụng.",
+                    "appActivity: String - Tên activity chính để khởi chạy."
+            },
+            example = "driverKeyword.startApplicationByPackage(\"android\", \"com.android.settings\", \".Settings\");",
+            note = "Keyword này chỉ dành cho các nền tảng Mobile. Để khởi động trình duyệt web, vui lòng sử dụng 'startBrowser'."
+    )
+    @Step("Start application on {0} with package '{1}'")
+    public void startApplicationByPackage(String platformName, String appPackage, String appActivity) {
+        execute(() -> {
+            if (platformName == null || platformName.trim().isEmpty()) {
+                throw new IllegalArgumentException("Platform name cannot be null or empty for startApplicationByPackage.");
+            }
+            String lowerCasePlatform = platformName.toLowerCase();
+            if (WEB_PLATFORMS.contains(lowerCasePlatform)) {
+                throw new IllegalArgumentException("Invalid platform for startApplicationByPackage. '" + platformName + "' is a web platform. Please use startBrowser instead.");
+            }
+            Map<String, Object> options = new HashMap<>();
+            options.put("appium.appPackage", appPackage);
+            options.put("appium.appActivity", appActivity);
+            DriverManager.initDriver(platformName, options);
+            return null;
+        }, platformName, appPackage, appActivity);
     }
 
     @NetatKeyword(
             name = "startApplication",
-            description = "Khởi chạy một phiên làm việc mới hoặc kích hoạt lại ứng dụng nếu nó đang chạy nền. " +
-                    "Luôn đảm bảo ứng dụng đang ở foreground. Nếu phiên làm việc đã tồn tại, phương thức sẽ kích hoạt lại ứng dụng " +
-                    "bằng cách sử dụng appPackage hoặc bundleId từ file cấu hình.",
-            category = "DriverKeyword",
+            description = "Khởi chạy một ứng dụng di động dựa trên các thông số đã được định nghĩa trong file cấu hình (profile).",
+            category = "Session",
+            subCategory = "Lifecycle",
             parameters = {
-                    "platformName: String (optional) - Tên nền tảng di động ('android', 'ios')"
+                    "platformName: String - Tên nền tảng di động ('android', 'ios'). Framework sẽ đọc file config tương ứng."
             },
-            returnValue = "void - Không trả về giá trị",
-            example = "// Khởi chạy ứng dụng trên Android\n" +
-                    "driverKeyword.startApplication(\"android\");\n\n" +
-                    "// Khởi chạy ứng dụng với cấu hình mặc định\n" +
-                    "driverKeyword.startApplication();",
-            note = "Áp dụng cho Android và iOS. File cấu hình properties phải chứa 'capability.appium.appPackage' (Android) " +
-                    "hoặc 'capability.appium.bundleId' (iOS). Appium server phải đang chạy. Có thể throw WebDriverException " +
-                    "nếu không thể khởi tạo driver hoặc kích hoạt ứng dụng, ConfigurationException nếu thiếu thông tin cấu hình."
+            example = "driverKeyword.startApplication(\"android\");",
+            note = "Đây là keyword tiêu chuẩn để bắt đầu một phiên làm việc mobile với cấu hình đã định sẵn (cấu hình trong default.properties)"
     )
-    @Step("Start or activate application: {0}")
-    public void startApplication(String... platformName) {
+    @Step("Start application with default configuration for {0}")
+    public void startApplication(String platformName) {
         execute(() -> {
-            // 1. Kiểm tra xem phiên làm việc đã tồn tại hay chưa
-            if (DriverManager.getDriver() != null) {
-                // Nếu đã tồn tại, kích hoạt lại ứng dụng
-                logger.info("Session already exists. Reactivating application to bring to foreground.");
-
-                // Tự động đọc appPackage hoặc bundleId từ file cấu hình
-                String appId = ConfigReader.getProperty("capability.appium.appPackage");
-                if (appId == null || appId.isEmpty()) {
-                    appId = ConfigReader.getProperty("capability.appium.bundleId");
-                }
-
-                if (appId != null && !appId.isEmpty()) {
-                    ((InteractsWithApps) DriverManager.getDriver()).activateApp(appId);
-                } else {
-                    logger.warn("Cannot reactivate application because 'appPackage' or 'bundleId' is not defined in configuration file.");
-                }
-
-            } else {
-                // Nếu chưa tồn tại, khởi tạo một phiên làm việc mới
-                logger.info("No existing session. Initializing new session.");
-                if (platformName != null && platformName.length > 0 && !platformName[0].isEmpty()) {
-                    DriverManager.initDriver(platformName[0]);
-                } else {
-                    DriverManager.initDriver();
-                }
+            if (platformName == null || platformName.trim().isEmpty()) {
+                throw new IllegalArgumentException("Platform name cannot be null or empty for startApplication.");
             }
+            String lowerCasePlatform = platformName.toLowerCase();
+            if (WEB_PLATFORMS.contains(lowerCasePlatform)) {
+                throw new IllegalArgumentException("Invalid platform for startApplication. '" + platformName + "' is a web platform. Please use startBrowser instead.");
+            }
+            DriverManager.initDriver(platformName, new HashMap<>());
             return null;
-        }, (Object[]) platformName);
+        }, platformName);
     }
 
     @NetatKeyword(
             name = "closeSession",
-            description = "Đóng hoàn toàn phiên làm việc hiện tại (cả trình duyệt web và ứng dụng di động) và giải phóng tài nguyên. " +
-                    "Phương thức này nên được gọi ở cuối mỗi test case để đảm bảo tất cả tài nguyên được giải phóng đúng cách.",
-            category = "DriverKeyword",
-            parameters = {},
-            returnValue = "void - Không trả về giá trị",
-            example = "// Đóng phiên làm việc sau khi hoàn thành test case\n" +
-                    "driverKeyword.closeSession();",
-            note = "Áp dụng cho tất cả nền tảng (web và mobile). Đã khởi tạo phiên làm việc trước đó bằng startBrowser hoặc startApplication. " +
-                    "Có thể throw WebDriverException nếu có lỗi khi đóng phiên làm việc."
+            description = "Đóng hoàn toàn phiên làm việc hiện tại (cả trình duyệt web và ứng dụng di động) và giải phóng tài nguyên.",
+            category = "Session",
+            subCategory = "Lifecycle"
     )
     @Step("Close session (browser/device)")
     public void closeSession() {

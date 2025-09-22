@@ -22,10 +22,9 @@ public class LocalDriverFactory implements IDriverFactory {
     private static final Logger log = LoggerFactory.getLogger(LocalDriverFactory.class);
 
     @Override
-    public WebDriver createDriver(String platform) {
+    public WebDriver createDriver(String platform, MutableCapabilities capabilities) {
         setupProxy();
         log.info("Initializing local driver for platform: {}", platform);
-        MutableCapabilities capabilities = CapabilityFactory.getCapabilities(platform);
 
         switch (platform.toLowerCase()) {
             case "edge":
@@ -39,8 +38,11 @@ public class LocalDriverFactory implements IDriverFactory {
                         .usingDriverExecutable(new File(getDriverPath("webdriver.gecko.driver")))
                         .build();
                 return new FirefoxDriver(geckoService, (FirefoxOptions) capabilities);
+
             case "safari":
+                // SafariDriver is managed by the OS and doesn't use a separate service
                 return new SafariDriver((SafariOptions) capabilities);
+
             case "chrome":
             default:
                 ChromeDriverService chromeService = new ChromeDriverService.Builder()

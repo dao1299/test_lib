@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -147,7 +148,7 @@ public class WebKeyword extends BaseUiKeyword {
                     "URL phải is một địa chỉ hợp lệ và có thể truy cập được, và kết nối mạng phải hoạt động. " +
                     "Có thể throw WebDriverException nếu có lỗi khi tương tác với trình duyệt, " +
                     "InvalidArgumentException nếu URL không hợp lệ, " +
-                    "hoặc TimeoutException nếu trang không tải within thời gian chờ mặc định."
+                    "hoặc TimeoutException nếu trang không tải thành công trong thời gian chờ mặc định."
     )
     @Step("Open URL: {0}")
     public void openUrl(String url) {
@@ -156,7 +157,7 @@ public class WebKeyword extends BaseUiKeyword {
 
     @NetatKeyword(
             name = "goBack",
-            description = "Thực hiện hành động quay lại trang trước đó within lịch sử of trình duyệt, " +
+            description = "Thực hiện hành động quay lại trang trước đó trong lịch sử of trình duyệt, " +
                     "tương đương với việc người dùng nhấn nút 'Back'.",
             category = "Web",
             subCategory = "Browser",
@@ -170,7 +171,7 @@ public class WebKeyword extends BaseUiKeyword {
                     "webKeyword.click(linkToDetailsPage);\n" +
                     "webKeyword.goBack();",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "và phải có ít nhất một trang đã được truy cập trước đó within lịch sử of phiên hiện tại. " +
+                    "và phải có ít nhất một trang đã được truy cập trước đó trong lịch sử of phiên hiện tại. " +
                     "Có thể throw WebDriverException nếu có lỗi khi tương tác với trình duyệt, " +
                     "hoặc NoSuchSessionException nếu phiên WebDriver không còn hợp lệ."
     )
@@ -184,7 +185,7 @@ public class WebKeyword extends BaseUiKeyword {
 
     @NetatKeyword(
             name = "goForward",
-            description = "Thực hiện hành động đi tới trang tiếp theo within lịch sử of trình duyệt, " +
+            description = "Thực hiện hành động đi tới trang tiếp theo trong lịch sử of trình duyệt, " +
                     "tương đương với việc người dùng nhấn nút 'Forward'.",
             category = "Web",
             subCategory = "Browser",
@@ -200,7 +201,7 @@ public class WebKeyword extends BaseUiKeyword {
                     "webKeyword.goBack();\n" +
                     "webKeyword.goForward();",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "và phải đã sử dụng goBack() hoặc có trang tiếp theo within lịch sử điều hướng. " +
+                    "và phải đã sử dụng goBack() hoặc có trang tiếp theo trong lịch sử điều hướng. " +
                     "Có thể throw WebDriverException nếu có lỗi khi tương tác với trình duyệt, " +
                     "hoặc NoSuchSessionException nếu phiên WebDriver không còn hợp lệ."
     )
@@ -229,7 +230,7 @@ public class WebKeyword extends BaseUiKeyword {
                     "và đã tải một trang web trước đó. " +
                     "Có thể throw WebDriverException nếu có lỗi khi tương tác với trình duyệt, " +
                     "NoSuchSessionException nếu phiên WebDriver không còn hợp lệ, " +
-                    "hoặc TimeoutException nếu trang không tải lại within thời gian chờ mặc định."
+                    "hoặc TimeoutException nếu trang không tải lại trong thời gian chờ mặc định."
     )
     @Step("Refresh page")
     public void refresh() {
@@ -282,7 +283,7 @@ public class WebKeyword extends BaseUiKeyword {
                     "webKeyword.resizeWindow(768, 1024);",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
                     "trình duyệt phải hỗ trợ thay đổi kích thước cửa sổ, " +
-                    "và kích thước yêu cầu phải nằm within giới hạn hợp lý (lớn hơn 0 và nhỏ hơn kích thước màn hình vật lý). " +
+                    "và kích thước yêu cầu phải nằm trong giới hạn hợp lý (lớn hơn 0 và nhỏ hơn kích thước màn hình vật lý). " +
                     "Có thể throw WebDriverException nếu có lỗi khi tương tác với trình duyệt, " +
                     "NoSuchSessionException nếu phiên WebDriver không còn hợp lệ, " +
                     "UnsupportedOperationException nếu trình duyệt không hỗ trợ thay đổi kích thước, " +
@@ -314,12 +315,12 @@ public class WebKeyword extends BaseUiKeyword {
                     "// Click vào liên kết\n" +
                     "webKeyword.click(registerLinkObject);",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "element cần click phải tồn tại within DOM, phải hiển thị và có thể tương tác được, " +
+                    "element cần click phải tồn tại trong DOM, phải hiển thị và có thể tương tác được, " +
                     "và không bị che khuất bởi các element khác. " +
                     "Có thể throw ElementNotVisibleException nếu element không hiển thị trên trang, " +
                     "ElementClickInterceptedException nếu element bị che khuất bởi element khác, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
-                    "TimeoutException nếu element không xuất hiện within thời gian chờ, " +
+                    "TimeoutException nếu element không xuất hiện trong thời gian chờ, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
     @Step("Click element: {0.name}")
@@ -331,7 +332,7 @@ public class WebKeyword extends BaseUiKeyword {
     @NetatKeyword(
             name = "sendKeys",
             description = "Nhập một chuỗi text vào một element (thường is ô input hoặc textarea). " +
-                    "Keyword sẽ tự động xóa nội dung có sẵn within ô trước khi Enter text mới.",
+                    "Keyword sẽ tự động xóa nội dung có sẵn trong ô trước khi Enter text mới.",
             category = "Web",
             subCategory = "Interaction",
             parameters = {
@@ -344,12 +345,12 @@ public class WebKeyword extends BaseUiKeyword {
                     "// Nhập nội dung tìm kiếm\n" +
                     "webKeyword.sendKeys(searchInputObject, \"laptop gaming\");",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "element cần nhập liệu phải tồn tại within DOM, phải hiển thị và có thể tương tác được, " +
+                    "element cần nhập liệu phải tồn tại trong DOM, phải hiển thị và có thể tương tác được, " +
                     "và phải is loại có thể nhập liệu (input, textarea, contenteditable). " +
                     "Có thể throw ElementNotVisibleException nếu element không hiển thị trên trang, " +
                     "ElementNotInteractableException nếu element không thể tương tác, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
-                    "TimeoutException nếu element không xuất hiện within thời gian chờ, " +
+                    "TimeoutException nếu element không xuất hiện trong thời gian chờ, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
     @Step("Enter text '{1}' into element: {0.name}")
@@ -359,25 +360,25 @@ public class WebKeyword extends BaseUiKeyword {
 
     @NetatKeyword(
             name = "clearText",
-            description = "Xóa toàn bộ text đang có within một element có thể nhập liệu như ô input hoặc textarea.",
+            description = "Xóa toàn bộ text đang có trong một element có thể nhập liệu như ô input hoặc textarea.",
             category = "Web",
             subCategory = "Interaction",
             parameters = {
                     "uiObject: ObjectUI - element cần xóa nội dung"
             },
             returnValue = "void - Không trả về giá trị",
-            example = "// Xóa nội dung within ô tìm kiếm\n" +
+            example = "// Xóa nội dung trong ô tìm kiếm\n" +
                     "webKeyword.clearText(searchInputObject);\n\n" +
                     "// Xóa nội dung trước khi nhập dữ liệu mới\n" +
                     "webKeyword.clearText(usernameInputObject);\n" +
                     "webKeyword.sendKeys(usernameInputObject, \"new_username\");",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "element cần xóa nội dung phải tồn tại within DOM, phải hiển thị và có thể tương tác được, " +
+                    "element cần xóa nội dung phải tồn tại trong DOM, phải hiển thị và có thể tương tác được, " +
                     "và phải is loại có thể nhập liệu (input, textarea, contenteditable). " +
                     "Có thể throw ElementNotVisibleException nếu element không hiển thị trên trang, " +
                     "ElementNotInteractableException nếu element không thể tương tác, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
-                    "TimeoutException nếu element không xuất hiện within thời gian chờ, " +
+                    "TimeoutException nếu element không xuất hiện trong thời gian chờ, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
     @Step("Clear text in element: {0.name}")
@@ -403,12 +404,12 @@ public class WebKeyword extends BaseUiKeyword {
                     "// Chọn phương thức thanh toán\n" +
                     "webKeyword.check(creditCardRadioButton);",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "element cần chọn phải tồn tại within DOM, phải hiển thị và có thể tương tác được, " +
+                    "element cần chọn phải tồn tại trong DOM, phải hiển thị và có thể tương tác được, " +
                     "và phải is checkbox hoặc radio button (input type=\"checkbox\" hoặc type=\"radio\"). " +
                     "Có thể throw ElementNotVisibleException nếu element không hiển thị trên trang, " +
                     "ElementNotInteractableException nếu element không thể tương tác, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
-                    "TimeoutException nếu element không xuất hiện within thời gian chờ, " +
+                    "TimeoutException nếu element không xuất hiện trong thời gian chờ, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
     @Step("Ensure element {0.name} is selected")
@@ -437,12 +438,12 @@ public class WebKeyword extends BaseUiKeyword {
                     "// Bỏ chọn option gửi hàng nhanh\n" +
                     "webKeyword.uncheck(expressShippingCheckbox);",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "element cần bỏ chọn phải tồn tại within DOM, phải hiển thị và có thể tương tác được, " +
+                    "element cần bỏ chọn phải tồn tại trong DOM, phải hiển thị và có thể tương tác được, " +
                     "phải is checkbox (input type=\"checkbox\"), và lưu ý phương thức này chỉ hoạt động với checkbox, không dùng cho radio button. " +
                     "Có thể throw ElementNotVisibleException nếu element không hiển thị trên trang, " +
                     "ElementNotInteractableException nếu element không thể tương tác, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
-                    "TimeoutException nếu element không xuất hiện within thời gian chờ, " +
+                    "TimeoutException nếu element không xuất hiện trong thời gian chờ, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
     @Step("Uncheck checkbox: {0.name}")
@@ -477,13 +478,13 @@ public class WebKeyword extends BaseUiKeyword {
                     "webKeyword.contextClick(productImageObject);\n" +
                     "webKeyword.click(saveImageOptionObject);",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "element cần click phải tồn tại within DOM, phải hiển thị và có thể tương tác được, " +
+                    "element cần click phải tồn tại trong DOM, phải hiển thị và có thể tương tác được, " +
                     "không bị che khuất bởi các element khác, và trình duyệt phải hỗ trợ thao tác chuột phải " +
                     "(một số trình duyệt di động có thể không hỗ trợ). " +
                     "Có thể throw ElementNotVisibleException nếu element không hiển thị trên trang, " +
                     "ElementNotInteractableException nếu element không thể tương tác, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
-                    "TimeoutException nếu element không xuất hiện within thời gian chờ, " +
+                    "TimeoutException nếu element không xuất hiện trong thời gian chờ, " +
                     "WebDriverException nếu có lỗi khi tương tác với trình duyệt, " +
                     "hoặc MoveTargetOutOfBoundsException nếu element nằm ngoài viewport hiện tại."
     )
@@ -512,12 +513,12 @@ public class WebKeyword extends BaseUiKeyword {
                     "// Double-click để chọn toàn bộ text\n" +
                     "webKeyword.doubleClick(textParagraphObject);",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "element cần double-click phải tồn tại within DOM, phải hiển thị và có thể tương tác được, " +
+                    "element cần double-click phải tồn tại trong DOM, phải hiển thị và có thể tương tác được, " +
                     "và không bị che khuất bởi các element khác. " +
                     "Có thể throw ElementNotVisibleException nếu element không hiển thị trên trang, " +
                     "ElementNotInteractableException nếu element không thể tương tác, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
-                    "TimeoutException nếu element không xuất hiện within thời gian chờ, " +
+                    "TimeoutException nếu element không xuất hiện trong thời gian chờ, " +
                     "WebDriverException nếu có lỗi khi tương tác với trình duyệt, " +
                     "hoặc MoveTargetOutOfBoundsException nếu element nằm ngoài viewport hiện tại."
     )
@@ -546,11 +547,11 @@ public class WebKeyword extends BaseUiKeyword {
                     "webKeyword.hover(infoIconObject);\n" +
                     "webKeyword.waitForElementVisible(tooltipObject);",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "element cần hover phải tồn tại within DOM, phải hiển thị trên trang, " +
+                    "element cần hover phải tồn tại trong DOM, phải hiển thị trên trang, " +
                     "và trình duyệt phải hỗ trợ thao tác di chuột (một số trình duyệt di động có thể không hỗ trợ). " +
                     "Có thể throw ElementNotVisibleException nếu element không hiển thị trên trang, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
-                    "TimeoutException nếu element không xuất hiện within thời gian chờ, " +
+                    "TimeoutException nếu element không xuất hiện trong thời gian chờ, " +
                     "WebDriverException nếu có lỗi khi tương tác với trình duyệt, " +
                     "hoặc MoveTargetOutOfBoundsException nếu element nằm ngoài viewport hiện tại."
     )
@@ -578,13 +579,13 @@ public class WebKeyword extends BaseUiKeyword {
                     "// Tải lên tài liệu PDF\n" +
                     "webKeyword.uploadFile(documentUploadInput, \"D:/Documents/report.pdf\");",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "element input phải có thuộc tính type='file', phải tồn tại within DOM (có thể ẩn nhưng phải tồn tại), " +
+                    "element input phải có thuộc tính type='file', phải tồn tại trong DOM (có thể ẩn nhưng phải tồn tại), " +
                     "file cần tải lên phải tồn tại tại đường dẫn được chỉ định, " +
                     "người dùng thực thi test phải có quyền truy cập vào file, và đường dẫn file phải is đường dẫn tuyệt đối. " +
                     "Có thể throw InvalidArgumentException nếu đường dẫn file không hợp lệ hoặc file không tồn tại, " +
                     "ElementNotInteractableException nếu element không phải is input type='file', " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
-                    "TimeoutException nếu element không xuất hiện within thời gian chờ, " +
+                    "TimeoutException nếu element không xuất hiện trong thời gian chờ, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
     @Step("Upload file '{1}' to element {0.name}")
@@ -612,13 +613,13 @@ public class WebKeyword extends BaseUiKeyword {
                     "// Kéo và thả để sắp xếp lại danh sách\n" +
                     "webKeyword.dragAndDrop(taskItemObject, topOfListObject);",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "cả hai element nguồn và đích phải tồn tại within DOM, phải hiển thị và có thể tương tác được, " +
+                    "cả hai element nguồn và đích phải tồn tại trong DOM, phải hiển thị và có thể tương tác được, " +
                     "trang web phải hỗ trợ thao tác kéo và thả, và trình duyệt phải hỗ trợ thao tác kéo và thả " +
                     "(một số trình duyệt di động có thể không hỗ trợ đầy đủ). " +
-                    "Có thể throw ElementNotVisibleException nếu một within hai element không hiển thị trên trang, " +
-                    "ElementNotInteractableException nếu một within hai element không thể tương tác, " +
-                    "StaleElementReferenceException nếu một within hai element không còn gắn với DOM, " +
-                    "TimeoutException nếu một within hai element không xuất hiện within thời gian chờ, " +
+                    "Có thể throw ElementNotVisibleException nếu một trong hai element không hiển thị trên trang, " +
+                    "ElementNotInteractableException nếu một trong hai element không thể tương tác, " +
+                    "StaleElementReferenceException nếu một trong hai element không còn gắn với DOM, " +
+                    "TimeoutException nếu một trong hai element không xuất hiện trong thời gian chờ, " +
                     "WebDriverException nếu có lỗi khi tương tác với trình duyệt, " +
                     "hoặc MoveTargetOutOfBoundsException nếu element đích nằm ngoài viewport hiện tại."
     )
@@ -649,13 +650,13 @@ public class WebKeyword extends BaseUiKeyword {
                     "// Kéo thanh trượt âm lượng xuống 50px\n" +
                     "webKeyword.dragAndDropByOffset(volumeSliderObject, 0, -50);",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "element cần kéo phải tồn tại within DOM, phải hiển thị và có thể tương tác được, " +
+                    "element cần kéo phải tồn tại trong DOM, phải hiển thị và có thể tương tác được, " +
                     "trang web phải hỗ trợ thao tác kéo và thả, và trình duyệt phải hỗ trợ thao tác kéo và thả " +
                     "(một số trình duyệt di động có thể không hỗ trợ đầy đủ). " +
                     "Có thể throw ElementNotVisibleException nếu element không hiển thị trên trang, " +
                     "ElementNotInteractableException nếu element không thể tương tác, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
-                    "TimeoutException nếu element không xuất hiện within thời gian chờ, " +
+                    "TimeoutException nếu element không xuất hiện trong thời gian chờ, " +
                     "WebDriverException nếu có lỗi khi tương tác với trình duyệt, " +
                     "hoặc MoveTargetOutOfBoundsException nếu vị trí đích nằm ngoài viewport hiện tại."
     )
@@ -685,7 +686,7 @@ public class WebKeyword extends BaseUiKeyword {
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
                     "element cần nhận tổ hợp phím phải đang được focus, " +
                     "trình duyệt phải hỗ trợ các tổ hợp phím được sử dụng, " +
-                    "và các phím đặc biệt phải được định nghĩa within org.openqa.selenium.Keys. " +
+                    "và các phím đặc biệt phải được định nghĩa trong org.openqa.selenium.Keys. " +
                     "Có thể throw WebDriverException nếu có lỗi khi tương tác với trình duyệt, " +
                     "NoSuchSessionException nếu phiên WebDriver không còn hợp lệ, " +
                     "UnsupportedOperationException nếu trình duyệt không hỗ trợ thao tác phím được yêu cầu, " +
@@ -740,12 +741,12 @@ public class WebKeyword extends BaseUiKeyword {
                     "// Click vào element bị che khuất bởi element khác\n" +
                     "webKeyword.clickWithJavascript(overlappedElementObject);",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "element cần click phải tồn tại within DOM, " +
+                    "element cần click phải tồn tại trong DOM, " +
                     "trình duyệt phải hỗ trợ thực thi JavaScript, " +
                     "và người dùng phải có quyền thực thi JavaScript trên trang. " +
                     "Có thể throw JavascriptException nếu có lỗi khi thực thi JavaScript, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
-                    "TimeoutException nếu element không xuất hiện within thời gian chờ, " +
+                    "TimeoutException nếu element không xuất hiện trong thời gian chờ, " +
                     "WebDriverException nếu có lỗi khi tương tác với trình duyệt, " +
                     "hoặc NoSuchSessionException nếu phiên WebDriver không còn hợp lệ."
     )
@@ -760,7 +761,7 @@ public class WebKeyword extends BaseUiKeyword {
 
     @NetatKeyword(
             name = "selectByIndex",
-            description = "Chọn một option (option) within một element dropdown (thẻ select) dựa trên chỉ số of nó (bắt đầu từ 0).",
+            description = "Chọn một option (option) trong một element dropdown (thẻ select) dựa trên chỉ số of nó (bắt đầu từ 0).",
             category = "Web",
             subCategory = "Interaction",
             parameters = {
@@ -773,16 +774,16 @@ public class WebKeyword extends BaseUiKeyword {
                     "// Chọn option đầu tiên in dropdown ngôn ngữ\n" +
                     "webKeyword.selectByIndex(languageDropdownObject, 0);",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "element dropdown phải tồn tại within DOM, phải is thẻ <select> hợp lệ, " +
+                    "element dropdown phải tồn tại trong DOM, phải is thẻ <select> hợp lệ, " +
                     "phải hiển thị và có thể tương tác được, " +
-                    "và chỉ số phải nằm within phạm vi hợp lệ (0 đến số lượng option - 1). " +
+                    "và chỉ số phải nằm trong phạm vi hợp lệ (0 đến số lượng option - 1). " +
                     "Có thể throw NoSuchElementException nếu element dropdown không tồn tại, " +
                     "ElementNotVisibleException nếu element không hiển thị trên trang, " +
                     "ElementNotInteractableException nếu element không thể tương tác, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
                     "IndexOutOfBoundsException nếu chỉ số nằm ngoài phạm vi hợp lệ, " +
                     "UnexpectedTagNameException nếu element không phải is thẻ <select>, " +
-                    "TimeoutException nếu element không xuất hiện within thời gian chờ, " +
+                    "TimeoutException nếu element không xuất hiện trong thời gian chờ, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
     @Step("Select option at index {1} for dropdown {0.name}")
@@ -796,12 +797,12 @@ public class WebKeyword extends BaseUiKeyword {
 
     @NetatKeyword(
             name = "selectRadioByValue",
-            description = "Chọn một radio button within một nhóm các radio button dựa trên giá trị of thuộc tính 'value'.",
+            description = "Chọn một radio button trong một nhóm các radio button dựa trên giá trị of thuộc tính 'value'.",
             category = "Web",
             subCategory = "Interaction",
             parameters = {
                     "uiObject: ObjectUI - Đại diện cho nhóm radio button (ví dụ locator chung is '//input[@name=\"gender\"]')",
-                    "value: String - Giá trị within thuộc tính 'value' of radio button cần chọn"
+                    "value: String - Giá trị trong thuộc tính 'value' of radio button cần chọn"
             },
             returnValue = "void - Không trả về giá trị",
             example = "// Chọn radio button giới tính nữ\n" +
@@ -809,14 +810,14 @@ public class WebKeyword extends BaseUiKeyword {
                     "// Chọn phương thức thanh toán\n" +
                     "webKeyword.selectRadioByValue(paymentMethodRadioGroup, \"credit_card\");",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "nhóm radio button phải tồn tại within DOM, " +
-                    "ít nhất một radio button within nhóm phải có thuộc tính 'value' khớp với giá trị cần chọn, " +
+                    "nhóm radio button phải tồn tại trong DOM, " +
+                    "ít nhất một radio button trong nhóm phải có thuộc tính 'value' khớp với giá trị cần chọn, " +
                     "và element phải hiển thị và có thể tương tác được. " +
                     "Có thể throw NoSuchElementException nếu không tìm thấy radio button với value chỉ định, " +
                     "ElementNotVisibleException nếu element không hiển thị trên trang, " +
                     "ElementNotInteractableException nếu element không thể tương tác, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
-                    "TimeoutException nếu element không xuất hiện within thời gian chờ, " +
+                    "TimeoutException nếu element không xuất hiện trong thời gian chờ, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
     @Step("Select radio button with value '{1}' in group {0.name}")
@@ -850,7 +851,7 @@ public class WebKeyword extends BaseUiKeyword {
                     "// Chọn phương thức vận chuyển\n" +
                     "webKeyword.selectByValue(shippingMethodDropdown, \"express\");",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "element dropdown phải tồn tại within DOM, phải is thẻ <select> hợp lệ, " +
+                    "element dropdown phải tồn tại trong DOM, phải is thẻ <select> hợp lệ, " +
                     "phải hiển thị và có thể tương tác được, " +
                     "và phải tồn tại ít nhất một option có thuộc tính value khớp với giá trị cần chọn. " +
                     "Có thể throw NoSuchElementException nếu không tìm thấy option với value chỉ định, " +
@@ -858,7 +859,7 @@ public class WebKeyword extends BaseUiKeyword {
                     "ElementNotInteractableException nếu element không thể tương tác, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
                     "UnexpectedTagNameException nếu element không phải is thẻ <select>, " +
-                    "TimeoutException nếu element không xuất hiện within thời gian chờ, " +
+                    "TimeoutException nếu element không xuất hiện trong thời gian chờ, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
     @Step("Select option with value '{1}' for dropdown {0.name}")
@@ -885,7 +886,7 @@ public class WebKeyword extends BaseUiKeyword {
                     "// Chọn danh mục sản phẩm\n" +
                     "webKeyword.selectByVisibleText(categoryDropdown, \"Điện thoại & Máy tính bảng\");",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "element dropdown phải tồn tại within DOM, phải is thẻ <select> hợp lệ, " +
+                    "element dropdown phải tồn tại trong DOM, phải is thẻ <select> hợp lệ, " +
                     "phải hiển thị và có thể tương tác được, " +
                     "phải tồn tại ít nhất một option có text hiển thị khớp chính xác với text cần chọn, " +
                     "và text cần chọn phải khớp chính xác với text hiển thị (phân biệt chữ hoa/thường, khoảng trắng, ký tự đặc biệt). " +
@@ -894,7 +895,7 @@ public class WebKeyword extends BaseUiKeyword {
                     "ElementNotInteractableException nếu element không thể tương tác, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
                     "UnexpectedTagNameException nếu element không phải is thẻ <select>, " +
-                    "TimeoutException nếu element không xuất hiện within thời gian chờ, " +
+                    "TimeoutException nếu element không xuất hiện trong thời gian chờ, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
     @Step("Select option with text '{1}' for dropdown {0.name}")
@@ -908,7 +909,7 @@ public class WebKeyword extends BaseUiKeyword {
 
     @NetatKeyword(
             name = "clickElementByIndex",
-            description = "Click vào một element cụ thể within một danh sách các element dựa trên chỉ số (index) of nó (bắt đầu từ 0).",
+            description = "Click vào một element cụ thể trong một danh sách các element dựa trên chỉ số (index) of nó (bắt đầu từ 0).",
             category = "Web",
             subCategory = "Interaction",
             parameters = {
@@ -918,17 +919,17 @@ public class WebKeyword extends BaseUiKeyword {
             returnValue = "void - Không trả về giá trị",
             example = "// Click vào kết quả tìm kiếm thứ 3\n" +
                     "webKeyword.clickElementByIndex(searchResultLinks, 2); // Index bắt đầu từ 0\n\n" +
-                    "// Click vào mục đầu tiên within danh sách\n" +
+                    "// Click vào mục đầu tiên trong danh sách\n" +
                     "webKeyword.clickElementByIndex(menuItems, 0);",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "danh sách element phải tồn tại within DOM, " +
-                    "chỉ số phải nằm within phạm vi hợp lệ (0 đến số lượng element - 1), " +
+                    "danh sách element phải tồn tại trong DOM, " +
+                    "chỉ số phải nằm trong phạm vi hợp lệ (0 đến số lượng element - 1), " +
                     "và element tại chỉ số cần click phải hiển thị và có thể tương tác được. " +
                     "Có thể throw IndexOutOfBoundsException nếu chỉ số nằm ngoài phạm vi hợp lệ, " +
                     "ElementNotVisibleException nếu element không hiển thị trên trang, " +
                     "ElementNotInteractableException nếu element không thể tương tác, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
-                    "TimeoutException nếu element không xuất hiện within thời gian chờ, " +
+                    "TimeoutException nếu element không xuất hiện trong thời gian chờ, " +
                     "WebDriverException nếu có lỗi khi tương tác với trình duyệt, " +
                     "hoặc NoSuchElementException nếu danh sách element không tồn tại."
     )
@@ -947,7 +948,7 @@ public class WebKeyword extends BaseUiKeyword {
 
     @NetatKeyword(
             name = "scrollToElement",
-            description = "Cuộn trang đến khi element được chỉ định nằm within vùng có thể nhìn thấy of trình duyệt. " +
+            description = "Cuộn trang đến khi element được chỉ định nằm trong vùng có thể nhìn thấy of trình duyệt. " +
                     "Rất cần thiết khi cần tương tác với các element ở cuối trang.",
             category = "Web",
             subCategory = "Interaction",
@@ -962,12 +963,12 @@ public class WebKeyword extends BaseUiKeyword {
                     "webKeyword.scrollToElement(submitButtonObject);\n" +
                     "webKeyword.click(submitButtonObject);",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "element cần cuộn đến phải tồn tại within DOM, " +
+                    "element cần cuộn đến phải tồn tại trong DOM, " +
                     "và trình duyệt phải hỗ trợ thực thi JavaScript. " +
                     "Có thể throw NoSuchElementException nếu element không tồn tại, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
                     "JavascriptException nếu có lỗi khi thực thi JavaScript, " +
-                    "TimeoutException nếu element không xuất hiện within thời gian chờ, " +
+                    "TimeoutException nếu element không xuất hiện trong thời gian chờ, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
     @Step("Scroll to element: {0.name}")
@@ -982,7 +983,7 @@ public class WebKeyword extends BaseUiKeyword {
 
     @NetatKeyword(
             name = "scrollToCoordinates",
-            description = "Cuộn trang web đến một tọa độ (x, y) cụ thể within viewport.",
+            description = "Cuộn trang web đến một tọa độ (x, y) cụ thể trong viewport.",
             category = "Web",
             subCategory = "Interaction",
             parameters = {
@@ -996,7 +997,7 @@ public class WebKeyword extends BaseUiKeyword {
                     "webKeyword.scrollToCoordinates(0, 0);",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
                     "trình duyệt phải hỗ trợ thực thi JavaScript, " +
-                    "và tọa độ phải nằm within phạm vi hợp lệ of trang web. " +
+                    "và tọa độ phải nằm trong phạm vi hợp lệ of trang web. " +
                     "Có thể throw JavascriptException nếu có lỗi khi thực thi JavaScript, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
@@ -1083,10 +1084,10 @@ public class WebKeyword extends BaseUiKeyword {
                     "String username = webKeyword.getText(usernameInputObject);\n" +
                     "webKeyword.verifyEqual(username, \"testuser\");",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "và element cần lấy text phải tồn tại within DOM. " +
+                    "và element cần lấy text phải tồn tại trong DOM. " +
                     "Có thể throw NoSuchElementException nếu element không tồn tại, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
-                    "TimeoutException nếu element không xuất hiện within thời gian chờ, " +
+                    "TimeoutException nếu element không xuất hiện trong thời gian chờ, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
     @Step("Get text from element: {0.name}")
@@ -1111,10 +1112,10 @@ public class WebKeyword extends BaseUiKeyword {
                     "String isChecked = webKeyword.getAttribute(termsCheckboxObject, \"checked\");\n" +
                     "webKeyword.verifyNotNull(isChecked);",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "và element cần lấy thuộc tính phải tồn tại within DOM. " +
+                    "và element cần lấy thuộc tính phải tồn tại trong DOM. " +
                     "Có thể throw NoSuchElementException nếu element không tồn tại, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
-                    "TimeoutException nếu element không xuất hiện within thời gian chờ, " +
+                    "TimeoutException nếu element không xuất hiện trong thời gian chờ, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
     @Step("Get attribute '{1}' of element {0.name}")
@@ -1139,11 +1140,11 @@ public class WebKeyword extends BaseUiKeyword {
                     "String fontSize = webKeyword.getCssValue(headingObject, \"font-size\");\n" +
                     "webKeyword.verifyEqual(fontSize, \"24px\");",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "element cần lấy giá trị CSS phải tồn tại within DOM, " +
+                    "element cần lấy giá trị CSS phải tồn tại trong DOM, " +
                     "và thuộc tính CSS cần lấy phải được áp dụng cho element (trực tiếp hoặc được kế thừa). " +
                     "Có thể throw NoSuchElementException nếu element không tồn tại, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
-                    "TimeoutException nếu element không xuất hiện within thời gian chờ, " +
+                    "TimeoutException nếu element không xuất hiện trong thời gian chờ, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
     @Step("Get CSS value '{1}' of element {0.name}")
@@ -1202,14 +1203,14 @@ public class WebKeyword extends BaseUiKeyword {
 
     @NetatKeyword(
             name = "getElementCount",
-            description = "Đếm và trả về số lượng element trên trang khớp với locator được cung cấp. Hữu ích để Verify số lượng kết quả tìm kiếm, số hàng within bảng,...",
+            description = "Đếm và trả về số lượng element trên trang khớp với locator được cung cấp. Hữu ích để Verify số lượng kết quả tìm kiếm, số hàng trong bảng,...",
             category = "Web",
             subCategory = "Getter",
             parameters = {
                     "uiObject: ObjectUI - Đối tượng giao diện đại diện cho các element cần đếm"
             },
             returnValue = "int - Số lượng element tìm thấy",
-            example = "// Đếm số lượng sản phẩm within danh sách\n" +
+            example = "// Đếm số lượng sản phẩm trong danh sách\n" +
                     "int numberOfProducts = webKeyword.getElementCount(productListItemObject);\n" +
                     "webKeyword.verifyEqual(numberOfProducts, 10);\n\n" +
                     "// Verify số lượng kết quả tìm kiếm\n" +
@@ -1233,7 +1234,7 @@ public class WebKeyword extends BaseUiKeyword {
 
     @NetatKeyword(
             name = "getTextFromElements",
-            description = "Lấy và trả về một danh sách (List) các chuỗi text từ mỗi element within một danh sách các element.",
+            description = "Lấy và trả về một danh sách (List) các chuỗi text từ mỗi element trong một danh sách các element.",
             category = "Web",
             subCategory = "Getter",
             parameters = {
@@ -1250,10 +1251,10 @@ public class WebKeyword extends BaseUiKeyword {
                     "}",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
                     "locator of đối tượng giao diện phải hợp lệ, " +
-                    "và các element cần lấy text phải tồn tại within DOM. " +
+                    "và các element cần lấy text phải tồn tại trong DOM. " +
                     "Có thể throw NoSuchElementException nếu không tìm thấy element nào khớp với locator, " +
-                    "StaleElementReferenceException nếu element không còn gắn với DOM within quá trình xử lý, " +
-                    "TimeoutException nếu các element không xuất hiện within thời gian chờ, " +
+                    "StaleElementReferenceException nếu element không còn gắn với DOM trong quá trình xử lý, " +
+                    "TimeoutException nếu các element không xuất hiện trong thời gian chờ, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
     @Step("Get text from list of elements: {0.name}")
@@ -1285,9 +1286,9 @@ public class WebKeyword extends BaseUiKeyword {
                     "webKeyword.waitForElementClickable(continueButtonObject);\n" +
                     "webKeyword.click(continueButtonObject);",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "element cần chờ phải tồn tại within DOM, " +
-                    "và element sẽ trở thành hiển thị và có thể click within khoảng thời gian chờ. " +
-                    "Có thể throw TimeoutException nếu element không trở nên có thể click within thời gian chờ mặc định, " +
+                    "element cần chờ phải tồn tại trong DOM, " +
+                    "và element sẽ trở thành hiển thị và có thể click trong khoảng thời gian chờ. " +
+                    "Có thể throw TimeoutException nếu element không trở nên có thể click trong thời gian chờ mặc định, " +
                     "NoSuchElementException nếu không tìm thấy element, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
@@ -1319,8 +1320,8 @@ public class WebKeyword extends BaseUiKeyword {
                     "webKeyword.click(closePopupButtonObject);\n" +
                     "webKeyword.waitForElementNotVisible(popupObject);",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "element cần chờ phải tồn tại within DOM hoặc đã hiển thị trước đó, " +
-                    "và element sẽ trở thành không hiển thị within khoảng thời gian chờ. " +
+                    "element cần chờ phải tồn tại trong DOM hoặc đã hiển thị trước đó, " +
+                    "và element sẽ trở thành không hiển thị trong khoảng thời gian chờ. " +
                     "Có thể throw TimeoutException nếu element vẫn còn hiển thị sau thời gian chờ mặc định, " +
                     "NoSuchElementException nếu không tìm thấy element ban đầu, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
@@ -1338,7 +1339,7 @@ public class WebKeyword extends BaseUiKeyword {
 
     @NetatKeyword(
             name = "waitForElementPresent",
-            description = "Tạm dừng kịch bản cho đến khi một element tồn tại within DOM of trang, không nhất thiết phải hiển thị. Hữu ích để chờ các element được tạo ra bởi JavaScript.",
+            description = "Tạm dừng kịch bản cho đến khi một element tồn tại trong DOM of trang, không nhất thiết phải hiển thị. Hữu ích để chờ các element được tạo ra bởi JavaScript.",
             category = "Web",
             subCategory = "Wait",
             parameters = {
@@ -1356,12 +1357,12 @@ public class WebKeyword extends BaseUiKeyword {
                     "webKeyword.verifyElementCount(subcategoryItemObject, 5);",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
                     "locator of element phải hợp lệ, " +
-                    "và element sẽ được thêm vào DOM within khoảng thời gian chờ đã chỉ định. " +
-                    "Có thể throw TimeoutException nếu element không xuất hiện within DOM within thời gian chờ đã chỉ định, " +
+                    "và element sẽ được thêm vào DOM trong khoảng thời gian chờ đã chỉ định. " +
+                    "Có thể throw TimeoutException nếu element không xuất hiện trong DOM trong thời gian chờ đã chỉ định, " +
                     "InvalidSelectorException nếu locator không hợp lệ, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Wait for element {0.name} to be present in DOM within {1} seconds")
+    @Step("Wait for element {0.name} to be present in DOM trong {1} seconds")
     public void waitForElementPresent(ObjectUI uiObject, int timeoutInSeconds) {
         execute(() -> {
             WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds));
@@ -1390,12 +1391,12 @@ public class WebKeyword extends BaseUiKeyword {
                     "webKeyword.waitForPageLoaded(25);",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
                     "trình duyệt phải hỗ trợ thực thi JavaScript, " +
-                    "và trang web sẽ hoàn thành quá trình tải within khoảng thời gian chờ đã chỉ định. " +
-                    "Có thể throw TimeoutException nếu trang không tải xong within thời gian chờ đã chỉ định, " +
+                    "và trang web sẽ hoàn thành quá trình tải trong khoảng thời gian chờ đã chỉ định. " +
+                    "Có thể throw TimeoutException nếu trang không tải xong trong thời gian chờ đã chỉ định, " +
                     "JavascriptException nếu có lỗi khi thực thi JavaScript, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Wait for page to load within {0} seconds")
+    @Step("Wait for page to load trong {0} seconds")
     public void waitForPageLoaded(int timeoutInSeconds) {
         execute(() -> {
             WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds));
@@ -1423,11 +1424,11 @@ public class WebKeyword extends BaseUiKeyword {
                     "webKeyword.click(searchButtonObject);\n" +
                     "webKeyword.waitForUrlContains(\"search=laptop\", 10);",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "và URL of trang sẽ contains chuỗi con đã chỉ định within khoảng thời gian chờ. " +
-                    "Có thể throw TimeoutException nếu URL không contains chuỗi con đã chỉ định within thời gian chờ, " +
+                    "và URL of trang sẽ contains chuỗi con đã chỉ định trong khoảng thời gian chờ. " +
+                    "Có thể throw TimeoutException nếu URL không contains chuỗi con đã chỉ định trong thời gian chờ, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Wait for URL to contain '{0}' within {1} seconds")
+    @Step("Wait for URL to contain '{0}' trong {1} seconds")
     public void waitForUrlContains(String partialUrl, int timeoutInSeconds) {
         execute(() -> {
             new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds))
@@ -1455,17 +1456,152 @@ public class WebKeyword extends BaseUiKeyword {
                     "webKeyword.click(profileTabObject);\n" +
                     "webKeyword.waitForTitleIs(\"Thông tin cá nhân\", 10);",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "và tiêu đề trang sẽ thay đổi thành giá trị mong đợi within khoảng thời gian chờ. " +
-                    "Có thể throw TimeoutException nếu tiêu đề trang không khớp với giá trị mong đợi within thời gian chờ, " +
+                    "và tiêu đề trang sẽ thay đổi thành giá trị mong đợi trong khoảng thời gian chờ. " +
+                    "Có thể throw TimeoutException nếu tiêu đề trang không khớp với giá trị mong đợi trong thời gian chờ, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Wait for page title to be '{0}' within {1} seconds")
+    @Step("Wait for page title to be '{0}' trong {1} seconds")
     public void waitForTitleIs(String expectedTitle, int timeoutInSeconds) {
         execute(() -> {
             new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds))
                     .until(ExpectedConditions.titleIs(expectedTitle));
             return null;
         }, expectedTitle, timeoutInSeconds);
+    }
+
+
+    @NetatKeyword(
+            name = "waitForElementVisible",
+            description = "Chờ đợi một element trở nên visible (hiển thị) trên màn hình trong khoảng thời gian chỉ định. Sử dụng explicit wait để đảm bảo element không chỉ present trong DOM mà còn thực sự hiển thị cho người dùng.",
+            category = "Mobile",
+            subCategory = "Wait",
+            parameters = {
+                    "ObjectUI uiObject - Đối tượng UI element cần chờ đợi hiển thị",
+                    "int timeoutInSeconds - Thời gian chờ tối đa tính bằng giây"
+            },
+            note = "LƯU Ý: Method này chờ element VISIBLE (display: block, opacity > 0, không bị che khuất), khác với waitForElementPresent chỉ cần element có trong DOM. Sẽ throw TimeoutException nếu vượt quá thời gian chờ.",
+            example = "// Chờ button login hiển thị trong 10 giây\nmobileKeyword.waitForElementVisible(loginButton, 10);\n\n// Chờ popup xuất hiện trong 5 giây\nmobileKeyword.waitForElementVisible(popupDialog, 5);"
+    )
+    @Step("Wait for element '{0}' to be visible within {1} seconds")
+    public void waitForElementVisible(ObjectUI uiObject, int timeoutInSeconds) {
+        super.waitForElementVisible(uiObject, timeoutInSeconds);
+    }
+
+
+    @NetatKeyword(
+            name = "waitForElementClickable",
+            description = "Chờ đợi một element trở nên clickable (có thể click được) trong khoảng thời gian chỉ định. Element phải đồng thời visible và enabled để được coi là clickable. Đây là điều kiện lý tưởng trước khi thực hiện click action.",
+            category = "Mobile",
+            subCategory = "Wait",
+            parameters = {
+                    "ObjectUI uiObject - Đối tượng UI element cần chờ đợi có thể click",
+                    "int timeoutInSeconds - Thời gian chờ tối đa tính bằng giây"
+            },
+            note = "BEST PRACTICE: Luôn sử dụng method này trước khi click vào element để tránh ElementNotInteractableException. Element clickable = visible + enabled + không bị overlay che khuất.",
+            example = "// Chờ button submit có thể click trong 15 giây\nmobileKeyword.waitForElementClickable(submitButton, 15);\nmobileKeyword.click(submitButton);\n\n// Chờ link navigation sẵn sàng click\nmobileKeyword.waitForElementClickable(navLink, 8);"
+    )
+    @Step("Wait for element '{0}' to be clickable within {1} seconds")
+    public void waitForElementClickable(ObjectUI uiObject, int timeoutInSeconds) {
+        super.waitForElementClickable(uiObject, timeoutInSeconds);
+    }
+
+
+
+    @NetatKeyword(
+            name = "waitForElementNotPresent",
+            description = "Chờ đợi một element bị xóa hoàn toàn khỏi DOM trong khoảng thời gian chỉ định. Khác với waitForElementNotVisible (chỉ ẩn), method này đảm bảo element không còn tồn tại trong page source. Rất hữu ích cho cleanup testing và dynamic content.",
+            category = "Web",
+            subCategory = "Wait",
+            parameters = {
+                    "ObjectUI uiObject - Đối tượng UI element cần chờ đợi bị xóa khỏi DOM",
+                    "int timeoutInSeconds - Thời gian chờ tối đa tính bằng giây"
+            },
+            note = "QUAN TRỌNG: waitForElementNotPresent (xóa khỏi DOM) khác với waitForElementNotVisible (chỉ ẩn đi). Sử dụng khi cần đảm bảo element thực sự bị remove, không phải chỉ display:none. Thường dùng sau delete actions hoặc dynamic loading.",
+            example = "// Chờ popup dialog bị xóa hoàn toàn sau khi đóng\nwebKeyword.click(closeButton);\nwebKeyword.waitForElementNotPresent(popupDialog, 10);\n\n// Chờ loading spinner biến mất sau AJAX\nwebKeyword.waitForElementNotPresent(loadingSpinner, 15);"
+    )
+    @Step("Wait for element '{0}' to be removed from DOM within {1} seconds")
+    public void waitForElementNotPresent(ObjectUI uiObject, int timeoutInSeconds) {
+        execute(() -> {
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds));
+            By by = uiObject.getActiveLocators().get(0).convertToBy();
+            wait.until(ExpectedConditions.not(ExpectedConditions.presenceOfElementLocated(by)));
+            return null;
+        }, uiObject, timeoutInSeconds);
+    }
+
+    @NetatKeyword(
+            name = "waitForElementTextContains",
+            description = "Chờ đợi text của element chứa substring chỉ định trong khoảng thời gian cho phép. Thực hiện partial matching, rất hữu ích cho validation nội dung động, messages, notifications hoặc khi text có thể thay đổi nhưng vẫn chứa keyword quan trọng.",
+            category = "Web",
+            subCategory = "Wait",
+            parameters = {
+                    "ObjectUI uiObject - Đối tượng UI element cần kiểm tra text content",
+                    "String expectedText - Substring mà text của element phải chứa",
+                    "int timeoutInSeconds - Thời gian chờ tối đa tính bằng giây"
+            },
+            note = "USE CASE: Lý tưởng cho validation messages động, notifications, counters, hoặc content được load từ API. Khác với waitForElementTextToBe (exact match), method này linh hoạt hơn với partial matching.",
+            example = "// Chờ success message chứa 'thành công'\nwebKeyword.waitForElementTextContains(successMessage, \"thành công\", 10);\n\n// Chờ counter chứa số lượng items\nwebKeyword.waitForElementTextContains(itemCounter, \"items\", 8);\n\n// Validation error message\nwebKeyword.waitForElementTextContains(errorMsg, \"Invalid\", 5);"
+    )
+    @Step("Wait for element '{0}' text to contain '{1}' within {2} seconds")
+    public void waitForElementTextContains(ObjectUI uiObject, String expectedText, int timeoutInSeconds) {
+        execute(() -> {
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds));
+            wait.until(ExpectedConditions.textToBePresentInElement(findElement(uiObject), expectedText));
+            return null;
+        }, uiObject, expectedText, timeoutInSeconds);
+    }
+
+    @NetatKeyword(
+            name = "waitForElementAttributeToBe",
+            description = "Chờ đợi attribute của element có giá trị chính xác như mong đợi trong khoảng thời gian chỉ định. Rất hữu ích cho validation các thay đổi attribute động như status, state, data-attributes, class names, hoặc các thuộc tính được cập nhật qua JavaScript.",
+            category = "Web",
+            subCategory = "Wait",
+            parameters = {
+                    "ObjectUI uiObject - Đối tượng UI element cần kiểm tra attribute",
+                    "String attributeName - Tên attribute cần kiểm tra (vd: class, data-status, disabled)",
+                    "String expectedValue - Giá trị mong đợi của attribute",
+                    "int timeoutInSeconds - Thời gian chờ tối đa tính bằng giây"
+            },
+            note = "COMMON ATTRIBUTES: class, data-*, disabled, checked, selected, aria-*, style, value. Đặc biệt hữu ích cho SPA applications khi attributes thay đổi theo state. Lưu ý: attribute value khác với property value.",
+            example = "// Chờ button chuyển sang disabled state\nwebKeyword.waitForElementAttributeToBe(submitBtn, \"disabled\", \"true\", 10);\n\n// Chờ element có class 'active'\nwebKeyword.waitForElementAttributeToBe(menuItem, \"class\", \"menu-item active\", 8);\n\n// Chờ data attribute cập nhật\nwebKeyword.waitForElementAttributeToBe(statusDiv, \"data-status\", \"completed\", 15);"
+    )
+    @Step("Wait for element '{0}' attribute '{1}' to be '{2}' within {3} seconds")
+    public void waitForElementAttributeToBe(ObjectUI uiObject, String attributeName, String expectedValue, int timeoutInSeconds) {
+        execute(() -> {
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds));
+            wait.until(ExpectedConditions.attributeToBe(findElement(uiObject), attributeName, expectedValue));
+            return null;
+        }, uiObject, attributeName, expectedValue, timeoutInSeconds);
+    }
+
+    @NetatKeyword(
+            name = "waitForJavaScriptReturnsValue",
+            description = "Chờ đợi JavaScript code thực thi và trả về giá trị mong đợi trong khoảng thời gian chỉ định. Rất hữu ích cho việc chờ đợi AJAX calls hoàn thành, custom conditions, hoặc các trạng thái phức tạp của trang web không thể detect bằng DOM elements.",
+            category = "Web",
+            subCategory = "Wait",
+            parameters = {
+                    "String script - JavaScript code cần thực thi",
+                    "Object expectedValue - Giá trị mong đợi từ script (có thể là String, Boolean, Number)",
+                    "int timeoutInSeconds - Thời gian chờ tối đa tính bằng giây"
+            },
+            note = "ADVANCED USE CASE: Thích hợp cho SPA applications, AJAX monitoring, custom loading states. Script có thể return any type (String, Boolean, Number, null). Sử dụng khi standard WebDriver waits không đủ mạnh.",
+            example = "// Chờ jQuery AJAX calls hoàn thành\nwebKeyword.waitForJavaScriptReturnsValue(\"return jQuery.active\", 0, 30);\n\n// Chờ custom loading flag\nwebKeyword.waitForJavaScriptReturnsValue(\"return window.isLoading\", false, 20);\n\n// Chờ API response được set\nwebKeyword.waitForJavaScriptReturnsValue(\"return window.apiData !== undefined\", true, 15);"
+    )
+    @Step("Wait for JavaScript '{0}' to return '{1}' within {2} seconds")
+    public void waitForJavaScriptReturnsValue(String script, Object expectedValue, int timeoutInSeconds) {
+        execute(() -> {
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds));
+            wait.until(driver -> {
+                try {
+                    JavascriptExecutor js = (JavascriptExecutor) driver;
+                    Object actualValue = js.executeScript(script);
+                    return Objects.equals(actualValue, expectedValue);
+                } catch (Exception e) {
+                    return false;
+                }
+            });
+            return null;
+        }, script, expectedValue, timeoutInSeconds);
     }
 
     @NetatKeyword(
@@ -1485,7 +1621,7 @@ public class WebKeyword extends BaseUiKeyword {
                     "webKeyword.click(closePopupButtonObject);\n" +
                     "webKeyword.verifyElementVisibleHard(popupObject, false);",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "và element cần Verify phải tồn tại within DOM. " +
+                    "và element cần Verify phải tồn tại trong DOM. " +
                     "Có thể throw AssertionError nếu trạng thái hiển thị of element không khớp với kỳ vọng, " +
                     "NoSuchElementException nếu không tìm thấy element, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
@@ -1516,7 +1652,7 @@ public class WebKeyword extends BaseUiKeyword {
                     "webKeyword.verifyElementVisibleSoft(navigationMenuObject, true);\n" +
                     "webKeyword.click(mainButtonObject); // Thực hiện hành động tiếp theo",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "và element cần Verify phải tồn tại within DOM. " +
+                    "và element cần Verify phải tồn tại trong DOM. " +
                     "Có thể throw NoSuchElementException nếu không tìm thấy element, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
@@ -1544,7 +1680,7 @@ public class WebKeyword extends BaseUiKeyword {
                     "webKeyword.click(calculateButtonObject);\n" +
                     "webKeyword.verifyTextHard(resultObject, \"12\");",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "và element cần Verify phải tồn tại within DOM và có text. " +
+                    "và element cần Verify phải tồn tại trong DOM và có text. " +
                     "Có thể throw AssertionError nếu text of element không khớp với giá trị mong đợi, " +
                     "NoSuchElementException nếu không tìm thấy element, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
@@ -1574,7 +1710,7 @@ public class WebKeyword extends BaseUiKeyword {
                     "webKeyword.verifyTextSoft(productPriceObject, \"5.990.000 ₫\");\n" +
                     "webKeyword.click(addToCartButtonObject); // Tiếp tục thực hiện hành động",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "và element cần Verify phải tồn tại within DOM và có text. " +
+                    "và element cần Verify phải tồn tại trong DOM và có text. " +
                     "Có thể throw NoSuchElementException nếu không tìm thấy element, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
@@ -1602,7 +1738,7 @@ public class WebKeyword extends BaseUiKeyword {
                     "webKeyword.waitForElementVisible(searchResultsObject);\n" +
                     "webKeyword.verifyTextContainsHard(searchResultTitleObject, \"laptop\");",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "và element cần Verify phải tồn tại within DOM và có text. " +
+                    "và element cần Verify phải tồn tại trong DOM và có text. " +
                     "Có thể throw AssertionError nếu text of element không contains chuỗi con mong đợi, " +
                     "NoSuchElementException nếu không tìm thấy element, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
@@ -1633,7 +1769,7 @@ public class WebKeyword extends BaseUiKeyword {
                     "webKeyword.verifyTextContainsSoft(productDescriptionObject, \"bảo hành\");\n" +
                     "webKeyword.click(addToCartButtonObject); // Tiếp tục thực hiện hành động",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "và element cần Verify phải tồn tại within DOM và có text. " +
+                    "và element cần Verify phải tồn tại trong DOM và có text. " +
                     "Có thể throw NoSuchElementException nếu không tìm thấy element, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
@@ -1660,7 +1796,7 @@ public class WebKeyword extends BaseUiKeyword {
                     "webKeyword.click(termsCheckboxObject);\n" +
                     "webKeyword.verifyElementAttributeHard(termsCheckboxObject, \"checked\", \"true\");",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "element cần Verify phải tồn tại within DOM, " +
+                    "element cần Verify phải tồn tại trong DOM, " +
                     "và thuộc tính cần Verify phải tồn tại trên element. " +
                     "Có thể throw AssertionError nếu giá trị thuộc tính không khớp với giá trị mong đợi, " +
                     "NoSuchElementException nếu không tìm thấy element, " +
@@ -1691,7 +1827,7 @@ public class WebKeyword extends BaseUiKeyword {
                     "webKeyword.verifyElementAttributeSoft(usernameInputObject, \"placeholder\", \"Nhập tên đăng nhập\");\n" +
                     "webKeyword.verifyElementAttributeSoft(passwordInputObject, \"type\", \"password\");",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "element cần Verify phải tồn tại within DOM, " +
+                    "element cần Verify phải tồn tại trong DOM, " +
                     "và thuộc tính cần Verify phải tồn tại trên element. " +
                     "Có thể throw NoSuchElementException nếu không tìm thấy element, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
@@ -1745,7 +1881,7 @@ public class WebKeyword extends BaseUiKeyword {
                     "expectedUrl: String - URL đầy đủ mong đợi"
             },
             returnValue = "void - Không trả về giá trị",
-            example = "// Verify URL within quy trình nhiều bước\n" +
+            example = "// Verify URL trong quy trình nhiều bước\n" +
                     "webKeyword.click(nextButtonObject);\n" +
                     "webKeyword.waitForPageLoaded(10);\n" +
                     "webKeyword.verifyUrlSoft(\"https://example.com/checkout/step1\");\n" +
@@ -1821,7 +1957,7 @@ public class WebKeyword extends BaseUiKeyword {
                     "webKeyword.waitForPageLoaded(10);\n" +
                     "webKeyword.verifyTitleSoft(\"Giỏ hàng (1 sản phẩm)\");\n" +
                     "webKeyword.click(checkoutButtonObject); // Tiếp tục quy trình thanh toán\n\n" +
-                    "// Verify nhiều điều kiện within quy trình đặt hàng\n" +
+                    "// Verify nhiều điều kiện trong quy trình đặt hàng\n" +
                     "webKeyword.verifyTitleSoft(\"Thanh toán - Bước 1: Thông tin giao hàng\");\n" +
                     "webKeyword.verifyElementVisibleSoft(shippingFormObject, true);\n" +
                     "webKeyword.fillShippingForm(); // Tiếp tục điền form",
@@ -1863,7 +1999,7 @@ public class WebKeyword extends BaseUiKeyword {
                     "webKeyword.sendKeys(cardNumberInputObject, \"1234567890123456\");\n" +
                     "webKeyword.assertElementEnabled(payNowButtonObject);",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "và element cần Verify phải tồn tại within DOM. " +
+                    "và element cần Verify phải tồn tại trong DOM. " +
                     "Có thể throw AssertionError nếu element đang ở trạng thái disabled, " +
                     "NoSuchElementException nếu không tìm thấy element, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
@@ -1895,7 +2031,7 @@ public class WebKeyword extends BaseUiKeyword {
                     "webKeyword.waitForPageLoaded(15);\n" +
                     "webKeyword.assertElementDisabled(paymentButtonObject);",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "và element cần Verify phải tồn tại within DOM. " +
+                    "và element cần Verify phải tồn tại trong DOM. " +
                     "Có thể throw AssertionError nếu element đang ở trạng thái enabled, " +
                     "NoSuchElementException nếu không tìm thấy element, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
@@ -1923,12 +2059,12 @@ public class WebKeyword extends BaseUiKeyword {
                     "webKeyword.verifyElementEnabledSoft(optionalFieldObject);\n" +
                     "webKeyword.verifyElementEnabledSoft(commentFieldObject);\n" +
                     "webKeyword.sendKeys(commentFieldObject, \"Đây is bình luận of tôi\"); // Tiếp tục ngay cả khi có trường không enabled\n\n" +
-                    "// Verify các nút chức năng within trang quản trị\n" +
+                    "// Verify các nút chức năng trong trang quản trị\n" +
                     "webKeyword.verifyElementEnabledSoft(addButtonObject);\n" +
                     "webKeyword.verifyElementEnabledSoft(editButtonObject);\n" +
                     "webKeyword.click(addButtonObject); // Tiếp tục thực hiện hành động",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "và element cần Verify phải tồn tại within DOM. " +
+                    "và element cần Verify phải tồn tại trong DOM. " +
                     "Có thể throw NoSuchElementException nếu không tìm thấy element, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
@@ -1950,16 +2086,16 @@ public class WebKeyword extends BaseUiKeyword {
                     "uiObject: ObjectUI - element cần Verify"
             },
             returnValue = "void - Không trả về giá trị",
-            example = "// Verify các tính năng bị khóa within phiên bản dùng thử\n" +
+            example = "// Verify các tính năng bị khóa trong phiên bản dùng thử\n" +
                     "webKeyword.verifyElementDisabledSoft(lockedFeatureButton);\n" +
                     "webKeyword.verifyElementDisabledSoft(premiumFeatureButton);\n" +
                     "webKeyword.click(upgradeAccountButton); // Tiếp tục thực hiện hành động\n\n" +
-                    "// Verify các trường không thể chỉnh sửa within chế độ xem\n" +
+                    "// Verify các trường không thể chỉnh sửa trong chế độ xem\n" +
                     "webKeyword.click(viewModeButton);\n" +
                     "webKeyword.verifyElementDisabledSoft(nameFieldInViewMode);\n" +
                     "webKeyword.click(editModeButton); // Chuyển sang chế độ chỉnh sửa",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "và element cần Verify phải tồn tại within DOM. " +
+                    "và element cần Verify phải tồn tại trong DOM. " +
                     "Có thể throw NoSuchElementException nếu không tìm thấy element, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
@@ -1990,7 +2126,7 @@ public class WebKeyword extends BaseUiKeyword {
                     "webKeyword.assertElementSelected(creditCardRadioButton);\n" +
                     "webKeyword.sendKeys(cardNumberInputObject, \"1234567890123456\");",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "element cần Verify phải tồn tại within DOM và is checkbox hoặc radio button. " +
+                    "element cần Verify phải tồn tại trong DOM và is checkbox hoặc radio button. " +
                     "Có thể throw AssertionError nếu element không ở trạng thái được chọn, " +
                     "NoSuchElementException nếu không tìm thấy element, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
@@ -2022,7 +2158,7 @@ public class WebKeyword extends BaseUiKeyword {
                     "webKeyword.assertElementNotSelected(giftWrappingCheckbox);\n" +
                     "webKeyword.click(expressShippingRadio); // Chọn vận chuyển nhanh",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "element cần Verify phải tồn tại within DOM và is checkbox hoặc radio button. " +
+                    "element cần Verify phải tồn tại trong DOM và is checkbox hoặc radio button. " +
                     "Có thể throw AssertionError nếu element đang ở trạng thái được chọn, " +
                     "NoSuchElementException nếu không tìm thấy element, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
@@ -2054,7 +2190,7 @@ public class WebKeyword extends BaseUiKeyword {
                     "// Verify số điện thoại có đúng định dạng\n" +
                     "webKeyword.verifyTextMatchesRegexHard(phoneNumberObject, \"^(\\\\+84|0)[0-9]{9,10}$\");",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "element cần Verify phải tồn tại within DOM và có text. " +
+                    "element cần Verify phải tồn tại trong DOM và có text. " +
                     "Có thể throw AssertionError nếu text không khớp với biểu thức chính quy, " +
                     "NoSuchElementException nếu không tìm thấy element, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
@@ -2087,7 +2223,7 @@ public class WebKeyword extends BaseUiKeyword {
                     "webKeyword.verifyTextMatchesRegexSoft(taxIdObject, \"^\\\\d{10}$\"); // Mã số thuế\n" +
                     "webKeyword.click(saveButtonObject); // Tiếp tục lưu thông tin",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "element cần Verify phải tồn tại within DOM và có text. " +
+                    "element cần Verify phải tồn tại trong DOM và có text. " +
                     "Có thể throw NoSuchElementException nếu không tìm thấy element, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
                     "WebDriverException nếu có lỗi khi tương tác với trình duyệt, " +
@@ -2118,7 +2254,7 @@ public class WebKeyword extends BaseUiKeyword {
                     "// Verify đường dẫn hình ảnh contains tên sản phẩm\n" +
                     "webKeyword.verifyAttributeContainsHard(productImageObject, \"src\", \"iphone-13\");",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "element cần Verify phải tồn tại within DOM, " +
+                    "element cần Verify phải tồn tại trong DOM, " +
                     "và thuộc tính cần Verify phải tồn tại trên element. " +
                     "Có thể throw AssertionError nếu giá trị thuộc tính không contains chuỗi con mong đợi, " +
                     "NoSuchElementException nếu không tìm thấy element, " +
@@ -2153,7 +2289,7 @@ public class WebKeyword extends BaseUiKeyword {
                     "webKeyword.verifyAttributeContainsSoft(buttonObject, \"data-action\", \"submit\");\n" +
                     "webKeyword.click(buttonObject); // Tiếp tục thực hiện hành động",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "element cần Verify phải tồn tại within DOM, " +
+                    "element cần Verify phải tồn tại trong DOM, " +
                     "và thuộc tính cần Verify phải tồn tại trên element. " +
                     "Có thể throw NoSuchElementException nếu không tìm thấy element, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
@@ -2186,7 +2322,7 @@ public class WebKeyword extends BaseUiKeyword {
                     "webKeyword.click(selectButtonObject);\n" +
                     "webKeyword.verifyCssValueHard(selectButtonObject, \"background-color\", \"rgba(0, 123, 255, 1)\");",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "và element cần Verify phải tồn tại within DOM. " +
+                    "và element cần Verify phải tồn tại trong DOM. " +
                     "Có thể throw AssertionError nếu giá trị CSS không khớp với giá trị mong đợi, " +
                     "NoSuchElementException nếu không tìm thấy element, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
@@ -2218,7 +2354,7 @@ public class WebKeyword extends BaseUiKeyword {
                     "webKeyword.verifyCssValueSoft(buttonObject, \"background-color\", \"rgb(0, 123, 255)\");\n" +
                     "webKeyword.click(buttonObject);",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "và element cần Verify phải tồn tại within DOM. " +
+                    "và element cần Verify phải tồn tại trong DOM. " +
                     "Có thể throw NoSuchElementException nếu không tìm thấy element, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
@@ -2233,7 +2369,7 @@ public class WebKeyword extends BaseUiKeyword {
 
     @NetatKeyword(
             name = "verifyElementNotPresentHard",
-            description = "Khẳng định rằng một element does not exist within DOM sau một khoảng thời gian chờ. Nếu element vẫn tồn tại, kịch bản sẽ DỪNG LẠI.",
+            description = "Khẳng định rằng một element does not exist trong DOM sau một khoảng thời gian chờ. Nếu element vẫn tồn tại, kịch bản sẽ DỪNG LẠI.",
             category = "Web",
             subCategory = "Assertion",
             parameters = {
@@ -2248,10 +2384,10 @@ public class WebKeyword extends BaseUiKeyword {
                     "webKeyword.sendKeys(emailInput, \"valid@example.com\");\n" +
                     "webKeyword.verifyElementNotPresentHard(errorMessageObject, 3);",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động. " +
-                    "Có thể throw AssertionError nếu element vẫn tồn tại within DOM sau thời gian chờ, " +
+                    "Có thể throw AssertionError nếu element vẫn tồn tại trong DOM sau thời gian chờ, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Verify (Hard) element {0.name} does not exist within {1} seconds")
+    @Step("Verify (Hard) element {0.name} does not exist trong {1} seconds")
     public void verifyElementNotPresentHard(ObjectUI uiObject, int timeoutInSeconds) {
         execute(() -> {
             boolean isPresent = isElementPresent(uiObject, timeoutInSeconds);
@@ -2276,7 +2412,7 @@ public class WebKeyword extends BaseUiKeyword {
                     "// Verify danh mục đã chọn\n" +
                     "webKeyword.verifyOptionSelectedByLabelHard(categoryDropdown, \"Điện thoại\");",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "element cần Verify phải is thẻ select và tồn tại within DOM. " +
+                    "element cần Verify phải is thẻ select và tồn tại trong DOM. " +
                     "Có thể throw AssertionError nếu option được chọn không khớp với option mong đợi, " +
                     "NoSuchElementException nếu không tìm thấy element, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
@@ -2296,7 +2432,7 @@ public class WebKeyword extends BaseUiKeyword {
 
     @NetatKeyword(
             name = "isElementPresent",
-            description = "Verify xem một element có tồn tại within DOM hay không within một khoảng thời gian chờ nhất định. Trả về true nếu tìm thấy, false nếu không tìm thấy và không ném ra exception.",
+            description = "Verify xem một element có tồn tại trong DOM hay không trong một khoảng thời gian chờ nhất định. Trả về true nếu tìm thấy, false nếu không tìm thấy và không ném ra exception.",
             category = "Web",
             subCategory = "Assertion",
             parameters = {
@@ -2316,7 +2452,7 @@ public class WebKeyword extends BaseUiKeyword {
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động. " +
                     "Có thể throw WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Verify existence of element {0.name} within {1} seconds")
+    @Step("Verify existence of element {0.name} trong {1} seconds")
     public boolean isElementPresent(ObjectUI uiObject, int timeoutInSeconds) {
         return execute(() -> {
             WebDriver driver = DriverManager.getDriver();
@@ -2342,7 +2478,7 @@ public class WebKeyword extends BaseUiKeyword {
 
     @NetatKeyword(
             name = "verifyAlertPresent",
-            description = "Khẳng định rằng một hộp thoại alert đang hiển thị within một khoảng thời gian chờ.",
+            description = "Khẳng định rằng một hộp thoại alert đang hiển thị trong một khoảng thời gian chờ.",
             category = "Web",
             subCategory = "Assertion",
             parameters = {
@@ -2359,10 +2495,10 @@ public class WebKeyword extends BaseUiKeyword {
                     "webKeyword.verifyAlertPresent(3);",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
                     "trang web có thể hiển thị hộp thoại alert. " +
-                    "Có thể throw AssertionError nếu không có hộp thoại alert xuất hiện within thời gian chờ, " +
+                    "Có thể throw AssertionError nếu không có hộp thoại alert xuất hiện trong thời gian chờ, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Verify alert appears within {0} seconds")
+    @Step("Verify alert appears trong {0} seconds")
     public void verifyAlertPresent(int timeoutInSeconds) {
         execute(() -> {
             try {
@@ -2426,8 +2562,8 @@ public class WebKeyword extends BaseUiKeyword {
                     "index: int - Chỉ số of cửa sổ/tab cần chuyển đến (0 is cửa sổ đầu tiên)"
             },
             returnValue = "void - Không trả về giá trị",
-            example = "// Mở liên kết within tab mới và chuyển sang tab đó\n" +
-                    "webKeyword.rightClickAndSelect(productLinkObject, \"Mở within tab mới\");\n" +
+            example = "// Mở liên kết trong tab mới và chuyển sang tab đó\n" +
+                    "webKeyword.rightClickAndSelect(productLinkObject, \"Mở trong tab mới\");\n" +
                     "webKeyword.switchToWindowByIndex(1); // Chuyển sang tab thứ hai\n\n" +
                     "// Quay lại tab chính sau khi hoàn thành\n" +
                     "webKeyword.switchToWindowByIndex(0);",
@@ -2450,7 +2586,7 @@ public class WebKeyword extends BaseUiKeyword {
 
     @NetatKeyword(
             name = "switchToFrame",
-            description = "Chuyển sự điều khiển of WebDriver vào một element iframe trên trang. Mọi hành động sau đó sẽ được thực hiện within ngữ cảnh of iframe này.",
+            description = "Chuyển sự điều khiển of WebDriver vào một element iframe trên trang. Mọi hành động sau đó sẽ được thực hiện trong ngữ cảnh of iframe này.",
             category = "Web",
             subCategory = "Window&Frame",
             parameters = {
@@ -2465,7 +2601,7 @@ public class WebKeyword extends BaseUiKeyword {
                     "webKeyword.switchToFrame(richTextEditorObject);\n" +
                     "webKeyword.sendKeys(editorBodyObject, \"Nội dung bài viết\");",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "element iframe cần chuyển vào phải tồn tại within DOM. " +
+                    "element iframe cần chuyển vào phải tồn tại trong DOM. " +
                     "Có thể throw NoSuchElementException nếu không tìm thấy element iframe, " +
                     "StaleElementReferenceException nếu element iframe không còn gắn với DOM, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
@@ -2492,7 +2628,7 @@ public class WebKeyword extends BaseUiKeyword {
                     "webKeyword.switchToParentFrame(); // Switch to parent frame\n" +
                     "webKeyword.click(nextButtonObject);",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "WebDriver đang ở within ngữ cảnh of một iframe. " +
+                    "WebDriver đang ở trong ngữ cảnh of một iframe. " +
                     "Có thể throw WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
     @Step("Switch to parent frame")
@@ -2528,11 +2664,11 @@ public class WebKeyword extends BaseUiKeyword {
 
     @NetatKeyword(
             name = "openNewTab",
-            description = "Mở một tab mới within trình duyệt và tự động chuyển sự điều khiển sang tab mới đó. Có thể option mở một URL cụ thể within tab mới.",
+            description = "Mở một tab mới trong trình duyệt và tự động chuyển sự điều khiển sang tab mới đó. Có thể option mở một URL cụ thể trong tab mới.",
             category = "Web",
             subCategory = "Window&Frame",
             parameters = {
-                    "url: String - (option) URL để mở within tab mới. Nếu để trống, sẽ mở tab trống"
+                    "url: String - (option) URL để mở trong tab mới. Nếu để trống, sẽ mở tab trống"
             },
             returnValue = "void - Không trả về giá trị",
             example = "// Mở tab mới với URL cụ thể\n" +
@@ -2567,17 +2703,17 @@ public class WebKeyword extends BaseUiKeyword {
                     "uiObject: ObjectUI - element link cần click"
             },
             returnValue = "void - Không trả về giá trị",
-            example = "// Click vào liên kết mở within tab mới\n" +
+            example = "// Click vào liên kết mở trong tab mới\n" +
                     "webKeyword.clickAndSwitchToNewTab(externalLinkObject);\n" +
                     "webKeyword.waitForPageLoaded();\n\n" +
                     "// Click vào nút xem chi tiết sản phẩm\n" +
                     "webKeyword.clickAndSwitchToNewTab(viewDetailsButtonObject);\n" +
                     "webKeyword.verifyElementVisibleHard(productSpecificationsObject, 10);",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "element cần click phải tồn tại within DOM và có khả năng mở tab mới (ví dụ: có thuộc tính target='_blank'). " +
+                    "element cần click phải tồn tại trong DOM và có khả năng mở tab mới (ví dụ: có thuộc tính target='_blank'). " +
                     "Có thể throw NoSuchElementException nếu không tìm thấy element, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
-                    "TimeoutException nếu tab mới không mở within thời gian chờ, " +
+                    "TimeoutException nếu tab mới không mở trong thời gian chờ, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
     @Step("Click and switch to new tab from element: {0.name}")
@@ -2625,7 +2761,7 @@ public class WebKeyword extends BaseUiKeyword {
                     "logger.info(\"Error message: \" + errorMessage);",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
                     "một hộp thoại alert đang hiển thị hoặc sẽ xuất hiện. " +
-                    "Có thể throw TimeoutException nếu không có hộp thoại alert xuất hiện within thời gian chờ, " +
+                    "Có thể throw TimeoutException nếu không có hộp thoại alert xuất hiện trong thời gian chờ, " +
                     "NoAlertPresentException nếu không có hộp thoại alert đang hiển thị, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
@@ -2657,7 +2793,7 @@ public class WebKeyword extends BaseUiKeyword {
                     "webKeyword.acceptAlert();",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
                     "một hộp thoại prompt đang hiển thị hoặc sẽ xuất hiện. " +
-                    "Có thể throw TimeoutException nếu không có hộp thoại alert xuất hiện within thời gian chờ, " +
+                    "Có thể throw TimeoutException nếu không có hộp thoại alert xuất hiện trong thời gian chờ, " +
                     "NoAlertPresentException nếu không có hộp thoại alert đang hiển thị, " +
                     "ElementNotInteractableException nếu hộp thoại không phải is prompt và không cho phép nhập liệu, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
@@ -2678,7 +2814,7 @@ public class WebKeyword extends BaseUiKeyword {
 
     @NetatKeyword(
             name = "findElementInShadowDom",
-            description = "Tìm kiếm và trả về một element nằm bên within một Shadow DOM. Yêu cầu cung cấp element chủ (shadow host) và một CSS selector để định vị element con.",
+            description = "Tìm kiếm và trả về một element nằm bên trong một Shadow DOM. Yêu cầu cung cấp element chủ (shadow host) và một CSS selector để định vị element con.",
             category = "Web",
             subCategory = "Interaction",
             parameters = {
@@ -2686,10 +2822,10 @@ public class WebKeyword extends BaseUiKeyword {
                     "cssSelectorInShadow: String - Chuỗi CSS selector để Find element inside Shadow DOM"
             },
             returnValue = "WebElement - element web được tìm thấy inside Shadow DOM",
-            example = "// Tìm và tương tác với element input within Shadow DOM\n" +
+            example = "// Tìm và tương tác với element input trong Shadow DOM\n" +
                     "WebElement usernameInput = webKeyword.findElementInShadowDom(appContainerObject, \"#username\");\n" +
                     "usernameInput.sendKeys(\"admin@example.com\");\n\n" +
-                    "// Tìm và click vào nút within Shadow DOM\n" +
+                    "// Tìm và click vào nút trong Shadow DOM\n" +
                     "WebElement submitButton = webKeyword.findElementInShadowDom(loginFormObject, \".submit-button\");\n" +
                     "submitButton.click();",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
@@ -2746,7 +2882,7 @@ public class WebKeyword extends BaseUiKeyword {
             parameters = {
                     "key: String - Khóa (key) of giá trị cần đọc"
             },
-            returnValue = "String - Giá trị được lưu trữ within Local Storage với khóa đã chỉ định, hoặc null nếu không tìm thấy",
+            returnValue = "String - Giá trị được lưu trữ trong Local Storage với khóa đã chỉ định, hoặc null nếu không tìm thấy",
             example = "// Verify token xác thực\n" +
                     "String userToken = webKeyword.getLocalStorage(\"user_token\");\n" +
                     "if (userToken == null || userToken.isEmpty()) {\n" +
@@ -2754,7 +2890,7 @@ public class WebKeyword extends BaseUiKeyword {
                     "}\n\n" +
                     "// Đọc thông tin giỏ hàng\n" +
                     "String cartItems = webKeyword.getLocalStorage(\"cart_items\");\n" +
-                    "logger.info(\"Số lượng sản phẩm within giỏ: \" + cartItems);",
+                    "logger.info(\"Số lượng sản phẩm trong giỏ: \" + cartItems);",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
                     "trang web đã được tải hoàn toàn, trình duyệt hỗ trợ Local Storage. " +
                     "Có thể throw JavascriptException nếu có lỗi khi thực thi JavaScript, " +
@@ -2767,7 +2903,7 @@ public class WebKeyword extends BaseUiKeyword {
 
     @NetatKeyword(
             name = "clearLocalStorage",
-            description = "Xóa toàn bộ dữ liệu đang được lưu trữ within Local Storage of trang web hiện tại.",
+            description = "Xóa toàn bộ dữ liệu đang được lưu trữ trong Local Storage of trang web hiện tại.",
             category = "Web",
             subCategory = "Storage",
             parameters = {},
@@ -2933,14 +3069,14 @@ public class WebKeyword extends BaseUiKeyword {
 
     @NetatKeyword(
             name = "highlightElement",
-            description = "Tạm thời vẽ một đường viền màu đỏ xung quanh một element trên trang để dễ dàng nhận biết và gỡ lỗi within quá trình chạy kịch bản.",
+            description = "Tạm thời vẽ một đường viền màu đỏ xung quanh một element trên trang để dễ dàng nhận biết và gỡ lỗi trong quá trình chạy kịch bản.",
             category = "Web",
             subCategory = "Utility",
             parameters = {
                     "uiObject: ObjectUI - element cần làm nổi bật"
             },
             returnValue = "void - Không trả về giá trị",
-            example = "// Làm nổi bật các element within quá trình điền form\n" +
+            example = "// Làm nổi bật các element trong quá trình điền form\n" +
                     "webKeyword.highlightElement(usernameFieldObject);\n" +
                     "webKeyword.sendKeys(usernameFieldObject, \"admin@example.com\");\n" +
                     "webKeyword.highlightElement(passwordFieldObject);\n" +
@@ -2950,7 +3086,7 @@ public class WebKeyword extends BaseUiKeyword {
                     "webKeyword.highlightElement(tableRowObject);\n" +
                     "webKeyword.takeElementScreenshot(tableRowObject, \"D:/screenshots/table_row.png\");",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "element cần làm nổi bật phải tồn tại within DOM. " +
+                    "element cần làm nổi bật phải tồn tại trong DOM. " +
                     "Có thể throw NoSuchElementException nếu không tìm thấy element, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
@@ -2973,7 +3109,7 @@ public class WebKeyword extends BaseUiKeyword {
 
     @NetatKeyword(
             name = "pause",
-            description = "Tạm dừng việc thực thi kịch bản within một khoảng thời gian tĩnh. (Lưu ý: Chỉ nên dùng khi thực sự cần thiết, ưu tiên các keyword chờ động).",
+            description = "Tạm dừng việc thực thi kịch bản trong một khoảng thời gian tĩnh. (Lưu ý: Chỉ nên dùng khi thực sự cần thiết, ưu tiên các keyword chờ động).",
             category = "Web",
             subCategory = "Utility",
             parameters = {
@@ -2989,7 +3125,7 @@ public class WebKeyword extends BaseUiKeyword {
                     "webKeyword.pause(3000); // Đợi 3 seconds cho quá trình xử lý\n" +
                     "webKeyword.verifyElementVisibleHard(reportResultObject, 10);",
             note = "Áp dụng cho nền tảng Web. Không có điều kiện tiên quyết đặc biệt. " +
-                    "Có thể throw InterruptedException nếu luồng thực thi bị gián đoạn within khi tạm dừng."
+                    "Có thể throw InterruptedException nếu luồng thực thi bị gián đoạn trong khi tạm dừng."
     )
     @Step("Pause for {0} ms")
     public void pause(int milliseconds) {

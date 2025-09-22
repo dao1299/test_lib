@@ -1,9 +1,11 @@
 package com.vtnet.netat.driver;
 
+import org.openqa.selenium.MutableCapabilities;
 import org.openqa.selenium.WebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.time.Duration;
+import java.util.Map;
 
 public final class DriverManager {
     private static final Logger log = LoggerFactory.getLogger(DriverManager.class);
@@ -26,23 +28,67 @@ public final class DriverManager {
                 throw new IllegalArgumentException("Property 'platform.name' is not defined in configuration file.");
             }
             // Gọi lại phương thức initDriver có tham số để tái sử dụng logic
-            initDriver(platform);
+            initDriver(platform,null);
         }
     }
 
     /**
      * Khởi tạo driver với một nền tảng cụ thể (dùng cho parallel/cross-browser).
      */
-    public static void initDriver(String platform) {
+//    public static void initDriver(String platform) {
+//        if (threadLocalDriver.get() == null) {
+//            ConfigReader.loadProperties();
+//
+//            if (platform == null || platform.trim().isEmpty()) {
+//                throw new IllegalArgumentException("Platform name cannot be empty when initializing driver.");
+//            }
+//
+//            log.info("Platform requested for this thread: {}", platform.toUpperCase());
+//
+//            IDriverFactory factory;
+//
+//            switch (platform.toLowerCase()) {
+//                case "android":
+//                case "ios":
+//                    factory = new MobileDriverFactory();
+//                    break;
+//                case "chrome":
+//                case "firefox":
+//                case "edge":
+//                case "safari":
+//                    String executionType = ConfigReader.getProperty("execution.type", "local");
+//                    if ("remote".equalsIgnoreCase(executionType)) {
+//                        factory = new RemoteDriverFactory();
+//                    } else {
+//                        factory = new LocalDriverFactory();
+//                    }
+//                    break;
+//                default:
+//                    throw new IllegalArgumentException("Platform not supported: " + platform);
+//            }
+//
+//            // Truyền platform trực tiếp vào factory để tạo driver chính xác
+//            WebDriver driver = factory.createDriver(platform);
+//
+//            if (!(platform.equalsIgnoreCase("android") || platform.equalsIgnoreCase("ios"))) {
+//                driver.manage().window().maximize();
+//            }
+//
+//            driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(0));
+//
+//            threadLocalDriver.set(driver);
+//        }
+//    }
+
+    public static void initDriver(String platform, Map<String, Object> overrideCapabilities) {
         if (threadLocalDriver.get() == null) {
             ConfigReader.loadProperties();
-
             if (platform == null || platform.trim().isEmpty()) {
                 throw new IllegalArgumentException("Platform name cannot be empty when initializing driver.");
             }
 
             log.info("Platform requested for this thread: {}", platform.toUpperCase());
-
+            // ... (logic chọn factory giữ nguyên) ...
             IDriverFactory factory;
 
             switch (platform.toLowerCase()) {
@@ -64,15 +110,13 @@ public final class DriverManager {
                 default:
                     throw new IllegalArgumentException("Platform not supported: " + platform);
             }
+            // Gọi đến CapabilityFactory phiên bản mới
+            MutableCapabilities capabilities = CapabilityFactory.getCapabilities(platform, overrideCapabilities);
 
-            // Truyền platform trực tiếp vào factory để tạo driver chính xác
-            WebDriver driver = factory.createDriver(platform);
-
-            if (!(platform.equalsIgnoreCase("android") || platform.equalsIgnoreCase("ios"))) {
-                driver.manage().window().maximize();
-            }
-
-            driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(0));
+            // Tạo driver với capabilities đã được tùy chỉnh
+            // (Lưu ý: bạn có thể cần cập nhật interface IDriverFactory và các lớp con
+            // để phương thức createDriver có thể nhận vào capabilities)
+            WebDriver driver = factory.createDriver(platform, capabilities);
 
             threadLocalDriver.set(driver);
         }

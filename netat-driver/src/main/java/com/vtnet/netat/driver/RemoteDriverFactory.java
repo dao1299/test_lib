@@ -13,20 +13,15 @@ public class RemoteDriverFactory implements IDriverFactory {
     private static final Logger log = LoggerFactory.getLogger(RemoteDriverFactory.class);
 
     @Override
-    public WebDriver createDriver(String platform) {
+    public WebDriver createDriver(String platform, MutableCapabilities capabilities) {
         try {
             String gridUrl = ConfigReader.getProperty("grid.url");
-
-
-            log.info("Initialize remote driver for {} at Grid: {}", platform, gridUrl);
-
-
-            MutableCapabilities capabilities = CapabilityFactory.getCapabilities(platform);
+            log.info("Initializing remote driver for {} at Grid: {}", platform, gridUrl);
 
             return new RemoteWebDriver(new URL(gridUrl), capabilities);
         } catch (MalformedURLException e) {
-            log.error("Grid URL is invalid.", e);
-            throw new RuntimeException("Grid URL is invalid.", e);
+            log.error("The Grid URL is invalid.", e);
+            throw new RuntimeException("The Grid URL is invalid.", e);
         }
     }
 }
