@@ -194,16 +194,23 @@ public abstract class BaseUiKeyword extends BaseKeyword {
     }
 
     protected void performTextAssertion(ObjectUI uiObject, String expectedText, boolean isSoft) {
-        String actualText = getText(uiObject);
-        String message = "Text of element '" + uiObject.getName() + "' does not match.";
-        logger.info("Verifying expected value: '{}' , actual value: '{}' of object {}",expectedText,actualText,uiObject.getName());
+        WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(DEFAULT_TIMEOUT.getSeconds()));
+        String actualText = "";
+        try {
+            wait.until(driver -> getText(uiObject).equals(expectedText));
+            logger.info("Condition met: Text of element '{}' matches '{}' within {} seconds.", uiObject.getName(), expectedText, DEFAULT_TIMEOUT.getSeconds());
+        } catch (TimeoutException e) {
+            logger.warn("Timeout after {} seconds waiting for text of element '{}' to be '{}'.", DEFAULT_TIMEOUT.getSeconds(), uiObject.getName(), expectedText);
+        }
+        actualText = getText(uiObject);
+        logger.info("Performing final assertion: Expected value: '{}' , Actual value: '{}' of object {}", expectedText, actualText, uiObject.getName());
+        String message = "Text of element '" + uiObject.getName() + "' does not match after waiting for " + DEFAULT_TIMEOUT.getSeconds() + " seconds.";
         if (isSoft) {
             SoftAssert softAssert = ExecutionContext.getInstance().getSoftAssert();
             if (softAssert == null) {
                 softAssert = new SoftAssert();
                 ExecutionContext.getInstance().setSoftAssert(softAssert);
             }
-
             softAssert.assertEquals(actualText, expectedText, "SOFT ASSERT FAILED: " + message);
         } else {
             Assert.assertEquals(actualText, expectedText, "HARD ASSERT FAILED: " + message);

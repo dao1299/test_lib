@@ -38,7 +38,7 @@ public @interface NetatKeyword {
      * Định dạng: "returnType|description"
      * Ví dụ: "void|No return value" hoặc "boolean|Returns true if element is visible, false otherwise"
      */
-    String returnValue() default "void|No return value";
+    String returnValue() default "void - Không trả về giá trị";
 
     /**
      * Ví dụ sử dụng keyword

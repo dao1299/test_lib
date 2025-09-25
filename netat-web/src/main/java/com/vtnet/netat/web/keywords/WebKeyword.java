@@ -1604,6 +1604,215 @@ public class WebKeyword extends BaseUiKeyword {
         }, script, expectedValue, timeoutInSeconds);
     }
 
+
+    @NetatKeyword(
+            name = "waitForElementTextNotContains",
+            description = "Chờ đợi text của element KHÔNG chứa substring chỉ định trong khoảng thời gian cho phép. Thực hiện negative partial matching, hữu ích cho validation rằng nội dung đã được xóa, thay đổi, hoặc error messages đã biến mất.",
+            category = "Web",
+            subCategory = "Wait",
+            parameters = {
+                    "ObjectUI uiObject - Đối tượng UI element cần kiểm tra text content",
+                    "String unwantedText - Substring mà text của element KHÔNG được chứa",
+                    "int timeoutInSeconds - Thời gian chờ tối đa tính bằng giây"
+            },
+            note = "NEGATIVE VALIDATION: Hữu ích khi cần đảm bảo error messages biến mất, loading text được thay thế, hoặc unwanted content không còn xuất hiện. Thường dùng sau cleanup actions hoặc content updates.",
+            example = "// Chờ error message không còn chứa 'Error'\nwebKeyword.waitForElementTextNotContains(messageDiv, \"Error\", 10);\n\n// Chờ loading text biến mất\nwebKeyword.waitForElementTextNotContains(statusLabel, \"Loading\", 15);\n\n// Validation content đã được update\nwebKeyword.waitForElementTextNotContains(titleElement, \"Draft\", 8);"
+    )
+    @Step("Wait for element '{0}' text to NOT contain '{1}' within {2} seconds")
+    public void waitForElementTextNotContains(ObjectUI uiObject, String unwantedText, int timeoutInSeconds) {
+        execute(() -> {
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds));
+            wait.until(driver -> {
+                try {
+                    String actualText = getText(uiObject);
+                    return !actualText.contains(unwantedText);
+                } catch (Exception e) {
+                    return false;
+                }
+            });
+            return null;
+        }, uiObject, unwantedText, timeoutInSeconds);
+    }
+
+    @NetatKeyword(
+            name = "waitForElementTextToBe",
+            description = "Chờ đợi text của element có giá trị chính xác như mong đợi trong khoảng thời gian chỉ định. Thực hiện exact matching, hữu ích cho validation chính xác nội dung, status messages, hoặc khi cần đảm bảo text hoàn toàn khớp.",
+            category = "Web",
+            subCategory = "Wait",
+            parameters = {
+                    "ObjectUI uiObject - Đối tượng UI element cần kiểm tra text content",
+                    "String expectedText - Text chính xác mà element phải có",
+                    "int timeoutInSeconds - Thời gian chờ tối đa tính bằng giây"
+            },
+            note = "EXACT MATCH: Khác với waitForElementTextContains (partial), method này yêu cầu text phải hoàn toàn khớp. Sử dụng cho validation chính xác status, labels, hoặc khi text có format cố định.",
+            example = "// Chờ status chính xác\nwebKeyword.waitForElementTextToBe(statusLabel, \"Completed\", 10);\n\n// Chờ counter có giá trị exact\nwebKeyword.waitForElementTextToBe(itemCount, \"5 items\", 8);\n\n// Validation button text\nwebKeyword.waitForElementTextToBe(submitButton, \"Submit\", 5);"
+    )
+    @Step("Wait for element '{0}' text to be '{1}' within {2} seconds")
+    public void waitForElementTextToBe(ObjectUI uiObject, String expectedText, int timeoutInSeconds) {
+        execute(() -> {
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds));
+            wait.until(driver -> {
+                try {
+                    String actualText = getText(uiObject);
+                    return actualText.equals(expectedText);
+                } catch (Exception e) {
+                    return false;
+                }
+            });
+            return null;
+        }, uiObject, expectedText, timeoutInSeconds);
+    }
+
+    @NetatKeyword(
+            name = "waitForElementTextNotToBe",
+            description = "Chờ đợi text của element KHÔNG có giá trị chỉ định trong khoảng thời gian cho phép. Thực hiện negative exact matching, hữu ích cho validation rằng nội dung đã thay đổi khỏi trạng thái cũ, loading states đã kết thúc.",
+            category = "Web",
+            subCategory = "Wait",
+            parameters = {
+                    "ObjectUI uiObject - Đối tượng UI element cần kiểm tra text content",
+                    "String unwantedText - Text chính xác mà element KHÔNG được có",
+                    "int timeoutInSeconds - Thời gian chờ tối đa tính bằng giây"
+            },
+            note = "NEGATIVE EXACT MATCH: Hữu ích khi cần đảm bảo text đã thay đổi khỏi giá trị cũ, loading states kết thúc, hoặc placeholder text được thay thế. Thường dùng sau update actions.",
+            example = "// Chờ status thay đổi khỏi 'Pending'\nwebKeyword.waitForElementTextNotToBe(statusLabel, \"Pending\", 15);\n\n// Chờ placeholder biến mất\nwebKeyword.waitForElementTextNotToBe(inputField, \"Enter text...\", 5);\n\n// Chờ loading text thay đổi\nwebKeyword.waitForElementTextNotToBe(loadingDiv, \"Loading...\", 20);"
+    )
+    @Step("Wait for element '{0}' text to NOT be '{1}' within {2} seconds")
+    public void waitForElementTextNotToBe(ObjectUI uiObject, String unwantedText, int timeoutInSeconds) {
+        execute(() -> {
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds));
+            wait.until(driver -> {
+                try {
+                    String actualText = getText(uiObject);
+                    return !actualText.equals(unwantedText);
+                } catch (Exception e) {
+                    return false;
+                }
+            });
+            return null;
+        }, uiObject, unwantedText, timeoutInSeconds);
+    }
+
+    @NetatKeyword(
+            name = "waitForElementAttributeNotToBe",
+            description = "Chờ đợi attribute của element KHÔNG có giá trị chỉ định trong khoảng thời gian cho phép. Hữu ích cho validation rằng attributes đã thay đổi khỏi trạng thái trước đó, như disabled thành enabled, loading class bị remove.",
+            category = "Web",
+            subCategory = "Wait",
+            parameters = {
+                    "ObjectUI uiObject - Đối tượng UI element cần kiểm tra attribute",
+                    "String attributeName - Tên attribute cần kiểm tra",
+                    "String unwantedValue - Giá trị mà attribute KHÔNG được có",
+                    "int timeoutInSeconds - Thời gian chờ tối đa tính bằng giây"
+            },
+            note = "NEGATIVE ATTRIBUTE CHECK: Thường dùng khi cần đảm bảo element đã thay đổi state, như từ disabled sang enabled, loading class đã bị remove, hoặc error states đã được clear.",
+            example = "// Chờ button không còn disabled\nwebKeyword.waitForElementAttributeNotToBe(submitBtn, \"disabled\", \"true\", 10);\n\n// Chờ loading class bị remove\nwebKeyword.waitForElementAttributeNotToBe(container, \"class\", \"loading\", 15);\n\n// Chờ error state được clear\nwebKeyword.waitForElementAttributeNotToBe(inputField, \"data-error\", \"true\", 8);"
+    )
+    @Step("Wait for element '{0}' attribute '{1}' to NOT be '{2}' within {3} seconds")
+    public void waitForElementAttributeNotToBe(ObjectUI uiObject, String attributeName, String unwantedValue, int timeoutInSeconds) {
+        execute(() -> {
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds));
+            wait.until(driver -> {
+                try {
+                    String actualValue = getAttribute(uiObject, attributeName);
+                    return !Objects.equals(actualValue, unwantedValue);
+                } catch (Exception e) {
+                    return false;
+                }
+            });
+            return null;
+        }, uiObject, attributeName, unwantedValue, timeoutInSeconds);
+    }
+
+    @NetatKeyword(
+            name = "waitForElementAttributeContains",
+            description = "Chờ đợi attribute của element chứa substring chỉ định trong khoảng thời gian cho phép. Rất hữu ích cho validation partial attribute values như CSS classes, composite data attributes, hoặc khi attribute có nhiều giá trị được nối với nhau.",
+            category = "Web",
+            subCategory = "Wait",
+            parameters = {
+                    "ObjectUI uiObject - Đối tượng UI element cần kiểm tra attribute",
+                    "String attributeName - Tên attribute cần kiểm tra",
+                    "String partialValue - Substring mà attribute phải chứa",
+                    "int timeoutInSeconds - Thời gian chờ tối đa tính bằng giây"
+            },
+            note = "PARTIAL ATTRIBUTE MATCH: Đặc biệt hữu ích cho CSS classes (class attribute thường chứa nhiều classes), data attributes có format phức tạp, hoặc style attributes. Linh hoạt hơn so với exact match.",
+            example = "// Chờ element có class 'active' (trong nhiều classes)\nwebKeyword.waitForElementAttributeContains(menuItem, \"class\", \"active\", 10);\n\n// Chờ style chứa 'display: block'\nwebKeyword.waitForElementAttributeContains(modal, \"style\", \"display: block\", 8);\n\n// Chờ data attribute chứa status\nwebKeyword.waitForElementAttributeContains(item, \"data-info\", \"status:ready\", 15);"
+    )
+    @Step("Wait for element '{0}' attribute '{1}' to contain '{2}' within {3} seconds")
+    public void waitForElementAttributeContains(ObjectUI uiObject, String attributeName, String partialValue, int timeoutInSeconds) {
+        execute(() -> {
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds));
+            wait.until(driver -> {
+                try {
+                    String actualValue = getAttribute(uiObject, attributeName);
+                    return actualValue != null && actualValue.contains(partialValue);
+                } catch (Exception e) {
+                    return false;
+                }
+            });
+            return null;
+        }, uiObject, attributeName, partialValue, timeoutInSeconds);
+    }
+    @NetatKeyword(
+            name = "waitForElementAttributeNotContains",
+            description = "Chờ đợi attribute của element KHÔNG chứa substring chỉ định trong khoảng thời gian cho phép. Hữu ích cho validation rằng partial attribute values đã được remove hoặc thay đổi, như CSS classes bị xóa, error states được clear.",
+            category = "Web",
+            subCategory = "Wait",
+            parameters = {
+                    "ObjectUI uiObject - Đối tượng UI element cần kiểm tra attribute",
+                    "String attributeName - Tên attribute cần kiểm tra",
+                    "String unwantedPartialValue - Substring mà attribute KHÔNG được chứa",
+                    "int timeoutInSeconds - Thời gian chờ tối đa tính bằng giây"
+            },
+            note = "NEGATIVE PARTIAL MATCH: Thường dùng khi cần đảm bảo CSS classes đã bị remove (như 'loading', 'error'), style properties đã thay đổi, hoặc data attributes đã được cleanup.",
+            example = "// Chờ loading class bị remove\nwebKeyword.waitForElementAttributeNotContains(container, \"class\", \"loading\", 15);\n\n// Chờ error class biến mất\nwebKeyword.waitForElementAttributeNotContains(inputField, \"class\", \"error\", 10);\n\n// Chờ style không còn chứa 'display: none'\nwebKeyword.waitForElementAttributeNotContains(modal, \"style\", \"display: none\", 8);"
+    )
+    @Step("Wait for element '{0}' attribute '{1}' to NOT contain '{2}' within {3} seconds")
+    public void waitForElementAttributeNotContains(ObjectUI uiObject, String attributeName, String unwantedPartialValue, int timeoutInSeconds) {
+        execute(() -> {
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds));
+            wait.until(driver -> {
+                try {
+                    String actualValue = getAttribute(uiObject, attributeName);
+                    return actualValue == null || !actualValue.contains(unwantedPartialValue);
+                } catch (Exception e) {
+                    return false;
+                }
+            });
+            return null;
+        }, uiObject, attributeName, unwantedPartialValue, timeoutInSeconds);
+    }
+
+
+    @NetatKeyword(
+            name = "waitForJavaScriptNotReturnsValue",
+            description = "Chờ đợi JavaScript code thực thi và KHÔNG trả về giá trị chỉ định trong khoảng thời gian cho phép. Hữu ích cho việc chờ đợi các conditions không còn đúng nữa, states đã thay đổi, hoặc loading processes đã kết thúc.",
+            category = "Web",
+            subCategory = "Wait",
+            parameters = {
+                    "String script - JavaScript code cần thực thi",
+                    "Object unwantedValue - Giá trị mà script KHÔNG được trả về",
+                    "int timeoutInSeconds - Thời gian chờ tối đa tính bằng giây"
+            },
+            note = "NEGATIVE JS CONDITION: Thường dùng khi cần đảm bảo loading states đã kết thúc, error flags đã được clear, hoặc unwanted conditions không còn tồn tại. Complement của waitForJavaScriptReturnsValue.",
+            example = "// Chờ loading flag không còn true\nwebKeyword.waitForJavaScriptNotReturnsValue(\"return window.isLoading\", true, 20);\n\n// Chờ error state được clear\nwebKeyword.waitForJavaScriptNotReturnsValue(\"return window.hasError\", true, 10);\n\n// Chờ AJAX calls không còn pending\nwebKeyword.waitForJavaScriptNotReturnsValue(\"return fetch.pending\", true, 30);"
+    )
+    @Step("Wait for JavaScript '{0}' to NOT return '{1}' within {2} seconds")
+    public void waitForJavaScriptNotReturnsValue(String script, Object unwantedValue, int timeoutInSeconds) {
+        execute(() -> {
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds));
+            wait.until(driver -> {
+                try {
+                    JavascriptExecutor js = (JavascriptExecutor) driver;
+                    Object actualValue = js.executeScript(script);
+                    return !Objects.equals(actualValue, unwantedValue);
+                } catch (Exception e) {
+                    return false;
+                }
+            });
+            return null;
+        }, script, unwantedValue, timeoutInSeconds);
+    }
+
+
     @NetatKeyword(
             name = "verifyElementVisibleHard",
             description = "Verify một element có đang hiển thị trên giao diện hay không. Nếu Verify thất bại (element không hiển thị như mong đợi), kịch bản sẽ DỪNG LẠI ngay lập tức.",
