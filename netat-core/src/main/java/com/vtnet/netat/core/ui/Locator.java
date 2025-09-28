@@ -21,7 +21,7 @@ public class Locator {
 
     // --- THÊM TRƯỜNG MỚI ---
     @JsonProperty("default") // Ánh xạ với key "default" trong JSON
-    private boolean isDefault;
+    private boolean isDefault = false;
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 

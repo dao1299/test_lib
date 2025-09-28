@@ -13,6 +13,7 @@ import org.testng.Assert;
 import org.testng.asserts.SoftAssert;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -33,28 +34,45 @@ public abstract class BaseUiKeyword extends BaseKeyword {
      */
     protected WebElement findElement(ObjectUI uiObject) {
         WebDriver driver = DriverManager.getDriver();
-        List<Locator> locators = uiObject.getActiveLocators();
-
-        if (locators.isEmpty()) {
+        List<Locator> originalLocators = uiObject.getActiveLocators();
+        if (originalLocators == null || originalLocators.isEmpty()) {
             throw new IllegalArgumentException("No active locator is defined for object: " + uiObject.getName());
         }
+        List<Locator> searchOrder = new ArrayList<>();
+        Locator defaultLocator = null;
 
-        for (int i = 0; i < locators.size(); i++) {
-            Locator locator = locators.get(i);
+        for (Locator loc : originalLocators) {
+            if (loc.isDefault()) {
+                defaultLocator = loc;
+                break;
+            }
+        }
+        if (defaultLocator != null) {
+            searchOrder.add(defaultLocator);
+        }
+        for (Locator loc : originalLocators) {
+            if (!loc.equals(defaultLocator)) {
+                searchOrder.add(loc);
+            }
+        }
+        for (int i = 0; i < searchOrder.size(); i++) {
+            Locator locator = searchOrder.get(i);
             Duration timeout = (i == 0) ? PRIMARY_TIMEOUT : SECONDARY_TIMEOUT;
             WebDriverWait wait = new WebDriverWait(driver, timeout);
-
             try {
                 By by = locator.convertToBy();
-                logger.info("Searching for element '{}' using locator: {} (Timeout: {}s)", uiObject.getName(), locator, timeout.getSeconds());
-                WebElement element =  wait.until(ExpectedConditions.presenceOfElementLocated(by));
-                System.out.println(element);
-                return element;
+                logger.info("Searching for element '{}' using locator: {} (Priority: {}, Timeout: {}s)", uiObject.getName(), locator, (i == 0 && defaultLocator != null) ? "DEFAULT" : "FALLBACK", timeout.getSeconds());
+                WebElement element = wait.until(ExpectedConditions.presenceOfElementLocated(by));
+                if (element != null) {
+                    logger.info("Successfully found element '{}' with locator: {}", uiObject.getName(), locator);
+                    return element;
+                }
             } catch (Exception e) {
-                logger.warn("Element '{}' not found with locator {}.", uiObject.getName(), locator);
+                logger.debug("Element '{}' not found with locator {}. Trying next locator.", uiObject.getName(), locator);
             }
         }
 
+        logger.error("COULD NOT FIND element '{}' using any of the defined locators.", uiObject.getName());
         throw new NoSuchElementException("Cannot find element '" + uiObject.getName() + "' using the defined locators.");
     }
 
@@ -104,36 +122,28 @@ public abstract class BaseUiKeyword extends BaseKeyword {
 
     protected String getText(ObjectUI uiObject) {
         return execute(() -> {
-            // Tìm và chờ cho đến khi phần tử được hiển thị để đảm bảo nó đã sẵn sàng
             WebElement element = findElement(uiObject);
             new WebDriverWait(DriverManager.getDriver(), DEFAULT_TIMEOUT)
                     .until(ExpectedConditions.visibilityOf(element));
 
             String text;
             String tagName = element.getTagName().toLowerCase();
-
-            // **Ưu tiên 1: Lấy thuộc tính 'value' cho các thẻ input, textarea, select**
-            // Đây là trường hợp phổ biến nhất mà .getText() của Selenium không xử lý được.
             if ("input".equals(tagName) || "textarea".equals(tagName) || "select".equals(tagName)) {
                 text = element.getAttribute("value");
             } else {
-                // **Ưu tiên 2: Lấy văn bản hiển thị thông thường**
                 text = element.getText();
             }
 
-            // **Ưu tiên 3 (Dự phòng): Nếu các cách trên không trả về giá trị, thử lấy qua JavaScript**
-            // 'textContent' và 'innerText' có thể lấy được văn bản ẩn hoặc các nội dung phức tạp hơn.
             if (text == null || text.trim().isEmpty()) {
                 try {
                     JavascriptExecutor js = (JavascriptExecutor) DriverManager.getDriver();
                     text = (String) js.executeScript("return arguments[0].textContent || arguments[0].innerText;", element);
                 } catch (Exception e) {
                     logger.warn("Unable to retrieve text via JavaScript. Returning empty string.");
-                    text = ""; // Trả về rỗng nếu có lỗi xảy ra
+                    text = "";
                 }
             }
 
-            // Trả về kết quả, đảm bảo không bao giờ là null và đã được cắt khoảng trắng thừa
             return text != null ? text.trim() : "";
         }, uiObject);
     }
