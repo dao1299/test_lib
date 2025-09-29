@@ -176,7 +176,7 @@
   "category" : "Session",
   "subCategory" : "Lifecycle",
   "example" : "driverKeyword.startApplicationByPath(\"android\", \"C:/builds/app-debug.apk\");",
-  "returnValue" : "void|No return value",
+  "returnValue" : "void - Không trả về giá trị",
   "note" : "Keyword này chỉ dành cho các nền tảng Mobile. Để khởi động trình duyệt web, vui lòng sử dụng 'startBrowser'.",
   "className" : "com.vtnet.netat.core.keywords.DriverKeyword",
   "methodName" : "startApplicationByPath",
@@ -316,7 +316,7 @@
   "category" : "Mobile",
   "subCategory" : "Getter",
   "example" : "int numberOfItems = mobileKeyword.getElementCount(listItemObject);",
-  "returnValue" : "void|No return value",
+  "returnValue" : "void - Không trả về giá trị",
   "note" : "",
   "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
   "methodName" : "getElementCount",
@@ -344,7 +344,7 @@
   "category" : "Mobile",
   "subCategory" : "Wait",
   "example" : "// Chờ button login hiển thị trong 10 giây\nmobileKeyword.waitForElementVisible(loginButton, 10);\n\n// Chờ popup xuất hiện trong 5 giây\nmobileKeyword.waitForElementVisible(popupDialog, 5);",
-  "returnValue" : "void|No return value",
+  "returnValue" : "void - Không trả về giá trị",
   "note" : "LƯU Ý: Method này chờ element VISIBLE (display: block, opacity > 0, không bị che khuất), khác với waitForElementPresent chỉ cần element có trong DOM. Sẽ throw TimeoutException nếu vượt quá thời gian chờ.",
   "className" : "com.vtnet.netat.web.keywords.WebKeyword",
   "methodName" : "waitForElementVisible",
@@ -377,6 +377,30 @@
     "type" : "ObjectUI",
     "name" : "destination",
     "description" : "Phần tử đích để thả vào"
+  } ]
+}, {
+  "name" : "waitForElementTextNotToBe",
+  "description" : "Chờ đợi text của element KHÔNG có giá trị chỉ định trong khoảng thời gian cho phép. Thực hiện negative exact matching, hữu ích cho validation rằng nội dung đã thay đổi khỏi trạng thái cũ, loading states đã kết thúc.",
+  "category" : "Web",
+  "subCategory" : "Wait",
+  "example" : "// Chờ status thay đổi khỏi 'Pending'\nwebKeyword.waitForElementTextNotToBe(statusLabel, \"Pending\", 15);\n\n// Chờ placeholder biến mất\nwebKeyword.waitForElementTextNotToBe(inputField, \"Enter text...\", 5);\n\n// Chờ loading text thay đổi\nwebKeyword.waitForElementTextNotToBe(loadingDiv, \"Loading...\", 20);",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "NEGATIVE EXACT MATCH: Hữu ích khi cần đảm bảo text đã thay đổi khỏi giá trị cũ, loading states kết thúc, hoặc placeholder text được thay thế. Thường dùng sau update actions.",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "waitForElementTextNotToBe",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "Đối tượng UI element cần kiểm tra text content"
+  }, {
+    "type" : "String",
+    "name" : "unwantedText",
+    "description" : "Text chính xác mà element KHÔNG được có"
+  }, {
+    "type" : "int",
+    "name" : "timeoutInSeconds",
+    "description" : "Thời gian chờ tối đa tính bằng giây"
   } ]
 }, {
   "name" : "verifyDataSQL",
@@ -516,7 +540,7 @@
   "category" : "Mobile",
   "subCategory" : "Interaction",
   "example" : "mobileKeyword.tapElementByIndex(menuItems, 2,3,1); // Tap vào các phần tử thứ 3,4,2 trong danh sách",
-  "returnValue" : "void|No return value",
+  "returnValue" : "void - Không trả về giá trị",
   "note" : "",
   "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
   "methodName" : "tapElementByIndex",
@@ -588,7 +612,7 @@
   "category" : "Session",
   "subCategory" : "Lifecycle",
   "example" : "driverKeyword.startBrowser();",
-  "returnValue" : "void|No return value",
+  "returnValue" : "void - Không trả về giá trị",
   "note" : "",
   "className" : "com.vtnet.netat.core.keywords.DriverKeyword",
   "methodName" : "startBrowser",
@@ -1204,7 +1228,7 @@
   "category" : "Mobile",
   "subCategory" : "Assertion",
   "example" : "mobileKeyword.assertNotificationText(\"Tin nhắn từ A\", \"Bạn có muốn trả lời không?\", 15);",
-  "returnValue" : "void|No return value",
+  "returnValue" : "void - Không trả về giá trị",
   "note" : "",
   "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
   "methodName" : "assertNotificationText",
@@ -1332,7 +1356,7 @@
   "category" : "Mobile",
   "subCategory" : "Getter",
   "example" : "List<String> itemNames = mobileKeyword.getTextFromElements(itemNameObject);",
-  "returnValue" : "void|No return value",
+  "returnValue" : "void - Không trả về giá trị",
   "note" : "",
   "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
   "methodName" : "getTextFromElements",
@@ -1388,7 +1412,7 @@
   "category" : "Mobile",
   "subCategory" : "System",
   "example" : "mobileKeyword.unlockDevice();",
-  "returnValue" : "void|No return value",
+  "returnValue" : "void - Không trả về giá trị",
   "note" : "⚠️ QUAN TRỌNG: Chỉ mở khóa cơ bản (wake up screen). Không thể bypass mật khẩu, vân tay, hoặc Face ID. Thiết bị thực có thể vẫn yêu cầu xác thực bổ sung.",
   "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
   "methodName" : "unlockDevice",
@@ -1528,7 +1552,7 @@
   "category" : "Assertion",
   "subCategory" : "",
   "example" : "",
-  "returnValue" : "void|No return value",
+  "returnValue" : "void - Không trả về giá trị",
   "note" : "Keyword này so sánh giá trị sau khi đã chuyển đổi chúng sang dạng chuỗi ký tự.",
   "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
   "methodName" : "assertNotEquals",
@@ -1620,7 +1644,7 @@
   "category" : "Session",
   "subCategory" : "Lifecycle",
   "example" : "",
-  "returnValue" : "void|No return value",
+  "returnValue" : "void - Không trả về giá trị",
   "note" : "",
   "className" : "com.vtnet.netat.core.keywords.DriverKeyword",
   "methodName" : "closeSession",
@@ -1656,7 +1680,7 @@
   "category" : "Assertion",
   "subCategory" : "",
   "example" : "",
-  "returnValue" : "void|No return value",
+  "returnValue" : "void - Không trả về giá trị",
   "note" : "Keyword này so sánh giá trị sau khi đã chuyển đổi chúng sang dạng chuỗi ký tự.",
   "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
   "methodName" : "assertEquals",
@@ -1731,6 +1755,22 @@
     "description" : "Thời gian chờ tối đa (tính bằng seconds)"
   } ]
 }, {
+  "name" : "getProperty",
+  "description" : "Lấy giá trị của một thuộc tính cấu hình từ các nguồn đã được hợp nhất (file, tham số hệ thống, CI/CD).",
+  "category" : "Utility",
+  "subCategory" : "Configuration",
+  "example" : "String tenantId = utility.getProperty(\"tenant.id\");",
+  "returnValue" : "String|Giá trị của thuộc tính cấu hình dưới dạng chuỗi, hoặc null nếu không tìm thấy.",
+  "note" : "Keyword này tuân thủ thứ tự ưu tiên: Tham số CI/CD > File môi trường (config.test.properties) > File mặc định (default.properties) . Chỉ nên sử dụng khi không có keyword nghiệp vụ cấp cao hơn để thực hiện tác vụ.",
+  "className" : "com.vtnet.netat.core.keywords.UtilityKeyword",
+  "methodName" : "getProperty",
+  "returnType" : "String",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "key",
+    "description" : ""
+  } ]
+}, {
   "name" : "getCookie",
   "description" : "Lấy thông tin of một cookie cụ thể dựa trên tên of nó.",
   "category" : "Web",
@@ -1752,7 +1792,7 @@
   "category" : "Session",
   "subCategory" : "Lifecycle",
   "example" : "driverKeyword.startApplication(\"android\");",
-  "returnValue" : "void|No return value",
+  "returnValue" : "void - Không trả về giá trị",
   "note" : "Đây là keyword tiêu chuẩn để bắt đầu một phiên làm việc mobile với cấu hình đã định sẵn (cấu hình trong default.properties)",
   "className" : "com.vtnet.netat.core.keywords.DriverKeyword",
   "methodName" : "startApplication",
@@ -1896,7 +1936,7 @@
   "category" : "Mobile",
   "subCategory" : "Wait",
   "example" : "mobileKeyword.waitForNotification(\"Bạn có tin nhắn mới\", 15);",
-  "returnValue" : "void|No return value",
+  "returnValue" : "void - Không trả về giá trị",
   "note" : "",
   "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
   "methodName" : "waitForNotification",
@@ -2064,7 +2104,7 @@
   "category" : "Mobile",
   "subCategory" : "Interaction",
   "example" : "mobileKeyword.tapNotificationByText(\"Bạn có tin nhắn mới\", 15);",
-  "returnValue" : "void|No return value",
+  "returnValue" : "void - Không trả về giá trị",
   "note" : "",
   "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
   "methodName" : "tapNotificationByText",
@@ -2084,7 +2124,7 @@
   "category" : "Mobile",
   "subCategory" : "Gesture",
   "example" : "mobileKeyword.tapElementWithText(\"Thanh toán\");",
-  "returnValue" : "void|No return value",
+  "returnValue" : "void - Không trả về giá trị",
   "note" : "",
   "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
   "methodName" : "tapElementWithText",
@@ -2164,7 +2204,7 @@
   "category" : "Mobile",
   "subCategory" : "System",
   "example" : "mobileKeyword.openNotifications();",
-  "returnValue" : "void|No return value",
+  "returnValue" : "void - Không trả về giá trị",
   "note" : "",
   "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
   "methodName" : "openNotifications",
@@ -2193,6 +2233,34 @@
     "type" : "String",
     "name" : "expectedValue",
     "description" : "Giá trị CSS mong đợi (ví dụ: 'rgb(255, 0, 0)')"
+  } ]
+}, {
+  "name" : "waitForElementAttributeNotContains",
+  "description" : "Chờ đợi attribute của element KHÔNG chứa substring chỉ định trong khoảng thời gian cho phép. Hữu ích cho validation rằng partial attribute values đã được remove hoặc thay đổi, như CSS classes bị xóa, error states được clear.",
+  "category" : "Web",
+  "subCategory" : "Wait",
+  "example" : "// Chờ loading class bị remove\nwebKeyword.waitForElementAttributeNotContains(container, \"class\", \"loading\", 15);\n\n// Chờ error class biến mất\nwebKeyword.waitForElementAttributeNotContains(inputField, \"class\", \"error\", 10);\n\n// Chờ style không còn chứa 'display: none'\nwebKeyword.waitForElementAttributeNotContains(modal, \"style\", \"display: none\", 8);",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "NEGATIVE PARTIAL MATCH: Thường dùng khi cần đảm bảo CSS classes đã bị remove (như 'loading', 'error'), style properties đã thay đổi, hoặc data attributes đã được cleanup.",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "waitForElementAttributeNotContains",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "Đối tượng UI element cần kiểm tra attribute"
+  }, {
+    "type" : "String",
+    "name" : "attributeName",
+    "description" : "Tên attribute cần kiểm tra"
+  }, {
+    "type" : "String",
+    "name" : "unwantedPartialValue",
+    "description" : "Substring mà attribute KHÔNG được chứa"
+  }, {
+    "type" : "int",
+    "name" : "timeoutInSeconds",
+    "description" : "Thời gian chờ tối đa tính bằng giây"
   } ]
 }, {
   "name" : "waitForElementClickable",
@@ -2276,7 +2344,7 @@
   "category" : "Web",
   "subCategory" : "Wait",
   "example" : "// Chờ popup dialog bị xóa hoàn toàn sau khi đóng\nwebKeyword.click(closeButton);\nwebKeyword.waitForElementNotPresent(popupDialog, 10);\n\n// Chờ loading spinner biến mất sau AJAX\nwebKeyword.waitForElementNotPresent(loadingSpinner, 15);",
-  "returnValue" : "void|No return value",
+  "returnValue" : "void - Không trả về giá trị",
   "note" : "QUAN TRỌNG: waitForElementNotPresent (xóa khỏi DOM) khác với waitForElementNotVisible (chỉ ẩn đi). Sử dụng khi cần đảm bảo element thực sự bị remove, không phải chỉ display:none. Thường dùng sau delete actions hoặc dynamic loading.",
   "className" : "com.vtnet.netat.web.keywords.WebKeyword",
   "methodName" : "waitForElementNotPresent",
@@ -2375,6 +2443,34 @@
     "description" : "Lệnh và các tham số của nó, mỗi phần tử trong mảng là một phần riêng biệt của lệnh"
   } ]
 }, {
+  "name" : "waitForElementAttributeContains",
+  "description" : "Chờ đợi attribute của element chứa substring chỉ định trong khoảng thời gian cho phép. Rất hữu ích cho validation partial attribute values như CSS classes, composite data attributes, hoặc khi attribute có nhiều giá trị được nối với nhau.",
+  "category" : "Web",
+  "subCategory" : "Wait",
+  "example" : "// Chờ element có class 'active' (trong nhiều classes)\nwebKeyword.waitForElementAttributeContains(menuItem, \"class\", \"active\", 10);\n\n// Chờ style chứa 'display: block'\nwebKeyword.waitForElementAttributeContains(modal, \"style\", \"display: block\", 8);\n\n// Chờ data attribute chứa status\nwebKeyword.waitForElementAttributeContains(item, \"data-info\", \"status:ready\", 15);",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "PARTIAL ATTRIBUTE MATCH: Đặc biệt hữu ích cho CSS classes (class attribute thường chứa nhiều classes), data attributes có format phức tạp, hoặc style attributes. Linh hoạt hơn so với exact match.",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "waitForElementAttributeContains",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "Đối tượng UI element cần kiểm tra attribute"
+  }, {
+    "type" : "String",
+    "name" : "attributeName",
+    "description" : "Tên attribute cần kiểm tra"
+  }, {
+    "type" : "String",
+    "name" : "partialValue",
+    "description" : "Substring mà attribute phải chứa"
+  }, {
+    "type" : "int",
+    "name" : "timeoutInSeconds",
+    "description" : "Thời gian chờ tối đa tính bằng giây"
+  } ]
+}, {
   "name" : "activateApp",
   "description" : "Đưa một ứng dụng đã được cài đặt lên foreground (màn hình chính). Hữu ích khi cần chuyển đổi giữa các ứng dụng hoặc kích hoạt lại ứng dụng đang chạy nền. Ứng dụng phải đã được cài đặt trên thiết bị, nếu không sẽ gây ra lỗi. Không giống như startActivity trên Android, phương thức này hoạt động trên cả Android và iOS với cùng một cú pháp.",
   "category" : "Mobile",
@@ -2444,7 +2540,7 @@
   "category" : "Mobile",
   "subCategory" : "System",
   "example" : "mobileKeyword.shakeDevice(); // Mô phỏng lắc thiết bị",
-  "returnValue" : "void|No return value",
+  "returnValue" : "void - Không trả về giá trị",
   "note" : "LƯU Ý: Chỉ hoạt động trên thiết bị thật hoặc simulator hỗ trợ sensor. Emulator Android thông thường không hỗ trợ. Một số app có thể có độ trễ trong việc phản hồi shake event.",
   "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
   "methodName" : "shakeDevice",
@@ -2456,7 +2552,7 @@
   "category" : "Web",
   "subCategory" : "Wait",
   "example" : "// Chờ jQuery AJAX calls hoàn thành\nwebKeyword.waitForJavaScriptReturnsValue(\"return jQuery.active\", 0, 30);\n\n// Chờ custom loading flag\nwebKeyword.waitForJavaScriptReturnsValue(\"return window.isLoading\", false, 20);\n\n// Chờ API response được set\nwebKeyword.waitForJavaScriptReturnsValue(\"return window.apiData !== undefined\", true, 15);",
-  "returnValue" : "void|No return value",
+  "returnValue" : "void - Không trả về giá trị",
   "note" : "ADVANCED USE CASE: Thích hợp cho SPA applications, AJAX monitoring, custom loading states. Script có thể return any type (String, Boolean, Number, null). Sử dụng khi standard WebDriver waits không đủ mạnh.",
   "className" : "com.vtnet.netat.web.keywords.WebKeyword",
   "methodName" : "waitForJavaScriptReturnsValue",
@@ -2496,7 +2592,7 @@
   "category" : "Web",
   "subCategory" : "Wait",
   "example" : "// Chờ button chuyển sang disabled state\nwebKeyword.waitForElementAttributeToBe(submitBtn, \"disabled\", \"true\", 10);\n\n// Chờ element có class 'active'\nwebKeyword.waitForElementAttributeToBe(menuItem, \"class\", \"menu-item active\", 8);\n\n// Chờ data attribute cập nhật\nwebKeyword.waitForElementAttributeToBe(statusDiv, \"data-status\", \"completed\", 15);",
-  "returnValue" : "void|No return value",
+  "returnValue" : "void - Không trả về giá trị",
   "note" : "COMMON ATTRIBUTES: class, data-*, disabled, checked, selected, aria-*, style, value. Đặc biệt hữu ích cho SPA applications khi attributes thay đổi theo state. Lưu ý: attribute value khác với property value.",
   "className" : "com.vtnet.netat.web.keywords.WebKeyword",
   "methodName" : "waitForElementAttributeToBe",
@@ -2632,7 +2728,7 @@
   "category" : "Mobile",
   "subCategory" : "Assertion",
   "example" : "mobileKeyword.verifyElementVisibleWithText(\"Đăng nhập thành công\");",
-  "returnValue" : "void|No return value",
+  "returnValue" : "void - Không trả về giá trị",
   "note" : "",
   "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
   "methodName" : "verifyElementVisibleWithText",
@@ -2643,12 +2739,36 @@
     "description" : "Văn bản cần xác minh sự tồn tại trên màn hình."
   } ]
 }, {
+  "name" : "waitForElementTextToBe",
+  "description" : "Chờ đợi text của element có giá trị chính xác như mong đợi trong khoảng thời gian chỉ định. Thực hiện exact matching, hữu ích cho validation chính xác nội dung, status messages, hoặc khi cần đảm bảo text hoàn toàn khớp.",
+  "category" : "Web",
+  "subCategory" : "Wait",
+  "example" : "// Chờ status chính xác\nwebKeyword.waitForElementTextToBe(statusLabel, \"Completed\", 10);\n\n// Chờ counter có giá trị exact\nwebKeyword.waitForElementTextToBe(itemCount, \"5 items\", 8);\n\n// Validation button text\nwebKeyword.waitForElementTextToBe(submitButton, \"Submit\", 5);",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "EXACT MATCH: Khác với waitForElementTextContains (partial), method này yêu cầu text phải hoàn toàn khớp. Sử dụng cho validation chính xác status, labels, hoặc khi text có format cố định.",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "waitForElementTextToBe",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "Đối tượng UI element cần kiểm tra text content"
+  }, {
+    "type" : "String",
+    "name" : "expectedText",
+    "description" : "Text chính xác mà element phải có"
+  }, {
+    "type" : "int",
+    "name" : "timeoutInSeconds",
+    "description" : "Thời gian chờ tối đa tính bằng giây"
+  } ]
+}, {
   "name" : "waitForElementTextContains",
   "description" : "Chờ đợi text của element chứa substring chỉ định trong khoảng thời gian cho phép. Thực hiện partial matching, rất hữu ích cho validation nội dung động, messages, notifications hoặc khi text có thể thay đổi nhưng vẫn chứa keyword quan trọng.",
   "category" : "Web",
   "subCategory" : "Wait",
   "example" : "// Chờ success message chứa 'thành công'\nwebKeyword.waitForElementTextContains(successMessage, \"thành công\", 10);\n\n// Chờ counter chứa số lượng items\nwebKeyword.waitForElementTextContains(itemCounter, \"items\", 8);\n\n// Validation error message\nwebKeyword.waitForElementTextContains(errorMsg, \"Invalid\", 5);",
-  "returnValue" : "void|No return value",
+  "returnValue" : "void - Không trả về giá trị",
   "note" : "USE CASE: Lý tưởng cho validation messages động, notifications, counters, hoặc content được load từ API. Khác với waitForElementTextToBe (exact match), method này linh hoạt hơn với partial matching.",
   "className" : "com.vtnet.netat.web.keywords.WebKeyword",
   "methodName" : "waitForElementTextContains",
@@ -2776,7 +2896,7 @@
   "category" : "Mobile",
   "subCategory" : "Wait",
   "example" : "// Chờ button submit có thể click trong 15 giây\nmobileKeyword.waitForElementClickable(submitButton, 15);\nmobileKeyword.click(submitButton);\n\n// Chờ link navigation sẵn sàng click\nmobileKeyword.waitForElementClickable(navLink, 8);",
-  "returnValue" : "void|No return value",
+  "returnValue" : "void - Không trả về giá trị",
   "note" : "BEST PRACTICE: Luôn sử dụng method này trước khi click vào element để tránh ElementNotInteractableException. Element clickable = visible + enabled + không bị overlay che khuất.",
   "className" : "com.vtnet.netat.web.keywords.WebKeyword",
   "methodName" : "waitForElementClickable",
@@ -2920,7 +3040,7 @@
   "category" : "Mobile",
   "subCategory" : "Interaction",
   "example" : "mobileKeyword.tapAllElement(menuItems); // Tap vào mọi phần tử trong danh sách",
-  "returnValue" : "void|No return value",
+  "returnValue" : "void - Không trả về giá trị",
   "note" : "",
   "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
   "methodName" : "tapAllElement",
@@ -2936,7 +3056,7 @@
   "category" : "Mobile",
   "subCategory" : "System",
   "example" : "mobileKeyword.lockDevice(); // Khóa 1 giây\nmobileKeyword.lockDevice(5); // Khóa 5 giây",
-  "returnValue" : "void|No return value",
+  "returnValue" : "void - Không trả về giá trị",
   "note" : "⚠️ LƯU Ý: Keyword này sẽ BLOCK thread trong thời gian khóa. Không nên sử dụng thời gian quá dài (>30s). Một số thiết bị có thể yêu cầu quyền đặc biệt để khóa màn hình.",
   "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
   "methodName" : "lockDevice",
@@ -3004,7 +3124,7 @@
   "category" : "Session",
   "subCategory" : "Lifecycle",
   "example" : "driverKeyword.startBrowser(\"firefox\");",
-  "returnValue" : "void|No return value",
+  "returnValue" : "void - Không trả về giá trị",
   "note" : "Keyword này chỉ dành cho các nền tảng Web. Để khởi động ứng dụng di động, vui lòng sử dụng 'startApplicationByPath' hoặc 'startApplicationByPackage'.",
   "className" : "com.vtnet.netat.core.keywords.DriverKeyword",
   "methodName" : "startBrowser",
@@ -3048,7 +3168,7 @@
   "category" : "Session",
   "subCategory" : "Lifecycle",
   "example" : "driverKeyword.startApplicationByPackage(\"android\", \"com.android.settings\", \".Settings\");",
-  "returnValue" : "void|No return value",
+  "returnValue" : "void - Không trả về giá trị",
   "note" : "Keyword này chỉ dành cho các nền tảng Mobile. Để khởi động trình duyệt web, vui lòng sử dụng 'startBrowser'.",
   "className" : "com.vtnet.netat.core.keywords.DriverKeyword",
   "methodName" : "startApplicationByPackage",
@@ -3103,6 +3223,30 @@
     "description" : "Thời gian tối đa (giây) để chờ văn bản khớp"
   } ]
 }, {
+  "name" : "waitForJavaScriptNotReturnsValue",
+  "description" : "Chờ đợi JavaScript code thực thi và KHÔNG trả về giá trị chỉ định trong khoảng thời gian cho phép. Hữu ích cho việc chờ đợi các conditions không còn đúng nữa, states đã thay đổi, hoặc loading processes đã kết thúc.",
+  "category" : "Web",
+  "subCategory" : "Wait",
+  "example" : "// Chờ loading flag không còn true\nwebKeyword.waitForJavaScriptNotReturnsValue(\"return window.isLoading\", true, 20);\n\n// Chờ error state được clear\nwebKeyword.waitForJavaScriptNotReturnsValue(\"return window.hasError\", true, 10);\n\n// Chờ AJAX calls không còn pending\nwebKeyword.waitForJavaScriptNotReturnsValue(\"return fetch.pending\", true, 30);",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "NEGATIVE JS CONDITION: Thường dùng khi cần đảm bảo loading states đã kết thúc, error flags đã được clear, hoặc unwanted conditions không còn tồn tại. Complement của waitForJavaScriptReturnsValue.",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "waitForJavaScriptNotReturnsValue",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "script",
+    "description" : "JavaScript code cần thực thi"
+  }, {
+    "type" : "Object",
+    "name" : "unwantedValue",
+    "description" : "Giá trị mà script KHÔNG được trả về"
+  }, {
+    "type" : "int",
+    "name" : "timeoutInSeconds",
+    "description" : "Thời gian chờ tối đa tính bằng giây"
+  } ]
+}, {
   "name" : "backgroundApp",
   "description" : "Đưa ứng dụng hiện tại về chạy nền trong một khoảng thời gian xác định, sau đó tự động đưa lại lên foreground. Hữu ích để kiểm tra khả năng lưu trữ và khôi phục trạng thái của ứng dụng, hoặc để mô phỏng việc người dùng tạm thời chuyển sang ứng dụng khác. Nếu thời gian là -1, ứng dụng sẽ ở chế độ nền cho đến khi được kích hoạt lại bằng activateApp.",
   "category" : "Mobile",
@@ -3124,7 +3268,7 @@
   "category" : "Mobile",
   "subCategory" : "Interaction",
   "example" : "List<WebElement> productList = mobileKeyword.findElements(productListItemObject);",
-  "returnValue" : "void|No return value",
+  "returnValue" : "void - Không trả về giá trị",
   "note" : "",
   "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
   "methodName" : "findElements",
@@ -3343,6 +3487,30 @@
     "description" : "element cần Verify"
   } ]
 }, {
+  "name" : "waitForElementTextNotContains",
+  "description" : "Chờ đợi text của element KHÔNG chứa substring chỉ định trong khoảng thời gian cho phép. Thực hiện negative partial matching, hữu ích cho validation rằng nội dung đã được xóa, thay đổi, hoặc error messages đã biến mất.",
+  "category" : "Web",
+  "subCategory" : "Wait",
+  "example" : "// Chờ error message không còn chứa 'Error'\nwebKeyword.waitForElementTextNotContains(messageDiv, \"Error\", 10);\n\n// Chờ loading text biến mất\nwebKeyword.waitForElementTextNotContains(statusLabel, \"Loading\", 15);\n\n// Validation content đã được update\nwebKeyword.waitForElementTextNotContains(titleElement, \"Draft\", 8);",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "NEGATIVE VALIDATION: Hữu ích khi cần đảm bảo error messages biến mất, loading text được thay thế, hoặc unwanted content không còn xuất hiện. Thường dùng sau cleanup actions hoặc content updates.",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "waitForElementTextNotContains",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "Đối tượng UI element cần kiểm tra text content"
+  }, {
+    "type" : "String",
+    "name" : "unwantedText",
+    "description" : "Substring mà text của element KHÔNG được chứa"
+  }, {
+    "type" : "int",
+    "name" : "timeoutInSeconds",
+    "description" : "Thời gian chờ tối đa tính bằng giây"
+  } ]
+}, {
   "name" : "assertDisabled",
   "description" : "Khẳng định rằng một phần tử đang ở trạng thái không thể tương tác (disabled). Phương thức này kiểm tra thuộc tính 'enabled' của phần tử và ném AssertionError nếu phần tử đang được kích hoạt (enabled). Hữu ích khi cần đảm bảo một nút hoặc trường nhập liệu đã bị vô hiệu hóa trong các trường hợp nhất định.",
   "category" : "Mobile",
@@ -3469,6 +3637,34 @@
     "type" : "ObjectUI",
     "name" : "uiObject",
     "description" : "Phần tử cần kiểm tra trạng thái"
+  } ]
+}, {
+  "name" : "waitForElementAttributeNotToBe",
+  "description" : "Chờ đợi attribute của element KHÔNG có giá trị chỉ định trong khoảng thời gian cho phép. Hữu ích cho validation rằng attributes đã thay đổi khỏi trạng thái trước đó, như disabled thành enabled, loading class bị remove.",
+  "category" : "Web",
+  "subCategory" : "Wait",
+  "example" : "// Chờ button không còn disabled\nwebKeyword.waitForElementAttributeNotToBe(submitBtn, \"disabled\", \"true\", 10);\n\n// Chờ loading class bị remove\nwebKeyword.waitForElementAttributeNotToBe(container, \"class\", \"loading\", 15);\n\n// Chờ error state được clear\nwebKeyword.waitForElementAttributeNotToBe(inputField, \"data-error\", \"true\", 8);",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "NEGATIVE ATTRIBUTE CHECK: Thường dùng khi cần đảm bảo element đã thay đổi state, như từ disabled sang enabled, loading class đã bị remove, hoặc error states đã được clear.",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "waitForElementAttributeNotToBe",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "Đối tượng UI element cần kiểm tra attribute"
+  }, {
+    "type" : "String",
+    "name" : "attributeName",
+    "description" : "Tên attribute cần kiểm tra"
+  }, {
+    "type" : "String",
+    "name" : "unwantedValue",
+    "description" : "Giá trị mà attribute KHÔNG được có"
+  }, {
+    "type" : "int",
+    "name" : "timeoutInSeconds",
+    "description" : "Thời gian chờ tối đa tính bằng giây"
   } ]
 }, {
   "name" : "pressKeys",

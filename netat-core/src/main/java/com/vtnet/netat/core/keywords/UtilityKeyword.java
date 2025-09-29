@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vtnet.netat.core.BaseKeyword;
 import com.vtnet.netat.core.annotations.NetatKeyword;
 import com.vtnet.netat.core.context.ExecutionContext;
+import com.vtnet.netat.core.logging.NetatLogger;
+import com.vtnet.netat.core.utils.ConfigurationManager;
 import com.vtnet.netat.core.utils.SecureText;
 import io.qameta.allure.Step;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -32,6 +34,7 @@ import java.util.regex.Pattern;
 public class UtilityKeyword extends BaseKeyword {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final NetatLogger logger = NetatLogger.getInstance(UtilityKeyword.class);
 
     @NetatKeyword(name = "getCurrentDateTime", description = "Lấy và trả về chuỗi ngày giờ hiện tại theo một định dạng cho trước. " + "Sử dụng các mẫu định dạng chuẩn của Java như 'yyyy' cho năm, 'MM' cho tháng, " + "'dd' cho ngày, 'HH' cho giờ (24h), 'mm' cho phút và 'ss' cho giây.", category = "Utility",subCategory="DateTime", parameters = {"dateTimeFormat: String - Định dạng ngày giờ (ví dụ: 'dd/MM/yyyy HH:mm:ss')"}, returnValue = "String - Chuỗi ngày giờ hiện tại theo định dạng được chỉ định", example = "// Lấy ngày giờ hiện tại với định dạng yyyy-MM-dd_HH-mm-ss\n" + "String timestamp = utilityKeyword.getCurrentDateTime(\"yyyy-MM-dd_HH-mm-ss\");\n" + "// Kết quả có thể là: 2025-09-15_11-30-45", note = "Áp dụng cho tất cả nền tảng. Có thể throw IllegalArgumentException nếu định dạng ngày giờ không hợp lệ.")
     @Step("Get current date and time with format: {0}")
@@ -202,5 +205,27 @@ public class UtilityKeyword extends BaseKeyword {
             return resultDateTime.format(outputFormatter);
 
         }, baseDateTimeString, inputFormat, amount, unit, outputFormat);
+    }
+
+    @NetatKeyword(
+            name = "getProperty",
+            description = "Lấy giá trị của một thuộc tính cấu hình từ các nguồn đã được hợp nhất (file, tham số hệ thống, CI/CD).",
+            category = "Utility",
+            subCategory = "Configuration",
+            parameters = {
+                    "key|String|Yes|Tên của thuộc tính cấu hình cần lấy giá trị (ví dụ: 'app.url')."
+            },
+            returnValue = "String|Giá trị của thuộc tính cấu hình dưới dạng chuỗi, hoặc null nếu không tìm thấy.",
+            example = "String tenantId = utility.getProperty(\"tenant.id\");",
+            note = "Keyword này tuân thủ thứ tự ưu tiên: Tham số CI/CD > File môi trường (config.test.properties) > File mặc định (default.properties) . Chỉ nên sử dụng khi không có keyword nghiệp vụ cấp cao hơn để thực hiện tác vụ."
+    )
+    public String getProperty(String key) {
+        return execute(() -> {
+            String value = ConfigurationManager.getProperty(key);
+            if (value == null) {
+                logger.warn("No value found for key '{}'.", key);
+            }
+            return value;
+        });
     }
 }

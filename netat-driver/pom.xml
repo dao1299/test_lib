@@ -10,6 +10,8 @@
     </parent>
 
     <artifactId>netat-driver</artifactId>
+    <name>NETAT Driver Library</name>
+    <description>Driver automation keywords for NETAT platform</description>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>

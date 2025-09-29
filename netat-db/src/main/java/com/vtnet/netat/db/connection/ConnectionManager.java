@@ -18,6 +18,7 @@ public class ConnectionManager {
         config.setUsername(profile.getUsername());
         config.setPassword(profile.getPassword());
         config.setMaximumPoolSize(profile.getPoolSize());
+        System.out.println("Creating connection pool for profile '" + profile.getProfileName() + "' with JDBC URL: " + profile.getJdbcUrl() + " and pool size: " + profile.getPoolSize() + " ...");
         dataSources.put(profile.getProfileName(), new HikariDataSource(config));
     }
 

@@ -10,6 +10,9 @@
     </parent>
 
     <artifactId>netat-mobile</artifactId>
+    <packaging>jar</packaging>
+    <name>NETAT Mobile Library</name>
+    <description>Mobile automation keywords for NETAT platform</description>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
