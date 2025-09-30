@@ -6,6 +6,7 @@ import com.vtnet.netat.core.utils.DataFileHelper;
 import com.vtnet.netat.db.config.DatabaseProfile;
 import com.vtnet.netat.db.connection.ConnectionManager;
 import com.vtnet.netat.db.utils.DatabaseHelper;
+import com.vtnet.netat.db.utils.JdbcUrlBuilder;
 import com.vtnet.netat.db.utils.QueryHelper;
 import io.qameta.allure.Step;
 import org.testng.Assert;
@@ -50,6 +51,40 @@ subCategory="Connection",
             ConnectionManager.createConnectionPool(profile);
             return null;
         }, profilePath);
+    }
+
+    @NetatKeyword(
+            name = "connectDatabase",
+            description = "Khởi tạo kết nối CSDL bằng cách cung cấp các thông tin riêng lẻ. Thư viện sẽ tự động xây dựng URL kết nối.",
+            category = "DB",
+            subCategory = "Connection",
+            parameters = {
+                    "profileName: String - Một tên định danh duy nhất cho kết nối này",
+                    "dbType: String - Loại cơ sở dữ liệu (mariadb, postgresql, mysql, sqlserver, oracle, clickhouse)",
+                    "host: String - Địa chỉ IP hoặc hostname của server",
+                    "port: int - Cổng kết nối",
+                    "databaseName: String - Tên của database (hoặc SID/Service Name cho Oracle)",
+                    "username: String - Tên người dùng",
+                    "password: String - Mật khẩu"
+            },
+            returnValue = "void - Không trả về giá trị",
+            example = "// Kết nối đến PostgreSQL mà không cần biết cấu trúc URL\n" +
+                    "databaseKeyword.connectDatabase(\"pg_server\", \"postgresql\", \"10.0.1.5\", 5432, \"app_db\", \"user\", \"pass\");",
+            note = "Đây là cách kết nối được khuyên dùng cho người dùng low-code để tránh lỗi cú pháp URL."
+    )
+    @Step("Initialize database connection for profile: {0} ({1} on {2})")
+    public void connectDatabase(String profileName, String dbType, String host, int port, String databaseName, String username, String password) {
+        execute(() -> {
+            String jdbcUrl = JdbcUrlBuilder.buildUrl(dbType, host, port, databaseName);
+
+            DatabaseProfile profile = new DatabaseProfile();
+            profile.setProfileName(profileName);
+            profile.setJdbcUrl(jdbcUrl);
+            profile.setUsername(username);
+            profile.setPassword(password);
+            ConnectionManager.createConnectionPool(profile);
+            return null;
+        }, profileName, dbType, host, port, databaseName, username, password);
     }
 
     @NetatKeyword(
@@ -330,5 +365,165 @@ subCategory="Verification",
             }
         }
         return results;
+    }
+
+    // =================================================================================================
+// DATA RETRIEVAL KEYWORDS (NEW UTILITY KEYWORDS)
+// =================================================================================================
+
+    @NetatKeyword(
+            name = "getCellValue",
+            description = "Thực thi câu lệnh SELECT và trả về giá trị của ô đầu tiên (dòng 1, cột 1). Rất hữu ích để lấy một giá trị duy nhất để xác thực hoặc sử dụng trong các bước tiếp theo.",
+            category = "DB",
+            subCategory = "Data Retrieval",
+            parameters = {
+                    "profileName: String - Tên của profile kết nối CSDL",
+                    "query: String - Câu lệnh SQL SELECT, thường chỉ chọn một cột",
+                    "params: Object... - Các tham số cần truyền vào câu truy vấn"
+            },
+            returnValue = "String - Giá trị của ô dưới dạng chuỗi, hoặc null nếu không có kết quả.",
+            example = "// Lấy email của một người dùng cụ thể\n" +
+                    "String email = databaseKeyword.getCellValue(\"mysql_dev\", \"SELECT email FROM users WHERE id = ?\", 123);",
+            note = "Nếu câu truy vấn trả về nhiều dòng hoặc nhiều cột, keyword này sẽ chỉ lấy giá trị của cột đầu tiên ở dòng đầu tiên."
+    )
+    @Step("Get single cell value from [{0}] with query: {1}")
+    public String getCellValue(String profileName, String query, Object... params) {
+        return execute(() -> {
+            List<Map<String, Object>> result = executeQueryWithParams(profileName, query, params);
+            if (result == null || result.isEmpty()) {
+                return null; // Không có bản ghi nào được tìm thấy
+            }
+            Map<String, Object> firstRow = result.get(0);
+            if (firstRow == null || firstRow.isEmpty()) {
+                return null; // Dòng đầu tiên rỗng
+            }
+            // Lấy giá trị của cột đầu tiên, bất kể tên cột là gì
+            Object value = firstRow.values().iterator().next();
+            return value != null ? value.toString() : null;
+        });
+    }
+
+    @NetatKeyword(
+            name = "getRow",
+            description = "Thực thi câu lệnh SELECT và trả về bản ghi đầu tiên dưới dạng một Map. Hữu ích khi bạn cần kiểm tra nhiều trường của một đối tượng duy nhất.",
+            category = "DB",
+            subCategory = "Data Retrieval",
+            parameters = {
+                    "profileName: String - Tên của profile kết nối CSDL",
+                    "query: String - Câu lệnh SQL SELECT",
+                    "params: Object... - Các tham số cần truyền vào câu truy vấn"
+            },
+            returnValue = "Map<String, Object> - Một Map biểu diễn bản ghi đầu tiên, với key là tên cột và value là giá trị.",
+            example = "// Lấy toàn bộ thông tin của một sản phẩm\n" +
+                    "Map<String, Object> product = databaseKeyword.getRow(\"mysql_dev\", \"SELECT * FROM products WHERE id = ?\", \"PROD-001\");\n" +
+                    "String productName = product.get(\"name\").toString();\n" +
+                    "double price = (Double) product.get(\"price\");",
+            note = "Nếu câu truy vấn trả về nhiều bản ghi, chỉ có bản ghi đầu tiên được trả về. Trả về null nếu không có kết quả."
+    )
+    @Step("Get first row from [{0}] with query: {1}")
+    public Map<String, Object> getRow(String profileName, String query, Object... params) {
+        return execute(() -> {
+            List<Map<String, Object>> result = executeQueryWithParams(profileName, query, params);
+            return result.isEmpty() ? null : result.get(0);
+        });
+    }
+
+    @NetatKeyword(
+            name = "getColumnValues",
+            description = "Thực thi câu lệnh SELECT và trả về tất cả giá trị của một cột cụ thể dưới dạng một danh sách.",
+            category = "DB",
+            subCategory = "Data Retrieval",
+            parameters = {
+                    "profileName: String - Tên của profile kết nối CSDL",
+                    "columnName: String - Tên của cột mà bạn muốn lấy dữ liệu",
+                    "query: String - Câu lệnh SQL SELECT",
+                    "params: Object... - Các tham số cần truyền vào câu truy vấn"
+            },
+            returnValue = "List<Object> - Một danh sách chứa tất cả các giá trị từ cột được chỉ định.",
+            example = "// Lấy danh sách email của tất cả người dùng đang hoạt động\n" +
+                    "List<Object> emails = databaseKeyword.getColumnValues(\"mysql_dev\", \"email\", \"SELECT email FROM users WHERE status = ?\", \"active\");",
+            note = "Đảm bảo rằng tên cột bạn cung cấp khớp chính xác với tên cột trong kết quả trả về của câu lệnh SELECT."
+    )
+    @Step("Get values from column [{1}] on [{0}] with query: {2}")
+    public List<Object> getColumnValues(String profileName, String columnName, String query, Object... params) {
+        return execute(() -> {
+            List<Map<String, Object>> result = executeQueryWithParams(profileName, query, params);
+            List<Object> columnValues = new ArrayList<>();
+            if (result.isEmpty()) {
+                return columnValues; // Trả về danh sách rỗng
+            }
+            for (Map<String, Object> row : result) {
+                columnValues.add(row.get(columnName));
+            }
+            return columnValues;
+        });
+    }
+
+    @NetatKeyword(
+            name = "getRowCount",
+            description = "Thực thi một câu lệnh SELECT và trả về tổng số bản ghi (dòng) trong kết quả.",
+            category = "DB",
+            subCategory = "Data Retrieval",
+            parameters = {
+                    "profileName: String - Tên của profile kết nối CSDL",
+                    "query: String - Câu lệnh SQL SELECT",
+                    "params: Object... - Các tham số cần truyền vào câu truy vấn"
+            },
+            returnValue = "int - Số lượng bản ghi trong kết quả.",
+            example = "// Đếm số lượng đơn hàng đã được giao thành công\n" +
+                    "int deliveredOrders = databaseKeyword.getRowCount(\"mysql_dev\", \"SELECT * FROM orders WHERE status = ?\", \"DELIVERED\");",
+            note = "Keyword này là một cách khác để kiểm tra sự tồn tại của dữ liệu. Khác với executeUpdate, nó không thay đổi dữ liệu."
+    )
+    @Step("Get row count from [{0}] with query: {1}")
+    public int getRowCount(String profileName, String query, Object... params) {
+        return execute(() -> {
+            List<Map<String, Object>> result = executeQueryWithParams(profileName, query, params);
+            return result.size();
+        });
+    }
+
+    @NetatKeyword(
+            name = "getQueryResultsAsString",
+            description = "Thực thi câu lệnh SELECT và trả về toàn bộ kết quả dưới dạng một chuỗi String duy nhất, được định dạng sẵn. Rất hữu ích để kiểm tra nhanh hoặc xác thực một phần dữ liệu.",
+            category = "DB",
+            subCategory = "Data Retrieval",
+            parameters = {
+                    "profileName: String - Tên của profile kết nối CSDL",
+                    "query: String - Câu lệnh SQL SELECT",
+                    "params: Object... - Các tham số cần truyền vào câu truy vấn"
+            },
+            returnValue = "String - Toàn bộ bảng kết quả đã được định dạng.",
+            example = "// Lấy thông tin sinh viên và kiểm tra xem có chứa tên 'Nguyen Van A' không\n" +
+                    "String result = databaseKeyword.getQueryResultsAsString(\"dbMariaLocal\", \"SELECT ma_sv, ten_sv FROM sinhvien\");\n" +
+                    "assertion.assertContains(result, \"Nguyen Van A\");",
+            note = "Chuỗi trả về sẽ bao gồm cả tiêu đề cột và tất cả các dòng dữ liệu, mỗi dòng trên một hàng mới."
+    )
+    @Step("Get query results as formatted string from [{0}] with query: {1}")
+    public String getQueryResultsAsString(String profileName, String query, Object... params) {
+        return execute(() -> {
+            List<Map<String, Object>> result = executeQueryWithParams(profileName, query, params);
+
+            if (result == null || result.isEmpty()) {
+                return "Query returned no results.";
+            }
+
+            StringBuilder sb = new StringBuilder();
+
+            // Lấy và thêm tiêu đề cột
+            String headers = String.join(" | ", result.get(0).keySet());
+            sb.append(headers).append("\n");
+            sb.append("---------------------------------\n");
+
+            // Thêm từng dòng dữ liệu
+            for (Map<String, Object> row : result) {
+                List<String> values = new ArrayList<>();
+                for (Object value : row.values()) {
+                    values.add(String.valueOf(value));
+                }
+                sb.append(String.join(" | ", values)).append("\n");
+            }
+
+            return sb.toString();
+        });
     }
 }

@@ -619,6 +619,30 @@
   "returnType" : "void",
   "parameters" : [ ]
 }, {
+  "name" : "getRowCount",
+  "description" : "Thực thi một câu lệnh SELECT và trả về tổng số bản ghi (dòng) trong kết quả.",
+  "category" : "DB",
+  "subCategory" : "Data Retrieval",
+  "example" : "// Đếm số lượng đơn hàng đã được giao thành công\nint deliveredOrders = databaseKeyword.getRowCount(\"mysql_dev\", \"SELECT * FROM orders WHERE status = ?\", \"DELIVERED\");",
+  "returnValue" : "int - Số lượng bản ghi trong kết quả.",
+  "note" : "Keyword này là một cách khác để kiểm tra sự tồn tại của dữ liệu. Khác với executeUpdate, nó không thay đổi dữ liệu.",
+  "className" : "com.vtnet.netat.db.keywords.DatabaseKeyword",
+  "methodName" : "getRowCount",
+  "returnType" : "int",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "profileName",
+    "description" : "Tên của profile kết nối CSDL"
+  }, {
+    "type" : "String",
+    "name" : "query",
+    "description" : "Câu lệnh SQL SELECT"
+  }, {
+    "type" : "Object[]",
+    "name" : "params",
+    "description" : "Các tham số cần truyền vào câu truy vấn"
+  } ]
+}, {
   "name" : "uploadFile",
   "description" : "Tải lên một file từ máy local bằng cách gửi đường dẫn file vào một element <input type='file'>.",
   "category" : "Web",
@@ -1039,6 +1063,34 @@
   "returnType" : "void",
   "parameters" : [ ]
 }, {
+  "name" : "getColumnValues",
+  "description" : "Thực thi câu lệnh SELECT và trả về tất cả giá trị của một cột cụ thể dưới dạng một danh sách.",
+  "category" : "DB",
+  "subCategory" : "Data Retrieval",
+  "example" : "// Lấy danh sách email của tất cả người dùng đang hoạt động\nList<Object> emails = databaseKeyword.getColumnValues(\"mysql_dev\", \"email\", \"SELECT email FROM users WHERE status = ?\", \"active\");",
+  "returnValue" : "List<Object> - Một danh sách chứa tất cả các giá trị từ cột được chỉ định.",
+  "note" : "Đảm bảo rằng tên cột bạn cung cấp khớp chính xác với tên cột trong kết quả trả về của câu lệnh SELECT.",
+  "className" : "com.vtnet.netat.db.keywords.DatabaseKeyword",
+  "methodName" : "getColumnValues",
+  "returnType" : "List",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "profileName",
+    "description" : "Tên của profile kết nối CSDL"
+  }, {
+    "type" : "String",
+    "name" : "columnName",
+    "description" : "Tên của cột mà bạn muốn lấy dữ liệu"
+  }, {
+    "type" : "String",
+    "name" : "query",
+    "description" : "Câu lệnh SQL SELECT"
+  }, {
+    "type" : "Object[]",
+    "name" : "params",
+    "description" : "Các tham số cần truyền vào câu truy vấn"
+  } ]
+}, {
   "name" : "getLocalStorage",
   "description" : "Đọc và trả về giá trị từ Local Storage of trình duyệt dựa trên một khóa (key) được cung cấp.",
   "category" : "Web",
@@ -1159,6 +1211,18 @@
     "description" : "Loại ký tự: 'ALPHABETIC' (chỉ chữ), 'NUMERIC' (chỉ số), hoặc 'ALPHANUMERIC' (cả chữ và số)."
   } ]
 }, {
+  "name" : "getAlertText",
+  "description" : "Chờ cho đến khi một hộp thoại alert, prompt, hoặc confirm of trình duyệt xuất hiện và lấy về nội dung text of nó.",
+  "category" : "Web",
+  "subCategory" : "Alert",
+  "example" : "// Lấy và Verify nội dung thông báo xác nhận\nwebKeyword.click(deleteButtonObject);\nString alertMessage = webKeyword.getAlertText();\nif (alertMessage.contains(\"Bạn có chắc chắn muốn xóa?\")) {\n    webKeyword.acceptAlert();\n}\n\n// Lấy thông báo lỗi từ alert\nwebKeyword.click(submitButtonObject);\nString errorMessage = webKeyword.getAlertText();\nlogger.info(\"Error message: \" + errorMessage);",
+  "returnValue" : "String - Nội dung text of hộp thoại alert",
+  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, một hộp thoại alert đang hiển thị hoặc sẽ xuất hiện. Có thể throw TimeoutException nếu không có hộp thoại alert xuất hiện trong thời gian chờ, NoAlertPresentException nếu không có hộp thoại alert đang hiển thị, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "getAlertText",
+  "returnType" : "String",
+  "parameters" : [ ]
+}, {
   "name" : "assertGreaterThanOrEqual",
   "description" : "Khẳng định rằng giá trị thực tế lớn hơn hoặc bằng giá trị so sánh. Nếu không thỏa mãn, test case sẽ dừng lại và báo lỗi",
   "category" : "Assertion",
@@ -1178,18 +1242,6 @@
     "name" : "expectedValue",
     "description" : "Giá trị mong đợi để so sánh (actualValue phải lớn hơn hoặc bằng giá trị này)"
   } ]
-}, {
-  "name" : "getAlertText",
-  "description" : "Chờ cho đến khi một hộp thoại alert, prompt, hoặc confirm of trình duyệt xuất hiện và lấy về nội dung text of nó.",
-  "category" : "Web",
-  "subCategory" : "Alert",
-  "example" : "// Lấy và Verify nội dung thông báo xác nhận\nwebKeyword.click(deleteButtonObject);\nString alertMessage = webKeyword.getAlertText();\nif (alertMessage.contains(\"Bạn có chắc chắn muốn xóa?\")) {\n    webKeyword.acceptAlert();\n}\n\n// Lấy thông báo lỗi từ alert\nwebKeyword.click(submitButtonObject);\nString errorMessage = webKeyword.getAlertText();\nlogger.info(\"Error message: \" + errorMessage);",
-  "returnValue" : "String - Nội dung text of hộp thoại alert",
-  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, một hộp thoại alert đang hiển thị hoặc sẽ xuất hiện. Có thể throw TimeoutException nếu không có hộp thoại alert xuất hiện trong thời gian chờ, NoAlertPresentException nếu không có hộp thoại alert đang hiển thị, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
-  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
-  "methodName" : "getAlertText",
-  "returnType" : "String",
-  "parameters" : [ ]
 }, {
   "name" : "contextClick",
   "description" : "Thực hiện hành động click chuột phải vào một element. Thường dùng để mở các menu ngữ cảnh (context menu).",
@@ -1463,6 +1515,30 @@
     "description" : "Chuỗi con cần tìm trong văn bản nguồn"
   } ]
 }, {
+  "name" : "getQueryResultsAsString",
+  "description" : "Thực thi câu lệnh SELECT và trả về toàn bộ kết quả dưới dạng một chuỗi String duy nhất, được định dạng sẵn. Rất hữu ích để kiểm tra nhanh hoặc xác thực một phần dữ liệu.",
+  "category" : "DB",
+  "subCategory" : "Data Retrieval",
+  "example" : "// Lấy thông tin sinh viên và kiểm tra xem có chứa tên 'Nguyen Van A' không\nString result = databaseKeyword.getQueryResultsAsString(\"dbMariaLocal\", \"SELECT ma_sv, ten_sv FROM sinhvien\");\nassertion.assertContains(result, \"Nguyen Van A\");",
+  "returnValue" : "String - Toàn bộ bảng kết quả đã được định dạng.",
+  "note" : "Chuỗi trả về sẽ bao gồm cả tiêu đề cột và tất cả các dòng dữ liệu, mỗi dòng trên một hàng mới.",
+  "className" : "com.vtnet.netat.db.keywords.DatabaseKeyword",
+  "methodName" : "getQueryResultsAsString",
+  "returnType" : "String",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "profileName",
+    "description" : "Tên của profile kết nối CSDL"
+  }, {
+    "type" : "String",
+    "name" : "query",
+    "description" : "Câu lệnh SQL SELECT"
+  }, {
+    "type" : "Object[]",
+    "name" : "params",
+    "description" : "Các tham số cần truyền vào câu truy vấn"
+  } ]
+}, {
   "name" : "denySystemDialog",
   "description" : "Tự động tìm và nhấn vào các nút hệ thống có văn bản phủ định như 'Deny', 'Cancel', 'Don't allow'. Hữu ích để từ chối các yêu cầu cấp quyền hoặc đóng các thông báo hệ thống không mong muốn. Phương thức sẽ tìm kiếm các nút phổ biến và nhấn vào nút đầu tiên tìm thấy. Nếu không tìm thấy nút nào, một cảnh báo sẽ được ghi vào log.",
   "category" : "Mobile",
@@ -1547,6 +1623,22 @@
     "description" : "Biểu thức chính quy để so khớp"
   } ]
 }, {
+  "name" : "highlightElement",
+  "description" : "Tạm thời vẽ một đường viền màu đỏ xung quanh một element trên trang để dễ dàng nhận biết và gỡ lỗi trong quá trình chạy kịch bản.",
+  "category" : "Web",
+  "subCategory" : "Utility",
+  "example" : "// Làm nổi bật các element trong quá trình điền form\nwebKeyword.highlightElement(usernameFieldObject);\nwebKeyword.sendKeys(usernameFieldObject, \"admin@example.com\");\nwebKeyword.highlightElement(passwordFieldObject);\nwebKeyword.sendKeys(passwordFieldObject, \"password123\");\n\n// Làm nổi bật element để gỡ lỗi\nwebKeyword.waitForElementVisible(tableRowObject, 10);\nwebKeyword.highlightElement(tableRowObject);\nwebKeyword.takeElementScreenshot(tableRowObject, \"D:/screenshots/table_row.png\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, element cần làm nổi bật phải tồn tại trong DOM. Có thể throw NoSuchElementException nếu không tìm thấy element, StaleElementReferenceException nếu element không còn gắn với DOM, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "highlightElement",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "element cần làm nổi bật"
+  } ]
+}, {
   "name" : "assertNotEquals",
   "description" : "Khẳng định rằng hai giá trị không bằng nhau. Tự động xử lý so sánh giữa các kiểu dữ liệu khác nhau. Nếu chúng bằng nhau, kịch bản sẽ DỪNG LẠI.",
   "category" : "Assertion",
@@ -1565,22 +1657,6 @@
     "type" : "Object",
     "name" : "unexpectedValue",
     "description" : "Giá trị không mong muốn."
-  } ]
-}, {
-  "name" : "highlightElement",
-  "description" : "Tạm thời vẽ một đường viền màu đỏ xung quanh một element trên trang để dễ dàng nhận biết và gỡ lỗi trong quá trình chạy kịch bản.",
-  "category" : "Web",
-  "subCategory" : "Utility",
-  "example" : "// Làm nổi bật các element trong quá trình điền form\nwebKeyword.highlightElement(usernameFieldObject);\nwebKeyword.sendKeys(usernameFieldObject, \"admin@example.com\");\nwebKeyword.highlightElement(passwordFieldObject);\nwebKeyword.sendKeys(passwordFieldObject, \"password123\");\n\n// Làm nổi bật element để gỡ lỗi\nwebKeyword.waitForElementVisible(tableRowObject, 10);\nwebKeyword.highlightElement(tableRowObject);\nwebKeyword.takeElementScreenshot(tableRowObject, \"D:/screenshots/table_row.png\");",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, element cần làm nổi bật phải tồn tại trong DOM. Có thể throw NoSuchElementException nếu không tìm thấy element, StaleElementReferenceException nếu element không còn gắn với DOM, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
-  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
-  "methodName" : "highlightElement",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "ObjectUI",
-    "name" : "uiObject",
-    "description" : "element cần làm nổi bật"
   } ]
 }, {
   "name" : "clickWithJavascript",
@@ -1785,6 +1861,30 @@
     "type" : "String",
     "name" : "cookieName",
     "description" : "Tên of cookie cần lấy"
+  } ]
+}, {
+  "name" : "getCellValue",
+  "description" : "Thực thi câu lệnh SELECT và trả về giá trị của ô đầu tiên (dòng 1, cột 1). Rất hữu ích để lấy một giá trị duy nhất để xác thực hoặc sử dụng trong các bước tiếp theo.",
+  "category" : "DB",
+  "subCategory" : "Data Retrieval",
+  "example" : "// Lấy email của một người dùng cụ thể\nString email = databaseKeyword.getCellValue(\"mysql_dev\", \"SELECT email FROM users WHERE id = ?\", 123);",
+  "returnValue" : "String - Giá trị của ô dưới dạng chuỗi, hoặc null nếu không có kết quả.",
+  "note" : "Nếu câu truy vấn trả về nhiều dòng hoặc nhiều cột, keyword này sẽ chỉ lấy giá trị của cột đầu tiên ở dòng đầu tiên.",
+  "className" : "com.vtnet.netat.db.keywords.DatabaseKeyword",
+  "methodName" : "getCellValue",
+  "returnType" : "String",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "profileName",
+    "description" : "Tên của profile kết nối CSDL"
+  }, {
+    "type" : "String",
+    "name" : "query",
+    "description" : "Câu lệnh SQL SELECT, thường chỉ chọn một cột"
+  }, {
+    "type" : "Object[]",
+    "name" : "params",
+    "description" : "Các tham số cần truyền vào câu truy vấn"
   } ]
 }, {
   "name" : "startApplication",
@@ -3333,6 +3433,30 @@
     "type" : "String",
     "name" : "expectedText",
     "description" : "Chuỗi text mong đợi"
+  } ]
+}, {
+  "name" : "getRow",
+  "description" : "Thực thi câu lệnh SELECT và trả về bản ghi đầu tiên dưới dạng một Map. Hữu ích khi bạn cần kiểm tra nhiều trường của một đối tượng duy nhất.",
+  "category" : "DB",
+  "subCategory" : "Data Retrieval",
+  "example" : "// Lấy toàn bộ thông tin của một sản phẩm\nMap<String, Object> product = databaseKeyword.getRow(\"mysql_dev\", \"SELECT * FROM products WHERE id = ?\", \"PROD-001\");\nString productName = product.get(\"name\").toString();\ndouble price = (Double) product.get(\"price\");",
+  "returnValue" : "Map<String, Object> - Một Map biểu diễn bản ghi đầu tiên, với key là tên cột và value là giá trị.",
+  "note" : "Nếu câu truy vấn trả về nhiều bản ghi, chỉ có bản ghi đầu tiên được trả về. Trả về null nếu không có kết quả.",
+  "className" : "com.vtnet.netat.db.keywords.DatabaseKeyword",
+  "methodName" : "getRow",
+  "returnType" : "Map",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "profileName",
+    "description" : "Tên của profile kết nối CSDL"
+  }, {
+    "type" : "String",
+    "name" : "query",
+    "description" : "Câu lệnh SQL SELECT"
+  }, {
+    "type" : "Object[]",
+    "name" : "params",
+    "description" : "Các tham số cần truyền vào câu truy vấn"
   } ]
 }, {
   "name" : "getCurrentDateTime",
