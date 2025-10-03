@@ -523,19 +523,35 @@ public class MobileKeyword extends BaseUiKeyword {
             category = "Mobile",
             subCategory = "Assertion",
             parameters = {
-                    "uiObject: ObjectUI - Phần tử cần kiểm tra sự tồn tại"
+                    "uiObject: ObjectUI - Phần tử cần kiểm tra sự tồn tại",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh khi assertion thất bại"
             },
             returnValue = "void - Không trả về giá trị",
             example = "// Kiểm tra nút đăng nhập tồn tại\n" +
-                    "mobileKeyword.assertElementPresent(loginButton);",
+                    "mobileKeyword.assertElementPresent(loginButton);\n\n" +
+                    "// Với custom message\n" +
+                    "mobileKeyword.assertElementPresent(loginButton, \"Nút đăng nhập phải tồn tại trên màn hình\");\n\n" +
+                    "// Kiểm tra nhiều element với custom message\n" +
+                    "mobileKeyword.assertElementPresent(usernameField, \"Trường username phải có trong form\");\n" +
+                    "mobileKeyword.assertElementPresent(passwordField, \"Trường password phải có trong form\");",
             note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
                     "Đã xác định chính xác phần tử UI cần kiểm tra. " +
                     "Có thể throw AssertionError nếu phần tử không tồn tại trong DOM, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình điều khiển."
     )
     @Step("Check (Hard) element existence: {0.name}")
-    public void assertElementPresent(ObjectUI uiObject) {
-        super.verifyElementPresent(uiObject, 0); // timeout 0 for immediate check
+    public void assertElementPresent(ObjectUI uiObject, String... customMessage) {
+        execute(() -> {
+            try {
+                super.verifyElementPresent(uiObject, 0); // timeout 0 for immediate check
+            } catch (AssertionError e) {
+                if (customMessage.length > 0) {
+                    throw new AssertionError(customMessage[0], e);
+                }
+                throw e;
+            }
+            return null;
+        }, uiObject);
     }
 
     @NetatKeyword(
@@ -546,11 +562,17 @@ public class MobileKeyword extends BaseUiKeyword {
             category = "Mobile",
             subCategory = "Assertion",
             parameters = {
-                    "uiObject: ObjectUI - Phần tử cần kiểm tra tính hiển thị"
+                    "uiObject: ObjectUI - Phần tử cần kiểm tra tính hiển thị",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh khi assertion thất bại"
             },
             returnValue = "void - Không trả về giá trị",
             example = "// Kiểm tra thông báo thành công hiển thị\n" +
-                    "mobileKeyword.assertElementVisible(successMessage);",
+                    "mobileKeyword.assertElementVisible(successMessage);\n\n" +
+                    "// Với custom message\n" +
+                    "mobileKeyword.assertElementVisible(successMessage, \"Thông báo thành công phải hiển thị sau khi đăng nhập\");\n\n" +
+                    "// Kiểm tra các element UI hiển thị\n" +
+                    "mobileKeyword.assertElementVisible(menuButton, \"Nút menu phải hiển thị trên header\");\n" +
+                    "mobileKeyword.assertElementVisible(profileIcon, \"Icon profile phải hiển thị khi đã đăng nhập\");",
             note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
                     "Đã xác định chính xác phần tử UI cần kiểm tra. " +
                     "Có thể throw AssertionError nếu phần tử không tồn tại hoặc không hiển thị, " +
@@ -558,8 +580,18 @@ public class MobileKeyword extends BaseUiKeyword {
                     "hoặc StaleElementReferenceException nếu phần tử không còn gắn với DOM."
     )
     @Step("Check (Hard) element {0.name} is visible")
-    public void assertElementVisible(ObjectUI uiObject) {
-        super.verifyElementVisibleHard(uiObject, true);
+    public void assertElementVisible(ObjectUI uiObject, String... customMessage) {
+        execute(() -> {
+            try {
+                super.verifyElementVisibleHard(uiObject, true);
+            } catch (AssertionError e) {
+                if (customMessage.length > 0) {
+                    throw new AssertionError(customMessage[0], e);
+                }
+                throw e;
+            }
+            return null;
+        }, uiObject);
     }
 
     @NetatKeyword(
@@ -571,13 +603,20 @@ public class MobileKeyword extends BaseUiKeyword {
             subCategory = "Assertion",
             parameters = {
                     "uiObject: ObjectUI - Phần tử cần kiểm tra văn bản",
-                    "expectedText: String - Chuỗi văn bản mong đợi để so sánh"
+                    "expectedText: String - Chuỗi văn bản mong đợi để so sánh",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh khi assertion thất bại"
             },
             returnValue = "void - Không trả về giá trị",
             example = "// Kiểm tra tiêu đề màn hình\n" +
                     "mobileKeyword.assertTextEquals(title, \"Đăng nhập\");\n\n" +
-                    "// Xác minh thông báo lỗi\n" +
-                    "mobileKeyword.assertTextEquals(errorMessage, \"Email không hợp lệ\");",
+                    "// Xác minh thông báo lỗi với custom message\n" +
+                    "mobileKeyword.assertTextEquals(errorMessage, \"Email không hợp lệ\", \n" +
+                    "    \"Thông báo lỗi phải hiển thị đúng nội dung khi email sai format\");\n\n" +
+                    "// Kiểm tra label của các field\n" +
+                    "mobileKeyword.assertTextEquals(usernameLabel, \"Tên đăng nhập\", \n" +
+                    "    \"Label của trường username phải hiển thị đúng\");\n" +
+                    "mobileKeyword.assertTextEquals(passwordLabel, \"Mật khẩu\", \n" +
+                    "    \"Label của trường password phải hiển thị đúng\");",
             note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
                     "Phần tử UI cần kiểm tra phải hiển thị và chứa văn bản. " +
                     "Có thể throw AssertionError nếu văn bản của phần tử không khớp với giá trị mong đợi, " +
@@ -585,8 +624,18 @@ public class MobileKeyword extends BaseUiKeyword {
                     "hoặc StaleElementReferenceException nếu phần tử không còn gắn với DOM."
     )
     @Step("Check (Hard) text of {0.name} equals '{1}'")
-    public void assertTextEquals(ObjectUI uiObject, String expectedText) {
-        super.verifyTextHard(uiObject, expectedText);
+    public void assertTextEquals(ObjectUI uiObject, String expectedText, String... customMessage) {
+        execute(() -> {
+            try {
+                super.verifyTextHard(uiObject, expectedText);
+            } catch (AssertionError e) {
+                if (customMessage.length > 0) {
+                    throw new AssertionError(customMessage[0], e);
+                }
+                throw e;
+            }
+            return null;
+        }, uiObject, expectedText);
     }
 
     @NetatKeyword(
@@ -598,12 +647,21 @@ public class MobileKeyword extends BaseUiKeyword {
             category = "Mobile",
             subCategory = "Assertion",
             parameters = {
-                    "uiObject: ObjectUI - Phần tử cần kiểm tra trạng thái"
+                    "uiObject: ObjectUI - Phần tử cần kiểm tra trạng thái",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh khi assertion thất bại"
             },
             returnValue = "void - Không trả về giá trị",
             example = "// Kiểm tra checkbox đã được chọn\n" +
                     "mobileKeyword.tap(agreeToTermsCheckbox);\n" +
-                    "mobileKeyword.assertChecked(agreeToTermsCheckbox);",
+                    "mobileKeyword.assertChecked(agreeToTermsCheckbox);\n\n" +
+                    "// Với custom message\n" +
+                    "mobileKeyword.assertChecked(agreeToTermsCheckbox, \n" +
+                    "    \"Checkbox đồng ý điều khoản phải được chọn trước khi đăng ký\");\n\n" +
+                    "// Kiểm tra các toggle switches\n" +
+                    "mobileKeyword.assertChecked(notificationSwitch, \n" +
+                    "    \"Switch thông báo phải được bật theo mặc định\");\n" +
+                    "mobileKeyword.assertChecked(darkModeSwitch, \n" +
+                    "    \"Chế độ tối phải được kích hoạt sau khi user chọn\");",
             note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
                     "Phần tử UI cần kiểm tra phải là loại có thể chọn/bỏ chọn và hỗ trợ thuộc tính 'checked'. " +
                     "Có thể throw AssertionError nếu phần tử không ở trạng thái được chọn/bật, " +
@@ -611,12 +669,15 @@ public class MobileKeyword extends BaseUiKeyword {
                     "hoặc WebDriverException nếu không thể truy cập thuộc tính 'checked'."
     )
     @Step("Check (Hard) element {0.name} is checked/enabled")
-    public void assertChecked(ObjectUI uiObject) {
+    public void assertChecked(ObjectUI uiObject, String... customMessage) {
         execute(() -> {
             WebElement element = findElement(uiObject);
-            // Appium uses 'checked' attribute for both Android and iOS
             boolean isChecked = Boolean.parseBoolean(element.getAttribute("checked"));
-            Assert.assertTrue(isChecked, "HARD ASSERT FAILED: Element '" + uiObject.getName() + "' is not in checked/enabled state.");
+
+            String message = customMessage.length > 0 ? customMessage[0] :
+                    "HARD ASSERT FAILED: Element '" + uiObject.getName() + "' is not in checked/enabled state.";
+
+            Assert.assertTrue(isChecked, message);
             return null;
         }, uiObject);
     }
@@ -1387,7 +1448,8 @@ public class MobileKeyword extends BaseUiKeyword {
                 subCategory = "Assertion",
                 parameters = {
                         "uiObject: ObjectUI - Phần tử cần kiểm tra văn bản",
-                        "partialText: String - Chuỗi con cần tìm trong văn bản của phần tử"
+                        "partialText: String - Chuỗi con cần tìm trong văn bản của phần tử",
+                        "customMessage: String (optional) - Thông báo tùy chỉnh khi assertion thất bại"
                 },
                 returnValue = "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
                 example = "// Kiểm tra thông báo chào mừng có chứa tên người dùng\n" +
@@ -1401,306 +1463,459 @@ public class MobileKeyword extends BaseUiKeyword {
                         "hoặc StaleElementReferenceException nếu phần tử không còn gắn với DOM."
         )
         @Step("Check (Hard) if text of {0.name} contains '{1}'")
-        public void assertTextContains(ObjectUI uiObject, String partialText) {
-            // Gọi phương thức logic từ lớp cha
-            super.performTextContainsAssertion(uiObject, partialText, false);
+        public void assertTextContains(ObjectUI uiObject, String partialText,String... customMessages) {
+            super.performTextContainsAssertion(uiObject, partialText, false,customMessages);
         }
 
-        @NetatKeyword(
-                name = "assertNotChecked",
-                description = "Khẳng định rằng một switch, checkbox hoặc radio button đang ở trạng thái không được chọn/tắt. " +
-                        "Phương thức này kiểm tra thuộc tính 'checked' của phần tử và ném AssertionError nếu phần tử đang được chọn. " +
-                        "Áp dụng cho các phần tử có thể chọn/bỏ chọn như checkbox, radio button, toggle switch. " +
-                        "Lưu ý: Phần tử phải hỗ trợ thuộc tính 'checked', nếu không có thể gây ra lỗi.",
-                category = "Mobile",
-                subCategory = "Assertion",
-                parameters = {
-                        "uiObject: ObjectUI - Phần tử cần kiểm tra trạng thái"
-                },
-                returnValue = "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
-                example = "// Kiểm tra rằng tùy chọn chưa được chọn ban đầu\n" +
-                        "mobileKeyword.assertNotChecked(optionalFeatureCheckbox);\n\n" +
-                        "// Xác minh các radio button khác không được chọn\n" +
-                        "mobileKeyword.tap(option1RadioButton);\n" +
-                        "mobileKeyword.assertChecked(option1RadioButton);\n" +
-                        "mobileKeyword.assertNotChecked(option2RadioButton);",
-                note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
-                        "Phần tử cần kiểm tra phải tồn tại và có thuộc tính 'checked', và phải là loại có thể chọn/bỏ chọn (checkbox, radio button, switch). " +
-                        "Có thể throw AssertionError nếu phần tử đang ở trạng thái được chọn/bật, " +
-                        "NoSuchElementException nếu không tìm thấy phần tử, StaleElementReferenceException nếu phần tử không còn gắn với DOM, " +
-                        "hoặc WebDriverException nếu không thể lấy thuộc tính 'checked' của phần tử."
-        )
-        @Step("Check (Hard) if element {0.name} is not checked/enabled")
-        public void assertNotChecked(ObjectUI uiObject) {
-            execute(() -> {
-                WebElement element = findElement(uiObject);
-                boolean isChecked = Boolean.parseBoolean(element.getAttribute("checked"));
-                Assert.assertFalse(isChecked, "HARD ASSERT FAILED: Element '" + uiObject.getName() + "' is in checked/enabled state.");
-                return null;
-            }, uiObject);
-        }
+    @NetatKeyword(
+            name = "assertNotChecked",
+            description = "Khẳng định rằng một switch, checkbox hoặc radio button đang ở trạng thái không được chọn/tắt. " +
+                    "Phương thức này kiểm tra thuộc tính 'checked' của phần tử và ném AssertionError nếu phần tử đang được chọn. " +
+                    "Áp dụng cho các phần tử có thể chọn/bỏ chọn như checkbox, radio button, toggle switch. " +
+                    "Lưu ý: Phần tử phải hỗ trợ thuộc tính 'checked', nếu không có thể gây ra lỗi.",
+            category = "Mobile",
+            subCategory = "Assertion",
+            parameters = {
+                    "uiObject: ObjectUI - Phần tử cần kiểm tra trạng thái",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh khi assertion thất bại"
+            },
+            returnValue = "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
+            example = "// Kiểm tra rằng tùy chọn chưa được chọn ban đầu\n" +
+                    "mobileKeyword.assertNotChecked(optionalFeatureCheckbox);\n\n" +
+                    "// Với custom message\n" +
+                    "mobileKeyword.assertNotChecked(optionalFeatureCheckbox, \n" +
+                    "    \"Checkbox tính năng tùy chọn phải ở trạng thái chưa chọn khi khởi tạo\");\n\n" +
+                    "// Xác minh các radio button khác không được chọn\n" +
+                    "mobileKeyword.tap(option1RadioButton);\n" +
+                    "mobileKeyword.assertChecked(option1RadioButton);\n" +
+                    "mobileKeyword.assertNotChecked(option2RadioButton, \n" +
+                    "    \"Option 2 phải không được chọn khi Option 1 đã được chọn\");\n" +
+                    "mobileKeyword.assertNotChecked(option3RadioButton, \n" +
+                    "    \"Option 3 phải không được chọn khi Option 1 đã được chọn\");",
+            note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
+                    "Phần tử cần kiểm tra phải tồn tại và có thuộc tính 'checked', và phải là loại có thể chọn/bỏ chọn (checkbox, radio button, switch). " +
+                    "Có thể throw AssertionError nếu phần tử đang ở trạng thái được chọn/bật, " +
+                    "NoSuchElementException nếu không tìm thấy phần tử, StaleElementReferenceException nếu phần tử không còn gắn với DOM, " +
+                    "hoặc WebDriverException nếu không thể lấy thuộc tính 'checked' của phần tử."
+    )
+    @Step("Check (Hard) if element {0.name} is not checked/enabled")
+    public void assertNotChecked(ObjectUI uiObject, String... customMessage) {
+        execute(() -> {
+            WebElement element = findElement(uiObject);
+            boolean isChecked = Boolean.parseBoolean(element.getAttribute("checked"));
 
-        @NetatKeyword(
-                name = "assertEnabled",
-                description = "Khẳng định rằng một phần tử đang ở trạng thái có thể tương tác (enabled). " +
-                        "Phương thức này kiểm tra thuộc tính 'enabled' của phần tử và ném AssertionError nếu phần tử bị vô hiệu hóa (disabled). " +
-                        "Hữu ích khi cần đảm bảo một nút hoặc trường nhập liệu có thể tương tác được trước khi thực hiện các thao tác tiếp theo.",
-                category = "Mobile",
-                subCategory = "Assertion",
-                parameters = {
-                        "uiObject: ObjectUI - Phần tử cần kiểm tra trạng thái"
-                },
-                returnValue = "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
-                example = "// Kiểm tra nút đăng nhập được kích hoạt sau khi nhập thông tin\n" +
-                        "mobileKeyword.sendText(usernameInput, \"user@example.com\");\n" +
-                        "mobileKeyword.sendText(passwordInput, \"password123\");\n" +
-                        "mobileKeyword.assertEnabled(loginButton);\n\n" +
-                        "// Xác minh nút tiếp tục được kích hoạt sau khi đồng ý điều khoản\n" +
-                        "mobileKeyword.tap(agreeToTermsCheckbox);\n" +
-                        "mobileKeyword.assertEnabled(continueButton);",
-                note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
-                        "Phần tử cần kiểm tra phải tồn tại và có thuộc tính 'enabled', và phải là loại có thể được kích hoạt/vô hiệu hóa (button, input, etc.). " +
-                        "Có thể throw AssertionError nếu phần tử đang ở trạng thái bị vô hiệu hóa (disabled), " +
-                        "NoSuchElementException nếu không tìm thấy phần tử, StaleElementReferenceException nếu phần tử không còn gắn với DOM, " +
-                        "hoặc WebDriverException nếu không thể lấy thuộc tính 'enabled' của phần tử."
-        )
-        @Step("Check (Hard) if element {0.name} is enabled")
-        public void assertEnabled(ObjectUI uiObject) {
-            // Gọi phương thức logic từ lớp cha
-            super.performStateAssertion(uiObject, true, false);
-        }
+            String message = customMessage.length > 0 ? customMessage[0] :
+                    "HARD ASSERT FAILED: Element '" + uiObject.getName() + "' is in checked/enabled state.";
 
-        @NetatKeyword(
-                name = "assertElementNotPresent",
-                description = "Khẳng định rằng một phần tử KHÔNG tồn tại trong cấu trúc màn hình sau một khoảng thời gian chờ. " +
-                        "Hữu ích để xác minh rằng một phần tử đã bị xóa hoặc chưa được tạo. " +
-                        "Phương thức sẽ đợi trong khoảng thời gian chỉ định và kiểm tra xem phần tử có xuất hiện không, " +
-                        "nếu phần tử xuất hiện trong thời gian đó, một AssertionError sẽ được ném ra.",
-                category = "Mobile",
-                subCategory = "Assertion",
-                parameters = {
-                        "uiObject: ObjectUI - Phần tử cần kiểm tra sự không tồn tại",
-                        "timeoutInSeconds: int - Thời gian tối đa (giây) để đợi và xác nhận phần tử không xuất hiện"
-                },
-                returnValue = "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
-                example = "// Kiểm tra thông báo lỗi không xuất hiện sau khi nhập đúng thông tin\n" +
-                        "mobileKeyword.assertElementNotPresent(errorMessage, 3);\n\n" +
-                        "// Xác minh màn hình loading đã biến mất sau khi tải xong\n" +
-                        "mobileKeyword.assertElementNotPresent(loadingSpinner, 10);",
-                note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
-                        "Locator của phần tử cần kiểm tra phải hợp lệ. " +
-                        "Có thể throw AssertionError nếu phần tử xuất hiện trong khoảng thời gian chờ, " +
-                        "hoặc WebDriverException nếu có lỗi khi tương tác với trình điều khiển."
-        )
-        @Step("Check (Hard) if element {0.name} is not present within {1} seconds")
-        public void assertElementNotPresent(ObjectUI uiObject, int timeoutInSeconds) {
-            execute(() -> {
-                boolean isPresent = isElementPresent(uiObject, timeoutInSeconds);
-                Assert.assertFalse(isPresent,
-                        "HARD ASSERT FAILED: Element '" + uiObject.getName() + "' is still present after " + timeoutInSeconds + " seconds.");
-                return null;
-            }, uiObject, timeoutInSeconds);
-        }
+            Assert.assertFalse(isChecked, message);
+            return null;
+        }, uiObject);
+    }
 
-        @NetatKeyword(
-                name = "isElementPresent",
-                description = "Kiểm tra xem một phần tử có tồn tại trên màn hình hay không trong một khoảng thời gian chờ nhất định. " +
-                        "Khác với các phương thức assertion, phương thức này trả về kết quả boolean (true/false) thay vì ném ra ngoại lệ, " +
-                        "giúp xử lý các trường hợp phần tử có thể xuất hiện hoặc không. " +
-                        "Hữu ích cho các điều kiện rẽ nhánh trong kịch bản test.",
-                category = "Mobile",
-                subCategory = "Assertion",
-                parameters = {
-                        "uiObject: ObjectUI - Phần tử cần tìm kiếm",
-                        "timeoutInSeconds: int - Thời gian chờ tối đa (tính bằng giây)"
-                },
-                returnValue = "boolean - true nếu phần tử tồn tại, false nếu không tìm thấy sau thời gian chờ",
-                example = "// Kiểm tra thông báo lỗi và xử lý tương ứng\n" +
-                        "boolean isErrorVisible = mobileKeyword.isElementPresent(errorMessage, 5);\n" +
-                        "if (isErrorVisible) {\n" +
-                        "    mobileKeyword.tap(dismissButton);\n" +
-                        "} else {\n" +
-                        "    mobileKeyword.tap(nextButton);\n" +
-                        "}\n\n" +
-                        "// Kiểm tra popup và bỏ qua nếu có\n" +
-                        "if (mobileKeyword.isElementPresent(rateAppPopup, 3)) {\n" +
-                        "    mobileKeyword.tap(remindMeLaterButton);\n" +
-                        "}",
-                note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
-                        "Locator của phần tử cần kiểm tra phải hợp lệ. " +
-                        "Có thể throw WebDriverException nếu có lỗi khi tương tác với trình điều khiển."
-        )
-        @Step("Check if element {0.name} exists within {1} seconds")
-        public boolean isElementPresent(ObjectUI uiObject, int timeoutInSeconds) {
-            // Gọi cỗ máy execute() và bên trong gọi lại logic từ lớp cha
-            return execute(() -> super._isElementPresent(uiObject, timeoutInSeconds), uiObject, timeoutInSeconds);
-        }
-
-        @NetatKeyword(
-                name = "assertDisabled",
-                description = "Khẳng định rằng một phần tử đang ở trạng thái không thể tương tác (disabled). " +
-                        "Phương thức này kiểm tra thuộc tính 'enabled' của phần tử và ném AssertionError nếu phần tử đang được kích hoạt (enabled). " +
-                        "Hữu ích khi cần đảm bảo một nút hoặc trường nhập liệu đã bị vô hiệu hóa trong các trường hợp nhất định.",
-                category = "Mobile",
-                subCategory = "Assertion",
-                parameters = {
-                        "uiObject: ObjectUI - Phần tử cần kiểm tra trạng thái"
-                },
-                returnValue = "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
-                example = "// Kiểm tra nút đăng nhập bị vô hiệu hóa khi chưa nhập thông tin\n" +
-                        "mobileKeyword.assertDisabled(loginButton);\n\n" +
-                        "// Xác minh trường nhập số tiền bị vô hiệu hóa khi chọn số tiền cố định\n" +
-                        "mobileKeyword.tap(fixedAmountOption);\n" +
-                        "mobileKeyword.assertDisabled(amountInput);",
-                note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
-                        "Phần tử cần kiểm tra phải tồn tại và có thuộc tính 'enabled', và phải là loại có thể được kích hoạt/vô hiệu hóa (button, input, etc.). " +
-                        "Có thể throw AssertionError nếu phần tử đang ở trạng thái được kích hoạt (enabled), " +
-                        "NoSuchElementException nếu không tìm thấy phần tử, StaleElementReferenceException nếu phần tử không còn gắn với DOM, " +
-                        "hoặc WebDriverException nếu không thể lấy thuộc tính 'enabled' của phần tử."
-        )
-        @Step("Check (Hard) if element {0.name} is disabled")
-        public void assertDisabled(ObjectUI uiObject) {
-            super.performStateAssertion(uiObject, false, false);
-        }
-
-        @NetatKeyword(
-                name = "assertAttributeEquals",
-                description = "Khẳng định rằng một thuộc tính của phần tử có giá trị chính xác như mong đợi. " +
-                        "Hữu ích khi cần kiểm tra các thuộc tính đặc biệt như content-desc, resource-id, text, checked, v.v. " +
-                        "Phương thức này so sánh chính xác giá trị thuộc tính, phân biệt chữ hoa/thường và khoảng trắng.",
-                category = "Mobile",
-                subCategory = "Assertion",
-                parameters = {
-                        "uiObject: ObjectUI - Phần tử cần kiểm tra thuộc tính",
-                        "attributeName: String - Tên thuộc tính cần kiểm tra (ví dụ: 'content-desc', 'text', 'resource-id')",
-                        "expectedValue: String - Giá trị mong đợi của thuộc tính"
-                },
-                returnValue = "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
-                example = "// Kiểm tra thuộc tính content-desc của nút\n" +
-                        "mobileKeyword.assertAttributeEquals(menuButton, \"content-desc\", \"Menu chính\");\n\n" +
-                        "// Xác minh resource-id của một phần tử\n" +
-                        "mobileKeyword.assertAttributeEquals(loginButton, \"resource-id\", \"com.example.myapp:id/login_button\");",
-                note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
-                        "Phần tử cần kiểm tra phải tồn tại, thuộc tính cần kiểm tra phải tồn tại trên phần tử, " +
-                        "và cần biết chính xác tên thuộc tính theo nền tảng (Android/iOS có thể khác nhau). " +
-                        "Có thể throw AssertionError nếu giá trị thuộc tính không khớp với giá trị mong đợi, " +
-                        "NoSuchElementException nếu không tìm thấy phần tử, StaleElementReferenceException nếu phần tử không còn gắn với DOM, " +
-                        "hoặc WebDriverException nếu không thể lấy thuộc tính của phần tử."
-        )
-        @Step("Check (Hard) attribute '{1}' of {0.name} is '{2}'")
-        public void assertAttributeEquals(ObjectUI uiObject, String attributeName, String expectedValue) {
-            super.performAttributeAssertion(uiObject, attributeName, expectedValue, false);
-        }
-
-        @NetatKeyword(
-                name = "assertAttributeContains",
-                description = "Khẳng định rằng giá trị của một thuộc tính có chứa một chuỗi con. " +
-                        "Khác với assertAttributeEquals, phương thức này chỉ kiểm tra sự xuất hiện của chuỗi con trong giá trị thuộc tính, không yêu cầu khớp hoàn toàn. " +
-                        "Hữu ích khi giá trị thuộc tính có thể thay đổi nhưng vẫn chứa các phần quan trọng cần kiểm tra.",
-                category = "Mobile",
-                subCategory = "Assertion",
-                parameters = {
-                        "uiObject: ObjectUI - Phần tử cần kiểm tra thuộc tính",
-                        "attributeName: String - Tên thuộc tính cần kiểm tra",
-                        "partialValue: String - Chuỗi con cần tìm trong giá trị thuộc tính"
-                },
-                returnValue = "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
-                example = "// Kiểm tra thuộc tính content-desc có chứa từ khóa\n" +
-                        "mobileKeyword.assertAttributeContains(productItem, \"content-desc\", \"iPhone\");\n\n" +
-                        "// Xác minh resource-id có chứa phần nhất định\n" +
-                        "mobileKeyword.assertAttributeContains(anyElement, \"resource-id\", \"button_\");",
-                note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
-                        "Phần tử cần kiểm tra phải tồn tại, thuộc tính cần kiểm tra phải tồn tại trên phần tử, " +
-                        "và cần biết chính xác tên thuộc tính theo nền tảng (Android/iOS có thể khác nhau). " +
-                        "Có thể throw AssertionError nếu giá trị thuộc tính không chứa chuỗi con mong đợi, " +
-                        "NoSuchElementException nếu không tìm thấy phần tử, StaleElementReferenceException nếu phần tử không còn gắn với DOM, " +
-                        "WebDriverException nếu không thể lấy thuộc tính của phần tử, hoặc NullPointerException nếu giá trị thuộc tính là null."
-        )
-        @Step("Check (Hard) if attribute '{1}' of {0.name} contains '{2}'")
-        public void assertAttributeContains(ObjectUI uiObject, String attributeName, String partialValue) {
-            super.performAttributeContainsAssertion(uiObject, attributeName, partialValue, false);
-        }
-
-        @NetatKeyword(
-                name = "assertElementCount",
-                description = "Khẳng định rằng số lượng phần tử tìm thấy khớp với một con số mong đợi. " +
-                        "Hữu ích khi cần kiểm tra số lượng các mục trong danh sách, số lượng tùy chọn, hoặc xác minh rằng một nhóm phần tử có số lượng chính xác. " +
-                        "Phương thức này tìm tất cả các phần tử khớp với locator và so sánh số lượng với giá trị mong đợi.",
-                category = "Mobile",
-                subCategory = "Assertion",
-                parameters = {
-                        "uiObject: ObjectUI - Locator để tìm các phần tử",
-                        "expectedCount: int - Số lượng phần tử mong đợi"
-                },
-                returnValue = "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
-                example = "// Kiểm tra số lượng sản phẩm trong giỏ hàng\n" +
-                        "mobileKeyword.assertElementCount(cartItems, 3);\n\n" +
-                        "// Xác minh danh sách rỗng sau khi xóa\n" +
-                        "mobileKeyword.tap(clearAllButton);\n" +
-                        "mobileKeyword.assertElementCount(listItems, 0);",
-                note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
-                        "Locator của phần tử phải hợp lệ và có thể tìm thấy nhiều phần tử. " +
-                        "Nếu mong đợi không tìm thấy phần tử nào (count = 0), locator vẫn phải hợp lệ. " +
-                        "Có thể throw AssertionError nếu số lượng phần tử tìm thấy không khớp với số lượng mong đợi, " +
-                        "WebDriverException nếu có lỗi khi tương tác với trình điều khiển, hoặc InvalidSelectorException nếu locator không hợp lệ."
-        )
-        @Step("Check (Hard) if element {0.name} has {1} items")
-        public void assertElementCount(ObjectUI uiObject, int expectedCount) {
-            execute(() -> {
-                List<WebElement> elements = findElements(uiObject);
-                Assert.assertEquals(elements.size(), expectedCount,
-                        "HARD ASSERT FAILED: Expected to find " + expectedCount + " items, but found " + elements.size() + ".");
-                return null;
-            }, uiObject, expectedCount);
-        }
-
-        @NetatKeyword(
-                name = "assertTextWithOptions",
-                description = "So sánh văn bản của phần tử với nhiều tùy chọn linh hoạt: có thể bỏ qua sự khác biệt giữa chữ hoa/thường và/hoặc cắt khoảng trắng ở đầu/cuối. " +
-                        "Hữu ích khi cần kiểm tra nội dung mà không quan tâm đến định dạng chính xác. " +
-                        "Nếu văn bản không khớp theo các tùy chọn đã chọn, một AssertionError sẽ được ném ra.",
-                category = "Mobile",
-                subCategory = "Assertion",
-                parameters = {
-                        "uiObject: ObjectUI - Phần tử cần kiểm tra văn bản",
-                        "expectedText: String - Chuỗi văn bản mong đợi",
-                        "ignoreCase: boolean - true để bỏ qua sự khác biệt giữa chữ hoa/thường, false để phân biệt",
-                        "trimText: boolean - true để cắt khoảng trắng ở đầu/cuối trước khi so sánh, false để giữ nguyên"
-                },
-                returnValue = "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
-                example = "// Kiểm tra nội dung chào mừng, bỏ qua chữ hoa/thường và khoảng trắng\n" +
-                        "mobileKeyword.assertTextWithOptions(welcomeMessage, \"  xin chào, Người Dùng \", true, true);\n\n" +
-                        "// Kiểm tra địa chỉ email không phân biệt chữ hoa/thường\n" +
-                        "mobileKeyword.assertTextWithOptions(emailField, \"User@Example.com\", true, true);",
-                note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
-                        "Phần tử cần kiểm tra phải tồn tại và có thuộc tính văn bản (text), và phải hiển thị trên màn hình để có thể đọc văn bản. " +
-                        "Có thể throw AssertionError nếu văn bản không khớp theo các tùy chọn đã chọn, " +
-                        "NoSuchElementException nếu không tìm thấy phần tử, StaleElementReferenceException nếu phần tử không còn gắn với DOM, " +
-                        "WebDriverException nếu không thể lấy văn bản của phần tử, hoặc NullPointerException nếu văn bản của phần tử là null và expectedText không phải null."
-        )
-        @Step("Check (Hard) if text of {0.name} is '{1}' (ignoreCase={2}, trim={3})")
-        public void assertTextWithOptions(ObjectUI uiObject, String expectedText, boolean ignoreCase, boolean trimText) {
-            execute(() -> {
-                String actualText = getText(uiObject);
-                String realExpectedText = expectedText;
-
-                if (trimText) {
-                    actualText = (actualText != null) ? actualText.trim() : null;
-                    realExpectedText = (realExpectedText != null) ? realExpectedText.trim() : null;
+    @NetatKeyword(
+            name = "assertEnabled",
+            description = "Khẳng định rằng một phần tử đang ở trạng thái có thể tương tác (enabled). " +
+                    "Phương thức này kiểm tra thuộc tính 'enabled' của phần tử và ném AssertionError nếu phần tử bị vô hiệu hóa (disabled). " +
+                    "Hữu ích khi cần đảm bảo một nút hoặc trường nhập liệu có thể tương tác được trước khi thực hiện các thao tác tiếp theo.",
+            category = "Mobile",
+            subCategory = "Assertion",
+            parameters = {
+                    "uiObject: ObjectUI - Phần tử cần kiểm tra trạng thái",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh khi assertion thất bại"
+            },
+            returnValue = "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
+            example = "// Kiểm tra nút đăng nhập được kích hoạt sau khi nhập thông tin\n" +
+                    "mobileKeyword.sendText(usernameInput, \"user@example.com\");\n" +
+                    "mobileKeyword.sendText(passwordInput, \"password123\");\n" +
+                    "mobileKeyword.assertEnabled(loginButton);\n\n" +
+                    "// Với custom message\n" +
+                    "mobileKeyword.assertEnabled(loginButton, \n" +
+                    "    \"Nút đăng nhập phải được kích hoạt sau khi nhập đầy đủ thông tin\");\n\n" +
+                    "// Xác minh nút tiếp tục được kích hoạt sau khi đồng ý điều khoản\n" +
+                    "mobileKeyword.tap(agreeToTermsCheckbox);\n" +
+                    "mobileKeyword.assertEnabled(continueButton, \n" +
+                    "    \"Nút tiếp tục phải được kích hoạt sau khi đồng ý điều khoản\");\n\n" +
+                    "// Kiểm tra các input field có thể nhập liệu\n" +
+                    "mobileKeyword.assertEnabled(emailInput, \n" +
+                    "    \"Trường email phải cho phép nhập liệu\");\n" +
+                    "mobileKeyword.assertEnabled(phoneInput, \n" +
+                    "    \"Trường số điện thoại phải cho phép nhập liệu\");",
+            note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
+                    "Phần tử cần kiểm tra phải tồn tại và có thuộc tính 'enabled', và phải là loại có thể được kích hoạt/vô hiệu hóa (button, input, etc.). " +
+                    "Có thể throw AssertionError nếu phần tử đang ở trạng thái bị vô hiệu hóa (disabled), " +
+                    "NoSuchElementException nếu không tìm thấy phần tử, StaleElementReferenceException nếu phần tử không còn gắn với DOM, " +
+                    "hoặc WebDriverException nếu không thể lấy thuộc tính 'enabled' của phần tử."
+    )
+    @Step("Check (Hard) if element {0.name} is enabled")
+    public void assertEnabled(ObjectUI uiObject, String... customMessage) {
+        execute(() -> {
+            try {
+                // Gọi phương thức logic từ lớp cha
+                super.performStateAssertion(uiObject, true, false);
+            } catch (AssertionError e) {
+                if (customMessage.length > 0) {
+                    throw new AssertionError(customMessage[0], e);
                 }
+                throw e;
+            }
+            return null;
+        }, uiObject);
+    }
 
-                if (ignoreCase) {
-                    boolean areEqual = (actualText == null && realExpectedText == null) ||
-                            (actualText != null && actualText.equalsIgnoreCase(realExpectedText));
-                    Assert.assertTrue(areEqual, "HARD ASSERT FAILED: Text does not match (ignoring case). Expected: '" + realExpectedText + "', Actual: '" + actualText + "'");
-                } else {
-                    Assert.assertEquals(actualText, realExpectedText, "HARD ASSERT FAILED: Text does not match.");
+    @NetatKeyword(
+            name = "assertElementNotPresent",
+            description = "Khẳng định rằng một phần tử KHÔNG tồn tại trong cấu trúc màn hình sau một khoảng thời gian chờ. " +
+                    "Hữu ích để xác minh rằng một phần tử đã bị xóa hoặc chưa được tạo. " +
+                    "Phương thức sẽ đợi trong khoảng thời gian chỉ định và kiểm tra xem phần tử có xuất hiện không, " +
+                    "nếu phần tử xuất hiện trong thời gian đó, một AssertionError sẽ được ném ra.",
+            category = "Mobile",
+            subCategory = "Assertion",
+            parameters = {
+                    "uiObject: ObjectUI - Phần tử cần kiểm tra sự không tồn tại",
+                    "timeoutInSeconds: int - Thời gian tối đa (giây) để đợi và xác nhận phần tử không xuất hiện",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh khi assertion thất bại"
+            },
+            returnValue = "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
+            example = "// Kiểm tra thông báo lỗi không xuất hiện sau khi nhập đúng thông tin\n" +
+                    "mobileKeyword.assertElementNotPresent(errorMessage, 3);\n\n" +
+                    "// Với custom message\n" +
+                    "mobileKeyword.assertElementNotPresent(errorMessage, 3, \n" +
+                    "    \"Thông báo lỗi không được xuất hiện khi nhập thông tin hợp lệ\");\n\n" +
+                    "// Xác minh màn hình loading đã biến mất sau khi tải xong\n" +
+                    "mobileKeyword.assertElementNotPresent(loadingSpinner, 10, \n" +
+                    "    \"Loading spinner phải biến mất sau khi tải dữ liệu hoàn tất\");\n\n" +
+                    "// Kiểm tra popup không xuất hiện\n" +
+                    "mobileKeyword.assertElementNotPresent(adPopup, 5, \n" +
+                    "    \"Popup quảng cáo không được hiển thị trên màn hình chính\");\n" +
+                    "mobileKeyword.assertElementNotPresent(updateDialog, 3, \n" +
+                    "    \"Dialog cập nhật không được hiển thị khi app đã là phiên bản mới nhất\");",
+            note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
+                    "Locator của phần tử cần kiểm tra phải hợp lệ. " +
+                    "Có thể throw AssertionError nếu phần tử xuất hiện trong khoảng thời gian chờ, " +
+                    "hoặc WebDriverException nếu có lỗi khi tương tác với trình điều khiển."
+    )
+    @Step("Check (Hard) if element {0.name} is not present within {1} seconds")
+    public void assertElementNotPresent(ObjectUI uiObject, int timeoutInSeconds, String... customMessage) {
+        execute(() -> {
+            boolean isPresent = isElementPresent(uiObject, timeoutInSeconds);
+
+            String message = customMessage.length > 0 ? customMessage[0] :
+                    "HARD ASSERT FAILED: Element '" + uiObject.getName() + "' is still present after " + timeoutInSeconds + " seconds.";
+
+            Assert.assertFalse(isPresent, message);
+            return null;
+        }, uiObject, timeoutInSeconds);
+    }
+
+    @NetatKeyword(
+            name = "isElementPresent",
+            description = "Kiểm tra xem một phần tử có tồn tại trên màn hình hay không trong một khoảng thời gian chờ nhất định. " +
+                    "Khác với các phương thức assertion, phương thức này trả về kết quả boolean (true/false) thay vì ném ra ngoại lệ, " +
+                    "giúp xử lý các trường hợp phần tử có thể xuất hiện hoặc không. " +
+                    "Hữu ích cho các điều kiện rẽ nhánh trong kịch bản test.",
+            category = "Mobile",
+            subCategory = "Assertion",
+            parameters = {
+                    "uiObject: ObjectUI - Phần tử cần tìm kiếm",
+                    "timeoutInSeconds: int - Thời gian chờ tối đa (tính bằng giây)"
+            },
+            returnValue = "boolean - true nếu phần tử tồn tại, false nếu không tìm thấy sau thời gian chờ",
+            example = "// Kiểm tra thông báo lỗi và xử lý tương ứng\n" +
+                    "boolean isErrorVisible = mobileKeyword.isElementPresent(errorMessage, 5);\n" +
+                    "if (isErrorVisible) {\n" +
+                    "    mobileKeyword.tap(dismissButton);\n" +
+                    "} else {\n" +
+                    "    mobileKeyword.tap(nextButton);\n" +
+                    "}\n\n" +
+                    "// Kiểm tra popup và bỏ qua nếu có\n" +
+                    "if (mobileKeyword.isElementPresent(rateAppPopup, 3)) {\n" +
+                    "    mobileKeyword.tap(remindMeLaterButton);\n" +
+                    "}\n\n" +
+                    "// Xử lý điều kiện phức tạp với nhiều element\n" +
+                    "boolean hasWelcomeScreen = mobileKeyword.isElementPresent(welcomeTitle, 2);\n" +
+                    "boolean hasLoginForm = mobileKeyword.isElementPresent(loginForm, 2);\n" +
+                    "if (hasWelcomeScreen) {\n" +
+                    "    mobileKeyword.tap(getStartedButton);\n" +
+                    "} else if (hasLoginForm) {\n" +
+                    "    // User đã qua welcome screen, tiến hành đăng nhập\n" +
+                    "    mobileKeyword.sendText(usernameInput, \"testuser\");\n" +
+                    "}\n\n" +
+                    "// Kiểm tra optional elements\n" +
+                    "if (mobileKeyword.isElementPresent(tutorialOverlay, 1)) {\n" +
+                    "    mobileKeyword.tap(skipTutorialButton);\n" +
+                    "}",
+            note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
+                    "Locator của phần tử cần kiểm tra phải hợp lệ. " +
+                    "Có thể throw WebDriverException nếu có lỗi khi tương tác với trình điều khiển. " +
+                    "Method này không ném AssertionError, chỉ trả về boolean để xử lý logic."
+    )
+    @Step("Check if element {0.name} exists within {1} seconds")
+    public boolean isElementPresent(ObjectUI uiObject, int timeoutInSeconds) {
+        // Gọi cỗ máy execute() và bên trong gọi lại logic từ lớp cha
+        return execute(() -> super._isElementPresent(uiObject, timeoutInSeconds), uiObject, timeoutInSeconds);
+    }
+
+    @NetatKeyword(
+            name = "assertDisabled",
+            description = "Khẳng định rằng một phần tử đang ở trạng thái không thể tương tác (disabled). " +
+                    "Phương thức này kiểm tra thuộc tính 'enabled' của phần tử và ném AssertionError nếu phần tử đang được kích hoạt (enabled). " +
+                    "Hữu ích khi cần đảm bảo một nút hoặc trường nhập liệu đã bị vô hiệu hóa trong các trường hợp nhất định.",
+            category = "Mobile",
+            subCategory = "Assertion",
+            parameters = {
+                    "uiObject: ObjectUI - Phần tử cần kiểm tra trạng thái",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh khi assertion thất bại"
+            },
+            returnValue = "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
+            example = "// Kiểm tra nút đăng nhập bị vô hiệu hóa khi chưa nhập thông tin\n" +
+                    "mobileKeyword.assertDisabled(loginButton);\n\n" +
+                    "// Với custom message\n" +
+                    "mobileKeyword.assertDisabled(loginButton, \n" +
+                    "    \"Nút đăng nhập phải bị vô hiệu hóa khi chưa nhập đầy đủ thông tin\");\n\n" +
+                    "// Xác minh trường nhập số tiền bị vô hiệu hóa khi chọn số tiền cố định\n" +
+                    "mobileKeyword.tap(fixedAmountOption);\n" +
+                    "mobileKeyword.assertDisabled(amountInput, \n" +
+                    "    \"Trường nhập số tiền phải bị vô hiệu hóa khi chọn số tiền cố định\");\n\n" +
+                    "// Kiểm tra các button bị disable trong form\n" +
+                    "mobileKeyword.assertDisabled(submitButton, \n" +
+                    "    \"Nút gửi phải bị vô hiệu hóa khi form chưa hợp lệ\");\n" +
+                    "mobileKeyword.assertDisabled(saveButton, \n" +
+                    "    \"Nút lưu phải bị vô hiệu hóa khi không có thay đổi nào\");",
+            note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
+                    "Phần tử cần kiểm tra phải tồn tại và có thuộc tính 'enabled', và phải là loại có thể được kích hoạt/vô hiệu hóa (button, input, etc.). " +
+                    "Có thể throw AssertionError nếu phần tử đang ở trạng thái được kích hoạt (enabled), " +
+                    "NoSuchElementException nếu không tìm thấy phần tử, StaleElementReferenceException nếu phần tử không còn gắn với DOM, " +
+                    "hoặc WebDriverException nếu không thể lấy thuộc tính 'enabled' của phần tử."
+    )
+    @Step("Check (Hard) if element {0.name} is disabled")
+    public void assertDisabled(ObjectUI uiObject, String... customMessage) {
+        execute(() -> {
+            try {
+                super.performStateAssertion(uiObject, false, false);
+            } catch (AssertionError e) {
+                if (customMessage.length > 0) {
+                    throw new AssertionError(customMessage[0], e);
                 }
-                return null;
-            }, uiObject, expectedText, ignoreCase, trimText);
-        }
+                throw e;
+            }
+            return null;
+        }, uiObject);
+    }
 
-        @NetatKeyword(
+    @NetatKeyword(
+            name = "assertAttributeEquals",
+            description = "Khẳng định rằng một thuộc tính của phần tử có giá trị chính xác như mong đợi. " +
+                    "Hữu ích khi cần kiểm tra các thuộc tính đặc biệt như content-desc, resource-id, text, checked, v.v. " +
+                    "Phương thức này so sánh chính xác giá trị thuộc tính, phân biệt chữ hoa/thường và khoảng trắng.",
+            category = "Mobile",
+            subCategory = "Assertion",
+            parameters = {
+                    "uiObject: ObjectUI - Phần tử cần kiểm tra thuộc tính",
+                    "attributeName: String - Tên thuộc tính cần kiểm tra (ví dụ: 'content-desc', 'text', 'resource-id')",
+                    "expectedValue: String - Giá trị mong đợi của thuộc tính",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh khi assertion thất bại"
+            },
+            returnValue = "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
+            example = "// Kiểm tra thuộc tính content-desc của nút\n" +
+                    "mobileKeyword.assertAttributeEquals(menuButton, \"content-desc\", \"Menu chính\");\n\n" +
+                    "// Với custom message\n" +
+                    "mobileKeyword.assertAttributeEquals(menuButton, \"content-desc\", \"Menu chính\", \n" +
+                    "    \"Content description của nút menu phải là 'Menu chính'\");\n\n" +
+                    "// Xác minh resource-id của một phần tử\n" +
+                    "mobileKeyword.assertAttributeEquals(loginButton, \"resource-id\", \n" +
+                    "    \"com.example.myapp:id/login_button\", \n" +
+                    "    \"Resource ID của nút đăng nhập phải đúng theo thiết kế\");\n\n" +
+                    "// Kiểm tra thuộc tính text\n" +
+                    "mobileKeyword.assertAttributeEquals(titleLabel, \"text\", \"Đăng nhập\", \n" +
+                    "    \"Tiêu đề màn hình phải hiển thị 'Đăng nhập'\");\n" +
+                    "mobileKeyword.assertAttributeEquals(submitButton, \"text\", \"Gửi\", \n" +
+                    "    \"Text của nút submit phải là 'Gửi'\");",
+            note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
+                    "Phần tử cần kiểm tra phải tồn tại, thuộc tính cần kiểm tra phải tồn tại trên phần tử, " +
+                    "và cần biết chính xác tên thuộc tính theo nền tảng (Android/iOS có thể khác nhau). " +
+                    "Có thể throw AssertionError nếu giá trị thuộc tính không khớp với giá trị mong đợi, " +
+                    "NoSuchElementException nếu không tìm thấy phần tử, StaleElementReferenceException nếu phần tử không còn gắn với DOM, " +
+                    "hoặc WebDriverException nếu không thể lấy thuộc tính của phần tử."
+    )
+    @Step("Check (Hard) attribute '{1}' of {0.name} is '{2}'")
+    public void assertAttributeEquals(ObjectUI uiObject, String attributeName, String expectedValue, String... customMessage) {
+        execute(() -> {
+            try {
+                super.performAttributeAssertion(uiObject, attributeName, expectedValue, false);
+            } catch (AssertionError e) {
+                if (customMessage.length > 0) {
+                    throw new AssertionError(customMessage[0], e);
+                }
+                throw e;
+            }
+            return null;
+        }, uiObject, attributeName, expectedValue);
+    }
+
+    @NetatKeyword(
+            name = "assertAttributeContains",
+            description = "Khẳng định rằng giá trị của một thuộc tính có chứa một chuỗi con. " +
+                    "Khác với assertAttributeEquals, phương thức này chỉ kiểm tra sự xuất hiện của chuỗi con trong giá trị thuộc tính, không yêu cầu khớp hoàn toàn. " +
+                    "Hữu ích khi giá trị thuộc tính có thể thay đổi nhưng vẫn chứa các phần quan trọng cần kiểm tra.",
+            category = "Mobile",
+            subCategory = "Assertion",
+            parameters = {
+                    "uiObject: ObjectUI - Phần tử cần kiểm tra thuộc tính",
+                    "attributeName: String - Tên thuộc tính cần kiểm tra",
+                    "partialValue: String - Chuỗi con cần tìm trong giá trị thuộc tính",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh khi assertion thất bại"
+            },
+            returnValue = "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
+            example = "// Kiểm tra thuộc tính content-desc có chứa từ khóa\n" +
+                    "mobileKeyword.assertAttributeContains(productItem, \"content-desc\", \"iPhone\");\n\n" +
+                    "// Với custom message\n" +
+                    "mobileKeyword.assertAttributeContains(productItem, \"content-desc\", \"iPhone\", \n" +
+                    "    \"Content description của sản phẩm phải chứa từ 'iPhone'\");\n\n" +
+                    "// Xác minh resource-id có chứa phần nhất định\n" +
+                    "mobileKeyword.assertAttributeContains(anyElement, \"resource-id\", \"button_\", \n" +
+                    "    \"Resource ID phải chứa prefix 'button_' theo quy ước đặt tên\");\n\n" +
+                    "// Kiểm tra class name chứa thông tin cần thiết\n" +
+                    "mobileKeyword.assertAttributeContains(inputField, \"class\", \"EditText\", \n" +
+                    "    \"Class name phải chứa 'EditText' để xác nhận đây là trường nhập liệu\");\n" +
+                    "mobileKeyword.assertAttributeContains(imageView, \"class\", \"ImageView\", \n" +
+                    "    \"Class name phải chứa 'ImageView' để xác nhận đây là thành phần hiển thị hình ảnh\");",
+            note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
+                    "Phần tử cần kiểm tra phải tồn tại, thuộc tính cần kiểm tra phải tồn tại trên phần tử, " +
+                    "và cần biết chính xác tên thuộc tính theo nền tảng (Android/iOS có thể khác nhau). " +
+                    "Có thể throw AssertionError nếu giá trị thuộc tính không chứa chuỗi con mong đợi, " +
+                    "NoSuchElementException nếu không tìm thấy phần tử, StaleElementReferenceException nếu phần tử không còn gắn với DOM, " +
+                    "WebDriverException nếu không thể lấy thuộc tính của phần tử, hoặc NullPointerException nếu giá trị thuộc tính là null."
+    )
+    @Step("Check (Hard) if attribute '{1}' of {0.name} contains '{2}'")
+    public void assertAttributeContains(ObjectUI uiObject, String attributeName, String partialValue, String... customMessage) {
+        execute(() -> {
+            try {
+                super.performAttributeContainsAssertion(uiObject, attributeName, partialValue, false);
+            } catch (AssertionError e) {
+                if (customMessage.length > 0) {
+                    throw new AssertionError(customMessage[0], e);
+                }
+                throw e;
+            }
+            return null;
+        }, uiObject, attributeName, partialValue);
+    }
+
+    @NetatKeyword(
+            name = "assertElementCount",
+            description = "Khẳng định rằng số lượng phần tử tìm thấy khớp với một con số mong đợi. " +
+                    "Hữu ích khi cần kiểm tra số lượng các mục trong danh sách, số lượng tùy chọn, hoặc xác minh rằng một nhóm phần tử có số lượng chính xác. " +
+                    "Phương thức này tìm tất cả các phần tử khớp với locator và so sánh số lượng với giá trị mong đợi.",
+            category = "Mobile",
+            subCategory = "Assertion",
+            parameters = {
+                    "uiObject: ObjectUI - Locator để tìm các phần tử",
+                    "expectedCount: int - Số lượng phần tử mong đợi",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh khi assertion thất bại"
+            },
+            returnValue = "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
+            example = "// Kiểm tra số lượng sản phẩm trong giỏ hàng\n" +
+                    "mobileKeyword.assertElementCount(cartItems, 3);\n\n" +
+                    "// Với custom message\n" +
+                    "mobileKeyword.assertElementCount(cartItems, 3, \n" +
+                    "    \"Giỏ hàng phải chứa đúng 3 sản phẩm sau khi thêm\");\n\n" +
+                    "// Xác minh danh sách rỗng sau khi xóa\n" +
+                    "mobileKeyword.tap(clearAllButton);\n" +
+                    "mobileKeyword.assertElementCount(listItems, 0, \n" +
+                    "    \"Danh sách phải rỗng sau khi nhấn nút xóa tất cả\");\n\n" +
+                    "// Kiểm tra số lượng menu items\n" +
+                    "mobileKeyword.assertElementCount(menuItems, 5, \n" +
+                    "    \"Menu chính phải có đúng 5 mục theo thiết kế\");\n" +
+                    "// Kiểm tra số lượng notification\n" +
+                    "mobileKeyword.assertElementCount(notifications, 2, \n" +
+                    "    \"Phải có đúng 2 thông báo chưa đọc\");\n" +
+                    "// Kiểm tra số lượng tabs\n" +
+                    "mobileKeyword.assertElementCount(tabButtons, 4, \n" +
+                    "    \"Bottom navigation phải có đúng 4 tab\");",
+            note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
+                    "Locator của phần tử phải hợp lệ và có thể tìm thấy nhiều phần tử. " +
+                    "Nếu mong đợi không tìm thấy phần tử nào (count = 0), locator vẫn phải hợp lệ. " +
+                    "Có thể throw AssertionError nếu số lượng phần tử tìm thấy không khớp với số lượng mong đợi, " +
+                    "WebDriverException nếu có lỗi khi tương tác với trình điều khiển, hoặc InvalidSelectorException nếu locator không hợp lệ."
+    )
+    @Step("Check (Hard) if element {0.name} has {1} items")
+    public void assertElementCount(ObjectUI uiObject, int expectedCount, String... customMessage) {
+        execute(() -> {
+            List<WebElement> elements = findElements(uiObject);
+
+            String message = customMessage.length > 0 ? customMessage[0] :
+                    "HARD ASSERT FAILED: Expected to find " + expectedCount + " items, but found " + elements.size() + ".";
+
+            Assert.assertEquals(elements.size(), expectedCount, message);
+            return null;
+        }, uiObject, expectedCount);
+    }
+
+    @NetatKeyword(
+            name = "assertTextWithOptions",
+            description = "So sánh văn bản của phần tử với nhiều tùy chọn linh hoạt: có thể bỏ qua sự khác biệt giữa chữ hoa/thường và/hoặc cắt khoảng trắng ở đầu/cuối. " +
+                    "Hữu ích khi cần kiểm tra nội dung mà không quan tâm đến định dạng chính xác. " +
+                    "Nếu văn bản không khớp theo các tùy chọn đã chọn, một AssertionError sẽ được ném ra.",
+            category = "Mobile",
+            subCategory = "Assertion",
+            parameters = {
+                    "uiObject: ObjectUI - Phần tử cần kiểm tra văn bản",
+                    "expectedText: String - Chuỗi văn bản mong đợi",
+                    "ignoreCase: boolean - true để bỏ qua sự khác biệt giữa chữ hoa/thường, false để phân biệt",
+                    "trimText: boolean - true để cắt khoảng trắng ở đầu/cuối trước khi so sánh, false để giữ nguyên",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh khi assertion thất bại"
+            },
+            returnValue = "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
+            example = "// Kiểm tra nội dung chào mừng, bỏ qua chữ hoa/thường và khoảng trắng\n" +
+                    "mobileKeyword.assertTextWithOptions(welcomeMessage, \"  xin chào, Người Dùng \", true, true);\n\n" +
+                    "// Với custom message\n" +
+                    "mobileKeyword.assertTextWithOptions(welcomeMessage, \"  xin chào, Người Dùng \", true, true, \n" +
+                    "    \"Thông báo chào mừng phải khớp với nội dung mong đợi (bỏ qua format)\");\n\n" +
+                    "// Kiểm tra địa chỉ email không phân biệt chữ hoa/thường\n" +
+                    "mobileKeyword.assertTextWithOptions(emailField, \"User@Example.com\", true, true, \n" +
+                    "    \"Email hiển thị phải khớp không phân biệt chữ hoa/thường\");\n\n" +
+                    "// Kiểm tra title với trim nhưng phân biệt case\n" +
+                    "mobileKeyword.assertTextWithOptions(pageTitle, \" Trang Chủ \", false, true, \n" +
+                    "    \"Tiêu đề trang phải là 'Trang Chủ' (phân biệt chữ hoa/thường)\");\n" +
+                    "// Kiểm tra message với case-sensitive nhưng không trim\n" +
+                    "mobileKeyword.assertTextWithOptions(statusMessage, \"  Đang xử lý...  \", false, false, \n" +
+                    "    \"Thông báo trạng thái phải khớp chính xác bao gồm cả khoảng trắng\");",
+            note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
+                    "Phần tử cần kiểm tra phải tồn tại và có thuộc tính văn bản (text), và phải hiển thị trên màn hình để có thể đọc văn bản. " +
+                    "Có thể throw AssertionError nếu văn bản không khớp theo các tùy chọn đã chọn, " +
+                    "NoSuchElementException nếu không tìm thấy phần tử, StaleElementReferenceException nếu phần tử không còn gắn với DOM, " +
+                    "WebDriverException nếu không thể lấy văn bản của phần tử, hoặc NullPointerException nếu văn bản của phần tử là null và expectedText không phải null."
+    )
+    @Step("Check (Hard) if text of {0.name} is '{1}' (ignoreCase={2}, trim={3})")
+    public void assertTextWithOptions(ObjectUI uiObject, String expectedText, boolean ignoreCase, boolean trimText, String... customMessage) {
+        execute(() -> {
+            String actualText = getText(uiObject);
+            String realExpectedText = expectedText;
+
+            if (trimText) {
+                actualText = (actualText != null) ? actualText.trim() : null;
+                realExpectedText = (realExpectedText != null) ? realExpectedText.trim() : null;
+            }
+
+            if (ignoreCase) {
+                boolean areEqual = (actualText == null && realExpectedText == null) ||
+                        (actualText != null && actualText.equalsIgnoreCase(realExpectedText));
+
+                String message = customMessage.length > 0 ? customMessage[0] :
+                        "HARD ASSERT FAILED: Text does not match (ignoring case). Expected: '" + realExpectedText + "', Actual: '" + actualText + "'";
+
+                Assert.assertTrue(areEqual, message);
+            } else {
+                String message = customMessage.length > 0 ? customMessage[0] :
+                        "HARD ASSERT FAILED: Text does not match.";
+
+                Assert.assertEquals(actualText, realExpectedText, message);
+            }
+            return null;
+        }, uiObject, expectedText, ignoreCase, trimText);
+    }
+
+    @NetatKeyword(
                 name = "getElementHeight",
                 description = "Lấy và trả về chiều cao của một phần tử (tính bằng pixel). " +
                         "Hữu ích khi cần tính toán vị trí tương đối hoặc kiểm tra kích thước hiển thị của phần tử. " +
@@ -2188,24 +2403,54 @@ public class MobileKeyword extends BaseUiKeyword {
 
     @NetatKeyword(
             name = "assertNotificationText",
-            description = "Kiểm tra văn bản của một thông báo. Tự động chờ thông báo xuất hiện trước khi kiểm tra.",
+            description = "Kiểm tra văn bản của một thông báo. Tự động chờ thông báo xuất hiện trước khi kiểm tra. " +
+                    "Phương thức này sẽ tìm kiếm thông báo dựa trên một phần văn bản chứa trong đó, sau đó so sánh toàn bộ nội dung " +
+                    "với văn bản mong đợi. Hữu ích để xác minh nội dung thông báo push, toast message, hoặc system notification.",
             category = "Mobile",
             subCategory = "Assertion",
             parameters = {
-                    "containingText: String - Đoạn văn bản dùng để tìm thông báo.",
-                    "expectedText: String - Văn bản đầy đủ mong đợi của thông báo.",
-                    "timeoutInSeconds: int - Thời gian chờ tối đa."
+                    "containingText: String - Đoạn văn bản dùng để tìm thông báo (có thể là một phần của thông báo)",
+                    "expectedText: String - Văn bản đầy đủ mong đợi của thông báo",
+                    "timeoutInSeconds: int - Thời gian chờ tối đa (tính bằng giây) để thông báo xuất hiện",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh khi assertion thất bại"
             },
-            example = "mobileKeyword.assertNotificationText(\"Tin nhắn từ A\", \"Bạn có muốn trả lời không?\", 15);"
+            returnValue = "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
+            example = "// Kiểm tra thông báo tin nhắn\n" +
+                    "mobileKeyword.assertNotificationText(\"Tin nhắn từ A\", \"Bạn có muốn trả lời không?\", 15);\n\n" +
+                    "// Với custom message\n" +
+                    "mobileKeyword.assertNotificationText(\"Tin nhắn từ A\", \"Bạn có muốn trả lời không?\", 15, \n" +
+                    "    \"Nội dung thông báo tin nhắn phải khớp với văn bản mong đợi\");\n\n" +
+                    "// Kiểm tra thông báo email\n" +
+                    "mobileKeyword.assertNotificationText(\"Email mới\", \"Bạn có 3 email chưa đọc từ work@company.com\", 10, \n" +
+                    "    \"Thông báo email phải hiển thị đúng số lượng và người gửi\");\n\n" +
+                    "// Kiểm tra thông báo hệ thống\n" +
+                    "mobileKeyword.assertNotificationText(\"Cập nhật\", \"Ứng dụng đã được cập nhật thành công lên phiên bản 2.1.0\", 20, \n" +
+                    "    \"Thông báo cập nhật phải hiển thị đúng phiên bản mới\");\n" +
+                    "// Kiểm tra thông báo lỗi\n" +
+                    "mobileKeyword.assertNotificationText(\"Lỗi kết nối\", \"Không thể kết nối đến máy chủ. Vui lòng thử lại sau.\", 5, \n" +
+                    "    \"Thông báo lỗi phải hiển thị hướng dẫn rõ ràng cho người dùng\");\n" +
+                    "// Kiểm tra thông báo thành công\n" +
+                    "mobileKeyword.assertNotificationText(\"Thành công\", \"Giao dịch đã được xử lý thành công. Mã GD: TX123456\", 8, \n" +
+                    "    \"Thông báo giao dịch thành công phải bao gồm mã giao dịch\");",
+            note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
+                    "Hệ thống phải có quyền truy cập vào notification panel hoặc thông báo của ứng dụng. " +
+                    "containingText được sử dụng để định vị thông báo, sau đó toàn bộ nội dung sẽ được so sánh với expectedText. " +
+                    "Có thể throw AssertionError nếu nội dung thông báo không khớp với văn bản mong đợi, " +
+                    "TimeoutException nếu không tìm thấy thông báo chứa containingText trong thời gian chờ, " +
+                    "NoSuchElementException nếu thông báo biến mất trước khi đọc được nội dung, " +
+                    "hoặc WebDriverException nếu có lỗi khi tương tác với notification panel."
     )
     @Step("Assert notification text for notification containing '{0}'")
-    public void assertNotificationText(String containingText, String expectedText, int timeoutInSeconds) {
+    public void assertNotificationText(String containingText, String expectedText, int timeoutInSeconds, String... customMessage) {
         execute(() -> {
             WebElement notification = waitForNotification(containingText, timeoutInSeconds);
-            Assert.assertEquals(notification.getText(), expectedText, "HARD ASSERT FAILED: The message content does not match.");
+            String message = customMessage.length > 0 ? customMessage[0] :
+                    "HARD ASSERT FAILED: The message content does not match.";
+            Assert.assertEquals(notification.getText(), expectedText, message);
             return null;
         }, containingText, expectedText, timeoutInSeconds);
     }
+
 
     @NetatKeyword(
             name = "tapNotificationByText",
@@ -2352,7 +2597,6 @@ public class MobileKeyword extends BaseUiKeyword {
                 String deviceTimeStr = (String) ((AppiumDriver) DriverManager.getDriver())
                         .executeScript("mobile: getDeviceTime");
 
-                // TODO: Implement format parsing logic here
                 return deviceTimeStr != null ? deviceTimeStr : "";
             } catch (Exception e) {
                 logger.warn("Failed to get device time: {}", e.getMessage());

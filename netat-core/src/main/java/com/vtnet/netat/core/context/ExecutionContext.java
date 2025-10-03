@@ -1,6 +1,7 @@
 package com.vtnet.netat.core.context;
 
 import com.vtnet.netat.core.reporting.StepResult;
+import com.vtnet.netat.core.assertion.AllureSoftAssert; // ★ NEW
 import org.openqa.selenium.WebDriver;
 import io.appium.java_client.AppiumDriver;
 import org.testng.asserts.SoftAssert;
@@ -40,16 +41,23 @@ public class ExecutionContext {
     private boolean videoRecordingEnabled = false;
 
     // Test data and variables
-    private Map<String, Object> testData = new HashMap<>();
-    private Map<String, Object> globalVariables = new HashMap<>();
+    private final Map<String, Object> testData = new HashMap<>();
+    private final Map<String, Object> globalVariables = new HashMap<>();
 
     // Execution results
-    private List<StepResult> stepResults = new ArrayList<>();
+    private final List<StepResult> stepResults = new ArrayList<>();
 
     // Environment configuration
     private String environment = "default";
     private String baseUrl;
-    private Map<String, String> environmentConfig = new HashMap<>();
+    private final Map<String, String> environmentConfig = new HashMap<>();
+
+    // ★ SoftAssert được lưu trong context (per-thread instance)
+    private SoftAssert softAssert;
+
+    // ★ Cờ này không còn cần thiết để quyết định soft/hard ở level framework.
+    //   Giữ lại cho tương thích nếu nơi khác đang đọc nó.
+    private boolean isSoftAssert = false; // Mặc định là hard assert
 
     private ExecutionContext() {
         // Private constructor for singleton
@@ -229,32 +237,78 @@ public class ExecutionContext {
             }
             mobileDriver = null;
         }
+        // ★ reset các phần liên quan đến soft assert & dữ liệu
         softAssert = null;
         isSoftAssert = false;
         stepResults.clear();
         testData.clear();
-        // Keep global variables for next test
+        // Keep global variables for next test if đó là chủ đích
     }
 
-    private SoftAssert softAssert;
-    private boolean isSoftAssert = false; // Mặc định là hard assert
+    // =========================
+    // ★ SOFT ASSERT MANAGEMENT
+    // =========================
 
-    // ... (constructor và các getter/setter khác)
-
-    // --- THÊM CÁC GETTER/SETTER MỚI ---
+    /**
+     * Luôn trả về một instance AllureSoftAssert (lazy init).
+     * Instance này sẽ tự log PASS/FAIL step vào Allure, không ném exception tại chỗ.
+     */
     public SoftAssert getSoftAssert() {
+        if (softAssert == null) {
+            softAssert = new AllureSoftAssert(); // ★ ensure Allure-logged soft asserts
+        }
         return softAssert;
     }
 
+    /**
+     * Gán SoftAssert thủ công (ví dụ test đặc biệt). Không khuyến khích.
+     * Nên dùng getSoftAssert() để đảm bảo AllureSoftAssert.
+     */
     public void setSoftAssert(SoftAssert softAssert) {
         this.softAssert = softAssert;
     }
 
-    public boolean isSoftAssert() {
+    /**
+     * Reset soft assert về null (để lần sau lazy-init lại).
+     */
+    public void resetSoftAssert() { // ★ NEW
+        this.softAssert = null;
+    }
+
+    /**
+     * Gọi assertAll() nếu có và reset. Dùng khi muốn fail cả test nếu có soft-fail.
+     */
+    public void assertAllSoftAndReset() { // ★ NEW (tuỳ chọn)
+        if (softAssert != null) {
+            try {
+                softAssert.assertAll();
+            } finally {
+                softAssert = null;
+            }
+        }
+    }
+
+    // ============== Compatibility flags ==============
+
+    public boolean isSoftAssertFlag() { // ★ rename accessor để đỡ nhầm tên
         return isSoftAssert;
     }
 
-    public void setSoftAssert(boolean softAssert) {
-        isSoftAssert = softAssert;
+    /**
+     * @deprecated Không nên dùng cờ này để điều khiển logic soft/hard.
+     * Soft/Hard nên do keywords quyết định; SoftAssert sẽ luôn là AllureSoftAssert.
+     */
+    @Deprecated
+    public void setSoftAssertFlag(boolean softAssertFlag) { // ★ deprecated setter
+        isSoftAssert = softAssertFlag;
     }
+
+    // --- Giữ lại tên cũ cho tương thích (nếu đang gọi ở nơi khác) ---
+    /** @deprecated dùng {@link #isSoftAssertFlag()} */
+    @Deprecated
+    public boolean isSoftAssert() { return isSoftAssertFlag(); }
+
+    /** @deprecated dùng {@link #setSoftAssertFlag(boolean)} */
+    @Deprecated
+    public void setSoftAssert(boolean softAssert) { setSoftAssertFlag(softAssert); }
 }

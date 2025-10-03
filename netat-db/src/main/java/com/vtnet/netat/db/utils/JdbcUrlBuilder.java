@@ -30,7 +30,7 @@ public final class JdbcUrlBuilder {
             case "clickhouse":
                 return String.format("jdbc:clickhouse://%s:%d/%s", host, port, databaseName);
             default:
-                throw new IllegalArgumentException("Loại cơ sở dữ liệu không được hỗ trợ: " + dbType);
+                throw new IllegalArgumentException("Unsupported database type: " + dbType + ". Supported types: mariadb, mysql, postgresql, sqlserver, oracle, clickhouse.");
         }
     }
 }

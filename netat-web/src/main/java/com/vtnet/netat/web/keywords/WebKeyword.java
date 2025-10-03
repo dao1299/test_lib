@@ -6,6 +6,7 @@ import com.vtnet.netat.core.ui.ObjectUI;
 import com.vtnet.netat.core.utils.SecureText;
 import com.vtnet.netat.driver.ConfigReader;
 import com.vtnet.netat.driver.DriverManager;
+import com.vtnet.netat.driver.SessionManager;
 import com.vtnet.netat.web.ai.AiModelFactory;
 import dev.langchain4j.model.chat.ChatModel;
 import io.qameta.allure.Step;
@@ -1820,27 +1821,29 @@ public class WebKeyword extends BaseUiKeyword {
             subCategory = "Assertion",
             parameters = {
                     "uiObject: ObjectUI - element cần Verify",
-                    "isVisible: boolean - Trạng thái hiển thị mong đợi (true cho hiển thị, false cho bị ẩn)"
+                    "isVisible: boolean - Trạng thái hiển thị mong đợi (true cho hiển thị, false cho bị ẩn)",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh khi assertion thất bại"
             },
             returnValue = "void - Không trả về giá trị",
             example = "// Verify thông báo lỗi hiển thị sau khi gửi form không hợp lệ\n" +
                     "webKeyword.click(submitButtonObject); // Gửi form trống\n" +
-                    "webKeyword.verifyElementVisibleHard(errorMesssageObject, true);\n\n" +
-                    "// Verify element không hiển thị sau khi đóng\n" +
+                    "webKeyword.verifyElementVisibleHard(errorMessageObject, true);\n\n" +
+                    "// Verify element không hiển thị sau khi đóng với custom message\n" +
                     "webKeyword.click(closePopupButtonObject);\n" +
-                    "webKeyword.verifyElementVisibleHard(popupObject, false);",
+                    "webKeyword.verifyElementVisibleHard(popupObject, false, \"Popup phải được đóng hoàn toàn\");\n\n" +
+                    "// Verify element quan trọng phải hiển thị\n" +
+                    "webKeyword.verifyElementVisibleHard(loginButtonObject, true, \"Nút đăng nhập bắt buộc phải có\");",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
                     "và element cần Verify phải tồn tại trong DOM. " +
-                    "Có thể throw AssertionError nếu trạng thái hiển thị of element không khớp với kỳ vọng, " +
+                    "Có thể throw AssertionError nếu trạng thái hiển thị của element không khớp với kỳ vọng, " +
                     "NoSuchElementException nếu không tìm thấy element, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
     @Step("Verify (Hard) element {0.name} visibility is {1}")
-    public void verifyElementVisibleHard(ObjectUI uiObject, boolean isVisible) {
-        performVisibilityAssertion(uiObject, isVisible, false);
+    public void verifyElementVisibleHard(ObjectUI uiObject, boolean isVisible, String... customMessage) {
+        performVisibilityAssertion(uiObject, isVisible, false, customMessage);
     }
-
 
     @NetatKeyword(
             name = "verifyElementVisibleSoft",
@@ -1849,161 +1852,199 @@ public class WebKeyword extends BaseUiKeyword {
             subCategory = "Assertion",
             parameters = {
                     "uiObject: ObjectUI - element cần Verify",
-                    "isVisible: boolean - Trạng thái hiển thị mong đợi (true cho hiển thị, false cho bị ẩn)"
+                    "isVisible: boolean - Trạng thái hiển thị mong đợi (true cho hiển thị, false cho bị ẩn)",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh khi assertion thất bại"
             },
             returnValue = "void - Không trả về giá trị",
             example = "// Verify thông báo thành công hiển thị sau khi lưu\n" +
                     "webKeyword.click(saveButtonObject);\n" +
                     "webKeyword.verifyElementVisibleSoft(successMessageObject, true);\n" +
                     "// Kịch bản vẫn tiếp tục ngay cả khi thông báo không hiển thị\n\n" +
-                    "// Verify nhiều element trên trang\n" +
-                    "webKeyword.verifyElementVisibleSoft(headerLogoObject, true);\n" +
-                    "webKeyword.verifyElementVisibleSoft(navigationMenuObject, true);\n" +
+                    "// Verify với custom message\n" +
+                    "webKeyword.verifyElementVisibleSoft(headerLogoObject, true, \"Logo phải hiển thị trên header\");\n" +
+                    "webKeyword.verifyElementVisibleSoft(navigationMenuObject, true, \"Menu điều hướng bị thiếu\");\n" +
                     "webKeyword.click(mainButtonObject); // Thực hiện hành động tiếp theo",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
                     "và element cần Verify phải tồn tại trong DOM. " +
                     "Có thể throw NoSuchElementException nếu không tìm thấy element, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
-                    "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
+                    "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
+            explainer = "Verify (Soft) element {uiObject} is visible: {isVisible}"
     )
-    @Step("Verify (Soft) element {0.name} is visible: {1}")
-    public void verifyElementVisibleSoft(ObjectUI uiObject, boolean isVisible) {
-        performVisibilityAssertion(uiObject, isVisible, true);
+    public void verifyElementVisibleSoft(ObjectUI uiObject, boolean isVisible, String... customMessage) {
+        execute(() -> {
+                    performVisibilityAssertion(uiObject, isVisible, true, customMessage);
+                    return null;
+                },                       // params để hiện trong Allure
+                uiObject != null ? uiObject.getName() : "null",
+                isVisible,
+                (customMessage != null && customMessage.length > 0) ? customMessage[0] : ""
+        );
     }
 
     @NetatKeyword(
             name = "verifyTextHard",
-            description = "So sánh text of một element với một chuỗi ký tự mong đợi (phải khớp chính xác). Nếu không khớp, kịch bản sẽ DỪNG LẠI.",
+            description = "So sánh text của một element với một chuỗi ký tự mong đợi (phải khớp chính xác). Nếu không khớp, kịch bản sẽ DỪNG LẠI.",
             category = "Web",
             subCategory = "Assertion",
             parameters = {
-                    "uiObject: ObjectUI - element contains text cần Verify",
-                    "expectedText: String - Chuỗi text mong đợi"
+                    "uiObject: ObjectUI - element chứa text cần Verify",
+                    "expectedText: String - Chuỗi text mong đợi",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh khi assertion thất bại"
             },
             returnValue = "void - Không trả về giá trị",
             example = "// Verify tiêu đề trang chính xác\n" +
                     "webKeyword.verifyTextHard(pageTitleObject, \"Chào mừng đến với trang chủ\");\n\n" +
-                    "// Verify kết quả tính toán\n" +
+                    "// Verify kết quả tính toán với custom message\n" +
                     "webKeyword.sendKeys(number1InputObject, \"5\");\n" +
                     "webKeyword.sendKeys(number2InputObject, \"7\");\n" +
                     "webKeyword.click(calculateButtonObject);\n" +
-                    "webKeyword.verifyTextHard(resultObject, \"12\");",
+                    "webKeyword.verifyTextHard(resultObject, \"12\", \"Kết quả phép cộng không chính xác\");\n\n" +
+                    "// Verify thông tin quan trọng\n" +
+                    "webKeyword.verifyTextHard(userNameObject, \"admin\", \"Tên người dùng hiển thị sai\");",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
                     "và element cần Verify phải tồn tại trong DOM và có text. " +
-                    "Có thể throw AssertionError nếu text of element không khớp với giá trị mong đợi, " +
+                    "Có thể throw AssertionError nếu text của element không khớp với giá trị mong đợi, " +
                     "NoSuchElementException nếu không tìm thấy element, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
     @Step("Verify (Hard) text of {0.name} is '{1}'")
-    public void verifyTextHard(ObjectUI uiObject, String expectedText) {
-        performTextAssertion(uiObject, expectedText, false);
+    public void verifyTextHard(ObjectUI uiObject, String expectedText, String... customMessage) {
+        performTextAssertion(uiObject, expectedText, false, customMessage);
     }
 
     @NetatKeyword(
             name = "verifyTextSoft",
-            description = "So sánh text of một element với một chuỗi ký tự mong đợi (phải khớp chính xác). Nếu không khớp, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
+            description = "So sánh text của một element với một chuỗi ký tự mong đợi (phải khớp chính xác). Nếu không khớp, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
             category = "Web",
             subCategory = "Assertion",
             parameters = {
-                    "uiObject: ObjectUI - element contains text cần Verify",
-                    "expectedText: String - Chuỗi text mong đợi"
+                    "uiObject: ObjectUI - element chứa text cần Verify",
+                    "expectedText: String - Chuỗi text mong đợi",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh khi assertion thất bại"
             },
             returnValue = "void - Không trả về giá trị",
             example = "// Verify nhãn trên form đăng nhập\n" +
                     "webKeyword.verifyTextSoft(usernameLabelObject, \"Tên đăng nhập\");\n" +
                     "webKeyword.verifyTextSoft(passwordLabelObject, \"Mật khẩu\");\n" +
                     "// Kịch bản tiếp tục ngay cả khi có nhãn không khớp\n\n" +
-                    "// Verify nhiều giá trị hiển thị\n" +
-                    "webKeyword.verifyTextSoft(productNameObject, \"Điện thoại thông minh X1\");\n" +
-                    "webKeyword.verifyTextSoft(productPriceObject, \"5.990.000 ₫\");\n" +
+                    "// Verify nhiều giá trị hiển thị với custom message\n" +
+                    "webKeyword.verifyTextSoft(productNameObject, \"Điện thoại thông minh X1\", \"Tên sản phẩm không đúng\");\n" +
+                    "webKeyword.verifyTextSoft(productPriceObject, \"5.990.000 ₫\", \"Giá sản phẩm hiển thị sai\");\n" +
                     "webKeyword.click(addToCartButtonObject); // Tiếp tục thực hiện hành động",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
                     "và element cần Verify phải tồn tại trong DOM và có text. " +
                     "Có thể throw NoSuchElementException nếu không tìm thấy element, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
-                    "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
+                    "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
+            explainer = "Verify (Soft) text of {uiObject} is '{expectedText}'"
     )
-    @Step("Verify (Soft) text of {0.name} is '{1}'")
-    public void verifyTextSoft(ObjectUI uiObject, String expectedText) {
-        performTextAssertion(uiObject, expectedText, true);
+//    @Step("Verify (Soft) text of {0.name} is '{1}'")
+    public void verifyTextSoft(ObjectUI uiObject, String expectedText, String... customMessage) {
+
+        execute(() -> {
+                    performTextAssertion(uiObject, expectedText, true, customMessage);
+                    return null;
+                },
+                // Params để hiện trong Allure (đừng truyền thẳng object nặng)
+                uiObject != null ? uiObject.getName() : "null",
+                expectedText,
+                (customMessage != null && customMessage.length > 0) ? customMessage[0] : ""
+        );
     }
 
     @NetatKeyword(
             name = "verifyTextContainsHard",
-            description = "Verify text of một element có contains một chuỗi con hay không. Nếu không contains, kịch bản sẽ DỪNG LẠI.",
+            description = "Verify text của một element có chứa một chuỗi con hay không. Nếu không chứa, kịch bản sẽ DỪNG LẠI.",
             category = "Web",
             subCategory = "Assertion",
             parameters = {
-                    "uiObject: ObjectUI - element contains text cần Verify",
-                    "partialText: String - Chuỗi text con mong đợi"
+                    "uiObject: ObjectUI - element chứa text cần Verify",
+                    "partialText: String - Chuỗi text con mong đợi",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh khi assertion thất bại"
             },
             returnValue = "void - Không trả về giá trị",
-            example = "// Verify thông báo chào mừng có contains tên người dùng\n" +
+            example = "// Verify thông báo chào mừng có chứa tên người dùng\n" +
                     "webKeyword.verifyTextContainsHard(welcomeMessageObject, \"Xin chào\");\n\n" +
-                    "// Verify kết quả tìm kiếm có contains từ khóa đã tìm\n" +
+                    "// Verify kết quả tìm kiếm có chứa từ khóa đã tìm với custom message\n" +
                     "webKeyword.sendKeys(searchInputObject, \"laptop\");\n" +
                     "webKeyword.click(searchButtonObject);\n" +
                     "webKeyword.waitForElementVisible(searchResultsObject);\n" +
-                    "webKeyword.verifyTextContainsHard(searchResultTitleObject, \"laptop\");",
+                    "webKeyword.verifyTextContainsHard(searchResultTitleObject, \"laptop\", \n" +
+                    "    \"Kết quả tìm kiếm phải chứa từ khóa 'laptop'\");\n\n" +
+                    "// Verify URL chứa thông tin cần thiết\n" +
+                    "webKeyword.verifyTextContainsHard(currentUrlObject, \"/products\", \"URL phải chứa đường dẫn sản phẩm\");",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
                     "và element cần Verify phải tồn tại trong DOM và có text. " +
-                    "Có thể throw AssertionError nếu text of element không contains chuỗi con mong đợi, " +
+                    "Có thể throw AssertionError nếu text của element không chứa chuỗi con mong đợi, " +
                     "NoSuchElementException nếu không tìm thấy element, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
     @Step("Verify (Hard) text of {0.name} contains '{1}'")
-    public void verifyTextContainsHard(ObjectUI uiObject, String partialText) {
-        performTextContainsAssertion(uiObject, partialText, false);
+    public void verifyTextContainsHard(ObjectUI uiObject, String partialText, String... customMessage) {
+        performTextContainsAssertion(uiObject, partialText, false, customMessage);
     }
 
     @NetatKeyword(
             name = "verifyTextContainsSoft",
-            description = "Verify text of một element có contains một chuỗi con hay không. Nếu không contains, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
+            description = "Verify text của một element có chứa một chuỗi con hay không. Nếu không chứa, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
             category = "Web",
             subCategory = "Assertion",
             parameters = {
-                    "uiObject: ObjectUI - element contains text cần Verify",
-                    "partialText: String - Chuỗi text con mong đợi"
+                    "uiObject: ObjectUI - element chứa text cần Verify",
+                    "partialText: String - Chuỗi text con mong đợi",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh khi assertion thất bại"
             },
             returnValue = "void - Không trả về giá trị",
-            example = "// Verify kết quả tìm kiếm có contains thông tin số lượng\n" +
+            example = "// Verify kết quả tìm kiếm có chứa thông tin số lượng\n" +
                     "webKeyword.sendKeys(searchInputObject, \"điện thoại\");\n" +
                     "webKeyword.click(searchButtonObject);\n" +
                     "webKeyword.verifyTextContainsSoft(searchResultSummary, \"kết quả\");\n" +
                     "webKeyword.verifyTextContainsSoft(searchResultSummary, \"điện thoại\");\n\n" +
-                    "// Verify nhiều thông tin trên trang sản phẩm\n" +
-                    "webKeyword.verifyTextContainsSoft(productDescriptionObject, \"chống nước\");\n" +
-                    "webKeyword.verifyTextContainsSoft(productDescriptionObject, \"bảo hành\");\n" +
+                    "// Verify nhiều thông tin trên trang sản phẩm với custom message\n" +
+                    "webKeyword.verifyTextContainsSoft(productDescriptionObject, \"chống nước\", \"Mô tả thiếu thông tin chống nước\");\n" +
+                    "webKeyword.verifyTextContainsSoft(productDescriptionObject, \"bảo hành\", \"Thông tin bảo hành không được hiển thị\");\n" +
                     "webKeyword.click(addToCartButtonObject); // Tiếp tục thực hiện hành động",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
                     "và element cần Verify phải tồn tại trong DOM và có text. " +
                     "Có thể throw NoSuchElementException nếu không tìm thấy element, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
-                    "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
+                    "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
+            explainer = "Verify (Soft) text of {uiObject} contains '{partialText}'"
     )
-    @Step("Verify (Soft) text of {0.name} contains '{1}'")
-    public void verifyTextContainsSoft(ObjectUI uiObject, String partialText) {
-        performTextContainsAssertion(uiObject, partialText, true);
+    public void verifyTextContainsSoft(ObjectUI uiObject, String partialText, String... customMessage) {
+        execute(() -> {
+                    performTextContainsAssertion(uiObject, partialText, true, customMessage); // isSoft = true
+                    return null;
+                },
+                uiObject != null ? uiObject.getName() : "null",
+                partialText,
+                (customMessage != null && customMessage.length > 0) ? customMessage[0] : ""
+        );
     }
 
     @NetatKeyword(
             name = "verifyElementAttributeHard",
-            description = "Verify giá trị of một thuộc tính (attribute) trên element. Nếu giá trị không khớp, kịch bản sẽ DỪNG LẠI.",
+            description = "Verify giá trị của một thuộc tính (attribute) trên element. Nếu giá trị không khớp, kịch bản sẽ DỪNG LẠI.",
             category = "Web",
             subCategory = "Assertion",
             parameters = {
                     "uiObject: ObjectUI - element cần Verify",
-                    "attributeName: String - Tên of thuộc tính (ví dụ: 'href', 'class', 'value')",
-                    "expectedValue: String - Giá trị mong đợi of thuộc tính"
+                    "attributeName: String - Tên của thuộc tính (ví dụ: 'href', 'class', 'value')",
+                    "expectedValue: String - Giá trị mong đợi của thuộc tính",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh khi assertion thất bại"
             },
             returnValue = "void - Không trả về giá trị",
-            example = "// Verify đường dẫn of liên kết\n" +
+            example = "// Verify đường dẫn của liên kết\n" +
                     "webKeyword.verifyElementAttributeHard(linkObject, \"href\", \"/products/123\");\n\n" +
-                    "// Verify trạng thái of checkbox\n" +
+                    "// Verify trạng thái của checkbox với custom message\n" +
                     "webKeyword.click(termsCheckboxObject);\n" +
-                    "webKeyword.verifyElementAttributeHard(termsCheckboxObject, \"checked\", \"true\");",
+                    "webKeyword.verifyElementAttributeHard(termsCheckboxObject, \"checked\", \"true\", \n" +
+                    "    \"Checkbox điều khoản phải được chọn\");\n\n" +
+                    "// Verify thuộc tính quan trọng của form\n" +
+                    "webKeyword.verifyElementAttributeHard(formObject, \"method\", \"POST\", \"Form phải sử dụng method POST\");",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
                     "element cần Verify phải tồn tại trong DOM, " +
                     "và thuộc tính cần Verify phải tồn tại trên element. " +
@@ -2013,48 +2054,59 @@ public class WebKeyword extends BaseUiKeyword {
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
     @Step("Verify (Hard) attribute '{1}' of {0.name} is '{2}'")
-    public void verifyElementAttributeHard(ObjectUI uiObject, String attributeName, String expectedValue) {
-        performAttributeAssertion(uiObject, attributeName, expectedValue, false);
+    public void verifyElementAttributeHard(ObjectUI uiObject, String attributeName, String expectedValue, String... customMessage) {
+        performAttributeAssertion(uiObject, attributeName, expectedValue, false, customMessage);
     }
 
     @NetatKeyword(
             name = "verifyElementAttributeSoft",
-            description = "Verify giá trị of một thuộc tính (attribute) trên element. Nếu giá trị không khớp, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
+            description = "Verify giá trị của một thuộc tính (attribute) trên element. Nếu giá trị không khớp, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
             category = "Web",
             subCategory = "Assertion",
             parameters = {
                     "uiObject: ObjectUI - element cần Verify",
-                    "attributeName: String - Tên of thuộc tính (ví dụ: 'href', 'class', 'value')",
-                    "expectedValue: String - Giá trị mong đợi of thuộc tính"
+                    "attributeName: String - Tên của thuộc tính (ví dụ: 'href', 'class', 'value')",
+                    "expectedValue: String - Giá trị mong đợi của thuộc tính",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh khi assertion thất bại"
             },
             returnValue = "void - Không trả về giá trị",
-            example = "// Verify nhiều thuộc tính of một element\n" +
+            example = "// Verify nhiều thuộc tính của một element\n" +
                     "webKeyword.verifyElementAttributeSoft(buttonObject, \"type\", \"submit\");\n" +
                     "webKeyword.verifyElementAttributeSoft(buttonObject, \"class\", \"btn-primary\");\n" +
                     "webKeyword.click(buttonObject); // Tiếp tục thực hiện hành động\n\n" +
-                    "// Verify thuộc tính of nhiều element\n" +
-                    "webKeyword.verifyElementAttributeSoft(usernameInputObject, \"placeholder\", \"Nhập tên đăng nhập\");\n" +
-                    "webKeyword.verifyElementAttributeSoft(passwordInputObject, \"type\", \"password\");",
+                    "// Verify thuộc tính của nhiều element với custom message\n" +
+                    "webKeyword.verifyElementAttributeSoft(usernameInputObject, \"placeholder\", \"Nhập tên đăng nhập\", \n" +
+                    "    \"Placeholder của username input không đúng\");\n" +
+                    "webKeyword.verifyElementAttributeSoft(passwordInputObject, \"type\", \"password\", \n" +
+                    "    \"Input password phải có type là 'password'\");",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
                     "element cần Verify phải tồn tại trong DOM, " +
                     "và thuộc tính cần Verify phải tồn tại trên element. " +
                     "Có thể throw NoSuchElementException nếu không tìm thấy element, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
-                    "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
+                    "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
+            explainer = "Verify (Soft) attribute '{attributeName}' of {uiObject} is '{expectedValue}'"
     )
-    @Step("Verify (Soft) attribute '{1}' of {0.name} is '{2}'")
-    public void verifyElementAttributeSoft(ObjectUI uiObject, String attributeName, String expectedValue) {
-        performAttributeAssertion(uiObject, attributeName, expectedValue, true);
+    public void verifyElementAttributeSoft(ObjectUI uiObject, String attributeName, String expectedValue, String... customMessage) {
+        execute(() -> {
+                    performAttributeAssertion(uiObject, attributeName, expectedValue, true, customMessage); // isSoft = true
+                    return null;
+                },
+                uiObject != null ? uiObject.getName() : "null",
+                attributeName,
+                expectedValue,
+                (customMessage != null && customMessage.length > 0) ? customMessage[0] : ""
+        );
     }
-
 
     @NetatKeyword(
             name = "verifyUrlHard",
-            description = "So sánh URL of trang hiện tại với một chuỗi mong đợi (phải khớp chính xác). Nếu không khớp, kịch bản sẽ DỪNG LẠI.",
+            description = "So sánh URL của trang hiện tại với một chuỗi mong đợi (phải khớp chính xác). Nếu không khớp, kịch bản sẽ DỪNG LẠI.",
             category = "Web",
             subCategory = "Assertion",
             parameters = {
-                    "expectedUrl: String - URL đầy đủ mong đợi"
+                    "expectedUrl: String - URL đầy đủ mong đợi",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh khi assertion thất bại"
             },
             returnValue = "void - Không trả về giá trị",
             example = "// Verify URL sau khi đăng nhập thành công\n" +
@@ -2063,31 +2115,37 @@ public class WebKeyword extends BaseUiKeyword {
                     "webKeyword.click(loginButtonObject);\n" +
                     "webKeyword.waitForUrlContains(\"/dashboard\", 10);\n" +
                     "webKeyword.verifyUrlHard(\"https://example.com/dashboard\");\n\n" +
-                    "// Verify URL sau khi hoàn thành quy trình\n" +
+                    "// Verify URL sau khi hoàn thành quy trình với custom message\n" +
                     "webKeyword.click(completeOrderButtonObject);\n" +
                     "webKeyword.waitForPageLoaded(20);\n" +
-                    "webKeyword.verifyUrlHard(\"https://example.com/order-confirmation\");",
+                    "webKeyword.verifyUrlHard(\"https://example.com/order-confirmation\", \n" +
+                    "    \"Sau khi hoàn thành đơn hàng phải chuyển đến trang xác nhận\");\n\n" +
+                    "// Verify URL trong quy trình thanh toán\n" +
+                    "webKeyword.verifyUrlHard(\"https://example.com/checkout\", \"URL thanh toán không chính xác\");",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
                     "và trang web đã hoàn thành quá trình tải. " +
                     "Có thể throw AssertionError nếu URL hiện tại không khớp với URL mong đợi, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
     @Step("Verify (Hard) URL of the page is '{0}'")
-    public void verifyUrlHard(String expectedUrl) {
+    public void verifyUrlHard(String expectedUrl, String... customMessage) {
         execute(() -> {
             String actualUrl = DriverManager.getDriver().getCurrentUrl();
-            Assert.assertEquals(actualUrl, expectedUrl, "HARD ASSERT FAILED: URL of trang không khớp.");
+            String messageCustom = (customMessage != null && customMessage.length > 0) ? customMessage[0] : "";
+            String finalMessage = "HARD ASSERT FAILED: URL của trang không khớp. " + messageCustom;
+            Assert.assertEquals(actualUrl, expectedUrl, finalMessage);
             return null;
         }, expectedUrl);
     }
 
     @NetatKeyword(
             name = "verifyUrlSoft",
-            description = "So sánh URL of trang hiện tại với một chuỗi mong đợi. Nếu không khớp, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
+            description = "So sánh URL của trang hiện tại với một chuỗi mong đợi. Nếu không khớp, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
             category = "Web",
             subCategory = "Assertion",
             parameters = {
-                    "expectedUrl: String - URL đầy đủ mong đợi"
+                    "expectedUrl: String - URL đầy đủ mong đợi",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh khi assertion thất bại"
             },
             returnValue = "void - Không trả về giá trị",
             example = "// Verify URL trong quy trình nhiều bước\n" +
@@ -2095,69 +2153,85 @@ public class WebKeyword extends BaseUiKeyword {
                     "webKeyword.waitForPageLoaded(10);\n" +
                     "webKeyword.verifyUrlSoft(\"https://example.com/checkout/step1\");\n" +
                     "webKeyword.fillCheckoutForm(); // Tiếp tục quy trình ngay cả khi URL không đúng\n\n" +
-                    "// Verify nhiều điều kiện bao gồm URL\n" +
+                    "// Verify nhiều điều kiện bao gồm URL với custom message\n" +
                     "webKeyword.verifyElementVisibleSoft(pageHeaderObject, true);\n" +
-                    "webKeyword.verifyUrlSoft(\"https://example.com/products\");\n" +
-                    "webKeyword.click(firstProductObject); // Tiếp tục thực hiện hành động",
+                    "webKeyword.verifyUrlSoft(\"https://example.com/products\", \"Trang sản phẩm không load đúng URL\");\n" +
+                    "webKeyword.click(firstProductObject); // Tiếp tục thực hiện hành động\n\n" +
+                    "// Verify URL trong flow navigation\n" +
+                    "webKeyword.verifyUrlSoft(\"https://example.com/profile\", \"URL trang profile không chính xác\");",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
                     "và trang web đã hoàn thành quá trình tải. " +
-                    "Có thể throw WebDriverException nếu có lỗi khi tương tác với trình duyệt."
+                    "Có thể throw WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
+            explainer = "Verify (Soft) URL of the page is '{expectedUrl}'"
     )
-    @Step("Verify (Soft) URL of the page is '{0}'")
-    public void verifyUrlSoft(String expectedUrl) {
+    public void verifyUrlSoft(String expectedUrl, String... customMessage) {
         execute(() -> {
-            String actualUrl = DriverManager.getDriver().getCurrentUrl();
-            logger.info("Checking URL: Expected '{}', Actual '{}'", expectedUrl, actualUrl);
-            SoftAssert softAssert = ExecutionContext.getInstance().getSoftAssert();
-            if (softAssert == null) {
-                softAssert = new SoftAssert();
-                ExecutionContext.getInstance().setSoftAssert(softAssert);
-            }
-            softAssert.assertEquals(actualUrl, expectedUrl, "SOFT ASSERT FAILED: URL of trang không khớp.");
-            return null;
-        }, expectedUrl);
+                    String actualUrl = DriverManager.getDriver().getCurrentUrl();
+                    String finalMessage = String.format(
+                            "Page URL expected '%s' but was '%s'%s",
+                            expectedUrl,
+                            actualUrl,
+                            (customMessage != null && customMessage.length > 0 && customMessage[0] != null && !customMessage[0].trim().isEmpty())
+                                    ? " | " + customMessage[0]
+                                    : ""
+                    );
+                    logger.info("Checking URL: expected='{}', actual='{}'", expectedUrl, actualUrl);
+
+                    ExecutionContext.getInstance().getSoftAssert().assertEquals(actualUrl, expectedUrl, finalMessage);
+
+                    return null;
+                },
+                expectedUrl,
+                (customMessage != null && customMessage.length > 0) ? customMessage[0] : ""
+        );
     }
 
     @NetatKeyword(
             name = "verifyTitleHard",
-            description = "Verify tiêu đề (title) of trang web hiện tại. Nếu tiêu đề không khớp chính xác, kịch bản sẽ DỪNG LẠI.",
+            description = "Verify tiêu đề (title) của trang web hiện tại. Nếu tiêu đề không khớp chính xác, kịch bản sẽ DỪNG LẠI.",
             category = "Web",
             subCategory = "Assertion",
             parameters = {
-                    "expectedTitle: String - Tiêu đề trang mong đợi"
+                    "expectedTitle: String - Tiêu đề trang mong đợi",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh khi assertion thất bại"
             },
             returnValue = "void - Không trả về giá trị",
             example = "// Verify tiêu đề trang chủ\n" +
                     "webKeyword.navigateToUrl(\"https://example.com\");\n" +
                     "webKeyword.waitForPageLoaded(10);\n" +
                     "webKeyword.verifyTitleHard(\"Trang chủ - Website ABC\");\n\n" +
-                    "// Verify tiêu đề sau khi đăng nhập\n" +
+                    "// Verify tiêu đề sau khi đăng nhập với custom message\n" +
                     "webKeyword.sendKeys(usernameInputObject, \"testuser\");\n" +
                     "webKeyword.sendKeys(passwordInputObject, \"password123\");\n" +
                     "webKeyword.click(loginButtonObject);\n" +
                     "webKeyword.waitForPageLoaded(15);\n" +
-                    "webKeyword.verifyTitleHard(\"Dashboard - Website ABC\");",
+                    "webKeyword.verifyTitleHard(\"Dashboard - Website ABC\", \"Tiêu đề trang dashboard không chính xác\");\n\n" +
+                    "// Verify tiêu đề trang sản phẩm\n" +
+                    "webKeyword.verifyTitleHard(\"Chi tiết sản phẩm - iPhone 15\", \"Tiêu đề trang sản phẩm bị sai\");",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
                     "và trang web đã hoàn thành quá trình tải. " +
                     "Có thể throw AssertionError nếu tiêu đề trang không khớp với tiêu đề mong đợi, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
     @Step("Verify (Hard) page title is '{0}'")
-    public void verifyTitleHard(String expectedTitle) {
+    public void verifyTitleHard(String expectedTitle, String... customMessage) {
         execute(() -> {
             String actualTitle = DriverManager.getDriver().getTitle();
-            Assert.assertEquals(actualTitle, expectedTitle, "HARD ASSERT FAILED: Tiêu đề trang không khớp.");
+            String messageCustom = (customMessage != null && customMessage.length > 0) ? customMessage[0] : "";
+            String finalMessage = "HARD ASSERT FAILED: Title not match. actual: '"+actualTitle +"' expect: '"+expectedTitle+"'." + messageCustom;
+            Assert.assertEquals(actualTitle, expectedTitle, finalMessage);
             return null;
         }, expectedTitle);
     }
 
     @NetatKeyword(
             name = "verifyTitleSoft",
-            description = "So sánh tiêu đề of trang hiện tại với một chuỗi mong đợi. Nếu không khớp, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
+            description = "So sánh tiêu đề của trang hiện tại với một chuỗi mong đợi. Nếu không khớp, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
             category = "Web",
             subCategory = "Assertion",
             parameters = {
-                    "expectedTitle: String - Tiêu đề trang mong đợi"
+                    "expectedTitle: String - Tiêu đề trang mong đợi",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh khi assertion thất bại"
             },
             returnValue = "void - Không trả về giá trị",
             example = "// Verify tiêu đề trang giỏ hàng sau khi thêm sản phẩm\n" +
@@ -2166,26 +2240,38 @@ public class WebKeyword extends BaseUiKeyword {
                     "webKeyword.waitForPageLoaded(10);\n" +
                     "webKeyword.verifyTitleSoft(\"Giỏ hàng (1 sản phẩm)\");\n" +
                     "webKeyword.click(checkoutButtonObject); // Tiếp tục quy trình thanh toán\n\n" +
-                    "// Verify nhiều điều kiện trong quy trình đặt hàng\n" +
-                    "webKeyword.verifyTitleSoft(\"Thanh toán - Bước 1: Thông tin giao hàng\");\n" +
+                    "// Verify nhiều điều kiện trong quy trình đặt hàng với custom message\n" +
+                    "webKeyword.verifyTitleSoft(\"Thanh toán - Bước 1: Thông tin giao hàng\", \n" +
+                    "    \"Tiêu đề bước thanh toán không đúng\");\n" +
                     "webKeyword.verifyElementVisibleSoft(shippingFormObject, true);\n" +
                     "webKeyword.fillShippingForm(); // Tiếp tục điền form",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
                     "và trang web đã hoàn thành quá trình tải. " +
-                    "Có thể throw WebDriverException nếu có lỗi khi tương tác với trình duyệt."
+                    "Có thể throw WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
+            explainer = "Verify (Soft) page title is '{expectedTitle}'"
     )
-    @Step("Verify (Soft) page title is '{0}'")
-    public void verifyTitleSoft(String expectedTitle) {
+    public void verifyTitleSoft(String expectedTitle, String... customMessage) {
         execute(() -> {
-            String actualTitle = DriverManager.getDriver().getTitle();
-            SoftAssert softAssert = ExecutionContext.getInstance().getSoftAssert();
-            if (softAssert == null) {
-                softAssert = new SoftAssert();
-                ExecutionContext.getInstance().setSoftAssert(softAssert);
-            }
-            softAssert.assertEquals(actualTitle, expectedTitle, "SOFT ASSERT FAILED: Tiêu đề trang không khớp.");
-            return null;
-        }, expectedTitle);
+                    String actualTitle = DriverManager.getDriver().getTitle();
+
+                    String finalMessage = String.format(
+                            "Page title expected '%s' but was '%s'%s",
+                            expectedTitle,
+                            actualTitle,
+                            (customMessage != null && customMessage.length > 0 && customMessage[0] != null && !customMessage[0].trim().isEmpty())
+                                    ? " | " + customMessage[0].trim()
+                                    : ""
+                    );
+
+                    logger.info("Checking page title: expected='{}', actual='{}'", expectedTitle, actualTitle);
+
+                    ExecutionContext.getInstance().getSoftAssert().assertEquals(actualTitle, expectedTitle, finalMessage);
+
+                    return null;
+                },
+                expectedTitle,
+                (customMessage != null && customMessage.length > 0) ? customMessage[0] : ""
+        );
     }
 
     @NetatKeyword(
@@ -2194,7 +2280,8 @@ public class WebKeyword extends BaseUiKeyword {
             category = "Web",
             subCategory = "Assertion",
             parameters = {
-                    "uiObject: ObjectUI - element cần Verify"
+                    "uiObject: ObjectUI - element cần Verify",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh khi assertion thất bại"
             },
             returnValue = "void - Không trả về giá trị",
             example = "// Verify nút gửi form đã được kích hoạt sau khi điền đầy đủ thông tin\n" +
@@ -2203,21 +2290,24 @@ public class WebKeyword extends BaseUiKeyword {
                     "webKeyword.click(termsCheckboxObject);\n" +
                     "webKeyword.assertElementEnabled(submitButtonObject);\n" +
                     "webKeyword.click(submitButtonObject);\n\n" +
-                    "// Verify nút thanh toán đã được kích hoạt sau khi chọn phương thức thanh toán\n" +
+                    "// Verify nút thanh toán đã được kích hoạt với custom message\n" +
                     "webKeyword.click(creditCardOptionObject);\n" +
                     "webKeyword.sendKeys(cardNumberInputObject, \"1234567890123456\");\n" +
-                    "webKeyword.assertElementEnabled(payNowButtonObject);",
+                    "webKeyword.assertElementEnabled(payNowButtonObject, \"Nút thanh toán phải được kích hoạt sau khi nhập thẻ\");\n\n" +
+                    "// Verify button quan trọng phải enabled\n" +
+                    "webKeyword.assertElementEnabled(confirmOrderButtonObject, \"Nút xác nhận đơn hàng bắt buộc phải hoạt động\");",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
                     "và element cần Verify phải tồn tại trong DOM. " +
                     "Có thể throw AssertionError nếu element đang ở trạng thái disabled, " +
                     "NoSuchElementException nếu không tìm thấy element, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
-                    "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
+                    "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
+            explainer = "Verify (Hard) element '{uiObject}' is enabled"
     )
     @Step("Verify (Hard) element {0.name} is enabled")
-    public void assertElementEnabled(ObjectUI uiObject) {
+    public void assertElementEnabled(ObjectUI uiObject, String... customMessage) {
         execute(() -> {
-            performStateAssertion(uiObject, true, false);
+            performStateAssertion(uiObject, true, false, customMessage);
             return null;
         }, uiObject);
     }
@@ -2228,17 +2318,21 @@ public class WebKeyword extends BaseUiKeyword {
             category = "Web",
             subCategory = "Assertion",
             parameters = {
-                    "uiObject: ObjectUI - element cần Verify"
+                    "uiObject: ObjectUI - element cần Verify",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh khi assertion thất bại"
             },
             returnValue = "void - Không trả về giá trị",
             example = "// Verify nút gửi form bị vô hiệu hóa khi chưa điền thông tin bắt buộc\n" +
                     "webKeyword.navigateToUrl(\"https://example.com/registration\");\n" +
                     "webKeyword.waitForPageLoaded(10);\n" +
                     "webKeyword.assertElementDisabled(submitButtonBeforeFillForm);\n\n" +
-                    "// Verify nút thanh toán bị vô hiệu hóa khi chưa chọn phương thức thanh toán\n" +
+                    "// Verify nút thanh toán bị vô hiệu hóa với custom message\n" +
                     "webKeyword.click(checkoutButtonObject);\n" +
                     "webKeyword.waitForPageLoaded(15);\n" +
-                    "webKeyword.assertElementDisabled(paymentButtonObject);",
+                    "webKeyword.assertElementDisabled(paymentButtonObject, \n" +
+                    "    \"Nút thanh toán phải bị vô hiệu hóa khi chưa chọn phương thức\");\n\n" +
+                    "// Verify button bị khóa trong trial version\n" +
+                    "webKeyword.assertElementDisabled(premiumFeatureButtonObject, \"Tính năng premium phải bị khóa\");",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
                     "và element cần Verify phải tồn tại trong DOM. " +
                     "Có thể throw AssertionError nếu element đang ở trạng thái enabled, " +
@@ -2247,13 +2341,12 @@ public class WebKeyword extends BaseUiKeyword {
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
     @Step("Verify (Hard) element {0.name} is disabled")
-    public void assertElementDisabled(ObjectUI uiObject) {
+    public void assertElementDisabled(ObjectUI uiObject, String... customMessage) {
         execute(() -> {
-            performStateAssertion(uiObject, false, false);
+            performStateAssertion(uiObject, false, false, customMessage);
             return null;
         }, uiObject);
     }
-
 
     @NetatKeyword(
             name = "verifyElementEnabledSoft",
@@ -2261,29 +2354,34 @@ public class WebKeyword extends BaseUiKeyword {
             category = "Web",
             subCategory = "Assertion",
             parameters = {
-                    "uiObject: ObjectUI - element cần Verify"
+                    "uiObject: ObjectUI - element cần Verify",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh khi assertion thất bại"
             },
             returnValue = "void - Không trả về giá trị",
-            example = "// Verify nhiều trường nhập liệu option có thể tương tác\n" +
+            example = "// Verify nhiều trường nhập liệu tùy chọn có thể tương tác\n" +
                     "webKeyword.verifyElementEnabledSoft(optionalFieldObject);\n" +
                     "webKeyword.verifyElementEnabledSoft(commentFieldObject);\n" +
-                    "webKeyword.sendKeys(commentFieldObject, \"Đây is bình luận of tôi\"); // Tiếp tục ngay cả khi có trường không enabled\n\n" +
-                    "// Verify các nút chức năng trong trang quản trị\n" +
-                    "webKeyword.verifyElementEnabledSoft(addButtonObject);\n" +
-                    "webKeyword.verifyElementEnabledSoft(editButtonObject);\n" +
+                    "webKeyword.sendKeys(commentFieldObject, \"Đây là bình luận của tôi\"); // Tiếp tục ngay cả khi có trường không enabled\n\n" +
+                    "// Verify các nút chức năng trong trang quản trị với custom message\n" +
+                    "webKeyword.verifyElementEnabledSoft(addButtonObject, \"Nút thêm mới nên được kích hoạt\");\n" +
+                    "webKeyword.verifyElementEnabledSoft(editButtonObject, \"Nút chỉnh sửa nên hoạt động\");\n" +
                     "webKeyword.click(addButtonObject); // Tiếp tục thực hiện hành động",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
                     "và element cần Verify phải tồn tại trong DOM. " +
                     "Có thể throw NoSuchElementException nếu không tìm thấy element, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
-                    "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
+                    "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
+            explainer = "Verify (Soft) element '{uiObject}' is enabled"
     )
-    @Step("Verify (Soft) element {0.name} is enabled")
-    public void verifyElementEnabledSoft(ObjectUI uiObject) {
+//    @Step("Verify (Soft) element {0.name} is enabled")
+    public void verifyElementEnabledSoft(ObjectUI uiObject, String... customMessage) {
         execute(() -> {
-            performStateAssertion(uiObject, true, true);
-            return null;
-        }, uiObject);
+                    performStateAssertion(uiObject, true, true, customMessage);
+                    return null;
+                },
+                uiObject.getName(),
+                (customMessage != null && customMessage.length > 0) ? customMessage[0] : ""
+        );
     }
 
     @NetatKeyword(
@@ -2292,29 +2390,35 @@ public class WebKeyword extends BaseUiKeyword {
             category = "Web",
             subCategory = "Assertion",
             parameters = {
-                    "uiObject: ObjectUI - element cần Verify"
+                    "uiObject: ObjectUI - element cần Verify",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh khi assertion thất bại"
             },
             returnValue = "void - Không trả về giá trị",
             example = "// Verify các tính năng bị khóa trong phiên bản dùng thử\n" +
                     "webKeyword.verifyElementDisabledSoft(lockedFeatureButton);\n" +
                     "webKeyword.verifyElementDisabledSoft(premiumFeatureButton);\n" +
                     "webKeyword.click(upgradeAccountButton); // Tiếp tục thực hiện hành động\n\n" +
-                    "// Verify các trường không thể chỉnh sửa trong chế độ xem\n" +
+                    "// Verify các trường không thể chỉnh sửa trong chế độ xem với custom message\n" +
                     "webKeyword.click(viewModeButton);\n" +
-                    "webKeyword.verifyElementDisabledSoft(nameFieldInViewMode);\n" +
+                    "webKeyword.verifyElementDisabledSoft(nameFieldInViewMode, \n" +
+                    "    \"Trường tên phải bị vô hiệu hóa trong chế độ xem\");\n" +
                     "webKeyword.click(editModeButton); // Chuyển sang chế độ chỉnh sửa",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
                     "và element cần Verify phải tồn tại trong DOM. " +
                     "Có thể throw NoSuchElementException nếu không tìm thấy element, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
-                    "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
+                    "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
+            explainer = "Verify (Soft) element '{uiObject}' is disabled"
     )
-    @Step("Verify (Soft) element {0.name} is disabled")
-    public void verifyElementDisabledSoft(ObjectUI uiObject) {
+//    @Step("Verify (Soft) element {0.name} is disabled")
+    public void verifyElementDisabledSoft(ObjectUI uiObject, String... customMessage) {
         execute(() -> {
-            performStateAssertion(uiObject, false, true);
-            return null;
-        }, uiObject);
+                    performStateAssertion(uiObject, false, true, customMessage);
+                    return null;
+                },
+                uiObject.getName(),
+                (customMessage != null && customMessage.length > 0) ? customMessage[0] : ""
+        );
     }
 
     @NetatKeyword(
@@ -2323,29 +2427,33 @@ public class WebKeyword extends BaseUiKeyword {
             category = "Web",
             subCategory = "Assertion",
             parameters = {
-                    "uiObject: ObjectUI - element checkbox hoặc radio button cần Verify"
+                    "uiObject: ObjectUI - element checkbox hoặc radio button cần Verify",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh khi assertion thất bại"
             },
             returnValue = "void - Không trả về giá trị",
-            example = "// Verify checkbox \"Ghi nhớ đăng nhập\" is selected\n" +
+            example = "// Verify checkbox \"Ghi nhớ đăng nhập\" được chọn\n" +
                     "webKeyword.click(rememberMeCheckbox);\n" +
                     "webKeyword.assertElementSelected(rememberMeCheckbox);\n" +
                     "webKeyword.click(loginButtonObject);\n\n" +
-                    "// Verify radio button phương thức thanh toán is selected\n" +
+                    "// Verify radio button phương thức thanh toán được chọn với custom message\n" +
                     "webKeyword.click(creditCardRadioButton);\n" +
-                    "webKeyword.assertElementSelected(creditCardRadioButton);\n" +
-                    "webKeyword.sendKeys(cardNumberInputObject, \"1234567890123456\");",
+                    "webKeyword.assertElementSelected(creditCardRadioButton, \n" +
+                    "    \"Radio button thẻ tín dụng phải được chọn\");\n" +
+                    "webKeyword.sendKeys(cardNumberInputObject, \"1234567890123456\");\n\n" +
+                    "// Verify checkbox điều khoản bắt buộc\n" +
+                    "webKeyword.assertElementSelected(termsCheckboxObject, \"Checkbox điều khoản phải được chọn\");",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "element cần Verify phải tồn tại trong DOM và is checkbox hoặc radio button. " +
+                    "element cần Verify phải tồn tại trong DOM và là checkbox hoặc radio button. " +
                     "Có thể throw AssertionError nếu element không ở trạng thái được chọn, " +
                     "NoSuchElementException nếu không tìm thấy element, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
                     "WebDriverException nếu có lỗi khi tương tác với trình duyệt, " +
-                    "hoặc IllegalArgumentException nếu element không phải is checkbox hoặc radio button."
+                    "hoặc IllegalArgumentException nếu element không phải là checkbox hoặc radio button."
     )
     @Step("Verify (Hard) element {0.name} is selected")
-    public void assertElementSelected(ObjectUI uiObject) {
+    public void assertElementSelected(ObjectUI uiObject, String... customMessage) {
         execute(() -> {
-            super.performSelectionAssertion(uiObject, true, false);
+            super.performSelectionAssertion(uiObject, true, false, customMessage);
             return null;
         }, uiObject);
     }
@@ -2356,48 +2464,56 @@ public class WebKeyword extends BaseUiKeyword {
             category = "Web",
             subCategory = "Assertion",
             parameters = {
-                    "uiObject: ObjectUI - element checkbox hoặc radio button cần Verify"
+                    "uiObject: ObjectUI - element checkbox hoặc radio button cần Verify",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh khi assertion thất bại"
             },
             returnValue = "void - Không trả về giá trị",
-            example = "// Verify checkbox thông báo is not selected mặc định\n" +
+            example = "// Verify checkbox thông báo không được chọn mặc định\n" +
                     "webKeyword.assertElementNotSelected(newsletterCheckbox);\n" +
                     "webKeyword.click(newsletterCheckbox); // Chọn để nhận thông báo\n\n" +
-                    "// Verify các option bổ sung is not selected\n" +
-                    "webKeyword.assertElementNotSelected(expressShippingRadio);\n" +
-                    "webKeyword.assertElementNotSelected(giftWrappingCheckbox);\n" +
+                    "// Verify các tùy chọn bổ sung không được chọn với custom message\n" +
+                    "webKeyword.assertElementNotSelected(expressShippingRadio, \n" +
+                    "    \"Vận chuyển nhanh không nên được chọn mặc định\");\n" +
+                    "webKeyword.assertElementNotSelected(giftWrappingCheckbox, \n" +
+                    "    \"Gói quà không nên được chọn mặc định\");\n" +
                     "webKeyword.click(expressShippingRadio); // Chọn vận chuyển nhanh",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "element cần Verify phải tồn tại trong DOM và is checkbox hoặc radio button. " +
+                    "element cần Verify phải tồn tại trong DOM và là checkbox hoặc radio button. " +
                     "Có thể throw AssertionError nếu element đang ở trạng thái được chọn, " +
                     "NoSuchElementException nếu không tìm thấy element, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
                     "WebDriverException nếu có lỗi khi tương tác với trình duyệt, " +
-                    "hoặc IllegalArgumentException nếu element không phải is checkbox hoặc radio button."
+                    "hoặc IllegalArgumentException nếu element không phải là checkbox hoặc radio button."
     )
     @Step("Verify (Hard) element {0.name} is not selected")
-    public void assertElementNotSelected(ObjectUI uiObject) {
+    public void assertElementNotSelected(ObjectUI uiObject, String... customMessage) {
         execute(() -> {
-            super.performSelectionAssertion(uiObject, false, false);
+            super.performSelectionAssertion(uiObject, false, false, customMessage);
             return null;
         }, uiObject);
     }
 
     @NetatKeyword(
             name = "verifyTextMatchesRegexHard",
-            description = "Verify text of một element có khớp với một biểu thức chính quy (regex) hay không. Nếu không khớp, kịch bản sẽ DỪNG LẠI.",
+            description = "Verify text của một element có khớp với một biểu thức chính quy (regex) hay không. Nếu không khớp, kịch bản sẽ DỪNG LẠI.",
             category = "Web",
             subCategory = "Assertion",
             parameters = {
-                    "uiObject: ObjectUI - element contains text cần Verify",
-                    "pattern: String - Biểu thức chính quy để so khớp"
+                    "uiObject: ObjectUI - element chứa text cần Verify",
+                    "pattern: String - Biểu thức chính quy để so khớp",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh khi assertion thất bại"
             },
             returnValue = "void - Không trả về giá trị",
             example = "// Verify mã đơn hàng có đúng định dạng\n" +
                     "webKeyword.click(viewOrderButtonObject);\n" +
                     "webKeyword.waitForElementVisible(orderIdObject);\n" +
                     "webKeyword.verifyTextMatchesRegexHard(orderIdObject, \"^DH-\\\\d{5}$\"); // Khớp với DH-12345\n\n" +
-                    "// Verify số điện thoại có đúng định dạng\n" +
-                    "webKeyword.verifyTextMatchesRegexHard(phoneNumberObject, \"^(\\\\+84|0)[0-9]{9,10}$\");",
+                    "// Verify số điện thoại có đúng định dạng với custom message\n" +
+                    "webKeyword.verifyTextMatchesRegexHard(phoneNumberObject, \"^(\\\\+84|0)[0-9]{9,10}$\", \n" +
+                    "    \"Số điện thoại không đúng định dạng Việt Nam\");\n\n" +
+                    "// Verify email có đúng format\n" +
+                    "webKeyword.verifyTextMatchesRegexHard(emailObject, \"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\\\.[a-zA-Z]{2,}$\", \n" +
+                    "    \"Email không đúng định dạng\");",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
                     "element cần Verify phải tồn tại trong DOM và có text. " +
                     "Có thể throw AssertionError nếu text không khớp với biểu thức chính quy, " +
@@ -2407,129 +2523,156 @@ public class WebKeyword extends BaseUiKeyword {
                     "hoặc PatternSyntaxException nếu biểu thức chính quy không hợp lệ."
     )
     @Step("Verify (Hard) text of {0.name} matches regex '{1}'")
-    public void verifyTextMatchesRegexHard(ObjectUI uiObject, String pattern) {
+    public void verifyTextMatchesRegexHard(ObjectUI uiObject, String pattern, String... customMessage) {
         execute(() -> {
-            performRegexAssertion(uiObject, pattern, false);
+            performRegexAssertion(uiObject, pattern, false, customMessage);
             return null;
         }, uiObject, pattern);
     }
 
     @NetatKeyword(
             name = "verifyTextMatchesRegexSoft",
-            description = "Verify text of một element có khớp với một biểu thức chính quy (regex) hay không. Nếu không khớp, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
+            description = "Verify text của một element có khớp với một biểu thức chính quy (regex) hay không. Nếu không khớp, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
             category = "Web",
             subCategory = "Assertion",
             parameters = {
-                    "uiObject: ObjectUI - element contains text cần Verify",
-                    "pattern: String - Biểu thức chính quy để so khớp"
+                    "uiObject: ObjectUI - element chứa text cần Verify",
+                    "pattern: String - Biểu thức chính quy để so khớp",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh khi assertion thất bại"
             },
             returnValue = "void - Không trả về giá trị",
             example = "// Verify định dạng email hiển thị trên trang\n" +
                     "webKeyword.verifyTextMatchesRegexSoft(emailFormatObject, \"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\\\.[a-zA-Z]{2,}$\");\n" +
                     "webKeyword.click(continueButtonObject); // Tiếp tục thực hiện hành động\n\n" +
-                    "// Verify nhiều định dạng khác nhau trên trang thông tin\n" +
-                    "webKeyword.verifyTextMatchesRegexSoft(zipCodeObject, \"^\\\\d{5}(-\\\\d{4})?$\"); // Mã bưu điện\n" +
-                    "webKeyword.verifyTextMatchesRegexSoft(taxIdObject, \"^\\\\d{10}$\"); // Mã số thuế\n" +
+                    "// Verify nhiều định dạng khác nhau trên trang thông tin với custom message\n" +
+                    "webKeyword.verifyTextMatchesRegexSoft(zipCodeObject, \"^\\\\d{5}(-\\\\d{4})?$\", \n" +
+                    "    \"Mã bưu điện không đúng định dạng\"); // Mã bưu điện\n" +
+                    "webKeyword.verifyTextMatchesRegexSoft(taxIdObject, \"^\\\\d{10}$\", \n" +
+                    "    \"Mã số thuế phải có 10 chữ số\"); // Mã số thuế\n" +
                     "webKeyword.click(saveButtonObject); // Tiếp tục lưu thông tin",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
                     "element cần Verify phải tồn tại trong DOM và có text. " +
                     "Có thể throw NoSuchElementException nếu không tìm thấy element, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
                     "WebDriverException nếu có lỗi khi tương tác với trình duyệt, " +
-                    "hoặc PatternSyntaxException nếu biểu thức chính quy không hợp lệ."
+                    "hoặc PatternSyntaxException nếu biểu thức chính quy không hợp lệ.",
+            explainer = "Verify (Soft) text of {uiObject} matches regex '{pattern}'"
     )
-    @Step("Verify (Soft) text of {0.name} matches regex '{1}'")
-    public void verifyTextMatchesRegexSoft(ObjectUI uiObject, String pattern) {
+    public void verifyTextMatchesRegexSoft(ObjectUI uiObject, String pattern, String... customMessage) {
         execute(() -> {
-            performRegexAssertion(uiObject, pattern, true);
-            return null;
-        }, uiObject, pattern);
+                    performRegexAssertion(uiObject, pattern, true, customMessage);
+                    return null;
+                },
+                uiObject.getName(),
+                pattern,
+                (customMessage != null && customMessage.length > 0) ? customMessage[0] : ""
+        );
     }
 
     @NetatKeyword(
             name = "verifyAttributeContainsHard",
-            description = "Verify giá trị of một thuộc tính trên element có contains một chuỗi con hay không. Nếu không contains, kịch bản sẽ DỪNG LẠI.",
+            description = "Verify giá trị của một thuộc tính trên element có chứa một chuỗi con hay không. Nếu không chứa, kịch bản sẽ DỪNG LẠI.",
             category = "Web",
             subCategory = "Assertion",
             parameters = {
                     "uiObject: ObjectUI - element cần Verify",
-                    "attribute: String - Tên of thuộc tính (ví dụ: 'class')",
-                    "partialValue: String - Chuỗi con mong đợi"
+                    "attribute: String - Tên của thuộc tính (ví dụ: 'class')",
+                    "partialValue: String - Chuỗi con mong đợi",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh khi assertion thất bại"
             },
             returnValue = "void - Không trả về giá trị",
             example = "// Verify element có class 'active'\n" +
                     "webKeyword.click(tabButtonObject);\n" +
                     "webKeyword.verifyAttributeContainsHard(tabButtonObject, \"class\", \"active\");\n\n" +
-                    "// Verify đường dẫn hình ảnh contains tên sản phẩm\n" +
-                    "webKeyword.verifyAttributeContainsHard(productImageObject, \"src\", \"iphone-13\");",
+                    "// Verify đường dẫn hình ảnh chứa tên sản phẩm với custom message\n" +
+                    "webKeyword.verifyAttributeContainsHard(productImageObject, \"src\", \"iphone-13\", \n" +
+                    "    \"Hình ảnh sản phẩm phải chứa tên iphone-13\");\n\n" +
+                    "// Verify button có class quan trọng\n" +
+                    "webKeyword.verifyAttributeContainsHard(submitButtonObject, \"class\", \"btn-primary\", \n" +
+                    "    \"Nút submit phải có class btn-primary\");",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
                     "element cần Verify phải tồn tại trong DOM, " +
                     "và thuộc tính cần Verify phải tồn tại trên element. " +
-                    "Có thể throw AssertionError nếu giá trị thuộc tính không contains chuỗi con mong đợi, " +
+                    "Có thể throw AssertionError nếu giá trị thuộc tính không chứa chuỗi con mong đợi, " +
                     "NoSuchElementException nếu không tìm thấy element, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
     @Step("Verify (Hard) attribute '{1}' of {0.name} contains '{2}'")
-    public void verifyAttributeContainsHard(ObjectUI uiObject, String attribute, String partialValue) {
+    public void verifyAttributeContainsHard(ObjectUI uiObject, String attribute, String partialValue, String... customMessage) {
         execute(() -> {
-            performAttributeContainsAssertion(uiObject, attribute, partialValue, false);
+            performAttributeContainsAssertion(uiObject, attribute, partialValue, false, customMessage);
             return null;
         }, uiObject, attribute, partialValue);
     }
 
-
     @NetatKeyword(
             name = "verifyAttributeContainsSoft",
-            description = "Verify giá trị of một thuộc tính trên element có contains một chuỗi con hay không. Nếu không contains, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
+            description = "Verify giá trị của một thuộc tính trên element có chứa một chuỗi con hay không. Nếu không chứa, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
             category = "Web",
             subCategory = "Assertion",
             parameters = {
                     "uiObject: ObjectUI - element cần Verify",
-                    "attribute: String - Tên of thuộc tính (ví dụ: 'class')",
-                    "partialValue: String - Chuỗi con mong đợi"
+                    "attribute: String - Tên của thuộc tính (ví dụ: 'class')",
+                    "partialValue: String - Chuỗi con mong đợi",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh khi assertion thất bại"
             },
             returnValue = "void - Không trả về giá trị",
-            example = "// Verify thuộc tính style có contains thông tin hiển thị\n" +
+            example = "// Verify thuộc tính style có chứa thông tin hiển thị\n" +
                     "webKeyword.verifyAttributeContainsSoft(elementObject, \"style\", \"display: block\");\n" +
                     "webKeyword.click(elementObject); // Tiếp tục thực hiện hành động\n\n" +
-                    "// Verify nhiều thuộc tính of một element\n" +
-                    "webKeyword.verifyAttributeContainsSoft(buttonObject, \"class\", \"btn\");\n" +
-                    "webKeyword.verifyAttributeContainsSoft(buttonObject, \"data-action\", \"submit\");\n" +
+                    "// Verify nhiều thuộc tính của một element với custom message\n" +
+                    "webKeyword.verifyAttributeContainsSoft(buttonObject, \"class\", \"btn\", \n" +
+                    "    \"Button nên có class chứa 'btn'\");\n" +
+                    "webKeyword.verifyAttributeContainsSoft(buttonObject, \"data-action\", \"submit\", \n" +
+                    "    \"Button nên có data-action chứa 'submit'\");\n" +
                     "webKeyword.click(buttonObject); // Tiếp tục thực hiện hành động",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
                     "element cần Verify phải tồn tại trong DOM, " +
                     "và thuộc tính cần Verify phải tồn tại trên element. " +
                     "Có thể throw NoSuchElementException nếu không tìm thấy element, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
-                    "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
+                    "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
+            explainer = "Verify (Soft) attribute '{attribute}' of {uiObject} contains '{partialValue}'"
     )
-    @Step("Verify (Soft) attribute '{1}' of {0.name} contains '{2}'")
-    public void verifyAttributeContainsSoft(ObjectUI uiObject, String attribute, String partialValue) {
+    public void verifyAttributeContainsSoft(ObjectUI uiObject, String attribute, String partialValue, String... customMessage) {
         execute(() -> {
-            performAttributeContainsAssertion(uiObject, attribute, partialValue, true);
-            return null;
-        }, uiObject, attribute, partialValue);
+                    performAttributeContainsAssertion(uiObject, attribute, partialValue, true, customMessage);
+                    return null;
+                },
+                uiObject != null ? uiObject.getName() : "null",
+                attribute,
+                partialValue,
+                (customMessage != null && customMessage.length > 0) ? customMessage[0] : "");
     }
+
 
     @NetatKeyword(
             name = "verifyCssValueHard",
-            description = "So sánh giá trị of một thuộc tính CSS trên element. Nếu không khớp, kịch bản sẽ DỪNG LẠI.",
+            description = "So sánh giá trị của một thuộc tính CSS trên element. Nếu không khớp, kịch bản sẽ DỪNG LẠI.",
             category = "Web",
             subCategory = "Assertion",
             parameters = {
                     "uiObject: ObjectUI - element cần Verify",
                     "cssName: String - Tên thuộc tính CSS (ví dụ: 'color')",
-                    "expectedValue: String - Giá trị CSS mong đợi (ví dụ: 'rgb(255, 0, 0)')"
+                    "expectedValue: String - Giá trị CSS mong đợi (ví dụ: 'rgb(255, 0, 0)')",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh khi assertion thất bại"
             },
             returnValue = "void - Không trả về giá trị",
-            example = "// Verify màu of thông báo lỗi\n" +
+            example = "// Verify màu của thông báo lỗi\n" +
                     "webKeyword.click(submitButtonObject); // Gửi form không hợp lệ\n" +
                     "webKeyword.waitForElementVisible(errorMessageObject);\n" +
                     "webKeyword.verifyCssValueHard(errorMessageObject, \"color\", \"rgba(255, 0, 0, 1)\");\n\n" +
-                    "// Verify background-color of nút đã chọn\n" +
+                    "// Verify background-color của nút đã chọn với custom message\n" +
                     "webKeyword.click(selectButtonObject);\n" +
-                    "webKeyword.verifyCssValueHard(selectButtonObject, \"background-color\", \"rgba(0, 123, 255, 1)\");",
+                    "webKeyword.verifyCssValueHard(selectButtonObject, \"background-color\", \"rgba(0, 123, 255, 1)\", \n" +
+                    "    \"Màu nền của nút được chọn phải là màu xanh\");\n\n" +
+                    "// Verify font-size của tiêu đề\n" +
+                    "webKeyword.verifyCssValueHard(titleObject, \"font-size\", \"24px\", \n" +
+                    "    \"Kích thước font của tiêu đề phải là 24px\");\n\n" +
+                    "// Verify display property của element ẩn\n" +
+                    "webKeyword.verifyCssValueHard(hiddenElementObject, \"display\", \"none\", \n" +
+                    "    \"Element phải được ẩn với display: none\");",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
                     "và element cần Verify phải tồn tại trong DOM. " +
                     "Có thể throw AssertionError nếu giá trị CSS không khớp với giá trị mong đợi, " +
@@ -2538,102 +2681,128 @@ public class WebKeyword extends BaseUiKeyword {
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
     @Step("Verify (Hard) CSS '{1}' of {0.name} is '{2}'")
-    public void verifyCssValueHard(ObjectUI uiObject, String cssName, String expectedValue) {
+    public void verifyCssValueHard(ObjectUI uiObject, String cssName, String expectedValue, String... customMessage) {
         execute(() -> {
-            performCssValueAssertion(uiObject, cssName, expectedValue, false);
+            performCssValueAssertion(uiObject, cssName, expectedValue, false, customMessage);
             return null;
         }, uiObject, cssName, expectedValue);
     }
 
     @NetatKeyword(
             name = "verifyCssValueSoft",
-            description = "So sánh giá trị of một thuộc tính CSS trên element. Nếu không khớp, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
+            description = "So sánh giá trị của một thuộc tính CSS trên element. Nếu không khớp, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
             category = "Web",
             subCategory = "Assertion",
             parameters = {
                     "uiObject: ObjectUI - element cần Verify",
                     "cssName: String - Tên thuộc tính CSS (ví dụ: 'font-weight')",
-                    "expectedValue: String - Giá trị CSS mong đợi (ví dụ: '700')"
+                    "expectedValue: String - Giá trị CSS mong đợi (ví dụ: '700')",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh khi assertion thất bại"
             },
             returnValue = "void - Không trả về giá trị",
-            example = "// Verify độ đậm of tiêu đề\n" +
+            example = "// Verify độ đậm của tiêu đề\n" +
                     "webKeyword.verifyCssValueSoft(titleObject, \"font-weight\", \"700\");\n" +
                     "webKeyword.click(nextButtonObject); // Tiếp tục quy trình\n\n" +
-                    "// Verify màu nền of nút\n" +
-                    "webKeyword.verifyCssValueSoft(buttonObject, \"background-color\", \"rgb(0, 123, 255)\");\n" +
-                    "webKeyword.click(buttonObject);",
+                    "// Verify màu nền của nút với custom message\n" +
+                    "webKeyword.verifyCssValueSoft(buttonObject, \"background-color\", \"rgb(0, 123, 255)\", \n" +
+                    "    \"Nút phải có màu xanh theo thiết kế\");\n" +
+                    "webKeyword.click(buttonObject);\n\n" +
+                    "// Verify nhiều thuộc tính CSS\n" +
+                    "webKeyword.verifyCssValueSoft(headerObject, \"height\", \"60px\", \"Header phải có chiều cao 60px\");\n" +
+                    "webKeyword.verifyCssValueSoft(menuObject, \"display\", \"flex\", \"Menu phải sử dụng flexbox layout\");",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
                     "và element cần Verify phải tồn tại trong DOM. " +
                     "Có thể throw NoSuchElementException nếu không tìm thấy element, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
-                    "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
+                    "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt. " +
+                    "Giá trị CSS trả về có thể khác với giá trị trong stylesheet do browser normalization.",
+            explainer = "Verify (Soft) CSS '{cssName}' of {uiObject} is '{expectedValue}'"
     )
-    @Step("Verify (Soft) CSS '{1}' of {0.name} is '{2}'")
-    public void verifyCssValueSoft(ObjectUI uiObject, String cssName, String expectedValue) {
+    public void verifyCssValueSoft(ObjectUI uiObject, String cssName, String expectedValue, String... customMessage) {
         execute(() -> {
-            performCssValueAssertion(uiObject, cssName, expectedValue, true);
-            return null;
-        }, uiObject, cssName, expectedValue);
+                    performCssValueAssertion(uiObject, cssName, expectedValue, true, customMessage);
+                    return null;
+                },
+                uiObject != null ? uiObject.getName() : "null",
+                cssName,
+                expectedValue,
+                (customMessage != null && customMessage.length > 0) ? customMessage[0] : "");
     }
+
 
     @NetatKeyword(
             name = "verifyElementNotPresentHard",
-            description = "Khẳng định rằng một element does not exist trong DOM sau một khoảng thời gian chờ. Nếu element vẫn tồn tại, kịch bản sẽ DỪNG LẠI.",
+            description = "Khẳng định rằng một element không tồn tại trong DOM sau một khoảng thời gian chờ. Nếu element vẫn tồn tại, kịch bản sẽ DỪNG LẠI.",
             category = "Web",
             subCategory = "Assertion",
             parameters = {
                     "uiObject: ObjectUI - element cần Verify",
-                    "timeoutInSeconds: int - Thời gian chờ tối đa"
+                    "timeoutInSeconds: int - Thời gian chờ tối đa",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh khi assertion thất bại"
             },
             returnValue = "void - Không trả về giá trị",
             example = "// Verify element đã bị xóa\n" +
                     "webKeyword.click(deleteButtonObject);\n" +
                     "webKeyword.verifyElementNotPresentHard(deletedItemObject, 5);\n\n" +
-                    "// Verify thông báo lỗi đã biến mất\n" +
+                    "// Verify thông báo lỗi đã biến mất với custom message\n" +
                     "webKeyword.sendKeys(emailInput, \"valid@example.com\");\n" +
-                    "webKeyword.verifyElementNotPresentHard(errorMessageObject, 3);",
+                    "webKeyword.verifyElementNotPresentHard(errorMessageObject, 3, \n" +
+                    "    \"Thông báo lỗi phải biến mất sau khi nhập email hợp lệ\");\n\n" +
+                    "// Verify popup đã đóng\n" +
+                    "webKeyword.click(closePopupButtonObject);\n" +
+                    "webKeyword.verifyElementNotPresentHard(popupModalObject, 10, \n" +
+                    "    \"Popup modal phải đóng sau khi click nút đóng\");",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động. " +
                     "Có thể throw AssertionError nếu element vẫn tồn tại trong DOM sau thời gian chờ, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Verify (Hard) element {0.name} does not exist trong {1} seconds")
-    public void verifyElementNotPresentHard(ObjectUI uiObject, int timeoutInSeconds) {
+    @Step("Verify (Hard) element {0.name} is not present after {1} seconds")
+    public void verifyElementNotPresentHard(ObjectUI uiObject, int timeoutInSeconds, String... customMessage) {
         execute(() -> {
             boolean isPresent = isElementPresent(uiObject, timeoutInSeconds);
-            Assert.assertFalse(isPresent, "HARD ASSERT FAILED: element '" + uiObject.getName() + "' vẫn tồn tại sau " + timeoutInSeconds + " seconds.");
+            String message = customMessage.length > 0 ? customMessage[0] :
+                    "HARD ASSERT FAILED: element '{0}' not found in {1} seconds";
+            Assert.assertFalse(isPresent, message);
             return null;
         }, uiObject, timeoutInSeconds);
     }
 
     @NetatKeyword(
             name = "verifyOptionSelectedByLabelHard",
-            description = "Khẳng định rằng option có text hiển thị (label) cụ thể đang được chọn in dropdown.",
+            description = "Khẳng định rằng option có text hiển thị (label) cụ thể đang được chọn trong dropdown.",
             category = "Web",
             subCategory = "Assertion",
             parameters = {
                     "uiObject: ObjectUI - element dropdown (thẻ select)",
-                    "expectedLabel: String - text hiển thị of option mong đợi"
+                    "expectedLabel: String - text hiển thị của option mong đợi",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh khi assertion thất bại"
             },
             returnValue = "void - Không trả về giá trị",
             example = "// Verify quốc gia đã chọn\n" +
                     "webKeyword.selectByVisibleText(countryDropdown, \"Việt Nam\");\n" +
                     "webKeyword.verifyOptionSelectedByLabelHard(countryDropdown, \"Việt Nam\");\n\n" +
-                    "// Verify danh mục đã chọn\n" +
-                    "webKeyword.verifyOptionSelectedByLabelHard(categoryDropdown, \"Điện thoại\");",
+                    "// Verify danh mục đã chọn với custom message\n" +
+                    "webKeyword.verifyOptionSelectedByLabelHard(categoryDropdown, \"Điện thoại\", \n" +
+                    "    \"Danh mục điện thoại phải được chọn\");\n\n" +
+                    "// Verify trạng thái đơn hàng\n" +
+                    "webKeyword.verifyOptionSelectedByLabelHard(statusDropdown, \"Đang xử lý\", \n" +
+                    "    \"Trạng thái đơn hàng phải là 'Đang xử lý'\");",
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "element cần Verify phải is thẻ select và tồn tại trong DOM. " +
+                    "element cần Verify phải là thẻ select và tồn tại trong DOM. " +
                     "Có thể throw AssertionError nếu option được chọn không khớp với option mong đợi, " +
                     "NoSuchElementException nếu không tìm thấy element, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
                     "WebDriverException nếu có lỗi khi tương tác với trình duyệt, " +
-                    "hoặc UnexpectedTagNameException nếu element không phải is thẻ select."
+                    "hoặc UnexpectedTagNameException nếu element không phải là thẻ select."
     )
-    @Step("Verify (Hard) option '{1}' is selected in dropdown {0.name}")
-    public void verifyOptionSelectedByLabelHard(ObjectUI uiObject, String expectedLabel) {
+    @Step("Verify (Hard) option '{1}' được chọn trong dropdown {0.name}")
+    public void verifyOptionSelectedByLabelHard(ObjectUI uiObject, String expectedLabel, String... customMessage) {
         execute(() -> {
             Select select = new Select(findElement(uiObject));
             String actualLabel = select.getFirstSelectedOption().getText();
-            Assert.assertEquals(actualLabel, expectedLabel, "HARD ASSERT FAILED: option được chọn không khớp.");
+            String message = customMessage.length > 0 ? customMessage[0] :
+                    "HARD ASSERT FAILED: selected option '" + actualLabel + "' does not match expected '" + expectedLabel + "'.";
+            Assert.assertEquals(actualLabel, expectedLabel, message);
             return null;
         }, uiObject, expectedLabel);
     }
@@ -3227,8 +3396,12 @@ public class WebKeyword extends BaseUiKeyword {
     public void takeScreenshot(String filePath) {
         execute(() -> {
             try {
-                File scrFile = ((TakesScreenshot) DriverManager.getDriver()).getScreenshotAs(OutputType.FILE);
-                FileUtils.copyFile(scrFile, new File(filePath));
+                WebDriver driver = ExecutionContext.getInstance().getWebDriver();
+                if (driver==null) driver = SessionManager.getInstance().getCurrentDriver();
+                if (driver instanceof TakesScreenshot) {
+                    File scrFile = ((TakesScreenshot) DriverManager.getDriver()).getScreenshotAs(OutputType.FILE);
+                    FileUtils.copyFile(scrFile, new File(filePath));
+                }
             } catch (IOException e) {
                 throw new RuntimeException("Unable to capture or save the screenshot.", e);
             }

@@ -24,4 +24,6 @@ public @interface NetatKeyword {
     String example() default "";
 
     String note() default "";
+
+    String explainer() default "";
 }

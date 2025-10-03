@@ -1,4 +1,72 @@
 [ {
+  "name" : "connectDatabase",
+  "description" : "Khởi tạo kết nối CSDL bằng cách cung cấp các thông tin riêng lẻ. Thư viện sẽ tự động xây dựng URL kết nối.",
+  "category" : "DB",
+  "subCategory" : "Connection",
+  "example" : "// Kết nối đến PostgreSQL mà không cần biết cấu trúc URL\ndatabaseKeyword.connectDatabase(\"pg_server\", \"postgresql\", \"10.0.1.5\", 5432, \"app_db\", \"user\", \"pass\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Đây là cách kết nối được khuyên dùng cho người dùng low-code để tránh lỗi cú pháp URL.",
+  "className" : "com.vtnet.netat.db.keywords.DatabaseKeyword",
+  "methodName" : "connectDatabase",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "profileName",
+    "description" : "Một tên định danh duy nhất cho kết nối này"
+  }, {
+    "type" : "String",
+    "name" : "dbType",
+    "description" : "Loại cơ sở dữ liệu (mariadb, postgresql, mysql, sqlserver, oracle, clickhouse)"
+  }, {
+    "type" : "String",
+    "name" : "host",
+    "description" : "Địa chỉ IP hoặc hostname của server"
+  }, {
+    "type" : "int",
+    "name" : "port",
+    "description" : "Cổng kết nối"
+  }, {
+    "type" : "String",
+    "name" : "databaseName",
+    "description" : "Tên của database (hoặc SID/Service Name cho Oracle)"
+  }, {
+    "type" : "String",
+    "name" : "username",
+    "description" : "Tên người dùng"
+  }, {
+    "type" : "String",
+    "name" : "password",
+    "description" : "Mật khẩu"
+  } ]
+}, {
+  "name" : "assertAttributeContains",
+  "description" : "Khẳng định rằng giá trị của một thuộc tính có chứa một chuỗi con. Khác với assertAttributeEquals, phương thức này chỉ kiểm tra sự xuất hiện của chuỗi con trong giá trị thuộc tính, không yêu cầu khớp hoàn toàn. Hữu ích khi giá trị thuộc tính có thể thay đổi nhưng vẫn chứa các phần quan trọng cần kiểm tra.",
+  "category" : "Mobile",
+  "subCategory" : "Assertion",
+  "example" : "// Kiểm tra thuộc tính content-desc có chứa từ khóa\nmobileKeyword.assertAttributeContains(productItem, \"content-desc\", \"iPhone\");\n\n// Với custom message\nmobileKeyword.assertAttributeContains(productItem, \"content-desc\", \"iPhone\", \n    \"Content description của sản phẩm phải chứa từ 'iPhone'\");\n\n// Xác minh resource-id có chứa phần nhất định\nmobileKeyword.assertAttributeContains(anyElement, \"resource-id\", \"button_\", \n    \"Resource ID phải chứa prefix 'button_' theo quy ước đặt tên\");\n\n// Kiểm tra class name chứa thông tin cần thiết\nmobileKeyword.assertAttributeContains(inputField, \"class\", \"EditText\", \n    \"Class name phải chứa 'EditText' để xác nhận đây là trường nhập liệu\");\nmobileKeyword.assertAttributeContains(imageView, \"class\", \"ImageView\", \n    \"Class name phải chứa 'ImageView' để xác nhận đây là thành phần hiển thị hình ảnh\");",
+  "returnValue" : "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
+  "note" : "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. Phần tử cần kiểm tra phải tồn tại, thuộc tính cần kiểm tra phải tồn tại trên phần tử, và cần biết chính xác tên thuộc tính theo nền tảng (Android/iOS có thể khác nhau). Có thể throw AssertionError nếu giá trị thuộc tính không chứa chuỗi con mong đợi, NoSuchElementException nếu không tìm thấy phần tử, StaleElementReferenceException nếu phần tử không còn gắn với DOM, WebDriverException nếu không thể lấy thuộc tính của phần tử, hoặc NullPointerException nếu giá trị thuộc tính là null.",
+  "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
+  "methodName" : "assertAttributeContains",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "Phần tử cần kiểm tra thuộc tính"
+  }, {
+    "type" : "String",
+    "name" : "attributeName",
+    "description" : "Tên thuộc tính cần kiểm tra"
+  }, {
+    "type" : "String",
+    "name" : "partialValue",
+    "description" : "Chuỗi con cần tìm trong giá trị thuộc tính"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
   "name" : "switchToWindowByTitle",
   "description" : "Duyệt qua tất cả các cửa sổ hoặc tab đang mở và chuyển sự điều khiển of WebDriver sang cửa sổ/tab có tiêu đề khớp chính xác với chuỗi được cung cấp.",
   "category" : "Web",
@@ -27,26 +95,6 @@
   "returnType" : "void",
   "parameters" : [ ]
 }, {
-  "name" : "verifyElementVisibleHard",
-  "description" : "Verify một element có đang hiển thị trên giao diện hay không. Nếu Verify thất bại (element không hiển thị như mong đợi), kịch bản sẽ DỪNG LẠI ngay lập tức.",
-  "category" : "Web",
-  "subCategory" : "Assertion",
-  "example" : "// Verify thông báo lỗi hiển thị sau khi gửi form không hợp lệ\nwebKeyword.click(submitButtonObject); // Gửi form trống\nwebKeyword.verifyElementVisibleHard(errorMesssageObject, true);\n\n// Verify element không hiển thị sau khi đóng\nwebKeyword.click(closePopupButtonObject);\nwebKeyword.verifyElementVisibleHard(popupObject, false);",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, và element cần Verify phải tồn tại trong DOM. Có thể throw AssertionError nếu trạng thái hiển thị of element không khớp với kỳ vọng, NoSuchElementException nếu không tìm thấy element, StaleElementReferenceException nếu element không còn gắn với DOM, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
-  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
-  "methodName" : "verifyElementVisibleHard",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "ObjectUI",
-    "name" : "uiObject",
-    "description" : "element cần Verify"
-  }, {
-    "type" : "boolean",
-    "name" : "isVisible",
-    "description" : "Trạng thái hiển thị mong đợi (true cho hiển thị, false cho bị ẩn)"
-  } ]
-}, {
   "name" : "clickAndSwitchToNewTab",
   "description" : "Click vào một element (thường is link) và tự động chuyển sự điều khiển sang tab/cửa sổ mới vừa được mở ra.",
   "category" : "Web",
@@ -61,6 +109,94 @@
     "type" : "ObjectUI",
     "name" : "uiObject",
     "description" : "element link cần click"
+  } ]
+}, {
+  "name" : "verifyTextSoft",
+  "description" : "So sánh text của một element với một chuỗi ký tự mong đợi (phải khớp chính xác). Nếu không khớp, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
+  "category" : "Web",
+  "subCategory" : "Assertion",
+  "example" : "// Verify nhãn trên form đăng nhập\nwebKeyword.verifyTextSoft(usernameLabelObject, \"Tên đăng nhập\");\nwebKeyword.verifyTextSoft(passwordLabelObject, \"Mật khẩu\");\n// Kịch bản tiếp tục ngay cả khi có nhãn không khớp\n\n// Verify nhiều giá trị hiển thị với custom message\nwebKeyword.verifyTextSoft(productNameObject, \"Điện thoại thông minh X1\", \"Tên sản phẩm không đúng\");\nwebKeyword.verifyTextSoft(productPriceObject, \"5.990.000 ₫\", \"Giá sản phẩm hiển thị sai\");\nwebKeyword.click(addToCartButtonObject); // Tiếp tục thực hiện hành động",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, và element cần Verify phải tồn tại trong DOM và có text. Có thể throw NoSuchElementException nếu không tìm thấy element, StaleElementReferenceException nếu element không còn gắn với DOM, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "verifyTextSoft",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "element chứa text cần Verify"
+  }, {
+    "type" : "String",
+    "name" : "expectedText",
+    "description" : "Chuỗi text mong đợi"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
+  "name" : "verifyOptionSelectedByLabelHard",
+  "description" : "Khẳng định rằng option có text hiển thị (label) cụ thể đang được chọn trong dropdown.",
+  "category" : "Web",
+  "subCategory" : "Assertion",
+  "example" : "// Verify quốc gia đã chọn\nwebKeyword.selectByVisibleText(countryDropdown, \"Việt Nam\");\nwebKeyword.verifyOptionSelectedByLabelHard(countryDropdown, \"Việt Nam\");\n\n// Verify danh mục đã chọn với custom message\nwebKeyword.verifyOptionSelectedByLabelHard(categoryDropdown, \"Điện thoại\", \n    \"Danh mục điện thoại phải được chọn\");\n\n// Verify trạng thái đơn hàng\nwebKeyword.verifyOptionSelectedByLabelHard(statusDropdown, \"Đang xử lý\", \n    \"Trạng thái đơn hàng phải là 'Đang xử lý'\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, element cần Verify phải là thẻ select và tồn tại trong DOM. Có thể throw AssertionError nếu option được chọn không khớp với option mong đợi, NoSuchElementException nếu không tìm thấy element, StaleElementReferenceException nếu element không còn gắn với DOM, WebDriverException nếu có lỗi khi tương tác với trình duyệt, hoặc UnexpectedTagNameException nếu element không phải là thẻ select.",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "verifyOptionSelectedByLabelHard",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "element dropdown (thẻ select)"
+  }, {
+    "type" : "String",
+    "name" : "expectedLabel",
+    "description" : "text hiển thị của option mong đợi"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
+  "name" : "assertTrue",
+  "description" : "Khẳng định rằng một điều kiện có giá trị true. Nếu điều kiện là false, test case sẽ dừng lại và báo lỗi.",
+  "category" : "Assertion",
+  "subCategory" : "HardAssert",
+  "example" : "assertTrue(isElementVisible);\nassertTrue(isLoggedIn, \"Người dùng phải đã đăng nhập\");\nassertTrue(isFormValid, \"Form phải hợp lệ trước khi submit\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Assertion này kiểm tra điều kiện boolean phải là true. Thường được sử dụng để kiểm tra trạng thái hoặc kết quả của các phép so sánh.",
+  "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
+  "methodName" : "assertTrue",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "boolean",
+    "name" : "condition",
+    "description" : "Điều kiện boolean cần kiểm tra (phải là true)"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
+  "name" : "assertElementPresent",
+  "description" : "Khẳng định rằng một phần tử tồn tại trong cấu trúc DOM của màn hình, không nhất thiết phải hiển thị. Phương thức này kiểm tra ngay lập tức (timeout = 0) và ném AssertionError nếu phần tử không tồn tại. Chỉ kiểm tra sự tồn tại, không kiểm tra tính hiển thị của phần tử.",
+  "category" : "Mobile",
+  "subCategory" : "Assertion",
+  "example" : "// Kiểm tra nút đăng nhập tồn tại\nmobileKeyword.assertElementPresent(loginButton);\n\n// Với custom message\nmobileKeyword.assertElementPresent(loginButton, \"Nút đăng nhập phải tồn tại trên màn hình\");\n\n// Kiểm tra nhiều element với custom message\nmobileKeyword.assertElementPresent(usernameField, \"Trường username phải có trong form\");\nmobileKeyword.assertElementPresent(passwordField, \"Trường password phải có trong form\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. Đã xác định chính xác phần tử UI cần kiểm tra. Có thể throw AssertionError nếu phần tử không tồn tại trong DOM, hoặc WebDriverException nếu có lỗi khi tương tác với trình điều khiển.",
+  "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
+  "methodName" : "assertElementPresent",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "Phần tử cần kiểm tra sự tồn tại"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
   } ]
 }, {
   "name" : "sendText",
@@ -99,26 +235,6 @@
     "description" : "element checkbox cần bỏ chọn"
   } ]
 }, {
-  "name" : "verifyTextContainsSoft",
-  "description" : "Verify text of một element có contains một chuỗi con hay không. Nếu không contains, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
-  "category" : "Web",
-  "subCategory" : "Assertion",
-  "example" : "// Verify kết quả tìm kiếm có contains thông tin số lượng\nwebKeyword.sendKeys(searchInputObject, \"điện thoại\");\nwebKeyword.click(searchButtonObject);\nwebKeyword.verifyTextContainsSoft(searchResultSummary, \"kết quả\");\nwebKeyword.verifyTextContainsSoft(searchResultSummary, \"điện thoại\");\n\n// Verify nhiều thông tin trên trang sản phẩm\nwebKeyword.verifyTextContainsSoft(productDescriptionObject, \"chống nước\");\nwebKeyword.verifyTextContainsSoft(productDescriptionObject, \"bảo hành\");\nwebKeyword.click(addToCartButtonObject); // Tiếp tục thực hiện hành động",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, và element cần Verify phải tồn tại trong DOM và có text. Có thể throw NoSuchElementException nếu không tìm thấy element, StaleElementReferenceException nếu element không còn gắn với DOM, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
-  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
-  "methodName" : "verifyTextContainsSoft",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "ObjectUI",
-    "name" : "uiObject",
-    "description" : "element contains text cần Verify"
-  }, {
-    "type" : "String",
-    "name" : "partialText",
-    "description" : "Chuỗi text con mong đợi"
-  } ]
-}, {
   "name" : "executeUpdate",
   "description" : "Thực thi câu lệnh INSERT, UPDATE, DELETE và trả về số bản ghi bị ảnh hưởng. Hỗ trợ truyền tham số vào câu truy vấn để tránh SQL injection.",
   "category" : "DB",
@@ -143,20 +259,36 @@
     "description" : "Các tham số cần truyền vào câu truy vấn, theo thứ tự xuất hiện của các placeholder '?'"
   } ]
 }, {
-  "name" : "verifyUrlHard",
-  "description" : "So sánh URL of trang hiện tại với một chuỗi mong đợi (phải khớp chính xác). Nếu không khớp, kịch bản sẽ DỪNG LẠI.",
-  "category" : "Web",
+  "name" : "assertTextWithOptions",
+  "description" : "So sánh văn bản của phần tử với nhiều tùy chọn linh hoạt: có thể bỏ qua sự khác biệt giữa chữ hoa/thường và/hoặc cắt khoảng trắng ở đầu/cuối. Hữu ích khi cần kiểm tra nội dung mà không quan tâm đến định dạng chính xác. Nếu văn bản không khớp theo các tùy chọn đã chọn, một AssertionError sẽ được ném ra.",
+  "category" : "Mobile",
   "subCategory" : "Assertion",
-  "example" : "// Verify URL sau khi đăng nhập thành công\nwebKeyword.sendKeys(usernameInputObject, \"testuser\");\nwebKeyword.sendKeys(passwordInputObject, \"password123\");\nwebKeyword.click(loginButtonObject);\nwebKeyword.waitForUrlContains(\"/dashboard\", 10);\nwebKeyword.verifyUrlHard(\"https://example.com/dashboard\");\n\n// Verify URL sau khi hoàn thành quy trình\nwebKeyword.click(completeOrderButtonObject);\nwebKeyword.waitForPageLoaded(20);\nwebKeyword.verifyUrlHard(\"https://example.com/order-confirmation\");",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, và trang web đã hoàn thành quá trình tải. Có thể throw AssertionError nếu URL hiện tại không khớp với URL mong đợi, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
-  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
-  "methodName" : "verifyUrlHard",
+  "example" : "// Kiểm tra nội dung chào mừng, bỏ qua chữ hoa/thường và khoảng trắng\nmobileKeyword.assertTextWithOptions(welcomeMessage, \"  xin chào, Người Dùng \", true, true);\n\n// Với custom message\nmobileKeyword.assertTextWithOptions(welcomeMessage, \"  xin chào, Người Dùng \", true, true, \n    \"Thông báo chào mừng phải khớp với nội dung mong đợi (bỏ qua format)\");\n\n// Kiểm tra địa chỉ email không phân biệt chữ hoa/thường\nmobileKeyword.assertTextWithOptions(emailField, \"User@Example.com\", true, true, \n    \"Email hiển thị phải khớp không phân biệt chữ hoa/thường\");\n\n// Kiểm tra title với trim nhưng phân biệt case\nmobileKeyword.assertTextWithOptions(pageTitle, \" Trang Chủ \", false, true, \n    \"Tiêu đề trang phải là 'Trang Chủ' (phân biệt chữ hoa/thường)\");\n// Kiểm tra message với case-sensitive nhưng không trim\nmobileKeyword.assertTextWithOptions(statusMessage, \"  Đang xử lý...  \", false, false, \n    \"Thông báo trạng thái phải khớp chính xác bao gồm cả khoảng trắng\");",
+  "returnValue" : "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
+  "note" : "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. Phần tử cần kiểm tra phải tồn tại và có thuộc tính văn bản (text), và phải hiển thị trên màn hình để có thể đọc văn bản. Có thể throw AssertionError nếu văn bản không khớp theo các tùy chọn đã chọn, NoSuchElementException nếu không tìm thấy phần tử, StaleElementReferenceException nếu phần tử không còn gắn với DOM, WebDriverException nếu không thể lấy văn bản của phần tử, hoặc NullPointerException nếu văn bản của phần tử là null và expectedText không phải null.",
+  "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
+  "methodName" : "assertTextWithOptions",
   "returnType" : "void",
   "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "Phần tử cần kiểm tra văn bản"
+  }, {
     "type" : "String",
-    "name" : "expectedUrl",
-    "description" : "URL đầy đủ mong đợi"
+    "name" : "expectedText",
+    "description" : "Chuỗi văn bản mong đợi"
+  }, {
+    "type" : "boolean",
+    "name" : "ignoreCase",
+    "description" : "true để bỏ qua sự khác biệt giữa chữ hoa/thường, false để phân biệt"
+  }, {
+    "type" : "boolean",
+    "name" : "trimText",
+    "description" : "true để cắt khoảng trắng ở đầu/cuối trước khi so sánh, false để giữ nguyên"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
   } ]
 }, {
   "name" : "scrollToBottom",
@@ -263,26 +395,6 @@
     "description" : "Các tham số cần truyền vào câu truy vấn, theo thứ tự xuất hiện của các placeholder '?'"
   } ]
 }, {
-  "name" : "assertLessThan",
-  "description" : "Khẳng định rằng giá trị thực tế nhỏ hơn giá trị so sánh. Nếu không thỏa mãn, test case sẽ dừng lại và báo lỗi",
-  "category" : "Assertion",
-  "subCategory" : "",
-  "example" : "assertLessThan(5, 10); // 5 < 10",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "Tự động xử lý so sánh giữa số và chuỗi số. Assertion sẽ fail nếu actualValue >= expectedValue.",
-  "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
-  "methodName" : "assertLessThan",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "Object",
-    "name" : "actualValue",
-    "description" : "Giá trị thực tế cần so sánh (số hoặc chuỗi số)"
-  }, {
-    "type" : "Object",
-    "name" : "expectedValue",
-    "description" : "Giá trị mong đợi để so sánh (actualValue phải nhỏ hơn giá trị này)"
-  } ]
-}, {
   "name" : "pressBack",
   "description" : "Mô phỏng hành động nhấn nút 'Back' vật lý của thiết bị. Hữu ích để điều hướng ngược lại màn hình trước đó, đóng dialog, hoặc hủy thao tác hiện tại. Trên iOS, hành động này tương đương với việc nhấn nút quay lại ở góc trên bên trái của nhiều ứng dụng.",
   "category" : "Mobile",
@@ -295,20 +407,76 @@
   "returnType" : "void",
   "parameters" : [ ]
 }, {
-  "name" : "verifyTitleHard",
-  "description" : "Verify tiêu đề (title) of trang web hiện tại. Nếu tiêu đề không khớp chính xác, kịch bản sẽ DỪNG LẠI.",
-  "category" : "Web",
-  "subCategory" : "Assertion",
-  "example" : "// Verify tiêu đề trang chủ\nwebKeyword.navigateToUrl(\"https://example.com\");\nwebKeyword.waitForPageLoaded(10);\nwebKeyword.verifyTitleHard(\"Trang chủ - Website ABC\");\n\n// Verify tiêu đề sau khi đăng nhập\nwebKeyword.sendKeys(usernameInputObject, \"testuser\");\nwebKeyword.sendKeys(passwordInputObject, \"password123\");\nwebKeyword.click(loginButtonObject);\nwebKeyword.waitForPageLoaded(15);\nwebKeyword.verifyTitleHard(\"Dashboard - Website ABC\");",
+  "name" : "assertFalse",
+  "description" : "Khẳng định rằng một điều kiện có giá trị false. Nếu điều kiện là true, test case sẽ dừng lại và báo lỗi.",
+  "category" : "Assertion",
+  "subCategory" : "HardAssert",
+  "example" : "assertFalse(isElementHidden);\nassertFalse(hasError, \"Không được có lỗi trong quá trình xử lý\");\nassertFalse(isFormSubmitted, \"Form không được submit khi có lỗi validation\");",
   "returnValue" : "void - Không trả về giá trị",
-  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, và trang web đã hoàn thành quá trình tải. Có thể throw AssertionError nếu tiêu đề trang không khớp với tiêu đề mong đợi, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
-  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
-  "methodName" : "verifyTitleHard",
+  "note" : "Assertion này kiểm tra điều kiện boolean phải là false. Thường được sử dụng để kiểm tra trạng thái phủ định hoặc kết quả của các phép so sánh.",
+  "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
+  "methodName" : "assertFalse",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "boolean",
+    "name" : "condition",
+    "description" : "Điều kiện boolean cần kiểm tra (phải là false)"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
+  "name" : "assertNotificationText",
+  "description" : "Kiểm tra văn bản của một thông báo. Tự động chờ thông báo xuất hiện trước khi kiểm tra. Phương thức này sẽ tìm kiếm thông báo dựa trên một phần văn bản chứa trong đó, sau đó so sánh toàn bộ nội dung với văn bản mong đợi. Hữu ích để xác minh nội dung thông báo push, toast message, hoặc system notification.",
+  "category" : "Mobile",
+  "subCategory" : "Assertion",
+  "example" : "// Kiểm tra thông báo tin nhắn\nmobileKeyword.assertNotificationText(\"Tin nhắn từ A\", \"Bạn có muốn trả lời không?\", 15);\n\n// Với custom message\nmobileKeyword.assertNotificationText(\"Tin nhắn từ A\", \"Bạn có muốn trả lời không?\", 15, \n    \"Nội dung thông báo tin nhắn phải khớp với văn bản mong đợi\");\n\n// Kiểm tra thông báo email\nmobileKeyword.assertNotificationText(\"Email mới\", \"Bạn có 3 email chưa đọc từ work@company.com\", 10, \n    \"Thông báo email phải hiển thị đúng số lượng và người gửi\");\n\n// Kiểm tra thông báo hệ thống\nmobileKeyword.assertNotificationText(\"Cập nhật\", \"Ứng dụng đã được cập nhật thành công lên phiên bản 2.1.0\", 20, \n    \"Thông báo cập nhật phải hiển thị đúng phiên bản mới\");\n// Kiểm tra thông báo lỗi\nmobileKeyword.assertNotificationText(\"Lỗi kết nối\", \"Không thể kết nối đến máy chủ. Vui lòng thử lại sau.\", 5, \n    \"Thông báo lỗi phải hiển thị hướng dẫn rõ ràng cho người dùng\");\n// Kiểm tra thông báo thành công\nmobileKeyword.assertNotificationText(\"Thành công\", \"Giao dịch đã được xử lý thành công. Mã GD: TX123456\", 8, \n    \"Thông báo giao dịch thành công phải bao gồm mã giao dịch\");",
+  "returnValue" : "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
+  "note" : "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. Hệ thống phải có quyền truy cập vào notification panel hoặc thông báo của ứng dụng. containingText được sử dụng để định vị thông báo, sau đó toàn bộ nội dung sẽ được so sánh với expectedText. Có thể throw AssertionError nếu nội dung thông báo không khớp với văn bản mong đợi, TimeoutException nếu không tìm thấy thông báo chứa containingText trong thời gian chờ, NoSuchElementException nếu thông báo biến mất trước khi đọc được nội dung, hoặc WebDriverException nếu có lỗi khi tương tác với notification panel.",
+  "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
+  "methodName" : "assertNotificationText",
   "returnType" : "void",
   "parameters" : [ {
     "type" : "String",
-    "name" : "expectedTitle",
-    "description" : "Tiêu đề trang mong đợi"
+    "name" : "containingText",
+    "description" : "Đoạn văn bản dùng để tìm thông báo (có thể là một phần của thông báo)"
+  }, {
+    "type" : "String",
+    "name" : "expectedText",
+    "description" : "Văn bản đầy đủ mong đợi của thông báo"
+  }, {
+    "type" : "int",
+    "name" : "timeoutInSeconds",
+    "description" : "Thời gian chờ tối đa (tính bằng giây) để thông báo xuất hiện"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
+  "name" : "softAssertLessThanOrEqual",
+  "description" : "Kiểm tra giá trị thực tế có nhỏ hơn hoặc bằng giá trị so sánh không. Nếu không, ghi nhận lỗi và TIẾP TỤC chạy.",
+  "category" : "Assertion",
+  "subCategory" : "Soft",
+  "example" : "int itemsInCart = Integer.parseInt(web.getText(\"cartCount\"));\nassertion.softAssertLessThanOrEqual(itemsInCart, 10, \"Giỏ hàng không được chứa quá 10 sản phẩm\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Tự động xử lý so sánh giữa số và chuỗi số. Lỗi sẽ được ghi nhận và test vẫn tiếp tục. **Phải gọi `assertAll()` ở cuối** để tổng hợp kết quả.",
+  "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
+  "methodName" : "softAssertLessThanOrEqual",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "Object",
+    "name" : "actualValue",
+    "description" : "Giá trị thực tế"
+  }, {
+    "type" : "Object",
+    "name" : "expectedValue",
+    "description" : "Giá trị so sánh"
+  }, {
+    "type" : "String[]",
+    "name" : "message",
+    "description" : "Thông điệp tùy chỉnh khi assertion fail"
   } ]
 }, {
   "name" : "getElementCount",
@@ -325,6 +493,46 @@
     "type" : "ObjectUI",
     "name" : "uiObject",
     "description" : "Đối tượng UI đại diện cho các phần tử cần đếm"
+  } ]
+}, {
+  "name" : "assertEquals",
+  "description" : "Khẳng định rằng hai giá trị bằng nhau. Tự động xử lý so sánh giữa các kiểu dữ liệu khác nhau (ví dụ: số 1 và chuỗi \"1\"). Nếu không, kịch bản sẽ DỪNG LẠI.",
+  "category" : "Assertion",
+  "subCategory" : "HardAssert",
+  "example" : "assertEquals(actualTitle, expectedTitle);\nassertEquals(userAge, 25, \"Tuổi người dùng phải là 25\");\nassertEquals(loginStatus, \"success\", \"Trạng thái đăng nhập phải là thành công\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Keyword này so sánh giá trị sau khi đã chuyển đổi chúng sang dạng chuỗi ký tự.",
+  "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
+  "methodName" : "assertEquals",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "Object",
+    "name" : "actualValue",
+    "description" : "Giá trị thực tế (có thể là một biến)"
+  }, {
+    "type" : "Object",
+    "name" : "expectedValue",
+    "description" : "Giá trị mong đợi"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
+  "name" : "startSessionFromProfile",
+  "description" : "Khởi tạo một phiên làm việc (trình duyệt hoặc thiết bị di động) từ một file profile đã được định nghĩa sẵn.",
+  "category" : "Driver",
+  "subCategory" : "Session",
+  "example" : "// Bắt đầu phiên làm việc cho User A trên Chrome từ file profile\ndriver.startSessionFromProfile(\"user_A_chrome\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Đây là phương pháp được khuyên dùng để quản lý các môi trường kiểm thử một cách nhất quán và có thể tái sử dụng.",
+  "className" : "com.vtnet.netat.core.keywords.DriverKeyword",
+  "methodName" : "startSession",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "profileName",
+    "description" : "Tên của file profile (không có đuôi .json) nằm trong thư mục 'browser_profiles' hoặc 'device_profiles'"
   } ]
 }, {
   "name" : "switchToParentFrame",
@@ -403,6 +611,26 @@
     "description" : "Thời gian chờ tối đa tính bằng giây"
   } ]
 }, {
+  "name" : "verifyTitleHard",
+  "description" : "Verify tiêu đề (title) của trang web hiện tại. Nếu tiêu đề không khớp chính xác, kịch bản sẽ DỪNG LẠI.",
+  "category" : "Web",
+  "subCategory" : "Assertion",
+  "example" : "// Verify tiêu đề trang chủ\nwebKeyword.navigateToUrl(\"https://example.com\");\nwebKeyword.waitForPageLoaded(10);\nwebKeyword.verifyTitleHard(\"Trang chủ - Website ABC\");\n\n// Verify tiêu đề sau khi đăng nhập với custom message\nwebKeyword.sendKeys(usernameInputObject, \"testuser\");\nwebKeyword.sendKeys(passwordInputObject, \"password123\");\nwebKeyword.click(loginButtonObject);\nwebKeyword.waitForPageLoaded(15);\nwebKeyword.verifyTitleHard(\"Dashboard - Website ABC\", \"Tiêu đề trang dashboard không chính xác\");\n\n// Verify tiêu đề trang sản phẩm\nwebKeyword.verifyTitleHard(\"Chi tiết sản phẩm - iPhone 15\", \"Tiêu đề trang sản phẩm bị sai\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, và trang web đã hoàn thành quá trình tải. Có thể throw AssertionError nếu tiêu đề trang không khớp với tiêu đề mong đợi, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "verifyTitleHard",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "expectedTitle",
+    "description" : "Tiêu đề trang mong đợi"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
   "name" : "verifyDataSQL",
   "description" : "Thực thi câu lệnh SQL và kiểm chứng kết quả với dữ liệu mong đợi. Phương thức này so sánh từng cột trong từng hàng của kết quả với dữ liệu mong đợi được cung cấp.",
   "category" : "DB",
@@ -435,20 +663,28 @@
     "description" : "Các tham số cần truyền vào câu truy vấn, theo thứ tự xuất hiện của các placeholder '?'"
   } ]
 }, {
-  "name" : "assertElementSelected",
-  "description" : "Khẳng định rằng một element (checkbox hoặc radio button) đang ở trạng thái được chọn. Nếu không, kịch bản sẽ DỪNG LẠI.",
-  "category" : "Web",
+  "name" : "assertElementNotPresent",
+  "description" : "Khẳng định rằng một phần tử KHÔNG tồn tại trong cấu trúc màn hình sau một khoảng thời gian chờ. Hữu ích để xác minh rằng một phần tử đã bị xóa hoặc chưa được tạo. Phương thức sẽ đợi trong khoảng thời gian chỉ định và kiểm tra xem phần tử có xuất hiện không, nếu phần tử xuất hiện trong thời gian đó, một AssertionError sẽ được ném ra.",
+  "category" : "Mobile",
   "subCategory" : "Assertion",
-  "example" : "// Verify checkbox \"Ghi nhớ đăng nhập\" is selected\nwebKeyword.click(rememberMeCheckbox);\nwebKeyword.assertElementSelected(rememberMeCheckbox);\nwebKeyword.click(loginButtonObject);\n\n// Verify radio button phương thức thanh toán is selected\nwebKeyword.click(creditCardRadioButton);\nwebKeyword.assertElementSelected(creditCardRadioButton);\nwebKeyword.sendKeys(cardNumberInputObject, \"1234567890123456\");",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, element cần Verify phải tồn tại trong DOM và is checkbox hoặc radio button. Có thể throw AssertionError nếu element không ở trạng thái được chọn, NoSuchElementException nếu không tìm thấy element, StaleElementReferenceException nếu element không còn gắn với DOM, WebDriverException nếu có lỗi khi tương tác với trình duyệt, hoặc IllegalArgumentException nếu element không phải is checkbox hoặc radio button.",
-  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
-  "methodName" : "assertElementSelected",
+  "example" : "// Kiểm tra thông báo lỗi không xuất hiện sau khi nhập đúng thông tin\nmobileKeyword.assertElementNotPresent(errorMessage, 3);\n\n// Với custom message\nmobileKeyword.assertElementNotPresent(errorMessage, 3, \n    \"Thông báo lỗi không được xuất hiện khi nhập thông tin hợp lệ\");\n\n// Xác minh màn hình loading đã biến mất sau khi tải xong\nmobileKeyword.assertElementNotPresent(loadingSpinner, 10, \n    \"Loading spinner phải biến mất sau khi tải dữ liệu hoàn tất\");\n\n// Kiểm tra popup không xuất hiện\nmobileKeyword.assertElementNotPresent(adPopup, 5, \n    \"Popup quảng cáo không được hiển thị trên màn hình chính\");\nmobileKeyword.assertElementNotPresent(updateDialog, 3, \n    \"Dialog cập nhật không được hiển thị khi app đã là phiên bản mới nhất\");",
+  "returnValue" : "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
+  "note" : "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. Locator của phần tử cần kiểm tra phải hợp lệ. Có thể throw AssertionError nếu phần tử xuất hiện trong khoảng thời gian chờ, hoặc WebDriverException nếu có lỗi khi tương tác với trình điều khiển.",
+  "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
+  "methodName" : "assertElementNotPresent",
   "returnType" : "void",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject",
-    "description" : "element checkbox hoặc radio button cần Verify"
+    "description" : "Phần tử cần kiểm tra sự không tồn tại"
+  }, {
+    "type" : "int",
+    "name" : "timeoutInSeconds",
+    "description" : "Thời gian tối đa (giây) để đợi và xác nhận phần tử không xuất hiện"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
   } ]
 }, {
   "name" : "getText",
@@ -507,9 +743,9 @@
   "description" : "Kiểm tra xem một phần tử có tồn tại trên màn hình hay không trong một khoảng thời gian chờ nhất định. Khác với các phương thức assertion, phương thức này trả về kết quả boolean (true/false) thay vì ném ra ngoại lệ, giúp xử lý các trường hợp phần tử có thể xuất hiện hoặc không. Hữu ích cho các điều kiện rẽ nhánh trong kịch bản test.",
   "category" : "Mobile",
   "subCategory" : "Assertion",
-  "example" : "// Kiểm tra thông báo lỗi và xử lý tương ứng\nboolean isErrorVisible = mobileKeyword.isElementPresent(errorMessage, 5);\nif (isErrorVisible) {\n    mobileKeyword.tap(dismissButton);\n} else {\n    mobileKeyword.tap(nextButton);\n}\n\n// Kiểm tra popup và bỏ qua nếu có\nif (mobileKeyword.isElementPresent(rateAppPopup, 3)) {\n    mobileKeyword.tap(remindMeLaterButton);\n}",
+  "example" : "// Kiểm tra thông báo lỗi và xử lý tương ứng\nboolean isErrorVisible = mobileKeyword.isElementPresent(errorMessage, 5);\nif (isErrorVisible) {\n    mobileKeyword.tap(dismissButton);\n} else {\n    mobileKeyword.tap(nextButton);\n}\n\n// Kiểm tra popup và bỏ qua nếu có\nif (mobileKeyword.isElementPresent(rateAppPopup, 3)) {\n    mobileKeyword.tap(remindMeLaterButton);\n}\n\n// Xử lý điều kiện phức tạp với nhiều element\nboolean hasWelcomeScreen = mobileKeyword.isElementPresent(welcomeTitle, 2);\nboolean hasLoginForm = mobileKeyword.isElementPresent(loginForm, 2);\nif (hasWelcomeScreen) {\n    mobileKeyword.tap(getStartedButton);\n} else if (hasLoginForm) {\n    // User đã qua welcome screen, tiến hành đăng nhập\n    mobileKeyword.sendText(usernameInput, \"testuser\");\n}\n\n// Kiểm tra optional elements\nif (mobileKeyword.isElementPresent(tutorialOverlay, 1)) {\n    mobileKeyword.tap(skipTutorialButton);\n}",
   "returnValue" : "boolean - true nếu phần tử tồn tại, false nếu không tìm thấy sau thời gian chờ",
-  "note" : "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. Locator của phần tử cần kiểm tra phải hợp lệ. Có thể throw WebDriverException nếu có lỗi khi tương tác với trình điều khiển.",
+  "note" : "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. Locator của phần tử cần kiểm tra phải hợp lệ. Có thể throw WebDriverException nếu có lỗi khi tương tác với trình điều khiển. Method này không ném AssertionError, chỉ trả về boolean để xử lý logic.",
   "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
   "methodName" : "isElementPresent",
   "returnType" : "boolean",
@@ -583,6 +819,74 @@
     "description" : "Đối tượng giao diện đại diện cho các element cần đếm"
   } ]
 }, {
+  "name" : "verifyUrlHard",
+  "description" : "So sánh URL của trang hiện tại với một chuỗi mong đợi (phải khớp chính xác). Nếu không khớp, kịch bản sẽ DỪNG LẠI.",
+  "category" : "Web",
+  "subCategory" : "Assertion",
+  "example" : "// Verify URL sau khi đăng nhập thành công\nwebKeyword.sendKeys(usernameInputObject, \"testuser\");\nwebKeyword.sendKeys(passwordInputObject, \"password123\");\nwebKeyword.click(loginButtonObject);\nwebKeyword.waitForUrlContains(\"/dashboard\", 10);\nwebKeyword.verifyUrlHard(\"https://example.com/dashboard\");\n\n// Verify URL sau khi hoàn thành quy trình với custom message\nwebKeyword.click(completeOrderButtonObject);\nwebKeyword.waitForPageLoaded(20);\nwebKeyword.verifyUrlHard(\"https://example.com/order-confirmation\", \n    \"Sau khi hoàn thành đơn hàng phải chuyển đến trang xác nhận\");\n\n// Verify URL trong quy trình thanh toán\nwebKeyword.verifyUrlHard(\"https://example.com/checkout\", \"URL thanh toán không chính xác\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, và trang web đã hoàn thành quá trình tải. Có thể throw AssertionError nếu URL hiện tại không khớp với URL mong đợi, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "verifyUrlHard",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "expectedUrl",
+    "description" : "URL đầy đủ mong đợi"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
+  "name" : "verifyTextHard",
+  "description" : "So sánh text của một element với một chuỗi ký tự mong đợi (phải khớp chính xác). Nếu không khớp, kịch bản sẽ DỪNG LẠI.",
+  "category" : "Web",
+  "subCategory" : "Assertion",
+  "example" : "// Verify tiêu đề trang chính xác\nwebKeyword.verifyTextHard(pageTitleObject, \"Chào mừng đến với trang chủ\");\n\n// Verify kết quả tính toán với custom message\nwebKeyword.sendKeys(number1InputObject, \"5\");\nwebKeyword.sendKeys(number2InputObject, \"7\");\nwebKeyword.click(calculateButtonObject);\nwebKeyword.verifyTextHard(resultObject, \"12\", \"Kết quả phép cộng không chính xác\");\n\n// Verify thông tin quan trọng\nwebKeyword.verifyTextHard(userNameObject, \"admin\", \"Tên người dùng hiển thị sai\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, và element cần Verify phải tồn tại trong DOM và có text. Có thể throw AssertionError nếu text của element không khớp với giá trị mong đợi, NoSuchElementException nếu không tìm thấy element, StaleElementReferenceException nếu element không còn gắn với DOM, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "verifyTextHard",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "element chứa text cần Verify"
+  }, {
+    "type" : "String",
+    "name" : "expectedText",
+    "description" : "Chuỗi text mong đợi"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
+  "name" : "assertTextContains",
+  "description" : "Khẳng định rằng văn bản của một phần tử có chứa một chuỗi con. Khác với assertTextEquals, phương thức này chỉ kiểm tra sự xuất hiện của chuỗi con trong văn bản, không yêu cầu khớp hoàn toàn. Hữu ích khi nội dung có thể thay đổi nhưng vẫn chứa các phần quan trọng cần kiểm tra. Phương thức phân biệt chữ hoa/thường.",
+  "category" : "Mobile",
+  "subCategory" : "Assertion",
+  "example" : "// Kiểm tra thông báo chào mừng có chứa tên người dùng\nmobileKeyword.assertTextContains(welcomeMessage, \"Xin chào\");\n\n// Xác minh thông báo lỗi có chứa thông tin về mật khẩu\nmobileKeyword.assertTextContains(errorMessage, \"mật khẩu không đúng\");",
+  "returnValue" : "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
+  "note" : "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. Phần tử cần kiểm tra phải tồn tại và có thuộc tính văn bản (text), và phải hiển thị trên màn hình để có thể đọc văn bản. Có thể throw AssertionError nếu văn bản của phần tử không chứa chuỗi con mong đợi, NoSuchElementException nếu không tìm thấy phần tử, hoặc StaleElementReferenceException nếu phần tử không còn gắn với DOM.",
+  "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
+  "methodName" : "assertTextContains",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "Phần tử cần kiểm tra văn bản"
+  }, {
+    "type" : "String",
+    "name" : "partialText",
+    "description" : "Chuỗi con cần tìm trong văn bản của phần tử"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessages",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
   "name" : "verifyDataByQueryFile",
   "description" : "Thực thi câu lệnh SQL từ file và kiểm chứng kết quả với dữ liệu từ file dữ liệu. Phương thức này tách biệt câu truy vấn và dữ liệu kiểm chứng vào các file riêng biệt, giúp quản lý test case dễ dàng hơn.",
   "category" : "DB",
@@ -605,6 +909,30 @@
     "type" : "String",
     "name" : "dataFilePath",
     "description" : "Đường dẫn đến file dữ liệu chứa các tham số truy vấn và dữ liệu mong đợi"
+  } ]
+}, {
+  "name" : "verifyElementVisibleSoft",
+  "description" : "Verify một element có đang hiển thị trên giao diện hay không. Nếu Verify thất bại, kịch bản sẽ ghi nhận lỗi nhưng vẫn TIẾP TỤC chạy các bước tiếp theo.",
+  "category" : "Web",
+  "subCategory" : "Assertion",
+  "example" : "// Verify thông báo thành công hiển thị sau khi lưu\nwebKeyword.click(saveButtonObject);\nwebKeyword.verifyElementVisibleSoft(successMessageObject, true);\n// Kịch bản vẫn tiếp tục ngay cả khi thông báo không hiển thị\n\n// Verify với custom message\nwebKeyword.verifyElementVisibleSoft(headerLogoObject, true, \"Logo phải hiển thị trên header\");\nwebKeyword.verifyElementVisibleSoft(navigationMenuObject, true, \"Menu điều hướng bị thiếu\");\nwebKeyword.click(mainButtonObject); // Thực hiện hành động tiếp theo",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, và element cần Verify phải tồn tại trong DOM. Có thể throw NoSuchElementException nếu không tìm thấy element, StaleElementReferenceException nếu element không còn gắn với DOM, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "verifyElementVisibleSoft",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "element cần Verify"
+  }, {
+    "type" : "boolean",
+    "name" : "isVisible",
+    "description" : "Trạng thái hiển thị mong đợi (true cho hiển thị, false cho bị ẩn)"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
   } ]
 }, {
   "name" : "startBrowser",
@@ -771,6 +1099,18 @@
     "description" : "Thời gian cần tạm dừng (tính bằng mili giây)"
   } ]
 }, {
+  "name" : "stopAllSessions",
+  "description" : "Đóng tất cả các trình duyệt và phiên kết nối thiết bị đã được mở bởi các keyword 'startSession'.",
+  "category" : "Driver",
+  "subCategory" : "Session",
+  "example" : "// Đặt ở cuối kịch bản hoặc trong khối @AfterClass để dọn dẹp\ndriver.stopAllSessions();",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Luôn luôn gọi keyword này để đảm bảo không có tiến trình nào bị treo sau khi kiểm thử kết thúc.",
+  "className" : "com.vtnet.netat.core.keywords.DriverKeyword",
+  "methodName" : "stopAllSessions",
+  "returnType" : "void",
+  "parameters" : [ ]
+}, {
   "name" : "selectByVisibleText",
   "description" : "Chọn một option in dropdown dựa trên text hiển thị of nó.",
   "category" : "Web",
@@ -789,6 +1129,30 @@
     "type" : "String",
     "name" : "text",
     "description" : "text hiển thị of option cần chọn"
+  } ]
+}, {
+  "name" : "assertNotContains",
+  "description" : "Khẳng định rằng một chuỗi văn bản không chứa chuỗi con được chỉ định. Nếu có chứa, test case sẽ dừng lại và báo lỗi.",
+  "category" : "Assertion",
+  "subCategory" : "HardAssert",
+  "example" : "assertNotContains(\"Hello World\", \"Error\");\nassertNotContains(successMessage, \"failed\", \"Thông báo thành công không được chứa từ failed\");\nassertNotContains(userEmail, \"@temp\", \"Email người dùng không được là email tạm thời\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Assertion này kiểm tra xem chuỗi nguồn không được chứa chuỗi con. Phân biệt chữ hoa chữ thường. Sẽ dừng test nếu tìm thấy chuỗi con.",
+  "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
+  "methodName" : "assertNotContains",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "sourceText",
+    "description" : "Chuỗi văn bản nguồn cần kiểm tra"
+  }, {
+    "type" : "String",
+    "name" : "substring",
+    "description" : "Chuỗi con không được phép có trong văn bản nguồn"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
   } ]
 }, {
   "name" : "verifyAlertPresent",
@@ -819,6 +1183,30 @@
   "returnType" : "String",
   "parameters" : [ ]
 }, {
+  "name" : "assertElementCount",
+  "description" : "Khẳng định rằng số lượng phần tử tìm thấy khớp với một con số mong đợi. Hữu ích khi cần kiểm tra số lượng các mục trong danh sách, số lượng tùy chọn, hoặc xác minh rằng một nhóm phần tử có số lượng chính xác. Phương thức này tìm tất cả các phần tử khớp với locator và so sánh số lượng với giá trị mong đợi.",
+  "category" : "Mobile",
+  "subCategory" : "Assertion",
+  "example" : "// Kiểm tra số lượng sản phẩm trong giỏ hàng\nmobileKeyword.assertElementCount(cartItems, 3);\n\n// Với custom message\nmobileKeyword.assertElementCount(cartItems, 3, \n    \"Giỏ hàng phải chứa đúng 3 sản phẩm sau khi thêm\");\n\n// Xác minh danh sách rỗng sau khi xóa\nmobileKeyword.tap(clearAllButton);\nmobileKeyword.assertElementCount(listItems, 0, \n    \"Danh sách phải rỗng sau khi nhấn nút xóa tất cả\");\n\n// Kiểm tra số lượng menu items\nmobileKeyword.assertElementCount(menuItems, 5, \n    \"Menu chính phải có đúng 5 mục theo thiết kế\");\n// Kiểm tra số lượng notification\nmobileKeyword.assertElementCount(notifications, 2, \n    \"Phải có đúng 2 thông báo chưa đọc\");\n// Kiểm tra số lượng tabs\nmobileKeyword.assertElementCount(tabButtons, 4, \n    \"Bottom navigation phải có đúng 4 tab\");",
+  "returnValue" : "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
+  "note" : "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. Locator của phần tử phải hợp lệ và có thể tìm thấy nhiều phần tử. Nếu mong đợi không tìm thấy phần tử nào (count = 0), locator vẫn phải hợp lệ. Có thể throw AssertionError nếu số lượng phần tử tìm thấy không khớp với số lượng mong đợi, WebDriverException nếu có lỗi khi tương tác với trình điều khiển, hoặc InvalidSelectorException nếu locator không hợp lệ.",
+  "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
+  "methodName" : "assertElementCount",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "Locator để tìm các phần tử"
+  }, {
+    "type" : "int",
+    "name" : "expectedCount",
+    "description" : "Số lượng phần tử mong đợi"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
   "name" : "setLocalStorage",
   "description" : "Ghi một cặp khóa-giá trị vào Local Storage of trình duyệt. Hữu ích để thiết lập trạng thái ứng dụng hoặc token.",
   "category" : "Web",
@@ -837,22 +1225,6 @@
     "type" : "String",
     "name" : "value",
     "description" : "Giá trị (value) tương ứng"
-  } ]
-}, {
-  "name" : "verifyElementEnabledSoft",
-  "description" : "Verify một element có đang ở trạng thái enabled hay không. Nếu không, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
-  "category" : "Web",
-  "subCategory" : "Assertion",
-  "example" : "// Verify nhiều trường nhập liệu option có thể tương tác\nwebKeyword.verifyElementEnabledSoft(optionalFieldObject);\nwebKeyword.verifyElementEnabledSoft(commentFieldObject);\nwebKeyword.sendKeys(commentFieldObject, \"Đây is bình luận of tôi\"); // Tiếp tục ngay cả khi có trường không enabled\n\n// Verify các nút chức năng trong trang quản trị\nwebKeyword.verifyElementEnabledSoft(addButtonObject);\nwebKeyword.verifyElementEnabledSoft(editButtonObject);\nwebKeyword.click(addButtonObject); // Tiếp tục thực hiện hành động",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, và element cần Verify phải tồn tại trong DOM. Có thể throw NoSuchElementException nếu không tìm thấy element, StaleElementReferenceException nếu element không còn gắn với DOM, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
-  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
-  "methodName" : "verifyElementEnabledSoft",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "ObjectUI",
-    "name" : "uiObject",
-    "description" : "element cần Verify"
   } ]
 }, {
   "name" : "swipeUp",
@@ -889,6 +1261,30 @@
     "type" : "String",
     "name" : "text",
     "description" : "Chuỗi text cần nhập vào element"
+  } ]
+}, {
+  "name" : "assertContains",
+  "description" : "Khẳng định rằng một chuỗi văn bản chứa chuỗi con được chỉ định. Nếu không chứa, test case sẽ dừng lại và báo lỗi.",
+  "category" : "Assertion",
+  "subCategory" : "HardAssert",
+  "example" : "assertContains(\"Hello World\", \"World\");\nassertContains(pageTitle, \"Dashboard\", \"Tiêu đề trang phải chứa từ Dashboard\");\nassertContains(errorMessage, \"required\", \"Thông báo lỗi phải chứa từ required\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Assertion này kiểm tra xem chuỗi nguồn có chứa chuỗi con hay không. Phân biệt chữ hoa chữ thường. Sẽ dừng test nếu không tìm thấy chuỗi con.",
+  "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
+  "methodName" : "assertContains",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "sourceText",
+    "description" : "Chuỗi văn bản nguồn cần kiểm tra"
+  }, {
+    "type" : "String",
+    "name" : "substring",
+    "description" : "Chuỗi con cần tìm trong văn bản nguồn"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
   } ]
 }, {
   "name" : "pullFile",
@@ -943,15 +1339,15 @@
     "description" : "Thời gian tối đa (giây) để chờ phần tử biến mất"
   } ]
 }, {
-  "name" : "verifyCssValueSoft",
-  "description" : "So sánh giá trị of một thuộc tính CSS trên element. Nếu không khớp, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
+  "name" : "verifyElementAttributeSoft",
+  "description" : "Verify giá trị của một thuộc tính (attribute) trên element. Nếu giá trị không khớp, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
   "category" : "Web",
   "subCategory" : "Assertion",
-  "example" : "// Verify độ đậm of tiêu đề\nwebKeyword.verifyCssValueSoft(titleObject, \"font-weight\", \"700\");\nwebKeyword.click(nextButtonObject); // Tiếp tục quy trình\n\n// Verify màu nền of nút\nwebKeyword.verifyCssValueSoft(buttonObject, \"background-color\", \"rgb(0, 123, 255)\");\nwebKeyword.click(buttonObject);",
+  "example" : "// Verify nhiều thuộc tính của một element\nwebKeyword.verifyElementAttributeSoft(buttonObject, \"type\", \"submit\");\nwebKeyword.verifyElementAttributeSoft(buttonObject, \"class\", \"btn-primary\");\nwebKeyword.click(buttonObject); // Tiếp tục thực hiện hành động\n\n// Verify thuộc tính của nhiều element với custom message\nwebKeyword.verifyElementAttributeSoft(usernameInputObject, \"placeholder\", \"Nhập tên đăng nhập\", \n    \"Placeholder của username input không đúng\");\nwebKeyword.verifyElementAttributeSoft(passwordInputObject, \"type\", \"password\", \n    \"Input password phải có type là 'password'\");",
   "returnValue" : "void - Không trả về giá trị",
-  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, và element cần Verify phải tồn tại trong DOM. Có thể throw NoSuchElementException nếu không tìm thấy element, StaleElementReferenceException nếu element không còn gắn với DOM, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
+  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, element cần Verify phải tồn tại trong DOM, và thuộc tính cần Verify phải tồn tại trên element. Có thể throw NoSuchElementException nếu không tìm thấy element, StaleElementReferenceException nếu element không còn gắn với DOM, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
   "className" : "com.vtnet.netat.web.keywords.WebKeyword",
-  "methodName" : "verifyCssValueSoft",
+  "methodName" : "verifyElementAttributeSoft",
   "returnType" : "void",
   "parameters" : [ {
     "type" : "ObjectUI",
@@ -959,12 +1355,16 @@
     "description" : "element cần Verify"
   }, {
     "type" : "String",
-    "name" : "cssName",
-    "description" : "Tên thuộc tính CSS (ví dụ: 'font-weight')"
+    "name" : "attributeName",
+    "description" : "Tên của thuộc tính (ví dụ: 'href', 'class', 'value')"
   }, {
     "type" : "String",
     "name" : "expectedValue",
-    "description" : "Giá trị CSS mong đợi (ví dụ: '700')"
+    "description" : "Giá trị mong đợi của thuộc tính"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
   } ]
 }, {
   "name" : "isElementPresent",
@@ -1035,22 +1435,6 @@
     "description" : "Địa chỉ trang web đầy đủ cần mở (ví dụ: 'https://www.google.com')"
   } ]
 }, {
-  "name" : "verifyTitleSoft",
-  "description" : "So sánh tiêu đề of trang hiện tại với một chuỗi mong đợi. Nếu không khớp, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
-  "category" : "Web",
-  "subCategory" : "Assertion",
-  "example" : "// Verify tiêu đề trang giỏ hàng sau khi thêm sản phẩm\nwebKeyword.click(addToCartButtonObject);\nwebKeyword.click(viewCartButtonObject);\nwebKeyword.waitForPageLoaded(10);\nwebKeyword.verifyTitleSoft(\"Giỏ hàng (1 sản phẩm)\");\nwebKeyword.click(checkoutButtonObject); // Tiếp tục quy trình thanh toán\n\n// Verify nhiều điều kiện trong quy trình đặt hàng\nwebKeyword.verifyTitleSoft(\"Thanh toán - Bước 1: Thông tin giao hàng\");\nwebKeyword.verifyElementVisibleSoft(shippingFormObject, true);\nwebKeyword.fillShippingForm(); // Tiếp tục điền form",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, và trang web đã hoàn thành quá trình tải. Có thể throw WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
-  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
-  "methodName" : "verifyTitleSoft",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "String",
-    "name" : "expectedTitle",
-    "description" : "Tiêu đề trang mong đợi"
-  } ]
-}, {
   "name" : "hideKeyboard",
   "description" : "Ẩn bàn phím ảo nếu nó đang hiển thị trên màn hình. Hữu ích khi cần giải phóng không gian màn hình sau khi nhập liệu hoặc trước khi thực hiện các thao tác khác. Nếu bàn phím không hiển thị, phương thức này có thể gây ra lỗi trên một số thiết bị.",
   "category" : "Mobile",
@@ -1089,6 +1473,26 @@
     "type" : "Object[]",
     "name" : "params",
     "description" : "Các tham số cần truyền vào câu truy vấn"
+  } ]
+}, {
+  "name" : "assertElementNotSelected",
+  "description" : "Khẳng định rằng một element (checkbox hoặc radio button) đang ở trạng thái không được chọn. Nếu đang được chọn, kịch bản sẽ DỪNG LẠI.",
+  "category" : "Web",
+  "subCategory" : "Assertion",
+  "example" : "// Verify checkbox thông báo không được chọn mặc định\nwebKeyword.assertElementNotSelected(newsletterCheckbox);\nwebKeyword.click(newsletterCheckbox); // Chọn để nhận thông báo\n\n// Verify các tùy chọn bổ sung không được chọn với custom message\nwebKeyword.assertElementNotSelected(expressShippingRadio, \n    \"Vận chuyển nhanh không nên được chọn mặc định\");\nwebKeyword.assertElementNotSelected(giftWrappingCheckbox, \n    \"Gói quà không nên được chọn mặc định\");\nwebKeyword.click(expressShippingRadio); // Chọn vận chuyển nhanh",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, element cần Verify phải tồn tại trong DOM và là checkbox hoặc radio button. Có thể throw AssertionError nếu element đang ở trạng thái được chọn, NoSuchElementException nếu không tìm thấy element, StaleElementReferenceException nếu element không còn gắn với DOM, WebDriverException nếu có lỗi khi tương tác với trình duyệt, hoặc IllegalArgumentException nếu element không phải là checkbox hoặc radio button.",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "assertElementNotSelected",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "element checkbox hoặc radio button cần Verify"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
   } ]
 }, {
   "name" : "getLocalStorage",
@@ -1151,26 +1555,6 @@
     "description" : "Đối tượng giao diện đại diện cho các element cần lấy text"
   } ]
 }, {
-  "name" : "assertTextContains",
-  "description" : "Khẳng định rằng văn bản của một phần tử có chứa một chuỗi con. Khác với assertTextEquals, phương thức này chỉ kiểm tra sự xuất hiện của chuỗi con trong văn bản, không yêu cầu khớp hoàn toàn. Hữu ích khi nội dung có thể thay đổi nhưng vẫn chứa các phần quan trọng cần kiểm tra. Phương thức phân biệt chữ hoa/thường.",
-  "category" : "Mobile",
-  "subCategory" : "Assertion",
-  "example" : "// Kiểm tra thông báo chào mừng có chứa tên người dùng\nmobileKeyword.assertTextContains(welcomeMessage, \"Xin chào\");\n\n// Xác minh thông báo lỗi có chứa thông tin về mật khẩu\nmobileKeyword.assertTextContains(errorMessage, \"mật khẩu không đúng\");",
-  "returnValue" : "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
-  "note" : "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. Phần tử cần kiểm tra phải tồn tại và có thuộc tính văn bản (text), và phải hiển thị trên màn hình để có thể đọc văn bản. Có thể throw AssertionError nếu văn bản của phần tử không chứa chuỗi con mong đợi, NoSuchElementException nếu không tìm thấy phần tử, hoặc StaleElementReferenceException nếu phần tử không còn gắn với DOM.",
-  "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
-  "methodName" : "assertTextContains",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "ObjectUI",
-    "name" : "uiObject",
-    "description" : "Phần tử cần kiểm tra văn bản"
-  }, {
-    "type" : "String",
-    "name" : "partialText",
-    "description" : "Chuỗi con cần tìm trong văn bản của phần tử"
-  } ]
-}, {
   "name" : "generateRandomIntegerNumber",
   "description" : "Tạo ra một số nguyên ngẫu nhiên trong một khoảng cho trước (bao gồm cả min và max).",
   "category" : "Utility",
@@ -1211,6 +1595,26 @@
     "description" : "Loại ký tự: 'ALPHABETIC' (chỉ chữ), 'NUMERIC' (chỉ số), hoặc 'ALPHANUMERIC' (cả chữ và số)."
   } ]
 }, {
+  "name" : "assertElementDisabled",
+  "description" : "Khẳng định rằng một element đang ở trạng thái không thể tương tác (disabled). Nếu element đang enabled, kịch bản sẽ DỪNG LẠI.",
+  "category" : "Web",
+  "subCategory" : "Assertion",
+  "example" : "// Verify nút gửi form bị vô hiệu hóa khi chưa điền thông tin bắt buộc\nwebKeyword.navigateToUrl(\"https://example.com/registration\");\nwebKeyword.waitForPageLoaded(10);\nwebKeyword.assertElementDisabled(submitButtonBeforeFillForm);\n\n// Verify nút thanh toán bị vô hiệu hóa với custom message\nwebKeyword.click(checkoutButtonObject);\nwebKeyword.waitForPageLoaded(15);\nwebKeyword.assertElementDisabled(paymentButtonObject, \n    \"Nút thanh toán phải bị vô hiệu hóa khi chưa chọn phương thức\");\n\n// Verify button bị khóa trong trial version\nwebKeyword.assertElementDisabled(premiumFeatureButtonObject, \"Tính năng premium phải bị khóa\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, và element cần Verify phải tồn tại trong DOM. Có thể throw AssertionError nếu element đang ở trạng thái enabled, NoSuchElementException nếu không tìm thấy element, StaleElementReferenceException nếu element không còn gắn với DOM, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "assertElementDisabled",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "element cần Verify"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
   "name" : "getAlertText",
   "description" : "Chờ cho đến khi một hộp thoại alert, prompt, hoặc confirm of trình duyệt xuất hiện và lấy về nội dung text of nó.",
   "category" : "Web",
@@ -1222,26 +1626,6 @@
   "methodName" : "getAlertText",
   "returnType" : "String",
   "parameters" : [ ]
-}, {
-  "name" : "assertGreaterThanOrEqual",
-  "description" : "Khẳng định rằng giá trị thực tế lớn hơn hoặc bằng giá trị so sánh. Nếu không thỏa mãn, test case sẽ dừng lại và báo lỗi",
-  "category" : "Assertion",
-  "subCategory" : "",
-  "example" : "assertGreaterThanOrEqual(10, 10); // 10 >= 10",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "Tự động xử lý so sánh giữa số và chuỗi số. Assertion sẽ fail nếu actualValue < expectedValue.",
-  "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
-  "methodName" : "assertGreaterThanOrEqual",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "Object",
-    "name" : "actualValue",
-    "description" : "Giá trị thực tế cần so sánh (số hoặc chuỗi số)"
-  }, {
-    "type" : "Object",
-    "name" : "expectedValue",
-    "description" : "Giá trị mong đợi để so sánh (actualValue phải lớn hơn hoặc bằng giá trị này)"
-  } ]
 }, {
   "name" : "contextClick",
   "description" : "Thực hiện hành động click chuột phải vào một element. Thường dùng để mở các menu ngữ cảnh (context menu).",
@@ -1275,84 +1659,24 @@
     "description" : "Đường dẫn đầy đủ để lưu file ảnh (ví dụ: 'C:/screenshots/error.png')"
   } ]
 }, {
-  "name" : "assertNotificationText",
-  "description" : "Kiểm tra văn bản của một thông báo. Tự động chờ thông báo xuất hiện trước khi kiểm tra.",
-  "category" : "Mobile",
-  "subCategory" : "Assertion",
-  "example" : "mobileKeyword.assertNotificationText(\"Tin nhắn từ A\", \"Bạn có muốn trả lời không?\", 15);",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "",
-  "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
-  "methodName" : "assertNotificationText",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "String",
-    "name" : "containingText",
-    "description" : "Đoạn văn bản dùng để tìm thông báo."
-  }, {
-    "type" : "String",
-    "name" : "expectedText",
-    "description" : "Văn bản đầy đủ mong đợi của thông báo."
-  }, {
-    "type" : "int",
-    "name" : "timeoutInSeconds",
-    "description" : "Thời gian chờ tối đa."
-  } ]
-}, {
-  "name" : "assertEnabled",
-  "description" : "Khẳng định rằng một phần tử đang ở trạng thái có thể tương tác (enabled). Phương thức này kiểm tra thuộc tính 'enabled' của phần tử và ném AssertionError nếu phần tử bị vô hiệu hóa (disabled). Hữu ích khi cần đảm bảo một nút hoặc trường nhập liệu có thể tương tác được trước khi thực hiện các thao tác tiếp theo.",
-  "category" : "Mobile",
-  "subCategory" : "Assertion",
-  "example" : "// Kiểm tra nút đăng nhập được kích hoạt sau khi nhập thông tin\nmobileKeyword.sendText(usernameInput, \"user@example.com\");\nmobileKeyword.sendText(passwordInput, \"password123\");\nmobileKeyword.assertEnabled(loginButton);\n\n// Xác minh nút tiếp tục được kích hoạt sau khi đồng ý điều khoản\nmobileKeyword.tap(agreeToTermsCheckbox);\nmobileKeyword.assertEnabled(continueButton);",
-  "returnValue" : "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
-  "note" : "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. Phần tử cần kiểm tra phải tồn tại và có thuộc tính 'enabled', và phải là loại có thể được kích hoạt/vô hiệu hóa (button, input, etc.). Có thể throw AssertionError nếu phần tử đang ở trạng thái bị vô hiệu hóa (disabled), NoSuchElementException nếu không tìm thấy phần tử, StaleElementReferenceException nếu phần tử không còn gắn với DOM, hoặc WebDriverException nếu không thể lấy thuộc tính 'enabled' của phần tử.",
-  "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
-  "methodName" : "assertEnabled",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "ObjectUI",
-    "name" : "uiObject",
-    "description" : "Phần tử cần kiểm tra trạng thái"
-  } ]
-}, {
-  "name" : "assertNotContains",
-  "description" : "Khẳng định rằng một chuỗi văn bản không chứa chuỗi con được chỉ định. Nếu có chứa, test case sẽ dừng lại và báo lỗi",
-  "category" : "Assertion",
-  "subCategory" : "",
-  "example" : "assertNotContains(\"Hello World\", \"Error\");",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "Assertion này kiểm tra xem chuỗi nguồn không được chứa chuỗi con. Phân biệt chữ hoa chữ thường. Sẽ dừng test nếu tìm thấy chuỗi con.",
-  "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
-  "methodName" : "assertNotContains",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "String",
-    "name" : "sourceText",
-    "description" : "Chuỗi văn bản nguồn cần kiểm tra"
-  }, {
-    "type" : "String",
-    "name" : "substring",
-    "description" : "Chuỗi con không được phép có trong văn bản nguồn"
-  } ]
-}, {
-  "name" : "verifyTextMatchesRegexHard",
-  "description" : "Verify text of một element có khớp với một biểu thức chính quy (regex) hay không. Nếu không khớp, kịch bản sẽ DỪNG LẠI.",
+  "name" : "verifyElementEnabledSoft",
+  "description" : "Verify một element có đang ở trạng thái enabled hay không. Nếu không, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
   "category" : "Web",
   "subCategory" : "Assertion",
-  "example" : "// Verify mã đơn hàng có đúng định dạng\nwebKeyword.click(viewOrderButtonObject);\nwebKeyword.waitForElementVisible(orderIdObject);\nwebKeyword.verifyTextMatchesRegexHard(orderIdObject, \"^DH-\\\\d{5}$\"); // Khớp với DH-12345\n\n// Verify số điện thoại có đúng định dạng\nwebKeyword.verifyTextMatchesRegexHard(phoneNumberObject, \"^(\\\\+84|0)[0-9]{9,10}$\");",
+  "example" : "// Verify nhiều trường nhập liệu tùy chọn có thể tương tác\nwebKeyword.verifyElementEnabledSoft(optionalFieldObject);\nwebKeyword.verifyElementEnabledSoft(commentFieldObject);\nwebKeyword.sendKeys(commentFieldObject, \"Đây là bình luận của tôi\"); // Tiếp tục ngay cả khi có trường không enabled\n\n// Verify các nút chức năng trong trang quản trị với custom message\nwebKeyword.verifyElementEnabledSoft(addButtonObject, \"Nút thêm mới nên được kích hoạt\");\nwebKeyword.verifyElementEnabledSoft(editButtonObject, \"Nút chỉnh sửa nên hoạt động\");\nwebKeyword.click(addButtonObject); // Tiếp tục thực hiện hành động",
   "returnValue" : "void - Không trả về giá trị",
-  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, element cần Verify phải tồn tại trong DOM và có text. Có thể throw AssertionError nếu text không khớp với biểu thức chính quy, NoSuchElementException nếu không tìm thấy element, StaleElementReferenceException nếu element không còn gắn với DOM, WebDriverException nếu có lỗi khi tương tác với trình duyệt, hoặc PatternSyntaxException nếu biểu thức chính quy không hợp lệ.",
+  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, và element cần Verify phải tồn tại trong DOM. Có thể throw NoSuchElementException nếu không tìm thấy element, StaleElementReferenceException nếu element không còn gắn với DOM, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
   "className" : "com.vtnet.netat.web.keywords.WebKeyword",
-  "methodName" : "verifyTextMatchesRegexHard",
+  "methodName" : "verifyElementEnabledSoft",
   "returnType" : "void",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject",
-    "description" : "element contains text cần Verify"
+    "description" : "element cần Verify"
   }, {
-    "type" : "String",
-    "name" : "pattern",
-    "description" : "Biểu thức chính quy để so khớp"
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
   } ]
 }, {
   "name" : "clear",
@@ -1403,6 +1727,46 @@
     "description" : "Thời gian chờ tối đa (tính bằng seconds)"
   } ]
 }, {
+  "name" : "assertChecked",
+  "description" : "Khẳng định rằng một switch, checkbox hoặc radio button đang ở trạng thái được chọn/bật. Phương thức này kiểm tra thuộc tính 'checked' của phần tử và ném AssertionError nếu phần tử không được chọn. Áp dụng cho các phần tử có thể chọn/bỏ chọn như checkbox, radio button, toggle switch. Phần tử phải hỗ trợ thuộc tính 'checked', nếu không có thể gây ra lỗi.",
+  "category" : "Mobile",
+  "subCategory" : "Assertion",
+  "example" : "// Kiểm tra checkbox đã được chọn\nmobileKeyword.tap(agreeToTermsCheckbox);\nmobileKeyword.assertChecked(agreeToTermsCheckbox);\n\n// Với custom message\nmobileKeyword.assertChecked(agreeToTermsCheckbox, \n    \"Checkbox đồng ý điều khoản phải được chọn trước khi đăng ký\");\n\n// Kiểm tra các toggle switches\nmobileKeyword.assertChecked(notificationSwitch, \n    \"Switch thông báo phải được bật theo mặc định\");\nmobileKeyword.assertChecked(darkModeSwitch, \n    \"Chế độ tối phải được kích hoạt sau khi user chọn\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. Phần tử UI cần kiểm tra phải là loại có thể chọn/bỏ chọn và hỗ trợ thuộc tính 'checked'. Có thể throw AssertionError nếu phần tử không ở trạng thái được chọn/bật, NoSuchElementException nếu không tìm thấy phần tử, hoặc WebDriverException nếu không thể truy cập thuộc tính 'checked'.",
+  "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
+  "methodName" : "assertChecked",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "Phần tử cần kiểm tra trạng thái"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
+  "name" : "assertNotChecked",
+  "description" : "Khẳng định rằng một switch, checkbox hoặc radio button đang ở trạng thái không được chọn/tắt. Phương thức này kiểm tra thuộc tính 'checked' của phần tử và ném AssertionError nếu phần tử đang được chọn. Áp dụng cho các phần tử có thể chọn/bỏ chọn như checkbox, radio button, toggle switch. Lưu ý: Phần tử phải hỗ trợ thuộc tính 'checked', nếu không có thể gây ra lỗi.",
+  "category" : "Mobile",
+  "subCategory" : "Assertion",
+  "example" : "// Kiểm tra rằng tùy chọn chưa được chọn ban đầu\nmobileKeyword.assertNotChecked(optionalFeatureCheckbox);\n\n// Với custom message\nmobileKeyword.assertNotChecked(optionalFeatureCheckbox, \n    \"Checkbox tính năng tùy chọn phải ở trạng thái chưa chọn khi khởi tạo\");\n\n// Xác minh các radio button khác không được chọn\nmobileKeyword.tap(option1RadioButton);\nmobileKeyword.assertChecked(option1RadioButton);\nmobileKeyword.assertNotChecked(option2RadioButton, \n    \"Option 2 phải không được chọn khi Option 1 đã được chọn\");\nmobileKeyword.assertNotChecked(option3RadioButton, \n    \"Option 3 phải không được chọn khi Option 1 đã được chọn\");",
+  "returnValue" : "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
+  "note" : "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. Phần tử cần kiểm tra phải tồn tại và có thuộc tính 'checked', và phải là loại có thể chọn/bỏ chọn (checkbox, radio button, switch). Có thể throw AssertionError nếu phần tử đang ở trạng thái được chọn/bật, NoSuchElementException nếu không tìm thấy phần tử, StaleElementReferenceException nếu phần tử không còn gắn với DOM, hoặc WebDriverException nếu không thể lấy thuộc tính 'checked' của phần tử.",
+  "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
+  "methodName" : "assertNotChecked",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "Phần tử cần kiểm tra trạng thái"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
   "name" : "getTextFromElements",
   "description" : "Trích xuất và trả về danh sách các chuỗi văn bản từ tất cả phần tử khớp với locator. Mỗi phần tử trong danh sách sẽ được lấy text và thêm vào kết quả trả về.",
   "category" : "Mobile",
@@ -1417,6 +1781,26 @@
     "type" : "ObjectUI",
     "name" : "uiObject",
     "description" : "Đối tượng UI đại diện cho các phần tử cần lấy văn bản"
+  } ]
+}, {
+  "name" : "verifyElementDisabledSoft",
+  "description" : "Verify một element có đang ở trạng thái disabled hay không. Nếu không, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
+  "category" : "Web",
+  "subCategory" : "Assertion",
+  "example" : "// Verify các tính năng bị khóa trong phiên bản dùng thử\nwebKeyword.verifyElementDisabledSoft(lockedFeatureButton);\nwebKeyword.verifyElementDisabledSoft(premiumFeatureButton);\nwebKeyword.click(upgradeAccountButton); // Tiếp tục thực hiện hành động\n\n// Verify các trường không thể chỉnh sửa trong chế độ xem với custom message\nwebKeyword.click(viewModeButton);\nwebKeyword.verifyElementDisabledSoft(nameFieldInViewMode, \n    \"Trường tên phải bị vô hiệu hóa trong chế độ xem\");\nwebKeyword.click(editModeButton); // Chuyển sang chế độ chỉnh sửa",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, và element cần Verify phải tồn tại trong DOM. Có thể throw NoSuchElementException nếu không tìm thấy element, StaleElementReferenceException nếu element không còn gắn với DOM, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "verifyElementDisabledSoft",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "element cần Verify"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
   } ]
 }, {
   "name" : "getValueFromJson",
@@ -1437,6 +1821,150 @@
     "type" : "String",
     "name" : "jsonPointer",
     "description" : "Đường dẫn đến giá trị cần lấy theo cú pháp JSON Pointer (ví dụ: '/user/name', '/data/0/id')"
+  } ]
+}, {
+  "name" : "verifyElementNotPresentHard",
+  "description" : "Khẳng định rằng một element không tồn tại trong DOM sau một khoảng thời gian chờ. Nếu element vẫn tồn tại, kịch bản sẽ DỪNG LẠI.",
+  "category" : "Web",
+  "subCategory" : "Assertion",
+  "example" : "// Verify element đã bị xóa\nwebKeyword.click(deleteButtonObject);\nwebKeyword.verifyElementNotPresentHard(deletedItemObject, 5);\n\n// Verify thông báo lỗi đã biến mất với custom message\nwebKeyword.sendKeys(emailInput, \"valid@example.com\");\nwebKeyword.verifyElementNotPresentHard(errorMessageObject, 3, \n    \"Thông báo lỗi phải biến mất sau khi nhập email hợp lệ\");\n\n// Verify popup đã đóng\nwebKeyword.click(closePopupButtonObject);\nwebKeyword.verifyElementNotPresentHard(popupModalObject, 10, \n    \"Popup modal phải đóng sau khi click nút đóng\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động. Có thể throw AssertionError nếu element vẫn tồn tại trong DOM sau thời gian chờ, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "verifyElementNotPresentHard",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "element cần Verify"
+  }, {
+    "type" : "int",
+    "name" : "timeoutInSeconds",
+    "description" : "Thời gian chờ tối đa"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
+  "name" : "softAssertEquals",
+  "description" : "Kiểm tra hai giá trị có bằng nhau không. Nếu không, ghi nhận lỗi và TIẾP TỤC chạy.",
+  "category" : "Assertion",
+  "subCategory" : "Soft",
+  "example" : "String pageTitle = web.getPageTitle();\nassertion.softAssertEquals(pageTitle, \"Trang chủ\", \"Tiêu đề trang không đúng\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "So sánh giá trị sau khi chuyển sang dạng chuỗi. Lỗi sẽ được ghi nhận và test vẫn tiếp tục. **Phải gọi `assertAll()` ở cuối** để tổng hợp kết quả.",
+  "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
+  "methodName" : "softAssertEquals",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "Object",
+    "name" : "actualValue",
+    "description" : "Giá trị thực tế"
+  }, {
+    "type" : "Object",
+    "name" : "expectedValue",
+    "description" : "Giá trị mong đợi"
+  }, {
+    "type" : "String[]",
+    "name" : "message",
+    "description" : "Thông điệp tùy chỉnh khi assertion fail"
+  } ]
+}, {
+  "name" : "verifyCssValueHard",
+  "description" : "So sánh giá trị của một thuộc tính CSS trên element. Nếu không khớp, kịch bản sẽ DỪNG LẠI.",
+  "category" : "Web",
+  "subCategory" : "Assertion",
+  "example" : "// Verify màu của thông báo lỗi\nwebKeyword.click(submitButtonObject); // Gửi form không hợp lệ\nwebKeyword.waitForElementVisible(errorMessageObject);\nwebKeyword.verifyCssValueHard(errorMessageObject, \"color\", \"rgba(255, 0, 0, 1)\");\n\n// Verify background-color của nút đã chọn với custom message\nwebKeyword.click(selectButtonObject);\nwebKeyword.verifyCssValueHard(selectButtonObject, \"background-color\", \"rgba(0, 123, 255, 1)\", \n    \"Màu nền của nút được chọn phải là màu xanh\");\n\n// Verify font-size của tiêu đề\nwebKeyword.verifyCssValueHard(titleObject, \"font-size\", \"24px\", \n    \"Kích thước font của tiêu đề phải là 24px\");\n\n// Verify display property của element ẩn\nwebKeyword.verifyCssValueHard(hiddenElementObject, \"display\", \"none\", \n    \"Element phải được ẩn với display: none\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, và element cần Verify phải tồn tại trong DOM. Có thể throw AssertionError nếu giá trị CSS không khớp với giá trị mong đợi, NoSuchElementException nếu không tìm thấy element, StaleElementReferenceException nếu element không còn gắn với DOM, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "verifyCssValueHard",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "element cần Verify"
+  }, {
+    "type" : "String",
+    "name" : "cssName",
+    "description" : "Tên thuộc tính CSS (ví dụ: 'color')"
+  }, {
+    "type" : "String",
+    "name" : "expectedValue",
+    "description" : "Giá trị CSS mong đợi (ví dụ: 'rgb(255, 0, 0)')"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
+  "name" : "verifyCssValueSoft",
+  "description" : "So sánh giá trị của một thuộc tính CSS trên element. Nếu không khớp, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
+  "category" : "Web",
+  "subCategory" : "Assertion",
+  "example" : "// Verify độ đậm của tiêu đề\nwebKeyword.verifyCssValueSoft(titleObject, \"font-weight\", \"700\");\nwebKeyword.click(nextButtonObject); // Tiếp tục quy trình\n\n// Verify màu nền của nút với custom message\nwebKeyword.verifyCssValueSoft(buttonObject, \"background-color\", \"rgb(0, 123, 255)\", \n    \"Nút phải có màu xanh theo thiết kế\");\nwebKeyword.click(buttonObject);\n\n// Verify nhiều thuộc tính CSS\nwebKeyword.verifyCssValueSoft(headerObject, \"height\", \"60px\", \"Header phải có chiều cao 60px\");\nwebKeyword.verifyCssValueSoft(menuObject, \"display\", \"flex\", \"Menu phải sử dụng flexbox layout\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, và element cần Verify phải tồn tại trong DOM. Có thể throw NoSuchElementException nếu không tìm thấy element, StaleElementReferenceException nếu element không còn gắn với DOM, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt. Giá trị CSS trả về có thể khác với giá trị trong stylesheet do browser normalization.",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "verifyCssValueSoft",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "element cần Verify"
+  }, {
+    "type" : "String",
+    "name" : "cssName",
+    "description" : "Tên thuộc tính CSS (ví dụ: 'font-weight')"
+  }, {
+    "type" : "String",
+    "name" : "expectedValue",
+    "description" : "Giá trị CSS mong đợi (ví dụ: '700')"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
+  "name" : "assertAll",
+  "description" : "Thực hiện kiểm tra tất cả các soft assertion đã được thu thập trước đó. Nếu có bất kỳ assertion nào thất bại, phương thức sẽ ném ra ngoại lệ với thông tin chi tiết về các lỗi. Sau khi gọi phương thức này, soft assert sẽ được reset về null.",
+  "category" : "Assertion",
+  "subCategory" : "SoftAssert",
+  "example" : "// Sau khi thực hiện nhiều soft assertion\nsoftAssert.assertEquals(actualTitle, expectedTitle, \"Title không khớp\");\nsoftAssert.assertTrue(isElementDisplayed, \"Element không hiển thị\");\n// Thực hiện kiểm tra tất cả các assertion\nassertAll();\n\n// Với custom message\nassertAll(\"Kiểm tra tất cả các assertion trong test case đăng nhập\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
+  "methodName" : "assertAll",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi có assertion thất bại"
+  } ]
+}, {
+  "name" : "verifyTextContainsHard",
+  "description" : "Verify text của một element có chứa một chuỗi con hay không. Nếu không chứa, kịch bản sẽ DỪNG LẠI.",
+  "category" : "Web",
+  "subCategory" : "Assertion",
+  "example" : "// Verify thông báo chào mừng có chứa tên người dùng\nwebKeyword.verifyTextContainsHard(welcomeMessageObject, \"Xin chào\");\n\n// Verify kết quả tìm kiếm có chứa từ khóa đã tìm với custom message\nwebKeyword.sendKeys(searchInputObject, \"laptop\");\nwebKeyword.click(searchButtonObject);\nwebKeyword.waitForElementVisible(searchResultsObject);\nwebKeyword.verifyTextContainsHard(searchResultTitleObject, \"laptop\", \n    \"Kết quả tìm kiếm phải chứa từ khóa 'laptop'\");\n\n// Verify URL chứa thông tin cần thiết\nwebKeyword.verifyTextContainsHard(currentUrlObject, \"/products\", \"URL phải chứa đường dẫn sản phẩm\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, và element cần Verify phải tồn tại trong DOM và có text. Có thể throw AssertionError nếu text của element không chứa chuỗi con mong đợi, NoSuchElementException nếu không tìm thấy element, StaleElementReferenceException nếu element không còn gắn với DOM, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "verifyTextContainsHard",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "element chứa text cần Verify"
+  }, {
+    "type" : "String",
+    "name" : "partialText",
+    "description" : "Chuỗi text con mong đợi"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
   } ]
 }, {
   "name" : "getValueFromXml",
@@ -1470,50 +1998,6 @@
   "methodName" : "unlockDevice",
   "returnType" : "void",
   "parameters" : [ ]
-}, {
-  "name" : "verifyAttributeContainsHard",
-  "description" : "Verify giá trị of một thuộc tính trên element có contains một chuỗi con hay không. Nếu không contains, kịch bản sẽ DỪNG LẠI.",
-  "category" : "Web",
-  "subCategory" : "Assertion",
-  "example" : "// Verify element có class 'active'\nwebKeyword.click(tabButtonObject);\nwebKeyword.verifyAttributeContainsHard(tabButtonObject, \"class\", \"active\");\n\n// Verify đường dẫn hình ảnh contains tên sản phẩm\nwebKeyword.verifyAttributeContainsHard(productImageObject, \"src\", \"iphone-13\");",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, element cần Verify phải tồn tại trong DOM, và thuộc tính cần Verify phải tồn tại trên element. Có thể throw AssertionError nếu giá trị thuộc tính không contains chuỗi con mong đợi, NoSuchElementException nếu không tìm thấy element, StaleElementReferenceException nếu element không còn gắn với DOM, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
-  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
-  "methodName" : "verifyAttributeContainsHard",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "ObjectUI",
-    "name" : "uiObject",
-    "description" : "element cần Verify"
-  }, {
-    "type" : "String",
-    "name" : "attribute",
-    "description" : "Tên of thuộc tính (ví dụ: 'class')"
-  }, {
-    "type" : "String",
-    "name" : "partialValue",
-    "description" : "Chuỗi con mong đợi"
-  } ]
-}, {
-  "name" : "assertContains",
-  "description" : "Khẳng định rằng một chuỗi văn bản chứa chuỗi con được chỉ định. Nếu không chứa, test case sẽ dừng lại và báo lỗi",
-  "category" : "Assertion",
-  "subCategory" : "",
-  "example" : "assertContains(\"Hello World\", \"World\");",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "Assertion này kiểm tra xem chuỗi nguồn có chứa chuỗi con hay không. Phân biệt chữ hoa chữ thường. Sẽ dừng test nếu không tìm thấy chuỗi con.",
-  "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
-  "methodName" : "assertContains",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "String",
-    "name" : "sourceText",
-    "description" : "Chuỗi văn bản nguồn cần kiểm tra"
-  }, {
-    "type" : "String",
-    "name" : "substring",
-    "description" : "Chuỗi con cần tìm trong văn bản nguồn"
-  } ]
 }, {
   "name" : "getQueryResultsAsString",
   "description" : "Thực thi câu lệnh SELECT và trả về toàn bộ kết quả dưới dạng một chuỗi String duy nhất, được định dạng sẵn. Rất hữu ích để kiểm tra nhanh hoặc xác thực một phần dữ liệu.",
@@ -1551,42 +2035,6 @@
   "returnType" : "void",
   "parameters" : [ ]
 }, {
-  "name" : "assertTrue",
-  "description" : "Khẳng định rằng một điều kiện có giá trị true. Nếu điều kiện là false, test case sẽ dừng lại và báo lỗi",
-  "category" : "Assertion",
-  "subCategory" : "",
-  "example" : "assertTrue(isElementVisible);",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "Assertion này kiểm tra điều kiện boolean phải là true. Thường được sử dụng để kiểm tra trạng thái hoặc kết quả của các phép so sánh.",
-  "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
-  "methodName" : "assertTrue",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "boolean",
-    "name" : "condition",
-    "description" : "Điều kiện boolean cần kiểm tra (phải là true)"
-  } ]
-}, {
-  "name" : "assertGreaterThan",
-  "description" : "Khẳng định rằng giá trị thực tế lớn hơn giá trị so sánh. Nếu không thỏa mãn, test case sẽ dừng lại và báo lỗi",
-  "category" : "Assertion",
-  "subCategory" : "",
-  "example" : "assertGreaterThan(15, 10); // 15 > 10",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "Tự động xử lý so sánh giữa số và chuỗi số. Assertion sẽ fail nếu actualValue <= expectedValue.",
-  "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
-  "methodName" : "assertGreaterThan",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "Object",
-    "name" : "actualValue",
-    "description" : "Giá trị thực tế cần so sánh (số hoặc chuỗi số)"
-  }, {
-    "type" : "Object",
-    "name" : "expectedValue",
-    "description" : "Giá trị mong đợi để so sánh (actualValue phải lớn hơn giá trị này)"
-  } ]
-}, {
   "name" : "openNewTab",
   "description" : "Mở một tab mới trong trình duyệt và tự động chuyển sự điều khiển sang tab mới đó. Có thể option mở một URL cụ thể trong tab mới.",
   "category" : "Web",
@@ -1603,26 +2051,6 @@
     "description" : "(option) URL để mở trong tab mới. Nếu để trống, sẽ mở tab trống"
   } ]
 }, {
-  "name" : "verifyTextMatchesRegexSoft",
-  "description" : "Verify text of một element có khớp với một biểu thức chính quy (regex) hay không. Nếu không khớp, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
-  "category" : "Web",
-  "subCategory" : "Assertion",
-  "example" : "// Verify định dạng email hiển thị trên trang\nwebKeyword.verifyTextMatchesRegexSoft(emailFormatObject, \"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\\\.[a-zA-Z]{2,}$\");\nwebKeyword.click(continueButtonObject); // Tiếp tục thực hiện hành động\n\n// Verify nhiều định dạng khác nhau trên trang thông tin\nwebKeyword.verifyTextMatchesRegexSoft(zipCodeObject, \"^\\\\d{5}(-\\\\d{4})?$\"); // Mã bưu điện\nwebKeyword.verifyTextMatchesRegexSoft(taxIdObject, \"^\\\\d{10}$\"); // Mã số thuế\nwebKeyword.click(saveButtonObject); // Tiếp tục lưu thông tin",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, element cần Verify phải tồn tại trong DOM và có text. Có thể throw NoSuchElementException nếu không tìm thấy element, StaleElementReferenceException nếu element không còn gắn với DOM, WebDriverException nếu có lỗi khi tương tác với trình duyệt, hoặc PatternSyntaxException nếu biểu thức chính quy không hợp lệ.",
-  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
-  "methodName" : "verifyTextMatchesRegexSoft",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "ObjectUI",
-    "name" : "uiObject",
-    "description" : "element contains text cần Verify"
-  }, {
-    "type" : "String",
-    "name" : "pattern",
-    "description" : "Biểu thức chính quy để so khớp"
-  } ]
-}, {
   "name" : "highlightElement",
   "description" : "Tạm thời vẽ một đường viền màu đỏ xung quanh một element trên trang để dễ dàng nhận biết và gỡ lỗi trong quá trình chạy kịch bản.",
   "category" : "Web",
@@ -1637,26 +2065,6 @@
     "type" : "ObjectUI",
     "name" : "uiObject",
     "description" : "element cần làm nổi bật"
-  } ]
-}, {
-  "name" : "assertNotEquals",
-  "description" : "Khẳng định rằng hai giá trị không bằng nhau. Tự động xử lý so sánh giữa các kiểu dữ liệu khác nhau. Nếu chúng bằng nhau, kịch bản sẽ DỪNG LẠI.",
-  "category" : "Assertion",
-  "subCategory" : "",
-  "example" : "",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "Keyword này so sánh giá trị sau khi đã chuyển đổi chúng sang dạng chuỗi ký tự.",
-  "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
-  "methodName" : "assertNotEquals",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "Object",
-    "name" : "actualValue",
-    "description" : "Giá trị thực tế."
-  }, {
-    "type" : "Object",
-    "name" : "unexpectedValue",
-    "description" : "Giá trị không mong muốn."
   } ]
 }, {
   "name" : "clickWithJavascript",
@@ -1727,74 +2135,6 @@
   "returnType" : "void",
   "parameters" : [ ]
 }, {
-  "name" : "verifyElementAttributeHard",
-  "description" : "Verify giá trị of một thuộc tính (attribute) trên element. Nếu giá trị không khớp, kịch bản sẽ DỪNG LẠI.",
-  "category" : "Web",
-  "subCategory" : "Assertion",
-  "example" : "// Verify đường dẫn of liên kết\nwebKeyword.verifyElementAttributeHard(linkObject, \"href\", \"/products/123\");\n\n// Verify trạng thái of checkbox\nwebKeyword.click(termsCheckboxObject);\nwebKeyword.verifyElementAttributeHard(termsCheckboxObject, \"checked\", \"true\");",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, element cần Verify phải tồn tại trong DOM, và thuộc tính cần Verify phải tồn tại trên element. Có thể throw AssertionError nếu giá trị thuộc tính không khớp với giá trị mong đợi, NoSuchElementException nếu không tìm thấy element, StaleElementReferenceException nếu element không còn gắn với DOM, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
-  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
-  "methodName" : "verifyElementAttributeHard",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "ObjectUI",
-    "name" : "uiObject",
-    "description" : "element cần Verify"
-  }, {
-    "type" : "String",
-    "name" : "attributeName",
-    "description" : "Tên of thuộc tính (ví dụ: 'href', 'class', 'value')"
-  }, {
-    "type" : "String",
-    "name" : "expectedValue",
-    "description" : "Giá trị mong đợi of thuộc tính"
-  } ]
-}, {
-  "name" : "assertEquals",
-  "description" : "Khẳng định rằng hai giá trị bằng nhau. Tự động xử lý so sánh giữa các kiểu dữ liệu khác nhau (ví dụ: số 1 và chuỗi \"1\"). Nếu không, kịch bản sẽ DỪNG LẠI.",
-  "category" : "Assertion",
-  "subCategory" : "",
-  "example" : "",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "Keyword này so sánh giá trị sau khi đã chuyển đổi chúng sang dạng chuỗi ký tự.",
-  "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
-  "methodName" : "assertEquals",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "Object",
-    "name" : "actualValue",
-    "description" : "Giá trị thực tế (có thể là một biến)."
-  }, {
-    "type" : "Object",
-    "name" : "expectedValue",
-    "description" : "Giá trị mong đợi."
-  } ]
-}, {
-  "name" : "assertAttributeEquals",
-  "description" : "Khẳng định rằng một thuộc tính của phần tử có giá trị chính xác như mong đợi. Hữu ích khi cần kiểm tra các thuộc tính đặc biệt như content-desc, resource-id, text, checked, v.v. Phương thức này so sánh chính xác giá trị thuộc tính, phân biệt chữ hoa/thường và khoảng trắng.",
-  "category" : "Mobile",
-  "subCategory" : "Assertion",
-  "example" : "// Kiểm tra thuộc tính content-desc của nút\nmobileKeyword.assertAttributeEquals(menuButton, \"content-desc\", \"Menu chính\");\n\n// Xác minh resource-id của một phần tử\nmobileKeyword.assertAttributeEquals(loginButton, \"resource-id\", \"com.example.myapp:id/login_button\");",
-  "returnValue" : "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
-  "note" : "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. Phần tử cần kiểm tra phải tồn tại, thuộc tính cần kiểm tra phải tồn tại trên phần tử, và cần biết chính xác tên thuộc tính theo nền tảng (Android/iOS có thể khác nhau). Có thể throw AssertionError nếu giá trị thuộc tính không khớp với giá trị mong đợi, NoSuchElementException nếu không tìm thấy phần tử, StaleElementReferenceException nếu phần tử không còn gắn với DOM, hoặc WebDriverException nếu không thể lấy thuộc tính của phần tử.",
-  "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
-  "methodName" : "assertAttributeEquals",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "ObjectUI",
-    "name" : "uiObject",
-    "description" : "Phần tử cần kiểm tra thuộc tính"
-  }, {
-    "type" : "String",
-    "name" : "attributeName",
-    "description" : "Tên thuộc tính cần kiểm tra (ví dụ: 'content-desc', 'text', 'resource-id')"
-  }, {
-    "type" : "String",
-    "name" : "expectedValue",
-    "description" : "Giá trị mong đợi của thuộc tính"
-  } ]
-}, {
   "name" : "click",
   "description" : "Thực hiện hành động click chuột vào một element trên giao diện. Keyword sẽ tự động chờ cho đến khi element sẵn sàng để được click.",
   "category" : "Web",
@@ -1847,6 +2187,26 @@
     "description" : ""
   } ]
 }, {
+  "name" : "assertElementVisible",
+  "description" : "Khẳng định rằng một phần tử đang được hiển thị trên màn hình và người dùng có thể nhìn thấy. Khác với assertElementPresent, phương thức này kiểm tra cả sự tồn tại và tính hiển thị của phần tử. Nếu phần tử không tồn tại hoặc không hiển thị, một AssertionError sẽ được ném ra.",
+  "category" : "Mobile",
+  "subCategory" : "Assertion",
+  "example" : "// Kiểm tra thông báo thành công hiển thị\nmobileKeyword.assertElementVisible(successMessage);\n\n// Với custom message\nmobileKeyword.assertElementVisible(successMessage, \"Thông báo thành công phải hiển thị sau khi đăng nhập\");\n\n// Kiểm tra các element UI hiển thị\nmobileKeyword.assertElementVisible(menuButton, \"Nút menu phải hiển thị trên header\");\nmobileKeyword.assertElementVisible(profileIcon, \"Icon profile phải hiển thị khi đã đăng nhập\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. Đã xác định chính xác phần tử UI cần kiểm tra. Có thể throw AssertionError nếu phần tử không tồn tại hoặc không hiển thị, WebDriverException nếu có lỗi khi tương tác với trình điều khiển, hoặc StaleElementReferenceException nếu phần tử không còn gắn với DOM.",
+  "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
+  "methodName" : "assertElementVisible",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "Phần tử cần kiểm tra tính hiển thị"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
   "name" : "getCookie",
   "description" : "Lấy thông tin of một cookie cụ thể dựa trên tên of nó.",
   "category" : "Web",
@@ -1861,6 +2221,30 @@
     "type" : "String",
     "name" : "cookieName",
     "description" : "Tên of cookie cần lấy"
+  } ]
+}, {
+  "name" : "assertLessThan",
+  "description" : "Khẳng định rằng giá trị thực tế nhỏ hơn giá trị so sánh. Nếu không thỏa mãn, test case sẽ dừng lại và báo lỗi.",
+  "category" : "Assertion",
+  "subCategory" : "HardAssert",
+  "example" : "assertLessThan(5, 10);\nassertLessThan(responseTime, 3000, \"Thời gian phản hồi phải dưới 3 giây\");\nassertLessThan(errorCount, 5, \"Số lỗi phải ít hơn 5\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Tự động xử lý so sánh giữa số và chuỗi số. Assertion sẽ fail nếu actualValue >= expectedValue.",
+  "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
+  "methodName" : "assertLessThan",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "Object",
+    "name" : "actualValue",
+    "description" : "Giá trị thực tế cần so sánh (số hoặc chuỗi số)"
+  }, {
+    "type" : "Object",
+    "name" : "expectedValue",
+    "description" : "Giá trị mong đợi để so sánh (actualValue phải nhỏ hơn giá trị này)"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
   } ]
 }, {
   "name" : "getCellValue",
@@ -1929,22 +2313,6 @@
     "type" : "int",
     "name" : "index",
     "description" : "Chỉ số of cửa sổ/tab cần chuyển đến (0 is cửa sổ đầu tiên)"
-  } ]
-}, {
-  "name" : "assertElementDisabled",
-  "description" : "Khẳng định rằng một element đang ở trạng thái không thể tương tác (disabled). Nếu element đang enabled, kịch bản sẽ DỪNG LẠI.",
-  "category" : "Web",
-  "subCategory" : "Assertion",
-  "example" : "// Verify nút gửi form bị vô hiệu hóa khi chưa điền thông tin bắt buộc\nwebKeyword.navigateToUrl(\"https://example.com/registration\");\nwebKeyword.waitForPageLoaded(10);\nwebKeyword.assertElementDisabled(submitButtonBeforeFillForm);\n\n// Verify nút thanh toán bị vô hiệu hóa khi chưa chọn phương thức thanh toán\nwebKeyword.click(checkoutButtonObject);\nwebKeyword.waitForPageLoaded(15);\nwebKeyword.assertElementDisabled(paymentButtonObject);",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, và element cần Verify phải tồn tại trong DOM. Có thể throw AssertionError nếu element đang ở trạng thái enabled, NoSuchElementException nếu không tìm thấy element, StaleElementReferenceException nếu element không còn gắn với DOM, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
-  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
-  "methodName" : "assertElementDisabled",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "ObjectUI",
-    "name" : "uiObject",
-    "description" : "element cần Verify"
   } ]
 }, {
   "name" : "Get Current App Package",
@@ -2031,6 +2399,54 @@
     "description" : "Giá trị cần thiết lập, từ 0.0 (nhỏ nhất/trái) đến 1.0 (lớn nhất/phải)"
   } ]
 }, {
+  "name" : "verifyTextMatchesRegexHard",
+  "description" : "Verify text của một element có khớp với một biểu thức chính quy (regex) hay không. Nếu không khớp, kịch bản sẽ DỪNG LẠI.",
+  "category" : "Web",
+  "subCategory" : "Assertion",
+  "example" : "// Verify mã đơn hàng có đúng định dạng\nwebKeyword.click(viewOrderButtonObject);\nwebKeyword.waitForElementVisible(orderIdObject);\nwebKeyword.verifyTextMatchesRegexHard(orderIdObject, \"^DH-\\\\d{5}$\"); // Khớp với DH-12345\n\n// Verify số điện thoại có đúng định dạng với custom message\nwebKeyword.verifyTextMatchesRegexHard(phoneNumberObject, \"^(\\\\+84|0)[0-9]{9,10}$\", \n    \"Số điện thoại không đúng định dạng Việt Nam\");\n\n// Verify email có đúng format\nwebKeyword.verifyTextMatchesRegexHard(emailObject, \"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\\\.[a-zA-Z]{2,}$\", \n    \"Email không đúng định dạng\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, element cần Verify phải tồn tại trong DOM và có text. Có thể throw AssertionError nếu text không khớp với biểu thức chính quy, NoSuchElementException nếu không tìm thấy element, StaleElementReferenceException nếu element không còn gắn với DOM, WebDriverException nếu có lỗi khi tương tác với trình duyệt, hoặc PatternSyntaxException nếu biểu thức chính quy không hợp lệ.",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "verifyTextMatchesRegexHard",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "element chứa text cần Verify"
+  }, {
+    "type" : "String",
+    "name" : "pattern",
+    "description" : "Biểu thức chính quy để so khớp"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
+  "name" : "softAssertNotEquals",
+  "description" : "Kiểm tra hai giá trị có khác nhau không. Nếu chúng bằng nhau, ghi nhận lỗi và TIẾP TỤC chạy.",
+  "category" : "Assertion",
+  "subCategory" : "Soft",
+  "example" : "String userStatus = db.getCellValue(\"SELECT status FROM users\");\nassertion.softAssertNotEquals(userStatus, \"INACTIVE\", \"Trạng thái user không được là INACTIVE\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "So sánh giá trị sau khi chuyển sang dạng chuỗi. Lỗi sẽ được ghi nhận và test vẫn tiếp tục. **Phải gọi `assertAll()` ở cuối** để tổng hợp kết quả.",
+  "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
+  "methodName" : "softAssertNotEquals",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "Object",
+    "name" : "actualValue",
+    "description" : "Giá trị thực tế"
+  }, {
+    "type" : "Object",
+    "name" : "unexpectedValue",
+    "description" : "Giá trị không mong muốn"
+  }, {
+    "type" : "String[]",
+    "name" : "message",
+    "description" : "Thông điệp tùy chỉnh khi assertion fail"
+  } ]
+}, {
   "name" : "waitForNotification",
   "description" : "Chờ cho đến khi một thông báo chứa đoạn văn bản cụ thể xuất hiện.",
   "category" : "Mobile",
@@ -2067,30 +2483,6 @@
     "description" : "Tên phím trong AndroidKey enum (ví dụ: 'HOME', 'BACK', 'VOLUME_UP')"
   } ]
 }, {
-  "name" : "verifyElementAttributeSoft",
-  "description" : "Verify giá trị of một thuộc tính (attribute) trên element. Nếu giá trị không khớp, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
-  "category" : "Web",
-  "subCategory" : "Assertion",
-  "example" : "// Verify nhiều thuộc tính of một element\nwebKeyword.verifyElementAttributeSoft(buttonObject, \"type\", \"submit\");\nwebKeyword.verifyElementAttributeSoft(buttonObject, \"class\", \"btn-primary\");\nwebKeyword.click(buttonObject); // Tiếp tục thực hiện hành động\n\n// Verify thuộc tính of nhiều element\nwebKeyword.verifyElementAttributeSoft(usernameInputObject, \"placeholder\", \"Nhập tên đăng nhập\");\nwebKeyword.verifyElementAttributeSoft(passwordInputObject, \"type\", \"password\");",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, element cần Verify phải tồn tại trong DOM, và thuộc tính cần Verify phải tồn tại trên element. Có thể throw NoSuchElementException nếu không tìm thấy element, StaleElementReferenceException nếu element không còn gắn với DOM, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
-  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
-  "methodName" : "verifyElementAttributeSoft",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "ObjectUI",
-    "name" : "uiObject",
-    "description" : "element cần Verify"
-  }, {
-    "type" : "String",
-    "name" : "attributeName",
-    "description" : "Tên of thuộc tính (ví dụ: 'href', 'class', 'value')"
-  }, {
-    "type" : "String",
-    "name" : "expectedValue",
-    "description" : "Giá trị mong đợi of thuộc tính"
-  } ]
-}, {
   "name" : "dragAndDropByOffset",
   "description" : "Kéo một element theo một khoảng cách (độ lệch x, y) so với vị trí hiện tại of nó. Rất hữu ích cho các thanh trượt (slider).",
   "category" : "Web",
@@ -2115,6 +2507,30 @@
     "description" : "Độ lệch theo trục dọc (pixel)"
   } ]
 }, {
+  "name" : "assertGreaterThanOrEqual",
+  "description" : "Khẳng định rằng giá trị thực tế lớn hơn hoặc bằng giá trị so sánh. Nếu không thỏa mãn, test case sẽ dừng lại và báo lỗi.",
+  "category" : "Assertion",
+  "subCategory" : "HardAssert",
+  "example" : "assertGreaterThanOrEqual(10, 10);\nassertGreaterThanOrEqual(score, 60, \"Điểm số phải từ 60 trở lên\");\nassertGreaterThanOrEqual(quantity, 1, \"Số lượng phải ít nhất là 1\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Tự động xử lý so sánh giữa số và chuỗi số. Assertion sẽ fail nếu actualValue < expectedValue.",
+  "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
+  "methodName" : "assertGreaterThanOrEqual",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "Object",
+    "name" : "actualValue",
+    "description" : "Giá trị thực tế cần so sánh (số hoặc chuỗi số)"
+  }, {
+    "type" : "Object",
+    "name" : "expectedValue",
+    "description" : "Giá trị mong đợi để so sánh (actualValue phải lớn hơn hoặc bằng giá trị này)"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
   "name" : "waitForUrlContains",
   "description" : "Tạm dừng kịch bản cho đến khi URL of trang hiện tại contains một chuỗi con được chỉ định.",
   "category" : "Web",
@@ -2133,22 +2549,6 @@
     "type" : "int",
     "name" : "timeoutInSeconds",
     "description" : "Thời gian chờ tối đa (tính bằng seconds)"
-  } ]
-}, {
-  "name" : "assertElementVisible",
-  "description" : "Khẳng định rằng một phần tử đang được hiển thị trên màn hình và người dùng có thể nhìn thấy. Khác với assertElementPresent, phương thức này kiểm tra cả sự tồn tại và tính hiển thị của phần tử. Nếu phần tử không tồn tại hoặc không hiển thị, một AssertionError sẽ được ném ra.",
-  "category" : "Mobile",
-  "subCategory" : "Assertion",
-  "example" : "// Kiểm tra thông báo thành công hiển thị\nmobileKeyword.assertElementVisible(successMessage);",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. Đã xác định chính xác phần tử UI cần kiểm tra. Có thể throw AssertionError nếu phần tử không tồn tại hoặc không hiển thị, WebDriverException nếu có lỗi khi tương tác với trình điều khiển, hoặc StaleElementReferenceException nếu phần tử không còn gắn với DOM.",
-  "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
-  "methodName" : "assertElementVisible",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "ObjectUI",
-    "name" : "uiObject",
-    "description" : "Phần tử cần kiểm tra tính hiển thị"
   } ]
 }, {
   "name" : "sendKeysToAlert",
@@ -2247,26 +2647,6 @@
   "returnType" : "boolean",
   "parameters" : [ ]
 }, {
-  "name" : "assertTextEquals",
-  "description" : "Khẳng định rằng văn bản của một phần tử khớp chính xác với chuỗi mong đợi. Phương thức này trích xuất nội dung văn bản của phần tử và so sánh với giá trị mong đợi, ném AssertionError nếu không khớp. Hữu ích để kiểm tra nội dung văn bản, nhãn, thông báo lỗi hoặc các phần tử hiển thị khác.",
-  "category" : "Mobile",
-  "subCategory" : "Assertion",
-  "example" : "// Kiểm tra tiêu đề màn hình\nmobileKeyword.assertTextEquals(title, \"Đăng nhập\");\n\n// Xác minh thông báo lỗi\nmobileKeyword.assertTextEquals(errorMessage, \"Email không hợp lệ\");",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. Phần tử UI cần kiểm tra phải hiển thị và chứa văn bản. Có thể throw AssertionError nếu văn bản của phần tử không khớp với giá trị mong đợi, NoSuchElementException nếu không tìm thấy phần tử, hoặc StaleElementReferenceException nếu phần tử không còn gắn với DOM.",
-  "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
-  "methodName" : "assertTextEquals",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "ObjectUI",
-    "name" : "uiObject",
-    "description" : "Phần tử cần kiểm tra văn bản"
-  }, {
-    "type" : "String",
-    "name" : "expectedText",
-    "description" : "Chuỗi văn bản mong đợi để so sánh"
-  } ]
-}, {
   "name" : "getClipboard",
   "description" : "Lấy và trả về nội dung văn bản hiện tại của clipboard trên thiết bị. Hữu ích khi cần kiểm tra nội dung đã được sao chép hoặc khi cần lấy dữ liệu từ clipboard để sử dụng trong các bước test tiếp theo. Phương thức này trả về một chuỗi chứa nội dung văn bản của clipboard. Lưu ý: Chỉ hỗ trợ nội dung văn bản, không hỗ trợ các loại dữ liệu khác như hình ảnh.",
   "category" : "Mobile",
@@ -2310,30 +2690,6 @@
   "methodName" : "openNotifications",
   "returnType" : "void",
   "parameters" : [ ]
-}, {
-  "name" : "verifyCssValueHard",
-  "description" : "So sánh giá trị of một thuộc tính CSS trên element. Nếu không khớp, kịch bản sẽ DỪNG LẠI.",
-  "category" : "Web",
-  "subCategory" : "Assertion",
-  "example" : "// Verify màu of thông báo lỗi\nwebKeyword.click(submitButtonObject); // Gửi form không hợp lệ\nwebKeyword.waitForElementVisible(errorMessageObject);\nwebKeyword.verifyCssValueHard(errorMessageObject, \"color\", \"rgba(255, 0, 0, 1)\");\n\n// Verify background-color of nút đã chọn\nwebKeyword.click(selectButtonObject);\nwebKeyword.verifyCssValueHard(selectButtonObject, \"background-color\", \"rgba(0, 123, 255, 1)\");",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, và element cần Verify phải tồn tại trong DOM. Có thể throw AssertionError nếu giá trị CSS không khớp với giá trị mong đợi, NoSuchElementException nếu không tìm thấy element, StaleElementReferenceException nếu element không còn gắn với DOM, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
-  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
-  "methodName" : "verifyCssValueHard",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "ObjectUI",
-    "name" : "uiObject",
-    "description" : "element cần Verify"
-  }, {
-    "type" : "String",
-    "name" : "cssName",
-    "description" : "Tên thuộc tính CSS (ví dụ: 'color')"
-  }, {
-    "type" : "String",
-    "name" : "expectedValue",
-    "description" : "Giá trị CSS mong đợi (ví dụ: 'rgb(255, 0, 0)')"
-  } ]
 }, {
   "name" : "waitForElementAttributeNotContains",
   "description" : "Chờ đợi attribute của element KHÔNG chứa substring chỉ định trong khoảng thời gian cho phép. Hữu ích cho validation rằng partial attribute values đã được remove hoặc thay đổi, như CSS classes bị xóa, error states được clear.",
@@ -2379,48 +2735,32 @@
     "description" : "element cần chờ để sẵn sàng click"
   } ]
 }, {
-  "name" : "assertElementCount",
-  "description" : "Khẳng định rằng số lượng phần tử tìm thấy khớp với một con số mong đợi. Hữu ích khi cần kiểm tra số lượng các mục trong danh sách, số lượng tùy chọn, hoặc xác minh rằng một nhóm phần tử có số lượng chính xác. Phương thức này tìm tất cả các phần tử khớp với locator và so sánh số lượng với giá trị mong đợi.",
-  "category" : "Mobile",
+  "name" : "verifyAttributeContainsHard",
+  "description" : "Verify giá trị của một thuộc tính trên element có chứa một chuỗi con hay không. Nếu không chứa, kịch bản sẽ DỪNG LẠI.",
+  "category" : "Web",
   "subCategory" : "Assertion",
-  "example" : "// Kiểm tra số lượng sản phẩm trong giỏ hàng\nmobileKeyword.assertElementCount(cartItems, 3);\n\n// Xác minh danh sách rỗng sau khi xóa\nmobileKeyword.tap(clearAllButton);\nmobileKeyword.assertElementCount(listItems, 0);",
-  "returnValue" : "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
-  "note" : "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. Locator của phần tử phải hợp lệ và có thể tìm thấy nhiều phần tử. Nếu mong đợi không tìm thấy phần tử nào (count = 0), locator vẫn phải hợp lệ. Có thể throw AssertionError nếu số lượng phần tử tìm thấy không khớp với số lượng mong đợi, WebDriverException nếu có lỗi khi tương tác với trình điều khiển, hoặc InvalidSelectorException nếu locator không hợp lệ.",
-  "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
-  "methodName" : "assertElementCount",
+  "example" : "// Verify element có class 'active'\nwebKeyword.click(tabButtonObject);\nwebKeyword.verifyAttributeContainsHard(tabButtonObject, \"class\", \"active\");\n\n// Verify đường dẫn hình ảnh chứa tên sản phẩm với custom message\nwebKeyword.verifyAttributeContainsHard(productImageObject, \"src\", \"iphone-13\", \n    \"Hình ảnh sản phẩm phải chứa tên iphone-13\");\n\n// Verify button có class quan trọng\nwebKeyword.verifyAttributeContainsHard(submitButtonObject, \"class\", \"btn-primary\", \n    \"Nút submit phải có class btn-primary\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, element cần Verify phải tồn tại trong DOM, và thuộc tính cần Verify phải tồn tại trên element. Có thể throw AssertionError nếu giá trị thuộc tính không chứa chuỗi con mong đợi, NoSuchElementException nếu không tìm thấy element, StaleElementReferenceException nếu element không còn gắn với DOM, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "verifyAttributeContainsHard",
   "returnType" : "void",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject",
-    "description" : "Locator để tìm các phần tử"
-  }, {
-    "type" : "int",
-    "name" : "expectedCount",
-    "description" : "Số lượng phần tử mong đợi"
-  } ]
-}, {
-  "name" : "assertAttributeContains",
-  "description" : "Khẳng định rằng giá trị của một thuộc tính có chứa một chuỗi con. Khác với assertAttributeEquals, phương thức này chỉ kiểm tra sự xuất hiện của chuỗi con trong giá trị thuộc tính, không yêu cầu khớp hoàn toàn. Hữu ích khi giá trị thuộc tính có thể thay đổi nhưng vẫn chứa các phần quan trọng cần kiểm tra.",
-  "category" : "Mobile",
-  "subCategory" : "Assertion",
-  "example" : "// Kiểm tra thuộc tính content-desc có chứa từ khóa\nmobileKeyword.assertAttributeContains(productItem, \"content-desc\", \"iPhone\");\n\n// Xác minh resource-id có chứa phần nhất định\nmobileKeyword.assertAttributeContains(anyElement, \"resource-id\", \"button_\");",
-  "returnValue" : "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
-  "note" : "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. Phần tử cần kiểm tra phải tồn tại, thuộc tính cần kiểm tra phải tồn tại trên phần tử, và cần biết chính xác tên thuộc tính theo nền tảng (Android/iOS có thể khác nhau). Có thể throw AssertionError nếu giá trị thuộc tính không chứa chuỗi con mong đợi, NoSuchElementException nếu không tìm thấy phần tử, StaleElementReferenceException nếu phần tử không còn gắn với DOM, WebDriverException nếu không thể lấy thuộc tính của phần tử, hoặc NullPointerException nếu giá trị thuộc tính là null.",
-  "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
-  "methodName" : "assertAttributeContains",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "ObjectUI",
-    "name" : "uiObject",
-    "description" : "Phần tử cần kiểm tra thuộc tính"
+    "description" : "element cần Verify"
   }, {
     "type" : "String",
-    "name" : "attributeName",
-    "description" : "Tên thuộc tính cần kiểm tra"
+    "name" : "attribute",
+    "description" : "Tên của thuộc tính (ví dụ: 'class')"
   }, {
     "type" : "String",
     "name" : "partialValue",
-    "description" : "Chuỗi con cần tìm trong giá trị thuộc tính"
+    "description" : "Chuỗi con mong đợi"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
   } ]
 }, {
   "name" : "waitForElementNotVisible",
@@ -2459,6 +2799,30 @@
     "description" : "Thời gian chờ tối đa tính bằng giây"
   } ]
 }, {
+  "name" : "verifyTextMatchesRegexSoft",
+  "description" : "Verify text của một element có khớp với một biểu thức chính quy (regex) hay không. Nếu không khớp, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
+  "category" : "Web",
+  "subCategory" : "Assertion",
+  "example" : "// Verify định dạng email hiển thị trên trang\nwebKeyword.verifyTextMatchesRegexSoft(emailFormatObject, \"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\\\.[a-zA-Z]{2,}$\");\nwebKeyword.click(continueButtonObject); // Tiếp tục thực hiện hành động\n\n// Verify nhiều định dạng khác nhau trên trang thông tin với custom message\nwebKeyword.verifyTextMatchesRegexSoft(zipCodeObject, \"^\\\\d{5}(-\\\\d{4})?$\", \n    \"Mã bưu điện không đúng định dạng\"); // Mã bưu điện\nwebKeyword.verifyTextMatchesRegexSoft(taxIdObject, \"^\\\\d{10}$\", \n    \"Mã số thuế phải có 10 chữ số\"); // Mã số thuế\nwebKeyword.click(saveButtonObject); // Tiếp tục lưu thông tin",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, element cần Verify phải tồn tại trong DOM và có text. Có thể throw NoSuchElementException nếu không tìm thấy element, StaleElementReferenceException nếu element không còn gắn với DOM, WebDriverException nếu có lỗi khi tương tác với trình duyệt, hoặc PatternSyntaxException nếu biểu thức chính quy không hợp lệ.",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "verifyTextMatchesRegexSoft",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "element chứa text cần Verify"
+  }, {
+    "type" : "String",
+    "name" : "pattern",
+    "description" : "Biểu thức chính quy để so khớp"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
   "name" : "swipeDown",
   "description" : "Thực hiện hành động vuốt xuống dưới màn hình, tương đương với thao tác cuộn lên để xem nội dung phía trên. Phương thức này tự động tính toán các tọa độ dựa trên kích thước màn hình thiết bị hiện tại.",
   "category" : "Mobile",
@@ -2473,26 +2837,6 @@
     "type" : "Integer[]",
     "name" : "durationInMs",
     "description" : "(Tùy chọn) Thời gian thực hiện vuốt (ms). Mặc định là 500ms nếu không được chỉ định"
-  } ]
-}, {
-  "name" : "verifyElementNotPresentHard",
-  "description" : "Khẳng định rằng một element does not exist trong DOM sau một khoảng thời gian chờ. Nếu element vẫn tồn tại, kịch bản sẽ DỪNG LẠI.",
-  "category" : "Web",
-  "subCategory" : "Assertion",
-  "example" : "// Verify element đã bị xóa\nwebKeyword.click(deleteButtonObject);\nwebKeyword.verifyElementNotPresentHard(deletedItemObject, 5);\n\n// Verify thông báo lỗi đã biến mất\nwebKeyword.sendKeys(emailInput, \"valid@example.com\");\nwebKeyword.verifyElementNotPresentHard(errorMessageObject, 3);",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động. Có thể throw AssertionError nếu element vẫn tồn tại trong DOM sau thời gian chờ, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
-  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
-  "methodName" : "verifyElementNotPresentHard",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "ObjectUI",
-    "name" : "uiObject",
-    "description" : "element cần Verify"
-  }, {
-    "type" : "int",
-    "name" : "timeoutInSeconds",
-    "description" : "Thời gian chờ tối đa"
   } ]
 }, {
   "name" : "goBack",
@@ -2527,6 +2871,42 @@
     "description" : "element đích, nơi element nguồn sẽ được thả vào"
   } ]
 }, {
+  "name" : "startMobileSession",
+  "description" : "Khởi tạo nhanh một phiên làm việc trên thiết bị di động bằng cách cung cấp các thông tin cơ bản.",
+  "category" : "Driver",
+  "subCategory" : "Session",
+  "example" : "// Bắt đầu phiên trên thiết bị Android của User A\ndriver.startMobileSession(\"user_A_android\", \"Android\", \"emulator-5554\", \"/path/to/app.apk\", \"http://127.0.0.1:4723/wd/hub\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Đây là cách đơn giản nhất để khởi động một thiết bị di động mà không cần tạo file profile phức tạp.",
+  "className" : "com.vtnet.netat.core.keywords.DriverKeyword",
+  "methodName" : "startSession",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "sessionName",
+    "description" : "Tên định danh duy nhất cho phiên làm việc"
+  }, {
+    "type" : "String",
+    "name" : "platformName",
+    "description" : "Nền tảng 'Android' hoặc 'iOS'"
+  }, {
+    "type" : "String",
+    "name" : "udid",
+    "description" : "UDID của thiết bị (thật hoặc ảo)"
+  }, {
+    "type" : "String",
+    "name" : "appPath",
+    "description" : "Đường dẫn tuyệt đối đến file .apk hoặc .ipa"
+  }, {
+    "type" : "String",
+    "name" : "appiumServerUrl",
+    "description" : "URL của Appium Server (ví dụ: 'http://127.0.0.1:4723/wd/hub')"
+  }, {
+    "type" : "String",
+    "name" : "automationName",
+    "description" : "Tên của driver sử dụng, với Android thì UiAutomator2, iOS thì XCUITest"
+  } ]
+}, {
   "name" : "executeCommand",
   "description" : "Thực thi một lệnh trên command line của hệ điều hành và chờ cho đến khi nó hoàn thành. Phương thức này cho phép thực thi các lệnh hệ thống từ trong kịch bản kiểm thử, hữu ích cho các tác vụ như khởi động/dừng dịch vụ, xóa tệp, hoặc các tác vụ hệ thống khác.",
   "category" : "Utility",
@@ -2541,6 +2921,46 @@
     "type" : "String[]",
     "name" : "command",
     "description" : "Lệnh và các tham số của nó, mỗi phần tử trong mảng là một phần riêng biệt của lệnh"
+  } ]
+}, {
+  "name" : "startMobileSession",
+  "description" : "Khởi tạo nhanh một phiên làm việc trên thiết bị di động bằng cách cung cấp các thông tin cơ bản.",
+  "category" : "Driver",
+  "subCategory" : "Session",
+  "example" : "// Bắt đầu phiên trên thiết bị Android của User A\ndriver.startMobileSession(\"user_A_android\", \"Android\", \"emulator-5554\", \"/path/to/app.apk\", \"http://127.0.0.1:4723/wd/hub\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Đây là cách đơn giản nhất để khởi động một thiết bị di động mà không cần tạo file profile phức tạp.",
+  "className" : "com.vtnet.netat.core.keywords.DriverKeyword",
+  "methodName" : "startSession",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "sessionName",
+    "description" : ""
+  }, {
+    "type" : "String",
+    "name" : "platformName",
+    "description" : ""
+  }, {
+    "type" : "String",
+    "name" : "udid",
+    "description" : ""
+  }, {
+    "type" : "String",
+    "name" : "appPackage",
+    "description" : ""
+  }, {
+    "type" : "String",
+    "name" : "appActivity",
+    "description" : ""
+  }, {
+    "type" : "String",
+    "name" : "appiumServerUrl",
+    "description" : ""
+  }, {
+    "type" : "String",
+    "name" : "automationName",
+    "description" : ""
   } ]
 }, {
   "name" : "waitForElementAttributeContains",
@@ -2569,6 +2989,30 @@
     "type" : "int",
     "name" : "timeoutInSeconds",
     "description" : "Thời gian chờ tối đa tính bằng giây"
+  } ]
+}, {
+  "name" : "assertLessThanOrEqual",
+  "description" : "Khẳng định rằng giá trị thực tế nhỏ hơn hoặc bằng giá trị so sánh. Nếu không thỏa mãn, test case sẽ dừng lại và báo lỗi.",
+  "category" : "Assertion",
+  "subCategory" : "HardAssert",
+  "example" : "assertLessThanOrEqual(10, 10);\nassertLessThanOrEqual(fileSize, maxSize, \"Kích thước file không được vượt quá giới hạn\");\nassertLessThanOrEqual(attempts, 3, \"Số lần thử không được quá 3\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Tự động xử lý so sánh giữa số và chuỗi số. Assertion sẽ fail nếu actualValue > expectedValue.",
+  "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
+  "methodName" : "assertLessThanOrEqual",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "Object",
+    "name" : "actualValue",
+    "description" : "Giá trị thực tế cần so sánh (số hoặc chuỗi số)"
+  }, {
+    "type" : "Object",
+    "name" : "expectedValue",
+    "description" : "Giá trị mong đợi để so sánh (actualValue phải nhỏ hơn hoặc bằng giá trị này)"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
   } ]
 }, {
   "name" : "activateApp",
@@ -2623,17 +3067,77 @@
     "description" : "Hướng màn hình mong đợi, phải là 'PORTRAIT' hoặc 'LANDSCAPE' (không phân biệt hoa/thường)"
   } ]
 }, {
-  "name" : "assertAll",
-  "description" : "Thực hiện kiểm tra tất cả các soft assertion đã được thu thập trước đó. Nếu có bất kỳ assertion nào thất bại, phương thức sẽ ném ra ngoại lệ với thông tin chi tiết về các lỗi. Sau khi gọi phương thức này, soft assert sẽ được reset về null.",
+  "name" : "assertGreaterThan",
+  "description" : "Khẳng định rằng giá trị thực tế lớn hơn giá trị so sánh. Nếu không thỏa mãn, test case sẽ dừng lại và báo lỗi.",
   "category" : "Assertion",
-  "subCategory" : "",
-  "example" : "// Sau khi thực hiện nhiều soft assertion\nsoftAssert.assertEquals(actualTitle, expectedTitle, \"Title không khớp\");\nsoftAssert.assertTrue(isElementDisplayed, \"Element không hiển thị\");\n// Thực hiện kiểm tra tất cả các assertion\nassertAll();",
-  "returnValue" : "void: Không trả về giá trị",
-  "note" : "",
+  "subCategory" : "HardAssert",
+  "example" : "assertGreaterThan(15, 10);\nassertGreaterThan(userAge, 18, \"Tuổi người dùng phải lớn hơn 18\");\nassertGreaterThan(totalAmount, 0, \"Tổng số tiền phải lớn hơn 0\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Tự động xử lý so sánh giữa số và chuỗi số. Assertion sẽ fail nếu actualValue <= expectedValue.",
   "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
-  "methodName" : "assertAll",
+  "methodName" : "assertGreaterThan",
   "returnType" : "void",
-  "parameters" : [ ]
+  "parameters" : [ {
+    "type" : "Object",
+    "name" : "actualValue",
+    "description" : "Giá trị thực tế cần so sánh (số hoặc chuỗi số)"
+  }, {
+    "type" : "Object",
+    "name" : "expectedValue",
+    "description" : "Giá trị mong đợi để so sánh (actualValue phải lớn hơn giá trị này)"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
+  "name" : "softAssertGreaterThanOrEqual",
+  "description" : "Kiểm tra giá trị thực tế có lớn hơn hoặc bằng giá trị so sánh không. Nếu không, ghi nhận lỗi và TIẾP TỤC chạy.",
+  "category" : "Assertion",
+  "subCategory" : "Soft",
+  "example" : "int stockQuantity = Integer.parseInt(web.getText(\"stockLabel\"));\nassertion.softAssertGreaterThanOrEqual(stockQuantity, 1, \"Số lượng tồn kho phải >= 1\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Tự động xử lý so sánh giữa số và chuỗi số. Lỗi sẽ được ghi nhận và test vẫn tiếp tục. **Phải gọi `assertAll()` ở cuối** để tổng hợp kết quả.",
+  "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
+  "methodName" : "softAssertGreaterThanOrEqual",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "Object",
+    "name" : "actualValue",
+    "description" : "Giá trị thực tế"
+  }, {
+    "type" : "Object",
+    "name" : "expectedValue",
+    "description" : "Giá trị so sánh"
+  }, {
+    "type" : "String[]",
+    "name" : "message",
+    "description" : "Thông điệp tùy chỉnh khi assertion fail"
+  } ]
+}, {
+  "name" : "verifyTextContainsSoft",
+  "description" : "Verify text của một element có chứa một chuỗi con hay không. Nếu không chứa, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
+  "category" : "Web",
+  "subCategory" : "Assertion",
+  "example" : "// Verify kết quả tìm kiếm có chứa thông tin số lượng\nwebKeyword.sendKeys(searchInputObject, \"điện thoại\");\nwebKeyword.click(searchButtonObject);\nwebKeyword.verifyTextContainsSoft(searchResultSummary, \"kết quả\");\nwebKeyword.verifyTextContainsSoft(searchResultSummary, \"điện thoại\");\n\n// Verify nhiều thông tin trên trang sản phẩm với custom message\nwebKeyword.verifyTextContainsSoft(productDescriptionObject, \"chống nước\", \"Mô tả thiếu thông tin chống nước\");\nwebKeyword.verifyTextContainsSoft(productDescriptionObject, \"bảo hành\", \"Thông tin bảo hành không được hiển thị\");\nwebKeyword.click(addToCartButtonObject); // Tiếp tục thực hiện hành động",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, và element cần Verify phải tồn tại trong DOM và có text. Có thể throw NoSuchElementException nếu không tìm thấy element, StaleElementReferenceException nếu element không còn gắn với DOM, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "verifyTextContainsSoft",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "element chứa text cần Verify"
+  }, {
+    "type" : "String",
+    "name" : "partialText",
+    "description" : "Chuỗi text con mong đợi"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
 }, {
   "name" : "shakeDevice",
   "description" : "Mô phỏng hành động lắc thiết bị để kích hoạt các tính năng sử dụng cảm biến gia tốc (accelerometer).",
@@ -2755,6 +3259,26 @@
     "description" : "Phần tử cần lấy chiều cao"
   } ]
 }, {
+  "name" : "softAssertTrue",
+  "description" : "Kiểm tra một điều kiện là true. Nếu là false, ghi nhận lỗi và TIẾP TỤC chạy.",
+  "category" : "Assertion",
+  "subCategory" : "Soft",
+  "example" : "boolean isVisible = web.isElementPresent(\"myElement\", 5);\nassertion.softAssertTrue(isVisible, \"Element 'myElement' phải hiển thị.\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Lỗi sẽ được ghi nhận và test vẫn tiếp tục. **Phải gọi `assertAll()` ở cuối** để tổng hợp kết quả.",
+  "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
+  "methodName" : "softAssertTrue",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "boolean",
+    "name" : "condition",
+    "description" : "Điều kiện cần kiểm tra"
+  }, {
+    "type" : "String[]",
+    "name" : "message",
+    "description" : "Thông điệp tùy chỉnh khi assertion fail"
+  } ]
+}, {
   "name" : "getCurrentActivity",
   "description" : "Lấy tên Activity hiện tại đang được hiển thị trên màn hình Android",
   "category" : "Mobile",
@@ -2787,24 +3311,32 @@
     "description" : "Thời gian tối đa (giây) để chờ phần tử hiển thị"
   } ]
 }, {
-  "name" : "assertLessThanOrEqual",
-  "description" : "Khẳng định rằng giá trị thực tế nhỏ hơn hoặc bằng giá trị so sánh. Nếu không thỏa mãn, test case sẽ dừng lại và báo lỗi",
-  "category" : "Assertion",
-  "subCategory" : "",
-  "example" : "assertLessThanOrEqual(10, 10); // 10 <= 10",
+  "name" : "verifyElementAttributeHard",
+  "description" : "Verify giá trị của một thuộc tính (attribute) trên element. Nếu giá trị không khớp, kịch bản sẽ DỪNG LẠI.",
+  "category" : "Web",
+  "subCategory" : "Assertion",
+  "example" : "// Verify đường dẫn của liên kết\nwebKeyword.verifyElementAttributeHard(linkObject, \"href\", \"/products/123\");\n\n// Verify trạng thái của checkbox với custom message\nwebKeyword.click(termsCheckboxObject);\nwebKeyword.verifyElementAttributeHard(termsCheckboxObject, \"checked\", \"true\", \n    \"Checkbox điều khoản phải được chọn\");\n\n// Verify thuộc tính quan trọng của form\nwebKeyword.verifyElementAttributeHard(formObject, \"method\", \"POST\", \"Form phải sử dụng method POST\");",
   "returnValue" : "void - Không trả về giá trị",
-  "note" : "Tự động xử lý so sánh giữa số và chuỗi số. Assertion sẽ fail nếu actualValue > expectedValue.",
-  "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
-  "methodName" : "assertLessThanOrEqual",
+  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, element cần Verify phải tồn tại trong DOM, và thuộc tính cần Verify phải tồn tại trên element. Có thể throw AssertionError nếu giá trị thuộc tính không khớp với giá trị mong đợi, NoSuchElementException nếu không tìm thấy element, StaleElementReferenceException nếu element không còn gắn với DOM, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "verifyElementAttributeHard",
   "returnType" : "void",
   "parameters" : [ {
-    "type" : "Object",
-    "name" : "actualValue",
-    "description" : "Giá trị thực tế cần so sánh (số hoặc chuỗi số)"
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "element cần Verify"
   }, {
-    "type" : "Object",
+    "type" : "String",
+    "name" : "attributeName",
+    "description" : "Tên của thuộc tính (ví dụ: 'href', 'class', 'value')"
+  }, {
+    "type" : "String",
     "name" : "expectedValue",
-    "description" : "Giá trị mong đợi để so sánh (actualValue phải nhỏ hơn hoặc bằng giá trị này)"
+    "description" : "Giá trị mong đợi của thuộc tính"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
   } ]
 }, {
   "name" : "pause",
@@ -2837,6 +3369,26 @@
     "type" : "String",
     "name" : "textToFind",
     "description" : "Văn bản cần xác minh sự tồn tại trên màn hình."
+  } ]
+}, {
+  "name" : "verifyTitleSoft",
+  "description" : "So sánh tiêu đề của trang hiện tại với một chuỗi mong đợi. Nếu không khớp, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
+  "category" : "Web",
+  "subCategory" : "Assertion",
+  "example" : "// Verify tiêu đề trang giỏ hàng sau khi thêm sản phẩm\nwebKeyword.click(addToCartButtonObject);\nwebKeyword.click(viewCartButtonObject);\nwebKeyword.waitForPageLoaded(10);\nwebKeyword.verifyTitleSoft(\"Giỏ hàng (1 sản phẩm)\");\nwebKeyword.click(checkoutButtonObject); // Tiếp tục quy trình thanh toán\n\n// Verify nhiều điều kiện trong quy trình đặt hàng với custom message\nwebKeyword.verifyTitleSoft(\"Thanh toán - Bước 1: Thông tin giao hàng\", \n    \"Tiêu đề bước thanh toán không đúng\");\nwebKeyword.verifyElementVisibleSoft(shippingFormObject, true);\nwebKeyword.fillShippingForm(); // Tiếp tục điền form",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, và trang web đã hoàn thành quá trình tải. Có thể throw WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "verifyTitleSoft",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "expectedTitle",
+    "description" : "Tiêu đề trang mong đợi"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
   } ]
 }, {
   "name" : "waitForElementTextToBe",
@@ -2887,26 +3439,6 @@
     "description" : "Thời gian chờ tối đa tính bằng giây"
   } ]
 }, {
-  "name" : "verifyOptionSelectedByLabelHard",
-  "description" : "Khẳng định rằng option có text hiển thị (label) cụ thể đang được chọn in dropdown.",
-  "category" : "Web",
-  "subCategory" : "Assertion",
-  "example" : "// Verify quốc gia đã chọn\nwebKeyword.selectByVisibleText(countryDropdown, \"Việt Nam\");\nwebKeyword.verifyOptionSelectedByLabelHard(countryDropdown, \"Việt Nam\");\n\n// Verify danh mục đã chọn\nwebKeyword.verifyOptionSelectedByLabelHard(categoryDropdown, \"Điện thoại\");",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, element cần Verify phải is thẻ select và tồn tại trong DOM. Có thể throw AssertionError nếu option được chọn không khớp với option mong đợi, NoSuchElementException nếu không tìm thấy element, StaleElementReferenceException nếu element không còn gắn với DOM, WebDriverException nếu có lỗi khi tương tác với trình duyệt, hoặc UnexpectedTagNameException nếu element không phải is thẻ select.",
-  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
-  "methodName" : "verifyOptionSelectedByLabelHard",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "ObjectUI",
-    "name" : "uiObject",
-    "description" : "element dropdown (thẻ select)"
-  }, {
-    "type" : "String",
-    "name" : "expectedLabel",
-    "description" : "text hiển thị of option mong đợi"
-  } ]
-}, {
   "name" : "terminateApp",
   "description" : "Buộc dừng (kill) một tiến trình ứng dụng đang chạy. Khác với việc chỉ đưa ứng dụng về background, phương thức này thực sự kết thúc tiến trình của ứng dụng. Hữu ích khi cần kiểm tra khả năng khôi phục trạng thái của ứng dụng sau khi bị buộc dừng, hoặc để đảm bảo ứng dụng bắt đầu từ trạng thái sạch. Trả về true nếu ứng dụng đã được dừng thành công, false nếu ứng dụng không chạy.",
   "category" : "Mobile",
@@ -2923,20 +3455,24 @@
     "description" : "AppPackage (Android) hoặc BundleID (iOS) của ứng dụng cần dừng"
   } ]
 }, {
-  "name" : "assertElementPresent",
-  "description" : "Khẳng định rằng một phần tử tồn tại trong cấu trúc DOM của màn hình, không nhất thiết phải hiển thị. Phương thức này kiểm tra ngay lập tức (timeout = 0) và ném AssertionError nếu phần tử không tồn tại. Chỉ kiểm tra sự tồn tại, không kiểm tra tính hiển thị của phần tử.",
+  "name" : "assertDisabled",
+  "description" : "Khẳng định rằng một phần tử đang ở trạng thái không thể tương tác (disabled). Phương thức này kiểm tra thuộc tính 'enabled' của phần tử và ném AssertionError nếu phần tử đang được kích hoạt (enabled). Hữu ích khi cần đảm bảo một nút hoặc trường nhập liệu đã bị vô hiệu hóa trong các trường hợp nhất định.",
   "category" : "Mobile",
   "subCategory" : "Assertion",
-  "example" : "// Kiểm tra nút đăng nhập tồn tại\nmobileKeyword.assertElementPresent(loginButton);",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. Đã xác định chính xác phần tử UI cần kiểm tra. Có thể throw AssertionError nếu phần tử không tồn tại trong DOM, hoặc WebDriverException nếu có lỗi khi tương tác với trình điều khiển.",
+  "example" : "// Kiểm tra nút đăng nhập bị vô hiệu hóa khi chưa nhập thông tin\nmobileKeyword.assertDisabled(loginButton);\n\n// Với custom message\nmobileKeyword.assertDisabled(loginButton, \n    \"Nút đăng nhập phải bị vô hiệu hóa khi chưa nhập đầy đủ thông tin\");\n\n// Xác minh trường nhập số tiền bị vô hiệu hóa khi chọn số tiền cố định\nmobileKeyword.tap(fixedAmountOption);\nmobileKeyword.assertDisabled(amountInput, \n    \"Trường nhập số tiền phải bị vô hiệu hóa khi chọn số tiền cố định\");\n\n// Kiểm tra các button bị disable trong form\nmobileKeyword.assertDisabled(submitButton, \n    \"Nút gửi phải bị vô hiệu hóa khi form chưa hợp lệ\");\nmobileKeyword.assertDisabled(saveButton, \n    \"Nút lưu phải bị vô hiệu hóa khi không có thay đổi nào\");",
+  "returnValue" : "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
+  "note" : "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. Phần tử cần kiểm tra phải tồn tại và có thuộc tính 'enabled', và phải là loại có thể được kích hoạt/vô hiệu hóa (button, input, etc.). Có thể throw AssertionError nếu phần tử đang ở trạng thái được kích hoạt (enabled), NoSuchElementException nếu không tìm thấy phần tử, StaleElementReferenceException nếu phần tử không còn gắn với DOM, hoặc WebDriverException nếu không thể lấy thuộc tính 'enabled' của phần tử.",
   "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
-  "methodName" : "assertElementPresent",
+  "methodName" : "assertDisabled",
   "returnType" : "void",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject",
-    "description" : "Phần tử cần kiểm tra sự tồn tại"
+    "description" : "Phần tử cần kiểm tra trạng thái"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
   } ]
 }, {
   "name" : "verifyRecordExists",
@@ -2967,28 +3503,28 @@
     "description" : "Các tham số cần truyền vào câu truy vấn, theo thứ tự xuất hiện của các placeholder '?'"
   } ]
 }, {
-  "name" : "verifyAttributeContainsSoft",
-  "description" : "Verify giá trị of một thuộc tính trên element có contains một chuỗi con hay không. Nếu không contains, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
-  "category" : "Web",
-  "subCategory" : "Assertion",
-  "example" : "// Verify thuộc tính style có contains thông tin hiển thị\nwebKeyword.verifyAttributeContainsSoft(elementObject, \"style\", \"display: block\");\nwebKeyword.click(elementObject); // Tiếp tục thực hiện hành động\n\n// Verify nhiều thuộc tính of một element\nwebKeyword.verifyAttributeContainsSoft(buttonObject, \"class\", \"btn\");\nwebKeyword.verifyAttributeContainsSoft(buttonObject, \"data-action\", \"submit\");\nwebKeyword.click(buttonObject); // Tiếp tục thực hiện hành động",
+  "name" : "softAssertGreaterThan",
+  "description" : "Kiểm tra giá trị thực tế có lớn hơn giá trị so sánh không. Nếu không, ghi nhận lỗi và TIẾP TỤC chạy.",
+  "category" : "Assertion",
+  "subCategory" : "Soft",
+  "example" : "int productCount = web.getElementCount(\"productList\");\nassertion.softAssertGreaterThan(productCount, 0, \"Số lượng sản phẩm phải lớn hơn 0\");",
   "returnValue" : "void - Không trả về giá trị",
-  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, element cần Verify phải tồn tại trong DOM, và thuộc tính cần Verify phải tồn tại trên element. Có thể throw NoSuchElementException nếu không tìm thấy element, StaleElementReferenceException nếu element không còn gắn với DOM, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
-  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
-  "methodName" : "verifyAttributeContainsSoft",
+  "note" : "Tự động xử lý so sánh giữa số và chuỗi số. Lỗi sẽ được ghi nhận và test vẫn tiếp tục. **Phải gọi `assertAll()` ở cuối** để tổng hợp kết quả.",
+  "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
+  "methodName" : "softAssertGreaterThan",
   "returnType" : "void",
   "parameters" : [ {
-    "type" : "ObjectUI",
-    "name" : "uiObject",
-    "description" : "element cần Verify"
+    "type" : "Object",
+    "name" : "actualValue",
+    "description" : "Giá trị thực tế (số hoặc chuỗi số)"
   }, {
-    "type" : "String",
-    "name" : "attribute",
-    "description" : "Tên of thuộc tính (ví dụ: 'class')"
+    "type" : "Object",
+    "name" : "expectedValue",
+    "description" : "Giá trị so sánh"
   }, {
-    "type" : "String",
-    "name" : "partialValue",
-    "description" : "Chuỗi con mong đợi"
+    "type" : "String[]",
+    "name" : "message",
+    "description" : "Thông điệp tùy chỉnh khi assertion fail"
   } ]
 }, {
   "name" : "waitForElementClickable",
@@ -3011,24 +3547,28 @@
     "description" : "Thời gian chờ tối đa tính bằng giây"
   } ]
 }, {
-  "name" : "verifyTextContainsHard",
-  "description" : "Verify text of một element có contains một chuỗi con hay không. Nếu không contains, kịch bản sẽ DỪNG LẠI.",
-  "category" : "Web",
+  "name" : "assertTextEquals",
+  "description" : "Khẳng định rằng văn bản của một phần tử khớp chính xác với chuỗi mong đợi. Phương thức này trích xuất nội dung văn bản của phần tử và so sánh với giá trị mong đợi, ném AssertionError nếu không khớp. Hữu ích để kiểm tra nội dung văn bản, nhãn, thông báo lỗi hoặc các phần tử hiển thị khác.",
+  "category" : "Mobile",
   "subCategory" : "Assertion",
-  "example" : "// Verify thông báo chào mừng có contains tên người dùng\nwebKeyword.verifyTextContainsHard(welcomeMessageObject, \"Xin chào\");\n\n// Verify kết quả tìm kiếm có contains từ khóa đã tìm\nwebKeyword.sendKeys(searchInputObject, \"laptop\");\nwebKeyword.click(searchButtonObject);\nwebKeyword.waitForElementVisible(searchResultsObject);\nwebKeyword.verifyTextContainsHard(searchResultTitleObject, \"laptop\");",
+  "example" : "// Kiểm tra tiêu đề màn hình\nmobileKeyword.assertTextEquals(title, \"Đăng nhập\");\n\n// Xác minh thông báo lỗi với custom message\nmobileKeyword.assertTextEquals(errorMessage, \"Email không hợp lệ\", \n    \"Thông báo lỗi phải hiển thị đúng nội dung khi email sai format\");\n\n// Kiểm tra label của các field\nmobileKeyword.assertTextEquals(usernameLabel, \"Tên đăng nhập\", \n    \"Label của trường username phải hiển thị đúng\");\nmobileKeyword.assertTextEquals(passwordLabel, \"Mật khẩu\", \n    \"Label của trường password phải hiển thị đúng\");",
   "returnValue" : "void - Không trả về giá trị",
-  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, và element cần Verify phải tồn tại trong DOM và có text. Có thể throw AssertionError nếu text of element không contains chuỗi con mong đợi, NoSuchElementException nếu không tìm thấy element, StaleElementReferenceException nếu element không còn gắn với DOM, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
-  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
-  "methodName" : "verifyTextContainsHard",
+  "note" : "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. Phần tử UI cần kiểm tra phải hiển thị và chứa văn bản. Có thể throw AssertionError nếu văn bản của phần tử không khớp với giá trị mong đợi, NoSuchElementException nếu không tìm thấy phần tử, hoặc StaleElementReferenceException nếu phần tử không còn gắn với DOM.",
+  "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
+  "methodName" : "assertTextEquals",
   "returnType" : "void",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject",
-    "description" : "element contains text cần Verify"
+    "description" : "Phần tử cần kiểm tra văn bản"
   }, {
     "type" : "String",
-    "name" : "partialText",
-    "description" : "Chuỗi text con mong đợi"
+    "name" : "expectedText",
+    "description" : "Chuỗi văn bản mong đợi để so sánh"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
   } ]
 }, {
   "name" : "getElementWidth",
@@ -3047,20 +3587,24 @@
     "description" : "Phần tử cần lấy chiều rộng"
   } ]
 }, {
-  "name" : "verifyElementDisabledSoft",
-  "description" : "Verify một element có đang ở trạng thái disabled hay không. Nếu không, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
-  "category" : "Web",
-  "subCategory" : "Assertion",
-  "example" : "// Verify các tính năng bị khóa trong phiên bản dùng thử\nwebKeyword.verifyElementDisabledSoft(lockedFeatureButton);\nwebKeyword.verifyElementDisabledSoft(premiumFeatureButton);\nwebKeyword.click(upgradeAccountButton); // Tiếp tục thực hiện hành động\n\n// Verify các trường không thể chỉnh sửa trong chế độ xem\nwebKeyword.click(viewModeButton);\nwebKeyword.verifyElementDisabledSoft(nameFieldInViewMode);\nwebKeyword.click(editModeButton); // Chuyển sang chế độ chỉnh sửa",
+  "name" : "softAssertFalse",
+  "description" : "Kiểm tra một điều kiện là false. Nếu là true, ghi nhận lỗi và TIẾP TỤC chạy.",
+  "category" : "Assertion",
+  "subCategory" : "Soft",
+  "example" : "boolean isDisabled = web.getAttribute(\"myButton\", \"disabled\").equals(\"true\");\nassertion.softAssertFalse(isDisabled, \"Nút bấm không được phép bị vô hiệu hóa.\");",
   "returnValue" : "void - Không trả về giá trị",
-  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, và element cần Verify phải tồn tại trong DOM. Có thể throw NoSuchElementException nếu không tìm thấy element, StaleElementReferenceException nếu element không còn gắn với DOM, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
-  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
-  "methodName" : "verifyElementDisabledSoft",
+  "note" : "Lỗi sẽ được ghi nhận và test vẫn tiếp tục. **Phải gọi `assertAll()` ở cuối** để tổng hợp kết quả.",
+  "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
+  "methodName" : "softAssertFalse",
   "returnType" : "void",
   "parameters" : [ {
-    "type" : "ObjectUI",
-    "name" : "uiObject",
-    "description" : "element cần Verify"
+    "type" : "boolean",
+    "name" : "condition",
+    "description" : "Điều kiện cần kiểm tra"
+  }, {
+    "type" : "String[]",
+    "name" : "message",
+    "description" : "Thông điệp tùy chỉnh khi assertion fail"
   } ]
 }, {
   "name" : "takeElementScreenshot",
@@ -3119,6 +3663,26 @@
     "description" : "Phần tử cần chạm vào"
   } ]
 }, {
+  "name" : "assertEnabled",
+  "description" : "Khẳng định rằng một phần tử đang ở trạng thái có thể tương tác (enabled). Phương thức này kiểm tra thuộc tính 'enabled' của phần tử và ném AssertionError nếu phần tử bị vô hiệu hóa (disabled). Hữu ích khi cần đảm bảo một nút hoặc trường nhập liệu có thể tương tác được trước khi thực hiện các thao tác tiếp theo.",
+  "category" : "Mobile",
+  "subCategory" : "Assertion",
+  "example" : "// Kiểm tra nút đăng nhập được kích hoạt sau khi nhập thông tin\nmobileKeyword.sendText(usernameInput, \"user@example.com\");\nmobileKeyword.sendText(passwordInput, \"password123\");\nmobileKeyword.assertEnabled(loginButton);\n\n// Với custom message\nmobileKeyword.assertEnabled(loginButton, \n    \"Nút đăng nhập phải được kích hoạt sau khi nhập đầy đủ thông tin\");\n\n// Xác minh nút tiếp tục được kích hoạt sau khi đồng ý điều khoản\nmobileKeyword.tap(agreeToTermsCheckbox);\nmobileKeyword.assertEnabled(continueButton, \n    \"Nút tiếp tục phải được kích hoạt sau khi đồng ý điều khoản\");\n\n// Kiểm tra các input field có thể nhập liệu\nmobileKeyword.assertEnabled(emailInput, \n    \"Trường email phải cho phép nhập liệu\");\nmobileKeyword.assertEnabled(phoneInput, \n    \"Trường số điện thoại phải cho phép nhập liệu\");",
+  "returnValue" : "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
+  "note" : "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. Phần tử cần kiểm tra phải tồn tại và có thuộc tính 'enabled', và phải là loại có thể được kích hoạt/vô hiệu hóa (button, input, etc.). Có thể throw AssertionError nếu phần tử đang ở trạng thái bị vô hiệu hóa (disabled), NoSuchElementException nếu không tìm thấy phần tử, StaleElementReferenceException nếu phần tử không còn gắn với DOM, hoặc WebDriverException nếu không thể lấy thuộc tính 'enabled' của phần tử.",
+  "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
+  "methodName" : "assertEnabled",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "Phần tử cần kiểm tra trạng thái"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
   "name" : "findElements",
   "description" : "Tìm và trả về một danh sách (List) tất cả các element WebElement khớp với locator được cung cấp. Trả về danh sách rỗng nếu không tìm thấy, không ném ra exception.",
   "category" : "Web",
@@ -3165,6 +3729,50 @@
     "type" : "Integer[]",
     "name" : "seconds",
     "description" : "(Tùy chọn) Số giây giữ trạng thái khóa. Mặc định: 1 giây nếu không chỉ định."
+  } ]
+}, {
+  "name" : "verifyElementVisibleHard",
+  "description" : "Verify một element có đang hiển thị trên giao diện hay không. Nếu Verify thất bại (element không hiển thị như mong đợi), kịch bản sẽ DỪNG LẠI ngay lập tức.",
+  "category" : "Web",
+  "subCategory" : "Assertion",
+  "example" : "// Verify thông báo lỗi hiển thị sau khi gửi form không hợp lệ\nwebKeyword.click(submitButtonObject); // Gửi form trống\nwebKeyword.verifyElementVisibleHard(errorMessageObject, true);\n\n// Verify element không hiển thị sau khi đóng với custom message\nwebKeyword.click(closePopupButtonObject);\nwebKeyword.verifyElementVisibleHard(popupObject, false, \"Popup phải được đóng hoàn toàn\");\n\n// Verify element quan trọng phải hiển thị\nwebKeyword.verifyElementVisibleHard(loginButtonObject, true, \"Nút đăng nhập bắt buộc phải có\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, và element cần Verify phải tồn tại trong DOM. Có thể throw AssertionError nếu trạng thái hiển thị của element không khớp với kỳ vọng, NoSuchElementException nếu không tìm thấy element, StaleElementReferenceException nếu element không còn gắn với DOM, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "verifyElementVisibleHard",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "element cần Verify"
+  }, {
+    "type" : "boolean",
+    "name" : "isVisible",
+    "description" : "Trạng thái hiển thị mong đợi (true cho hiển thị, false cho bị ẩn)"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
+  "name" : "assertElementEnabled",
+  "description" : "Khẳng định rằng một element đang ở trạng thái có thể tương tác (enabled). Nếu element bị vô hiệu hóa (disabled), kịch bản sẽ DỪNG LẠI.",
+  "category" : "Web",
+  "subCategory" : "Assertion",
+  "example" : "// Verify nút gửi form đã được kích hoạt sau khi điền đầy đủ thông tin\nwebKeyword.sendKeys(nameInputObject, \"Nguyễn Văn A\");\nwebKeyword.sendKeys(emailInputObject, \"nguyenvana@example.com\");\nwebKeyword.click(termsCheckboxObject);\nwebKeyword.assertElementEnabled(submitButtonObject);\nwebKeyword.click(submitButtonObject);\n\n// Verify nút thanh toán đã được kích hoạt với custom message\nwebKeyword.click(creditCardOptionObject);\nwebKeyword.sendKeys(cardNumberInputObject, \"1234567890123456\");\nwebKeyword.assertElementEnabled(payNowButtonObject, \"Nút thanh toán phải được kích hoạt sau khi nhập thẻ\");\n\n// Verify button quan trọng phải enabled\nwebKeyword.assertElementEnabled(confirmOrderButtonObject, \"Nút xác nhận đơn hàng bắt buộc phải hoạt động\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, và element cần Verify phải tồn tại trong DOM. Có thể throw AssertionError nếu element đang ở trạng thái disabled, NoSuchElementException nếu không tìm thấy element, StaleElementReferenceException nếu element không còn gắn với DOM, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "assertElementEnabled",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "element cần Verify"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
   } ]
 }, {
   "name" : "waitForClickable",
@@ -3219,6 +3827,30 @@
   "returnType" : "void",
   "parameters" : [ ]
 }, {
+  "name" : "softAssertContains",
+  "description" : "Kiểm tra một chuỗi có chứa một chuỗi con hay không. Nếu không, ghi nhận lỗi và TIẾP TỤC chạy.",
+  "category" : "Assertion",
+  "subCategory" : "Soft",
+  "example" : "String welcomeMsg = web.getText(\"welcomeLabel\");\nassertion.softAssertContains(welcomeMsg, \"Xin chào\", \"Thông điệp chào mừng không chứa text mong đợi\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Kiểm tra có phân biệt chữ hoa/thường. Lỗi sẽ được ghi nhận và test vẫn tiếp tục. **Phải gọi `assertAll()` ở cuối** để tổng hợp kết quả.",
+  "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
+  "methodName" : "softAssertContains",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "sourceText",
+    "description" : "Chuỗi nguồn"
+  }, {
+    "type" : "String",
+    "name" : "substring",
+    "description" : "Chuỗi con cần tìm"
+  }, {
+    "type" : "String[]",
+    "name" : "message",
+    "description" : "Thông điệp tùy chỉnh khi assertion fail"
+  } ]
+}, {
   "name" : "startBrowser",
   "description" : "Khởi tạo và mở một phiên trình duyệt WEB cụ thể.",
   "category" : "Session",
@@ -3233,34 +3865,6 @@
     "type" : "String",
     "name" : "platform",
     "description" : "Tên nền tảng WEB cần khởi tạo (ví dụ: 'chrome', 'firefox')."
-  } ]
-}, {
-  "name" : "assertTextWithOptions",
-  "description" : "So sánh văn bản của phần tử với nhiều tùy chọn linh hoạt: có thể bỏ qua sự khác biệt giữa chữ hoa/thường và/hoặc cắt khoảng trắng ở đầu/cuối. Hữu ích khi cần kiểm tra nội dung mà không quan tâm đến định dạng chính xác. Nếu văn bản không khớp theo các tùy chọn đã chọn, một AssertionError sẽ được ném ra.",
-  "category" : "Mobile",
-  "subCategory" : "Assertion",
-  "example" : "// Kiểm tra nội dung chào mừng, bỏ qua chữ hoa/thường và khoảng trắng\nmobileKeyword.assertTextWithOptions(welcomeMessage, \"  xin chào, Người Dùng \", true, true);\n\n// Kiểm tra địa chỉ email không phân biệt chữ hoa/thường\nmobileKeyword.assertTextWithOptions(emailField, \"User@Example.com\", true, true);",
-  "returnValue" : "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
-  "note" : "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. Phần tử cần kiểm tra phải tồn tại và có thuộc tính văn bản (text), và phải hiển thị trên màn hình để có thể đọc văn bản. Có thể throw AssertionError nếu văn bản không khớp theo các tùy chọn đã chọn, NoSuchElementException nếu không tìm thấy phần tử, StaleElementReferenceException nếu phần tử không còn gắn với DOM, WebDriverException nếu không thể lấy văn bản của phần tử, hoặc NullPointerException nếu văn bản của phần tử là null và expectedText không phải null.",
-  "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
-  "methodName" : "assertTextWithOptions",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "ObjectUI",
-    "name" : "uiObject",
-    "description" : "Phần tử cần kiểm tra văn bản"
-  }, {
-    "type" : "String",
-    "name" : "expectedText",
-    "description" : "Chuỗi văn bản mong đợi"
-  }, {
-    "type" : "boolean",
-    "name" : "ignoreCase",
-    "description" : "true để bỏ qua sự khác biệt giữa chữ hoa/thường, false để phân biệt"
-  }, {
-    "type" : "boolean",
-    "name" : "trimText",
-    "description" : "true để cắt khoảng trắng ở đầu/cuối trước khi so sánh, false để giữ nguyên"
   } ]
 }, {
   "name" : "startApplicationByPackage",
@@ -3379,20 +3983,24 @@
     "description" : "Đối tượng UI đại diện cho các phần tử cần tìm kiếm"
   } ]
 }, {
-  "name" : "assertChecked",
-  "description" : "Khẳng định rằng một switch, checkbox hoặc radio button đang ở trạng thái được chọn/bật. Phương thức này kiểm tra thuộc tính 'checked' của phần tử và ném AssertionError nếu phần tử không được chọn. Áp dụng cho các phần tử có thể chọn/bỏ chọn như checkbox, radio button, toggle switch. Phần tử phải hỗ trợ thuộc tính 'checked', nếu không có thể gây ra lỗi.",
-  "category" : "Mobile",
+  "name" : "assertElementSelected",
+  "description" : "Khẳng định rằng một element (checkbox hoặc radio button) đang ở trạng thái được chọn. Nếu không, kịch bản sẽ DỪNG LẠI.",
+  "category" : "Web",
   "subCategory" : "Assertion",
-  "example" : "// Kiểm tra checkbox đã được chọn\nmobileKeyword.tap(agreeToTermsCheckbox);\nmobileKeyword.assertChecked(agreeToTermsCheckbox);",
+  "example" : "// Verify checkbox \"Ghi nhớ đăng nhập\" được chọn\nwebKeyword.click(rememberMeCheckbox);\nwebKeyword.assertElementSelected(rememberMeCheckbox);\nwebKeyword.click(loginButtonObject);\n\n// Verify radio button phương thức thanh toán được chọn với custom message\nwebKeyword.click(creditCardRadioButton);\nwebKeyword.assertElementSelected(creditCardRadioButton, \n    \"Radio button thẻ tín dụng phải được chọn\");\nwebKeyword.sendKeys(cardNumberInputObject, \"1234567890123456\");\n\n// Verify checkbox điều khoản bắt buộc\nwebKeyword.assertElementSelected(termsCheckboxObject, \"Checkbox điều khoản phải được chọn\");",
   "returnValue" : "void - Không trả về giá trị",
-  "note" : "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. Phần tử UI cần kiểm tra phải là loại có thể chọn/bỏ chọn và hỗ trợ thuộc tính 'checked'. Có thể throw AssertionError nếu phần tử không ở trạng thái được chọn/bật, NoSuchElementException nếu không tìm thấy phần tử, hoặc WebDriverException nếu không thể truy cập thuộc tính 'checked'.",
-  "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
-  "methodName" : "assertChecked",
+  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, element cần Verify phải tồn tại trong DOM và là checkbox hoặc radio button. Có thể throw AssertionError nếu element không ở trạng thái được chọn, NoSuchElementException nếu không tìm thấy element, StaleElementReferenceException nếu element không còn gắn với DOM, WebDriverException nếu có lỗi khi tương tác với trình duyệt, hoặc IllegalArgumentException nếu element không phải là checkbox hoặc radio button.",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "assertElementSelected",
   "returnType" : "void",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject",
-    "description" : "Phần tử cần kiểm tra trạng thái"
+    "description" : "element checkbox hoặc radio button cần Verify"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
   } ]
 }, {
   "name" : "getCssValue",
@@ -3415,24 +4023,108 @@
     "description" : "Tên of thuộc tính CSS (ví dụ: 'color', 'font-size', 'background-color')"
   } ]
 }, {
-  "name" : "verifyTextSoft",
-  "description" : "So sánh text of một element với một chuỗi ký tự mong đợi (phải khớp chính xác). Nếu không khớp, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
+  "name" : "verifyAttributeContainsSoft",
+  "description" : "Verify giá trị của một thuộc tính trên element có chứa một chuỗi con hay không. Nếu không chứa, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
   "category" : "Web",
   "subCategory" : "Assertion",
-  "example" : "// Verify nhãn trên form đăng nhập\nwebKeyword.verifyTextSoft(usernameLabelObject, \"Tên đăng nhập\");\nwebKeyword.verifyTextSoft(passwordLabelObject, \"Mật khẩu\");\n// Kịch bản tiếp tục ngay cả khi có nhãn không khớp\n\n// Verify nhiều giá trị hiển thị\nwebKeyword.verifyTextSoft(productNameObject, \"Điện thoại thông minh X1\");\nwebKeyword.verifyTextSoft(productPriceObject, \"5.990.000 ₫\");\nwebKeyword.click(addToCartButtonObject); // Tiếp tục thực hiện hành động",
+  "example" : "// Verify thuộc tính style có chứa thông tin hiển thị\nwebKeyword.verifyAttributeContainsSoft(elementObject, \"style\", \"display: block\");\nwebKeyword.click(elementObject); // Tiếp tục thực hiện hành động\n\n// Verify nhiều thuộc tính của một element với custom message\nwebKeyword.verifyAttributeContainsSoft(buttonObject, \"class\", \"btn\", \n    \"Button nên có class chứa 'btn'\");\nwebKeyword.verifyAttributeContainsSoft(buttonObject, \"data-action\", \"submit\", \n    \"Button nên có data-action chứa 'submit'\");\nwebKeyword.click(buttonObject); // Tiếp tục thực hiện hành động",
   "returnValue" : "void - Không trả về giá trị",
-  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, và element cần Verify phải tồn tại trong DOM và có text. Có thể throw NoSuchElementException nếu không tìm thấy element, StaleElementReferenceException nếu element không còn gắn với DOM, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
+  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, element cần Verify phải tồn tại trong DOM, và thuộc tính cần Verify phải tồn tại trên element. Có thể throw NoSuchElementException nếu không tìm thấy element, StaleElementReferenceException nếu element không còn gắn với DOM, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
   "className" : "com.vtnet.netat.web.keywords.WebKeyword",
-  "methodName" : "verifyTextSoft",
+  "methodName" : "verifyAttributeContainsSoft",
   "returnType" : "void",
   "parameters" : [ {
     "type" : "ObjectUI",
     "name" : "uiObject",
-    "description" : "element contains text cần Verify"
+    "description" : "element cần Verify"
   }, {
     "type" : "String",
-    "name" : "expectedText",
-    "description" : "Chuỗi text mong đợi"
+    "name" : "attribute",
+    "description" : "Tên của thuộc tính (ví dụ: 'class')"
+  }, {
+    "type" : "String",
+    "name" : "partialValue",
+    "description" : "Chuỗi con mong đợi"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
+  "name" : "softAssertLessThan",
+  "description" : "Kiểm tra giá trị thực tế có nhỏ hơn giá trị so sánh không. Nếu không, ghi nhận lỗi và TIẾP TỤC chạy.",
+  "category" : "Assertion",
+  "subCategory" : "Soft",
+  "example" : "double discount = Double.parseDouble(web.getText(\"discountValue\"));\nassertion.softAssertLessThan(discount, 50.0, \"Giảm giá không được vượt quá 50%\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Tự động xử lý so sánh giữa số và chuỗi số. Lỗi sẽ được ghi nhận và test vẫn tiếp tục. **Phải gọi `assertAll()` ở cuối** để tổng hợp kết quả.",
+  "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
+  "methodName" : "softAssertLessThan",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "Object",
+    "name" : "actualValue",
+    "description" : "Giá trị thực tế"
+  }, {
+    "type" : "Object",
+    "name" : "expectedValue",
+    "description" : "Giá trị so sánh"
+  }, {
+    "type" : "String[]",
+    "name" : "message",
+    "description" : "Thông điệp tùy chỉnh khi assertion fail"
+  } ]
+}, {
+  "name" : "assertNotEquals",
+  "description" : "Khẳng định rằng hai giá trị không bằng nhau. Tự động xử lý so sánh giữa các kiểu dữ liệu khác nhau. Nếu chúng bằng nhau, kịch bản sẽ DỪNG LẠI.",
+  "category" : "Assertion",
+  "subCategory" : "HardAssert",
+  "example" : "assertNotEquals(actualPassword, oldPassword);\nassertNotEquals(currentStatus, \"error\", \"Trạng thái không được là lỗi\");\nassertNotEquals(userRole, \"guest\", \"Vai trò người dùng không được là khách\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Keyword này so sánh giá trị sau khi đã chuyển đổi chúng sang dạng chuỗi ký tự.",
+  "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
+  "methodName" : "assertNotEquals",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "Object",
+    "name" : "actualValue",
+    "description" : "Giá trị thực tế"
+  }, {
+    "type" : "Object",
+    "name" : "unexpectedValue",
+    "description" : "Giá trị không mong muốn"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
+  "name" : "assertAttributeEquals",
+  "description" : "Khẳng định rằng một thuộc tính của phần tử có giá trị chính xác như mong đợi. Hữu ích khi cần kiểm tra các thuộc tính đặc biệt như content-desc, resource-id, text, checked, v.v. Phương thức này so sánh chính xác giá trị thuộc tính, phân biệt chữ hoa/thường và khoảng trắng.",
+  "category" : "Mobile",
+  "subCategory" : "Assertion",
+  "example" : "// Kiểm tra thuộc tính content-desc của nút\nmobileKeyword.assertAttributeEquals(menuButton, \"content-desc\", \"Menu chính\");\n\n// Với custom message\nmobileKeyword.assertAttributeEquals(menuButton, \"content-desc\", \"Menu chính\", \n    \"Content description của nút menu phải là 'Menu chính'\");\n\n// Xác minh resource-id của một phần tử\nmobileKeyword.assertAttributeEquals(loginButton, \"resource-id\", \n    \"com.example.myapp:id/login_button\", \n    \"Resource ID của nút đăng nhập phải đúng theo thiết kế\");\n\n// Kiểm tra thuộc tính text\nmobileKeyword.assertAttributeEquals(titleLabel, \"text\", \"Đăng nhập\", \n    \"Tiêu đề màn hình phải hiển thị 'Đăng nhập'\");\nmobileKeyword.assertAttributeEquals(submitButton, \"text\", \"Gửi\", \n    \"Text của nút submit phải là 'Gửi'\");",
+  "returnValue" : "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
+  "note" : "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. Phần tử cần kiểm tra phải tồn tại, thuộc tính cần kiểm tra phải tồn tại trên phần tử, và cần biết chính xác tên thuộc tính theo nền tảng (Android/iOS có thể khác nhau). Có thể throw AssertionError nếu giá trị thuộc tính không khớp với giá trị mong đợi, NoSuchElementException nếu không tìm thấy phần tử, StaleElementReferenceException nếu phần tử không còn gắn với DOM, hoặc WebDriverException nếu không thể lấy thuộc tính của phần tử.",
+  "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
+  "methodName" : "assertAttributeEquals",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "Phần tử cần kiểm tra thuộc tính"
+  }, {
+    "type" : "String",
+    "name" : "attributeName",
+    "description" : "Tên thuộc tính cần kiểm tra (ví dụ: 'content-desc', 'text', 'resource-id')"
+  }, {
+    "type" : "String",
+    "name" : "expectedValue",
+    "description" : "Giá trị mong đợi của thuộc tính"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
   } ]
 }, {
   "name" : "getRow",
@@ -3493,26 +4185,6 @@
     "type" : "String",
     "name" : "cssSelectorInShadow",
     "description" : "Chuỗi CSS selector để Find element inside Shadow DOM"
-  } ]
-}, {
-  "name" : "verifyElementVisibleSoft",
-  "description" : "Verify một element có đang hiển thị trên giao diện hay không. Nếu Verify thất bại, kịch bản sẽ ghi nhận lỗi nhưng vẫn TIẾP TỤC chạy các bước tiếp theo.",
-  "category" : "Web",
-  "subCategory" : "Assertion",
-  "example" : "// Verify thông báo thành công hiển thị sau khi lưu\nwebKeyword.click(saveButtonObject);\nwebKeyword.verifyElementVisibleSoft(successMessageObject, true);\n// Kịch bản vẫn tiếp tục ngay cả khi thông báo không hiển thị\n\n// Verify nhiều element trên trang\nwebKeyword.verifyElementVisibleSoft(headerLogoObject, true);\nwebKeyword.verifyElementVisibleSoft(navigationMenuObject, true);\nwebKeyword.click(mainButtonObject); // Thực hiện hành động tiếp theo",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, và element cần Verify phải tồn tại trong DOM. Có thể throw NoSuchElementException nếu không tìm thấy element, StaleElementReferenceException nếu element không còn gắn với DOM, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
-  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
-  "methodName" : "verifyElementVisibleSoft",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "ObjectUI",
-    "name" : "uiObject",
-    "description" : "element cần Verify"
-  }, {
-    "type" : "boolean",
-    "name" : "isVisible",
-    "description" : "Trạng thái hiển thị mong đợi (true cho hiển thị, false cho bị ẩn)"
   } ]
 }, {
   "name" : "doubleClick",
@@ -3595,20 +4267,24 @@
     "description" : "Chỉ số of option cần chọn (ví dụ: 0 cho option đầu tiên)"
   } ]
 }, {
-  "name" : "assertElementEnabled",
-  "description" : "Khẳng định rằng một element đang ở trạng thái có thể tương tác (enabled). Nếu element bị vô hiệu hóa (disabled), kịch bản sẽ DỪNG LẠI.",
-  "category" : "Web",
-  "subCategory" : "Assertion",
-  "example" : "// Verify nút gửi form đã được kích hoạt sau khi điền đầy đủ thông tin\nwebKeyword.sendKeys(nameInputObject, \"Nguyễn Văn A\");\nwebKeyword.sendKeys(emailInputObject, \"nguyenvana@example.com\");\nwebKeyword.click(termsCheckboxObject);\nwebKeyword.assertElementEnabled(submitButtonObject);\nwebKeyword.click(submitButtonObject);\n\n// Verify nút thanh toán đã được kích hoạt sau khi chọn phương thức thanh toán\nwebKeyword.click(creditCardOptionObject);\nwebKeyword.sendKeys(cardNumberInputObject, \"1234567890123456\");\nwebKeyword.assertElementEnabled(payNowButtonObject);",
+  "name" : "startBrowserSession",
+  "description" : "Khởi tạo nhanh một phiên làm việc trên trình duyệt web bằng cách cung cấp thông tin trực tiếp.",
+  "category" : "Driver",
+  "subCategory" : "Session",
+  "example" : "// Bắt đầu nhanh một phiên trên Firefox cho User B\ndriver.startBrowserSession(\"user_B_ff\", \"firefox\");",
   "returnValue" : "void - Không trả về giá trị",
-  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, và element cần Verify phải tồn tại trong DOM. Có thể throw AssertionError nếu element đang ở trạng thái disabled, NoSuchElementException nếu không tìm thấy element, StaleElementReferenceException nếu element không còn gắn với DOM, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
-  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
-  "methodName" : "assertElementEnabled",
+  "note" : "Hữu ích cho các kịch bản test nhanh hoặc khi không muốn tạo file profile. Sử dụng 'switchSession' để điều khiển phiên này.",
+  "className" : "com.vtnet.netat.core.keywords.DriverKeyword",
+  "methodName" : "startSession",
   "returnType" : "void",
   "parameters" : [ {
-    "type" : "ObjectUI",
-    "name" : "uiObject",
-    "description" : "element cần Verify"
+    "type" : "String",
+    "name" : "sessionName",
+    "description" : "Tên định danh duy nhất cho phiên làm việc này (ví dụ: 'user_A')"
+  }, {
+    "type" : "String",
+    "name" : "browserName",
+    "description" : "Tên trình duyệt cần khởi động (ví dụ: 'chrome', 'firefox', 'edge')"
   } ]
 }, {
   "name" : "waitForElementTextNotContains",
@@ -3635,38 +4311,6 @@
     "description" : "Thời gian chờ tối đa tính bằng giây"
   } ]
 }, {
-  "name" : "assertDisabled",
-  "description" : "Khẳng định rằng một phần tử đang ở trạng thái không thể tương tác (disabled). Phương thức này kiểm tra thuộc tính 'enabled' của phần tử và ném AssertionError nếu phần tử đang được kích hoạt (enabled). Hữu ích khi cần đảm bảo một nút hoặc trường nhập liệu đã bị vô hiệu hóa trong các trường hợp nhất định.",
-  "category" : "Mobile",
-  "subCategory" : "Assertion",
-  "example" : "// Kiểm tra nút đăng nhập bị vô hiệu hóa khi chưa nhập thông tin\nmobileKeyword.assertDisabled(loginButton);\n\n// Xác minh trường nhập số tiền bị vô hiệu hóa khi chọn số tiền cố định\nmobileKeyword.tap(fixedAmountOption);\nmobileKeyword.assertDisabled(amountInput);",
-  "returnValue" : "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
-  "note" : "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. Phần tử cần kiểm tra phải tồn tại và có thuộc tính 'enabled', và phải là loại có thể được kích hoạt/vô hiệu hóa (button, input, etc.). Có thể throw AssertionError nếu phần tử đang ở trạng thái được kích hoạt (enabled), NoSuchElementException nếu không tìm thấy phần tử, StaleElementReferenceException nếu phần tử không còn gắn với DOM, hoặc WebDriverException nếu không thể lấy thuộc tính 'enabled' của phần tử.",
-  "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
-  "methodName" : "assertDisabled",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "ObjectUI",
-    "name" : "uiObject",
-    "description" : "Phần tử cần kiểm tra trạng thái"
-  } ]
-}, {
-  "name" : "assertElementNotSelected",
-  "description" : "Khẳng định rằng một element (checkbox hoặc radio button) đang ở trạng thái không được chọn. Nếu đang được chọn, kịch bản sẽ DỪNG LẠI.",
-  "category" : "Web",
-  "subCategory" : "Assertion",
-  "example" : "// Verify checkbox thông báo is not selected mặc định\nwebKeyword.assertElementNotSelected(newsletterCheckbox);\nwebKeyword.click(newsletterCheckbox); // Chọn để nhận thông báo\n\n// Verify các option bổ sung is not selected\nwebKeyword.assertElementNotSelected(expressShippingRadio);\nwebKeyword.assertElementNotSelected(giftWrappingCheckbox);\nwebKeyword.click(expressShippingRadio); // Chọn vận chuyển nhanh",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, element cần Verify phải tồn tại trong DOM và is checkbox hoặc radio button. Có thể throw AssertionError nếu element đang ở trạng thái được chọn, NoSuchElementException nếu không tìm thấy element, StaleElementReferenceException nếu element không còn gắn với DOM, WebDriverException nếu có lỗi khi tương tác với trình duyệt, hoặc IllegalArgumentException nếu element không phải is checkbox hoặc radio button.",
-  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
-  "methodName" : "assertElementNotSelected",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "ObjectUI",
-    "name" : "uiObject",
-    "description" : "element checkbox hoặc radio button cần Verify"
-  } ]
-}, {
   "name" : "clickElementByIndex",
   "description" : "Click vào một element cụ thể trong một danh sách các element dựa trên chỉ số (index) of nó (bắt đầu từ 0).",
   "category" : "Web",
@@ -3685,6 +4329,26 @@
     "type" : "int",
     "name" : "index",
     "description" : "Vị trí of element cần click (0 cho element đầu tiên)"
+  } ]
+}, {
+  "name" : "verifyUrlSoft",
+  "description" : "So sánh URL của trang hiện tại với một chuỗi mong đợi. Nếu không khớp, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
+  "category" : "Web",
+  "subCategory" : "Assertion",
+  "example" : "// Verify URL trong quy trình nhiều bước\nwebKeyword.click(nextButtonObject);\nwebKeyword.waitForPageLoaded(10);\nwebKeyword.verifyUrlSoft(\"https://example.com/checkout/step1\");\nwebKeyword.fillCheckoutForm(); // Tiếp tục quy trình ngay cả khi URL không đúng\n\n// Verify nhiều điều kiện bao gồm URL với custom message\nwebKeyword.verifyElementVisibleSoft(pageHeaderObject, true);\nwebKeyword.verifyUrlSoft(\"https://example.com/products\", \"Trang sản phẩm không load đúng URL\");\nwebKeyword.click(firstProductObject); // Tiếp tục thực hiện hành động\n\n// Verify URL trong flow navigation\nwebKeyword.verifyUrlSoft(\"https://example.com/profile\", \"URL trang profile không chính xác\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, và trang web đã hoàn thành quá trình tải. Có thể throw WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "verifyUrlSoft",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "expectedUrl",
+    "description" : "URL đầy đủ mong đợi"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
   } ]
 }, {
   "name" : "modifyDateTime",
@@ -3719,20 +4383,20 @@
     "description" : "Định dạng mong muốn cho chuỗi kết quả trả về."
   } ]
 }, {
-  "name" : "assertFalse",
-  "description" : "Khẳng định rằng một điều kiện có giá trị false. Nếu điều kiện là true, test case sẽ dừng lại và báo lỗi",
-  "category" : "Assertion",
-  "subCategory" : "",
-  "example" : "assertFalse(isElementHidden);",
+  "name" : "switchSession",
+  "description" : "Chuyển quyền điều khiển sang một phiên làm việc đã được khởi tạo. Tất cả các keyword UI sau lệnh này sẽ được thực thi trên phiên được chỉ định.",
+  "category" : "Driver",
+  "subCategory" : "Session",
+  "example" : "// Sau khi User A gửi tin nhắn, chuyển sang User B để kiểm tra\ndriver.switchSession(\"user_B_ff\");\nweb.waitForElementVisible(\"notificationPopup\", 15);",
   "returnValue" : "void - Không trả về giá trị",
-  "note" : "Assertion này kiểm tra điều kiện boolean phải là false. Thường được sử dụng để kiểm tra trạng thái phủ định hoặc kết quả của các phép so sánh.",
-  "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
-  "methodName" : "assertFalse",
+  "note" : "Đây là keyword then chốt để điều khiển nhiều người dùng trong cùng một kịch bản.",
+  "className" : "com.vtnet.netat.core.keywords.DriverKeyword",
+  "methodName" : "switchSession",
   "returnType" : "void",
   "parameters" : [ {
-    "type" : "boolean",
-    "name" : "condition",
-    "description" : "Điều kiện boolean cần kiểm tra (phải là false)"
+    "type" : "String",
+    "name" : "sessionName",
+    "description" : "Tên của phiên làm việc cần chuyển đến"
   } ]
 }, {
   "name" : "clearLocalStorage",
@@ -3746,22 +4410,6 @@
   "methodName" : "clearLocalStorage",
   "returnType" : "void",
   "parameters" : [ ]
-}, {
-  "name" : "assertNotChecked",
-  "description" : "Khẳng định rằng một switch, checkbox hoặc radio button đang ở trạng thái không được chọn/tắt. Phương thức này kiểm tra thuộc tính 'checked' của phần tử và ném AssertionError nếu phần tử đang được chọn. Áp dụng cho các phần tử có thể chọn/bỏ chọn như checkbox, radio button, toggle switch. Lưu ý: Phần tử phải hỗ trợ thuộc tính 'checked', nếu không có thể gây ra lỗi.",
-  "category" : "Mobile",
-  "subCategory" : "Assertion",
-  "example" : "// Kiểm tra rằng tùy chọn chưa được chọn ban đầu\nmobileKeyword.assertNotChecked(optionalFeatureCheckbox);\n\n// Xác minh các radio button khác không được chọn\nmobileKeyword.tap(option1RadioButton);\nmobileKeyword.assertChecked(option1RadioButton);\nmobileKeyword.assertNotChecked(option2RadioButton);",
-  "returnValue" : "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
-  "note" : "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. Phần tử cần kiểm tra phải tồn tại và có thuộc tính 'checked', và phải là loại có thể chọn/bỏ chọn (checkbox, radio button, switch). Có thể throw AssertionError nếu phần tử đang ở trạng thái được chọn/bật, NoSuchElementException nếu không tìm thấy phần tử, StaleElementReferenceException nếu phần tử không còn gắn với DOM, hoặc WebDriverException nếu không thể lấy thuộc tính 'checked' của phần tử.",
-  "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
-  "methodName" : "assertNotChecked",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "ObjectUI",
-    "name" : "uiObject",
-    "description" : "Phần tử cần kiểm tra trạng thái"
-  } ]
 }, {
   "name" : "waitForElementAttributeNotToBe",
   "description" : "Chờ đợi attribute của element KHÔNG có giá trị chỉ định trong khoảng thời gian cho phép. Hữu ích cho validation rằng attributes đã thay đổi khỏi trạng thái trước đó, như disabled thành enabled, loading class bị remove.",
@@ -3805,61 +4453,5 @@
     "type" : "CharSequence[]",
     "name" : "keys",
     "description" : "Một hoặc nhiều chuỗi ký tự hoặc phím đặc biệt từ org.openqa.selenium.Keys"
-  } ]
-}, {
-  "name" : "verifyTextHard",
-  "description" : "So sánh text of một element với một chuỗi ký tự mong đợi (phải khớp chính xác). Nếu không khớp, kịch bản sẽ DỪNG LẠI.",
-  "category" : "Web",
-  "subCategory" : "Assertion",
-  "example" : "// Verify tiêu đề trang chính xác\nwebKeyword.verifyTextHard(pageTitleObject, \"Chào mừng đến với trang chủ\");\n\n// Verify kết quả tính toán\nwebKeyword.sendKeys(number1InputObject, \"5\");\nwebKeyword.sendKeys(number2InputObject, \"7\");\nwebKeyword.click(calculateButtonObject);\nwebKeyword.verifyTextHard(resultObject, \"12\");",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, và element cần Verify phải tồn tại trong DOM và có text. Có thể throw AssertionError nếu text of element không khớp với giá trị mong đợi, NoSuchElementException nếu không tìm thấy element, StaleElementReferenceException nếu element không còn gắn với DOM, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
-  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
-  "methodName" : "verifyTextHard",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "ObjectUI",
-    "name" : "uiObject",
-    "description" : "element contains text cần Verify"
-  }, {
-    "type" : "String",
-    "name" : "expectedText",
-    "description" : "Chuỗi text mong đợi"
-  } ]
-}, {
-  "name" : "assertElementNotPresent",
-  "description" : "Khẳng định rằng một phần tử KHÔNG tồn tại trong cấu trúc màn hình sau một khoảng thời gian chờ. Hữu ích để xác minh rằng một phần tử đã bị xóa hoặc chưa được tạo. Phương thức sẽ đợi trong khoảng thời gian chỉ định và kiểm tra xem phần tử có xuất hiện không, nếu phần tử xuất hiện trong thời gian đó, một AssertionError sẽ được ném ra.",
-  "category" : "Mobile",
-  "subCategory" : "Assertion",
-  "example" : "// Kiểm tra thông báo lỗi không xuất hiện sau khi nhập đúng thông tin\nmobileKeyword.assertElementNotPresent(errorMessage, 3);\n\n// Xác minh màn hình loading đã biến mất sau khi tải xong\nmobileKeyword.assertElementNotPresent(loadingSpinner, 10);",
-  "returnValue" : "void - Không trả về giá trị, ném AssertionError nếu kiểm tra thất bại",
-  "note" : "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. Locator của phần tử cần kiểm tra phải hợp lệ. Có thể throw AssertionError nếu phần tử xuất hiện trong khoảng thời gian chờ, hoặc WebDriverException nếu có lỗi khi tương tác với trình điều khiển.",
-  "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
-  "methodName" : "assertElementNotPresent",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "ObjectUI",
-    "name" : "uiObject",
-    "description" : "Phần tử cần kiểm tra sự không tồn tại"
-  }, {
-    "type" : "int",
-    "name" : "timeoutInSeconds",
-    "description" : "Thời gian tối đa (giây) để đợi và xác nhận phần tử không xuất hiện"
-  } ]
-}, {
-  "name" : "verifyUrlSoft",
-  "description" : "So sánh URL of trang hiện tại với một chuỗi mong đợi. Nếu không khớp, kịch bản sẽ ghi nhận lỗi và TIẾP TỤC chạy.",
-  "category" : "Web",
-  "subCategory" : "Assertion",
-  "example" : "// Verify URL trong quy trình nhiều bước\nwebKeyword.click(nextButtonObject);\nwebKeyword.waitForPageLoaded(10);\nwebKeyword.verifyUrlSoft(\"https://example.com/checkout/step1\");\nwebKeyword.fillCheckoutForm(); // Tiếp tục quy trình ngay cả khi URL không đúng\n\n// Verify nhiều điều kiện bao gồm URL\nwebKeyword.verifyElementVisibleSoft(pageHeaderObject, true);\nwebKeyword.verifyUrlSoft(\"https://example.com/products\");\nwebKeyword.click(firstProductObject); // Tiếp tục thực hiện hành động",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, và trang web đã hoàn thành quá trình tải. Có thể throw WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
-  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
-  "methodName" : "verifyUrlSoft",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "String",
-    "name" : "expectedUrl",
-    "description" : "URL đầy đủ mong đợi"
   } ]
 } ]
