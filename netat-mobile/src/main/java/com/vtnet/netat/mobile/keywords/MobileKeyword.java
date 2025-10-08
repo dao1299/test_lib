@@ -2155,7 +2155,6 @@ public class MobileKeyword extends BaseUiKeyword {
                 note = "Áp dụng cho nền tảng Mobile. Không có điều kiện tiên quyết đặc biệt. " +
                         "Có thể throw InterruptedException nếu luồng thực thi bị gián đoạn trong khi tạm dừng."
         )
-        @Step("Pause for {0} ms")
         public void pause(int milliseconds) {
             execute(() -> {
                 try {

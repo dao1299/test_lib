@@ -2,30 +2,30 @@ package com.vtnet.netat.web.keywords;
 import com.vtnet.netat.core.BaseUiKeyword;
 import com.vtnet.netat.core.annotations.NetatKeyword;
 import com.vtnet.netat.core.context.ExecutionContext;
+import com.vtnet.netat.core.ui.Locator;
 import com.vtnet.netat.core.ui.ObjectUI;
 import com.vtnet.netat.core.utils.SecureText;
 import com.vtnet.netat.driver.ConfigReader;
 import com.vtnet.netat.driver.DriverManager;
 import com.vtnet.netat.driver.SessionManager;
 import com.vtnet.netat.web.ai.AiModelFactory;
+import com.vtnet.netat.web.ai.AiSelfHealingService;
+import com.vtnet.netat.web.ai.IAiSelfHealingService;
 import dev.langchain4j.model.chat.ChatModel;
 import io.qameta.allure.Step;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.*;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
-import org.testng.asserts.SoftAssert;
 
 import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -34,9 +34,10 @@ public class WebKeyword extends BaseUiKeyword {
 
     private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(15);
     private static final Duration SECONDARY_TIMEOUT = Duration.ofSeconds(5);
+//    private final IAiSelfHealingService aiSelfHealingService;
 
     public WebKeyword() {
-        // Constructor rỗng
+//        this.aiSelfHealingService = new AiSelfHealingService();
     }
 
     // =================================================================================
@@ -69,6 +70,79 @@ public class WebKeyword extends BaseUiKeyword {
             // 3. Nếu tất cả đều thất bại
             throw new NoSuchElementException("Cannot find element '" + uiObject.getName() + "' using any available method.");
         }
+    }
+
+//    @Override
+//    protected WebElement findElement(ObjectUI uiObject) {
+//        try {
+//            return super.findElement(uiObject);
+//
+//        } catch (NoSuchElementException e) {
+//            logger.warn("Failed with all defined locators for '{}'. Attempting AI self-healing...",
+//                    uiObject.getName());
+//
+//            if (aiSelfHealingService.isAvailable()) {
+//                try {
+//                    String pageSource = DriverManager.getDriver().getPageSource();
+//                    String elementDescription = buildElementDescription(uiObject);
+//                    String previousLocator = getPreviousLocator(uiObject);
+//
+//                    Optional<String> newLocatorOpt = aiSelfHealingService.findNewLocator(
+//                            elementDescription,
+//                            pageSource,
+//                            previousLocator
+//                    );
+//
+//                    if (newLocatorOpt.isPresent()) {
+//                        String newLocator = newLocatorOpt.get();
+//                        logger.info("AI suggested new locator for '{}': {}",
+//                                uiObject.getName(), newLocator);
+//
+//                        // Try with new locator
+//                        WebDriverWait aiWait = new WebDriverWait(
+//                                DriverManager.getDriver(),
+//                                SECONDARY_TIMEOUT
+//                        );
+//                        return aiWait.until(ExpectedConditions.presenceOfElementLocated(
+//                                By.cssSelector(newLocator)
+//                        ));
+//                    } else {
+//                        logger.warn("AI self-healing could not find a new locator");
+//                    }
+//
+//                } catch (Exception aiException) {
+//                    logger.error("AI self-healing failed for element '{}'",
+//                            uiObject.getName(), aiException);
+//                }
+//            }
+//
+//            throw new NoSuchElementException(
+//                    "Cannot find element '" + uiObject.getName() +
+//                            "' using any available method (including AI self-healing)."
+//            );
+//        }
+//    }
+
+    /**
+     * ✅ Build element description cho AI
+     */
+    private String buildElementDescription(ObjectUI uiObject) {
+        StringBuilder desc = new StringBuilder();
+        desc.append(uiObject.getName());
+
+        if (uiObject.getDescription() != null && !uiObject.getDescription().isEmpty()) {
+            desc.append(" - ").append(uiObject.getDescription());
+        }
+
+        return desc.toString();
+    }
+
+    private String getPreviousLocator(ObjectUI uiObject) {
+        if (uiObject.getActiveLocators() != null && !uiObject.getActiveLocators().isEmpty()) {
+            Locator firstLocator = uiObject.getActiveLocators().get(0);
+            return firstLocator.getStrategy() + "=" + firstLocator.getValue();
+        }
+        return null;
     }
 
     private String getLocatorByAI(String elementName, String html) {
@@ -179,7 +253,8 @@ public class WebKeyword extends BaseUiKeyword {
     @Step("Go back to previous page")
     public void goBack() {
         execute(() -> {
-            DriverManager.getDriver().navigate().back();
+            JavascriptExecutor js = (JavascriptExecutor) DriverManager.getDriver();
+            js.executeScript("history.back();");
             return null;
         });
     }
@@ -209,36 +284,35 @@ public class WebKeyword extends BaseUiKeyword {
     @Step("Go forward to next page")
     public void goForward() {
         execute(() -> {
-            DriverManager.getDriver().navigate().forward();
+            JavascriptExecutor js = (JavascriptExecutor) DriverManager.getDriver();
+            js.executeScript("history.forward();");
             return null;
         });
     }
 
     @NetatKeyword(
             name = "refresh",
-            description = "Tải lại (làm mới) trang web hiện tại đang hiển thị trên trình duyệt. " +
-                    "Tương đương với việc người dùng nhấn phím F5 hoặc nút 'Reload'.",
+            description = "Tải lại trang hiện tại bằng JavaScript, cho phép tùy chọn bỏ qua bộ nhớ đệm (cache) để đảm bảo tất cả tài nguyên được tải lại từ máy chủ.",
             category = "Web",
             subCategory = "Browser",
-            parameters = {},
+            parameters = {
+                    "hardRefresh|boolean|Yes|Đặt là 'true' để thực hiện 'làm mới mạnh' (tương đương Ctrl+F5), bỏ qua cache. Đặt là 'false' để 'làm mới thông thường' (tương đương F5)."
+            },
             returnValue = "void - Không trả về giá trị",
-            example = "// Làm mới trang hiện tại\n" +
-                    "webKeyword.refresh();\n\n" +
-                    "// Làm mới trang sau khi gửi biểu mẫu\n" +
-                    "webKeyword.click(submitButton);\n" +
-                    "webKeyword.refresh();",
-            note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "và đã tải một trang web trước đó. " +
-                    "Có thể throw WebDriverException nếu có lỗi khi tương tác với trình duyệt, " +
-                    "NoSuchSessionException nếu phiên WebDriver không còn hợp lệ, " +
-                    "hoặc TimeoutException nếu trang không tải lại trong thời gian chờ mặc định."
+            example = "// Kịch bản 1: Làm mới thông thường, tương đương F5\n" +
+                    "webKeyword.refresh(false);\n\n" +
+                    "// Kịch bản 2: Buộc tải lại toàn bộ trang từ server, bỏ qua cache, tương đương Ctrl+F5\n" +
+                    "webKeyword.refresh(true);",
+            note = "Sử dụng 'hardRefresh = true' rất hữu ích sau khi deploy code mới hoặc khi bạn nghi ngờ lỗi giao diện là do cache của trình duyệt gây ra. " +
+                    "Đây là keyword được khuyên dùng để đảm bảo tính ổn định trong môi trường CI/CD."
     )
-    @Step("Refresh page")
-    public void refresh() {
+    @Step("Refresh page using JavaScript (Hard Refresh: {0})")
+    public void refresh(boolean hardRefresh) {
         execute(() -> {
-            DriverManager.getDriver().navigate().refresh();
+            JavascriptExecutor js = (JavascriptExecutor) DriverManager.getDriver();
+            js.executeScript("location.reload(arguments[0]);", hardRefresh);
             return null;
-        });
+        }, hardRefresh);
     }
 
     @NetatKeyword(
@@ -385,7 +459,10 @@ public class WebKeyword extends BaseUiKeyword {
     @Step("Clear text in element: {0.name}")
     public void clearText(ObjectUI uiObject) {
         execute(() -> {
-            findElement(uiObject).clear();
+            WebElement element = findElement(uiObject);
+            element.click();
+            element.sendKeys(Keys.chord(Keys.CONTROL, "a"));
+            element.sendKeys(Keys.DELETE);
             return null;
         }, uiObject);
     }
@@ -2130,12 +2207,34 @@ public class WebKeyword extends BaseUiKeyword {
     @Step("Verify (Hard) URL of the page is '{0}'")
     public void verifyUrlHard(String expectedUrl, String... customMessage) {
         execute(() -> {
-            String actualUrl = DriverManager.getDriver().getCurrentUrl();
-            String messageCustom = (customMessage != null && customMessage.length > 0) ? customMessage[0] : "";
-            String finalMessage = "HARD ASSERT FAILED: URL của trang không khớp. " + messageCustom;
+            WebDriver driver = DriverManager.getDriver();
+            if (driver == null) {
+                Assert.fail("Driver is null when checking page URL.");
+                return null;
+            }
+            WebDriverWait wait = new WebDriverWait(driver, DEFAULT_TIMEOUT);
+            String actualUrl = "";
+
+            try {
+                wait.until(ExpectedConditions.urlToBe(expectedUrl));
+
+                actualUrl = expectedUrl;
+                logger.info("Page URL matched '{}' within {}s.", expectedUrl, DEFAULT_TIMEOUT.getSeconds());
+
+            } catch (TimeoutException e) {
+                actualUrl = driver.getCurrentUrl();
+                logger.warn("Timeout after {}s waiting for page URL to be '{}'. Final URL was: '{}'",
+                        DEFAULT_TIMEOUT.getSeconds(), expectedUrl, actualUrl);
+            }
+
+            String baseMessage = String.format("Page URL does not match. Expected '%s' but found '%s'.",
+                    expectedUrl, actualUrl);
+            String finalMessage = appendCustom(baseMessage, customMessage);
+
             Assert.assertEquals(actualUrl, expectedUrl, finalMessage);
+
             return null;
-        }, expectedUrl);
+        }, expectedUrl, (customMessage != null && customMessage.length > 0) ? customMessage[0] : "");
     }
 
     @NetatKeyword(
@@ -2166,24 +2265,35 @@ public class WebKeyword extends BaseUiKeyword {
     )
     public void verifyUrlSoft(String expectedUrl, String... customMessage) {
         execute(() -> {
-                    String actualUrl = DriverManager.getDriver().getCurrentUrl();
-                    String finalMessage = String.format(
-                            "Page URL expected '%s' but was '%s'%s",
-                            expectedUrl,
-                            actualUrl,
-                            (customMessage != null && customMessage.length > 0 && customMessage[0] != null && !customMessage[0].trim().isEmpty())
-                                    ? " | " + customMessage[0]
-                                    : ""
-                    );
-                    logger.info("Checking URL: expected='{}', actual='{}'", expectedUrl, actualUrl);
+            WebDriver driver = DriverManager.getDriver();
+            if (driver == null) {
+                sa().fail("Driver is null when checking page URL.");
+                return null;
+            }
 
-                    ExecutionContext.getInstance().getSoftAssert().assertEquals(actualUrl, expectedUrl, finalMessage);
+            WebDriverWait wait = new WebDriverWait(driver, DEFAULT_TIMEOUT);
+            String actualUrl = "";
+            boolean urlMatched = false;
+            try {
+                wait.until(ExpectedConditions.urlToBe(expectedUrl));
+                urlMatched = true;
+                actualUrl = expectedUrl; // Gán giá trị để báo cáo thành công
+                logger.info("Page URL matched '{}' within {}s.", expectedUrl, DEFAULT_TIMEOUT.getSeconds());
 
-                    return null;
-                },
-                expectedUrl,
-                (customMessage != null && customMessage.length > 0) ? customMessage[0] : ""
-        );
+            } catch (TimeoutException e) {
+                urlMatched = false;
+                actualUrl = driver.getCurrentUrl();
+                logger.warn("Timeout after {}s waiting for page URL to be '{}'. Final URL was: '{}'",
+                        DEFAULT_TIMEOUT.getSeconds(), expectedUrl, actualUrl);
+            }
+
+            String baseMessage = String.format("Page URL does not match. Expected '%s' but found '%s'.",
+                    expectedUrl, actualUrl);
+            String finalMessage = appendCustom(baseMessage, customMessage);
+
+            sa().assertEquals(actualUrl, expectedUrl, finalMessage);
+            return null;
+        }, expectedUrl, (customMessage != null && customMessage.length > 0) ? customMessage[0] : "");
     }
 
     @NetatKeyword(
@@ -2216,12 +2326,30 @@ public class WebKeyword extends BaseUiKeyword {
     @Step("Verify (Hard) page title is '{0}'")
     public void verifyTitleHard(String expectedTitle, String... customMessage) {
         execute(() -> {
-            String actualTitle = DriverManager.getDriver().getTitle();
-            String messageCustom = (customMessage != null && customMessage.length > 0) ? customMessage[0] : "";
-            String finalMessage = "HARD ASSERT FAILED: Title not match. actual: '"+actualTitle +"' expect: '"+expectedTitle+"'." + messageCustom;
+            WebDriver driver = DriverManager.getDriver();
+            if (driver == null) {
+                Assert.fail("Driver is null when checking page title.");
+                return null;
+            }
+            WebDriverWait wait = new WebDriverWait(driver, DEFAULT_TIMEOUT);
+            String actualTitle = "";
+
+            try {
+                wait.until(ExpectedConditions.titleIs(expectedTitle));
+                actualTitle = expectedTitle;
+                logger.info("Page title matched '{}' within {}s.", expectedTitle, DEFAULT_TIMEOUT.getSeconds());
+            } catch (TimeoutException e) {
+                actualTitle = driver.getTitle();
+                logger.warn("Timeout after {}s waiting for page title to be '{}'. Final title was: '{}'",
+                        DEFAULT_TIMEOUT.getSeconds(), expectedTitle, actualTitle);
+            }
+            String baseMessage = String.format("Page title does not match. Expected '%s' but found '%s'.",
+                    expectedTitle, actualTitle);
+            String finalMessage = appendCustom(baseMessage, customMessage);
             Assert.assertEquals(actualTitle, expectedTitle, finalMessage);
+
             return null;
-        }, expectedTitle);
+        }, expectedTitle, (customMessage != null && customMessage.length > 0) ? customMessage[0] : "");
     }
 
     @NetatKeyword(
@@ -2252,26 +2380,38 @@ public class WebKeyword extends BaseUiKeyword {
     )
     public void verifyTitleSoft(String expectedTitle, String... customMessage) {
         execute(() -> {
-                    String actualTitle = DriverManager.getDriver().getTitle();
+            WebDriver driver = DriverManager.getDriver();
+            if (driver == null) {
+                sa().fail("Driver is null when checking page title.");
+                return null;
+            }
 
-                    String finalMessage = String.format(
-                            "Page title expected '%s' but was '%s'%s",
-                            expectedTitle,
-                            actualTitle,
-                            (customMessage != null && customMessage.length > 0 && customMessage[0] != null && !customMessage[0].trim().isEmpty())
-                                    ? " | " + customMessage[0].trim()
-                                    : ""
-                    );
+            WebDriverWait wait = new WebDriverWait(driver, DEFAULT_TIMEOUT);
+            String actualTitle = "";
+            boolean titleMatched = false;
 
-                    logger.info("Checking page title: expected='{}', actual='{}'", expectedTitle, actualTitle);
+            try {
+                wait.until(ExpectedConditions.titleIs(expectedTitle));
 
-                    ExecutionContext.getInstance().getSoftAssert().assertEquals(actualTitle, expectedTitle, finalMessage);
+                titleMatched = true;
+                actualTitle = expectedTitle; // Gán giá trị để báo cáo thành công
+                logger.info("Page title matched '{}' within {}s.", expectedTitle, DEFAULT_TIMEOUT.getSeconds());
 
-                    return null;
-                },
-                expectedTitle,
-                (customMessage != null && customMessage.length > 0) ? customMessage[0] : ""
-        );
+            } catch (TimeoutException e) {
+                titleMatched = false;
+                actualTitle = driver.getTitle();
+                logger.warn("Timeout after {}s waiting for page title to be '{}'. Final title was: '{}'",
+                        DEFAULT_TIMEOUT.getSeconds(), expectedTitle, actualTitle);
+            }
+
+            String baseMessage = String.format("Page title does not match. Expected '%s' but found '%s'.",
+                    expectedTitle, actualTitle);
+            String finalMessage = appendCustom(baseMessage, customMessage);
+
+            sa().assertEquals(actualTitle, expectedTitle, finalMessage);
+
+            return null;
+        }, expectedTitle, (customMessage != null && customMessage.length > 0) ? customMessage[0] : "");
     }
 
     @NetatKeyword(
@@ -3509,7 +3649,6 @@ public class WebKeyword extends BaseUiKeyword {
             note = "Áp dụng cho nền tảng Web. Không có điều kiện tiên quyết đặc biệt. " +
                     "Có thể throw InterruptedException nếu luồng thực thi bị gián đoạn trong khi tạm dừng."
     )
-    @Step("Pause for {0} ms")
     public void pause(int milliseconds) {
         execute(() -> {
             try {

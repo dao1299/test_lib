@@ -135,6 +135,26 @@
     "description" : "Thông báo tùy chỉnh khi assertion thất bại"
   } ]
 }, {
+  "name" : "assertTrue",
+  "description" : "Khẳng định rằng một điều kiện có giá trị true. Nếu điều kiện là false, test case sẽ dừng lại và báo lỗi.",
+  "category" : "Assertion",
+  "subCategory" : "HardAssert",
+  "example" : "assertTrue(isElementVisible);\nassertTrue(isLoggedIn, \"Người dùng phải đã đăng nhập\");\nassertTrue(isFormValid, \"Form phải hợp lệ trước khi submit\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Assertion này kiểm tra điều kiện boolean phải là true. Thường được sử dụng để kiểm tra trạng thái hoặc kết quả của các phép so sánh.",
+  "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
+  "methodName" : "assertTrue",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "boolean",
+    "name" : "condition",
+    "description" : "Điều kiện boolean cần kiểm tra (phải là true)"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
   "name" : "verifyOptionSelectedByLabelHard",
   "description" : "Khẳng định rằng option có text hiển thị (label) cụ thể đang được chọn trong dropdown.",
   "category" : "Web",
@@ -153,26 +173,6 @@
     "type" : "String",
     "name" : "expectedLabel",
     "description" : "text hiển thị của option mong đợi"
-  }, {
-    "type" : "String[]",
-    "name" : "customMessage",
-    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
-  } ]
-}, {
-  "name" : "assertTrue",
-  "description" : "Khẳng định rằng một điều kiện có giá trị true. Nếu điều kiện là false, test case sẽ dừng lại và báo lỗi.",
-  "category" : "Assertion",
-  "subCategory" : "HardAssert",
-  "example" : "assertTrue(isElementVisible);\nassertTrue(isLoggedIn, \"Người dùng phải đã đăng nhập\");\nassertTrue(isFormValid, \"Form phải hợp lệ trước khi submit\");",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "Assertion này kiểm tra điều kiện boolean phải là true. Thường được sử dụng để kiểm tra trạng thái hoặc kết quả của các phép so sánh.",
-  "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
-  "methodName" : "assertTrue",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "boolean",
-    "name" : "condition",
-    "description" : "Điều kiện boolean cần kiểm tra (phải là true)"
   }, {
     "type" : "String[]",
     "name" : "customMessage",
@@ -911,6 +911,18 @@
     "description" : "Đường dẫn đến file dữ liệu chứa các tham số truy vấn và dữ liệu mong đợi"
   } ]
 }, {
+  "name" : "startBrowser",
+  "description" : "Khởi tạo và mở một phiên trình duyệt WEB mới. Nếu không có tham số, sẽ sử dụng trình duyệt mặc định trong file cấu hình.",
+  "category" : "Session",
+  "subCategory" : "Lifecycle",
+  "example" : "driverKeyword.startBrowser();",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.core.keywords.DriverKeyword",
+  "methodName" : "startBrowser",
+  "returnType" : "void",
+  "parameters" : [ ]
+}, {
   "name" : "verifyElementVisibleSoft",
   "description" : "Verify một element có đang hiển thị trên giao diện hay không. Nếu Verify thất bại, kịch bản sẽ ghi nhận lỗi nhưng vẫn TIẾP TỤC chạy các bước tiếp theo.",
   "category" : "Web",
@@ -934,18 +946,6 @@
     "name" : "customMessage",
     "description" : "Thông báo tùy chỉnh khi assertion thất bại"
   } ]
-}, {
-  "name" : "startBrowser",
-  "description" : "Khởi tạo và mở một phiên trình duyệt WEB mới. Nếu không có tham số, sẽ sử dụng trình duyệt mặc định trong file cấu hình.",
-  "category" : "Session",
-  "subCategory" : "Lifecycle",
-  "example" : "driverKeyword.startBrowser();",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "",
-  "className" : "com.vtnet.netat.core.keywords.DriverKeyword",
-  "methodName" : "startBrowser",
-  "returnType" : "void",
-  "parameters" : [ ]
 }, {
   "name" : "getRowCount",
   "description" : "Thực thi một câu lệnh SELECT và trả về tổng số bản ghi (dòng) trong kết quả.",
@@ -1111,26 +1111,6 @@
   "returnType" : "void",
   "parameters" : [ ]
 }, {
-  "name" : "selectByVisibleText",
-  "description" : "Chọn một option in dropdown dựa trên text hiển thị of nó.",
-  "category" : "Web",
-  "subCategory" : "Interaction",
-  "example" : "// Chọn quốc gia từ dropdown theo tên hiển thị\nwebKeyword.selectByVisibleText(countryDropdown, \"Việt Nam\");\n\n// Chọn danh mục sản phẩm\nwebKeyword.selectByVisibleText(categoryDropdown, \"Điện thoại & Máy tính bảng\");",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, element dropdown phải tồn tại trong DOM, phải is thẻ <select> hợp lệ, phải hiển thị và có thể tương tác được, phải tồn tại ít nhất một option có text hiển thị khớp chính xác với text cần chọn, và text cần chọn phải khớp chính xác với text hiển thị (phân biệt chữ hoa/thường, khoảng trắng, ký tự đặc biệt). Có thể throw NoSuchElementException nếu không tìm thấy option với text hiển thị chỉ định, ElementNotVisibleException nếu element không hiển thị trên trang, ElementNotInteractableException nếu element không thể tương tác, StaleElementReferenceException nếu element không còn gắn với DOM, UnexpectedTagNameException nếu element không phải is thẻ <select>, TimeoutException nếu element không xuất hiện trong thời gian chờ, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
-  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
-  "methodName" : "selectByVisibleText",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "ObjectUI",
-    "name" : "uiObject",
-    "description" : "element dropdown (thẻ select)"
-  }, {
-    "type" : "String",
-    "name" : "text",
-    "description" : "text hiển thị of option cần chọn"
-  } ]
-}, {
   "name" : "assertNotContains",
   "description" : "Khẳng định rằng một chuỗi văn bản không chứa chuỗi con được chỉ định. Nếu có chứa, test case sẽ dừng lại và báo lỗi.",
   "category" : "Assertion",
@@ -1153,6 +1133,26 @@
     "type" : "String[]",
     "name" : "customMessage",
     "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
+  "name" : "selectByVisibleText",
+  "description" : "Chọn một option in dropdown dựa trên text hiển thị of nó.",
+  "category" : "Web",
+  "subCategory" : "Interaction",
+  "example" : "// Chọn quốc gia từ dropdown theo tên hiển thị\nwebKeyword.selectByVisibleText(countryDropdown, \"Việt Nam\");\n\n// Chọn danh mục sản phẩm\nwebKeyword.selectByVisibleText(categoryDropdown, \"Điện thoại & Máy tính bảng\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, element dropdown phải tồn tại trong DOM, phải is thẻ <select> hợp lệ, phải hiển thị và có thể tương tác được, phải tồn tại ít nhất một option có text hiển thị khớp chính xác với text cần chọn, và text cần chọn phải khớp chính xác với text hiển thị (phân biệt chữ hoa/thường, khoảng trắng, ký tự đặc biệt). Có thể throw NoSuchElementException nếu không tìm thấy option với text hiển thị chỉ định, ElementNotVisibleException nếu element không hiển thị trên trang, ElementNotInteractableException nếu element không thể tương tác, StaleElementReferenceException nếu element không còn gắn với DOM, UnexpectedTagNameException nếu element không phải is thẻ <select>, TimeoutException nếu element không xuất hiện trong thời gian chờ, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "selectByVisibleText",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "element dropdown (thẻ select)"
+  }, {
+    "type" : "String",
+    "name" : "text",
+    "description" : "text hiển thị of option cần chọn"
   } ]
 }, {
   "name" : "verifyAlertPresent",
