@@ -66,6 +66,10 @@ public class LocalDriverFactory implements IDriverFactory {
                 // Giả định bạn có cơ chế tự động cập nhật
                 String version = new UpdateChromeHelper().updateAutomaticallyChromeDriver();
                 return System.getProperty("user.dir") + "/driver/chromedriver" + version + ".exe";
+            }else if (driverPropertyKey.contains("edge")) {
+                log.info("Edge driver path not specified. Attempting to update automatically...");
+                String version = new UpdateEdgeHelper().updateAutomaticallyEdgeDriver();
+                return System.getProperty("user.dir") + "/driver/msedgedriver" + version + ".exe";
             }
             throw new RuntimeException("Cannot find driver path for: " + driverPropertyKey + " in configuration file.");
         }
