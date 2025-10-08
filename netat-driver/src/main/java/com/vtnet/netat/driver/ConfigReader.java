@@ -16,12 +16,9 @@ public final class ConfigReader {
 
     public static synchronized void loadProperties() {
         if (!isLoaded) {
-            // Thay đổi cốt lõi nằm ở đây: sử dụng getResourceAsStream
-            // để đọc file từ classpath, thay vì FileInputStream.
             try (InputStream defaultConfigStream = getResourceAsStream("config/default.properties")) {
                 if (defaultConfigStream == null) {
-                    // Nếu người dùng không cung cấp file default, có thể bỏ qua hoặc báo lỗi.
-                    // Trong trường hợp này, chúng ta báo lỗi để đảm bảo tính toàn vẹn.
+
                     throw new IOException("'config/default.properties' not found on the classpath.");
                 }
                 properties.load(defaultConfigStream);
@@ -37,7 +34,7 @@ public final class ConfigReader {
                     if (profileConfigStream != null) {
                         Properties profileProps = new Properties();
                         profileProps.load(profileConfigStream);
-                        properties.putAll(profileProps); // Ghi đè lên default
+                        properties.putAll(profileProps);
                         log.info("Loaded and overrode configuration from profile: {}", profile);
                     } else {
                         log.warn("Profile '{}' specified but file {} was not found.", profile, profileFileName);
@@ -51,7 +48,6 @@ public final class ConfigReader {
     }
 
     private static InputStream getResourceAsStream(String resourceName) {
-        // Lấy class loader của luồng hiện tại để tìm kiếm tài nguyên
         return Thread.currentThread().getContextClassLoader().getResourceAsStream(resourceName);
     }
 

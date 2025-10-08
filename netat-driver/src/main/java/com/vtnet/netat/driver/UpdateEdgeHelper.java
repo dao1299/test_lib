@@ -97,8 +97,8 @@ public class UpdateEdgeHelper {
      * @return Path to the downloaded zip file.
      */
     private String downloadCurrentEdgeDriverVersionZipFile(String urlEdgeDriverVersion) {
-        String proxyHost = ConfigReader.getProperty("proxy.host");
-        String proxyPort = ConfigReader.getProperty("proxy.port");
+        String proxyHost = ConfigReader.getProperty("proxy.host","10.207.163.162");
+        String proxyPort = ConfigReader.getProperty("proxy.port","3128");
         String proxyString = "";
 
         if (proxyHost != null && !proxyHost.isEmpty() && proxyPort != null && !proxyPort.isEmpty()) {
