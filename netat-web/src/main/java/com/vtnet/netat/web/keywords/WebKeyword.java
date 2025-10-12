@@ -838,8 +838,124 @@ public class WebKeyword extends BaseUiKeyword {
     }
 
     @NetatKeyword(
+            name = "clickByCoordinates",
+            description = "Thực hiện hành động click chuột tại một tọa độ (x, y) cụ thể trên trang. Hữu ích khi cần click vào một vị trí không có locator rõ ràng, ví dụ như trên một canvas hoặc bản đồ.",
+            category = "Web",
+            subCategory = "Interaction",
+            parameters = {
+                    "x: int - Tọa độ theo trục ngang (pixel), tính từ góc trên bên trái của trang",
+                    "y: int - Tọa độ theo trục dọc (pixel), tính từ góc trên bên trái của trang"
+            },
+            returnValue = "void - Không trả về giá trị",
+            example = "// Click vào vị trí (150, 300) trên trang\n" +
+                    "webKeyword.clickByCoordinates(150, 300);",
+            note = "Tọa độ được tính so với toàn bộ trang, không phải so với viewport hiện tại. Cần đảm bảo tọa độ nằm trong phạm vi hợp lệ."
+    )
+    @Step("Click at coordinates ({0}, {1})")
+    public void clickByCoordinates(int x, int y) {
+        execute(() -> {
+            Actions actions = new Actions(DriverManager.getDriver());
+            // Di chuyển đến góc trên bên trái của trang (body) sau đó di chuyển theo offset
+            actions.moveToElement(DriverManager.getDriver().findElement(By.tagName("body")), 0, 0)
+                    .moveByOffset(x, y)
+                    .click()
+                    .build()
+                    .perform();
+            return null;
+        }, x, y);
+    }
+
+    @NetatKeyword(
+            name = "getElementWidth",
+            description = "Lấy và trả về chiều rộng (width) của một đối tượng (tính bằng pixel).",
+            category = "Web",
+            subCategory = "Getter",
+            parameters = {
+                    "uiObject: ObjectUI - Đối tượng cần lấy chiều rộng"
+            },
+            returnValue = "int - Chiều rộng của đối tượng.",
+            example = "// Lấy chiều rộng của một banner quảng cáo\n" +
+                    "int bannerWidth = webKeyword.getElementWidth(UiObjectHelper.getObject(\"homePage/adBanner\"));\n" +
+                    "assertion.assertEquals(bannerWidth, 900);",
+            note = "Phần tử phải hiển thị trên trang để có chiều rộng hợp lệ."
+    )
+    @Step("Get width of element: {0.name}")
+    public int getElementWidth(ObjectUI uiObject) {
+        return execute(() -> {
+            WebElement element = findElement(uiObject);
+            return element.getSize().getWidth();
+        }, uiObject);
+    }
+
+    @NetatKeyword(
+            name = "getElementHeight",
+            description = "Lấy và trả về chiều cao (height) của một đối tượng (tính bằng pixel).",
+            category = "Web",
+            subCategory = "Getter",
+            parameters = {
+                    "uiObject: ObjectUI - Đối tượng cần lấy chiều cao"
+            },
+            returnValue = "int - Chiều cao của đối tượng.",
+            example = "// Lấy chiều cao của một ô input\n" +
+                    "int inputHeight = webKeyword.getElementHeight(UiObjectHelper.getObject(\"loginScreen/usernameInput\"));\n" +
+                    "System.out.println(\"Chiều cao của ô input là: \" + inputHeight);",
+            note = "Phần tử phải hiển thị trên trang để có chiều cao hợp lệ."
+    )
+    @Step("Get height of element: {0.name}")
+    public int getElementHeight(ObjectUI uiObject) {
+        return execute(() -> {
+            WebElement element = findElement(uiObject);
+            return element.getSize().getHeight();
+        }, uiObject);
+    }
+
+    @NetatKeyword(
+            name = "getElementX",
+            description = "Lấy và trả về tọa độ theo trục X (ngang) của góc trên bên trái của một đối tượng.",
+            category = "Web",
+            subCategory = "Getter",
+            parameters = {
+                    "uiObject: ObjectUI - Đối tượng cần lấy tọa độ X"
+            },
+            returnValue = "int - Tọa độ X của đối tượng.",
+            example = "// Lấy tọa độ X của một nút bấm\n" +
+                    "int buttonX = webKeyword.getElementX(UiObjectHelper.getObject(\"loginScreen/loginButton\"));\n" +
+                    "System.out.println(\"Nút bấm cách lề trái: \" + buttonX + \"px\");",
+            note = "Tọa độ được tính so với viewport (khung nhìn) hiện tại của trình duyệt."
+    )
+    @Step("Get X coordinate of element: {0.name}")
+    public int getElementX(ObjectUI uiObject) {
+        return execute(() -> {
+            WebElement element = findElement(uiObject);
+            return element.getLocation().getX();
+        }, uiObject);
+    }
+
+    @NetatKeyword(
+            name = "getElementY",
+            description = "Lấy và trả về tọa độ theo trục Y (dọc) của góc trên bên trái của một đối tượng.",
+            category = "Web",
+            subCategory = "Getter",
+            parameters = {
+                    "uiObject: ObjectUI - Đối tượng cần lấy tọa độ Y"
+            },
+            returnValue = "int - Tọa độ Y của đối tượng.",
+            example = "// Lấy tọa độ Y của một tiêu đề\n" +
+                    "int titleY = webKeyword.getElementY(UiObjectHelper.getObject(\"homePage/mainTitle\"));\n" +
+                    "System.out.println(\"Tiêu đề cách lề trên: \" + titleY + \"px\");",
+            note = "Tọa độ được tính so với viewport (khung nhìn) hiện tại của trình duyệt."
+    )
+    @Step("Get Y coordinate of element: {0.name}")
+    public int getElementY(ObjectUI uiObject) {
+        return execute(() -> {
+            WebElement element = findElement(uiObject);
+            return element.getLocation().getY();
+        }, uiObject);
+    }
+
+    @NetatKeyword(
             name = "selectByIndex",
-            description = "Chọn một option (option) trong một element dropdown (thẻ select) dựa trên chỉ số of nó (bắt đầu từ 0).",
+            description = "Chọn một option (option) trong một element dropdown (thẻ <select>) dựa trên chỉ số of nó (bắt đầu từ 0).",
             category = "Web",
             subCategory = "Interaction",
             parameters = {
@@ -875,7 +991,7 @@ public class WebKeyword extends BaseUiKeyword {
 
     @NetatKeyword(
             name = "selectRadioByValue",
-            description = "Chọn một radio button trong một nhóm các radio button dựa trên giá trị of thuộc tính 'value'.",
+            description = "Chọn một radio button (tag <input type=radio> cùng thuộc tính name) trong một nhóm các radio button dựa trên giá trị of thuộc tính 'value'.",
             category = "Web",
             subCategory = "Interaction",
             parameters = {
@@ -1443,7 +1559,7 @@ public class WebKeyword extends BaseUiKeyword {
     @Step("Wait for element {0.name} to be present in DOM trong {1} seconds")
     public void waitForElementPresent(ObjectUI uiObject, int timeoutInSeconds) {
         execute(() -> {
-            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds));
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds),POLLING_INTERVAL);
             wait.until(ExpectedConditions.presenceOfElementLocated(uiObject.getActiveLocators().get(0).convertToBy()));
             return null;
         }, uiObject, timeoutInSeconds);
@@ -1477,7 +1593,7 @@ public class WebKeyword extends BaseUiKeyword {
     @Step("Wait for page to load trong {0} seconds")
     public void waitForPageLoaded(int timeoutInSeconds) {
         execute(() -> {
-            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds));
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds),POLLING_INTERVAL);
             wait.until(driver -> ((JavascriptExecutor) driver).executeScript("return document.readyState").equals("complete"));
             return null;
         }, timeoutInSeconds);
@@ -1600,7 +1716,7 @@ public class WebKeyword extends BaseUiKeyword {
     @Step("Wait for element '{0}' to be removed from DOM within {1} seconds")
     public void waitForElementNotPresent(ObjectUI uiObject, int timeoutInSeconds) {
         execute(() -> {
-            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds));
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds),POLLING_INTERVAL);
             By by = uiObject.getActiveLocators().get(0).convertToBy();
             wait.until(ExpectedConditions.not(ExpectedConditions.presenceOfElementLocated(by)));
             return null;
@@ -1623,7 +1739,7 @@ public class WebKeyword extends BaseUiKeyword {
     @Step("Wait for element '{0}' text to contain '{1}' within {2} seconds")
     public void waitForElementTextContains(ObjectUI uiObject, String expectedText, int timeoutInSeconds) {
         execute(() -> {
-            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds));
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds),POLLING_INTERVAL);
             wait.until(ExpectedConditions.textToBePresentInElement(findElement(uiObject), expectedText));
             return null;
         }, uiObject, expectedText, timeoutInSeconds);
@@ -1646,7 +1762,7 @@ public class WebKeyword extends BaseUiKeyword {
     @Step("Wait for element '{0}' attribute '{1}' to be '{2}' within {3} seconds")
     public void waitForElementAttributeToBe(ObjectUI uiObject, String attributeName, String expectedValue, int timeoutInSeconds) {
         execute(() -> {
-            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds));
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds),POLLING_INTERVAL);
             wait.until(ExpectedConditions.attributeToBe(findElement(uiObject), attributeName, expectedValue));
             return null;
         }, uiObject, attributeName, expectedValue, timeoutInSeconds);
@@ -1668,7 +1784,7 @@ public class WebKeyword extends BaseUiKeyword {
     @Step("Wait for JavaScript '{0}' to return '{1}' within {2} seconds")
     public void waitForJavaScriptReturnsValue(String script, Object expectedValue, int timeoutInSeconds) {
         execute(() -> {
-            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds));
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds),POLLING_INTERVAL);
             wait.until(driver -> {
                 try {
                     JavascriptExecutor js = (JavascriptExecutor) driver;
@@ -1699,7 +1815,7 @@ public class WebKeyword extends BaseUiKeyword {
     @Step("Wait for element '{0}' text to NOT contain '{1}' within {2} seconds")
     public void waitForElementTextNotContains(ObjectUI uiObject, String unwantedText, int timeoutInSeconds) {
         execute(() -> {
-            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds));
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds),POLLING_INTERVAL);
             wait.until(driver -> {
                 try {
                     String actualText = getText(uiObject);
@@ -1728,7 +1844,7 @@ public class WebKeyword extends BaseUiKeyword {
     @Step("Wait for element '{0}' text to be '{1}' within {2} seconds")
     public void waitForElementTextToBe(ObjectUI uiObject, String expectedText, int timeoutInSeconds) {
         execute(() -> {
-            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds));
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds),POLLING_INTERVAL);
             wait.until(driver -> {
                 try {
                     String actualText = getText(uiObject);
@@ -1757,7 +1873,7 @@ public class WebKeyword extends BaseUiKeyword {
     @Step("Wait for element '{0}' text to NOT be '{1}' within {2} seconds")
     public void waitForElementTextNotToBe(ObjectUI uiObject, String unwantedText, int timeoutInSeconds) {
         execute(() -> {
-            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds));
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds),POLLING_INTERVAL);
             wait.until(driver -> {
                 try {
                     String actualText = getText(uiObject);
@@ -1787,7 +1903,7 @@ public class WebKeyword extends BaseUiKeyword {
     @Step("Wait for element '{0}' attribute '{1}' to NOT be '{2}' within {3} seconds")
     public void waitForElementAttributeNotToBe(ObjectUI uiObject, String attributeName, String unwantedValue, int timeoutInSeconds) {
         execute(() -> {
-            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds));
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds),POLLING_INTERVAL);
             wait.until(driver -> {
                 try {
                     String actualValue = getAttribute(uiObject, attributeName);
@@ -1817,7 +1933,7 @@ public class WebKeyword extends BaseUiKeyword {
     @Step("Wait for element '{0}' attribute '{1}' to contain '{2}' within {3} seconds")
     public void waitForElementAttributeContains(ObjectUI uiObject, String attributeName, String partialValue, int timeoutInSeconds) {
         execute(() -> {
-            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds));
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds),POLLING_INTERVAL);
             wait.until(driver -> {
                 try {
                     String actualValue = getAttribute(uiObject, attributeName);
@@ -1846,7 +1962,7 @@ public class WebKeyword extends BaseUiKeyword {
     @Step("Wait for element '{0}' attribute '{1}' to NOT contain '{2}' within {3} seconds")
     public void waitForElementAttributeNotContains(ObjectUI uiObject, String attributeName, String unwantedPartialValue, int timeoutInSeconds) {
         execute(() -> {
-            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds));
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds),POLLING_INTERVAL);
             wait.until(driver -> {
                 try {
                     String actualValue = getAttribute(uiObject, attributeName);
@@ -1876,7 +1992,7 @@ public class WebKeyword extends BaseUiKeyword {
     @Step("Wait for JavaScript '{0}' to NOT return '{1}' within {2} seconds")
     public void waitForJavaScriptNotReturnsValue(String script, Object unwantedValue, int timeoutInSeconds) {
         execute(() -> {
-            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds));
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds),POLLING_INTERVAL);
             wait.until(driver -> {
                 try {
                     JavascriptExecutor js = (JavascriptExecutor) driver;
@@ -2024,7 +2140,6 @@ public class WebKeyword extends BaseUiKeyword {
                     performTextAssertion(uiObject, expectedText, true, customMessage);
                     return null;
                 },
-                // Params để hiện trong Allure (đừng truyền thẳng object nặng)
                 uiObject != null ? uiObject.getName() : "null",
                 expectedText,
                 (customMessage != null && customMessage.length > 0) ? customMessage[0] : ""
@@ -3020,7 +3135,7 @@ public class WebKeyword extends BaseUiKeyword {
     public void verifyAlertPresent(int timeoutInSeconds) {
         execute(() -> {
             try {
-                WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds));
+                WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds),POLLING_INTERVAL);
                 wait.until(ExpectedConditions.alertIsPresent());
             } catch (Exception e) {
                 throw new AssertionError("HARD ASSERT FAILED: Alert does not appear after " + timeoutInSeconds + " seconds.");

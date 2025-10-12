@@ -26,6 +26,7 @@ public abstract class BaseUiKeyword extends BaseKeyword {
     private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(15);
     private static final Duration PRIMARY_TIMEOUT = Duration.ofSeconds(15);
     private static final Duration SECONDARY_TIMEOUT = Duration.ofSeconds(5);
+    protected static final Duration POLLING_INTERVAL = Duration.ofMillis(100);
     private static final Logger log = LoggerFactory.getLogger(BaseUiKeyword.class);
 
     protected WebElement findElement(ObjectUI uiObject) {
@@ -45,7 +46,7 @@ public abstract class BaseUiKeyword extends BaseKeyword {
         }
 
         for (Locator locator : locators) {
-            WebDriverWait wait = new WebDriverWait(driver, timeout);
+            WebDriverWait wait = new WebDriverWait(driver, timeout, POLLING_INTERVAL);
             try {
                 By by = locator.convertToBy();
                 logger.info("Searching for element '{}' using locator: {} (Timeout: {}s)",
@@ -137,14 +138,14 @@ public abstract class BaseUiKeyword extends BaseKeyword {
                 }
             }
 
-            return text != null ? text.trim() : "";
+            return text != null ? text : "";
         }, uiObject != null ? uiObject.getName() : "null");
     }
 
     protected void waitForElementVisible(ObjectUI uiObject, int timeoutInSeconds) {
         execute(() -> {
             Duration totalTimeout = Duration.ofSeconds(timeoutInSeconds);
-            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), totalTimeout);
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), totalTimeout, POLLING_INTERVAL);
             wait.until(ExpectedConditions.visibilityOfElementLocated(uiObject.getActiveLocators().get(0).convertToBy()));
             return null;
         }, uiObject, timeoutInSeconds);
@@ -153,7 +154,7 @@ public abstract class BaseUiKeyword extends BaseKeyword {
     protected void waitForElementNotVisible(ObjectUI uiObject, int timeoutInSeconds) {
         execute(() -> {
             Duration totalTimeout = Duration.ofSeconds(timeoutInSeconds);
-            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), totalTimeout);
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), totalTimeout, POLLING_INTERVAL);
             wait.until(ExpectedConditions.invisibilityOfElementLocated(uiObject.getActiveLocators().get(0).convertToBy()));
             return null;
         }, uiObject, timeoutInSeconds);
@@ -162,7 +163,7 @@ public abstract class BaseUiKeyword extends BaseKeyword {
     protected void waitForElementClickable(ObjectUI uiObject, int timeoutInSeconds) {
         execute(() -> {
             Duration totalTimeout = Duration.ofSeconds(timeoutInSeconds);
-            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), totalTimeout);
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), totalTimeout, POLLING_INTERVAL);
             By locator = uiObject.getActiveLocators().get(0).convertToBy();
             wait.until(ExpectedConditions.elementToBeClickable(locator));
 
@@ -186,7 +187,7 @@ public abstract class BaseUiKeyword extends BaseKeyword {
             }
         }
 
-        WebDriverWait wait = new WebDriverWait(driver, DEFAULT_TIMEOUT);
+        WebDriverWait wait = new WebDriverWait(driver, DEFAULT_TIMEOUT, POLLING_INTERVAL);
         String actualText = "";
 
         try {
@@ -225,7 +226,7 @@ public abstract class BaseUiKeyword extends BaseKeyword {
             }
         }
 
-        WebDriverWait wait = new WebDriverWait(driver, DEFAULT_TIMEOUT);
+        WebDriverWait wait = new WebDriverWait(driver, DEFAULT_TIMEOUT, POLLING_INTERVAL);
         boolean contains = false;
         String actualText = "";
 
@@ -272,7 +273,7 @@ public abstract class BaseUiKeyword extends BaseKeyword {
             }
         }
 
-        WebDriverWait wait = new WebDriverWait(driver, DEFAULT_TIMEOUT);
+        WebDriverWait wait = new WebDriverWait(driver, DEFAULT_TIMEOUT, POLLING_INTERVAL);
         String actualValue = null;
         boolean attributeMatched = false;
 
@@ -321,7 +322,7 @@ public abstract class BaseUiKeyword extends BaseKeyword {
             }
         }
 
-        WebDriverWait wait = new WebDriverWait(driver, DEFAULT_TIMEOUT);
+        WebDriverWait wait = new WebDriverWait(driver, DEFAULT_TIMEOUT, POLLING_INTERVAL);
         boolean actualState = !expectedState;
 
         try {
@@ -369,7 +370,7 @@ public abstract class BaseUiKeyword extends BaseKeyword {
             }
         }
 
-        WebDriverWait wait = new WebDriverWait(driver, DEFAULT_TIMEOUT);
+        WebDriverWait wait = new WebDriverWait(driver, DEFAULT_TIMEOUT, POLLING_INTERVAL);
         boolean actualSelection = !expectedSelection; // Khởi tạo giá trị ngược
 
         try {
@@ -410,7 +411,7 @@ public abstract class BaseUiKeyword extends BaseKeyword {
             }
         }
 
-        WebDriverWait wait = new WebDriverWait(driver, DEFAULT_TIMEOUT);
+        WebDriverWait wait = new WebDriverWait(driver, DEFAULT_TIMEOUT, POLLING_INTERVAL);
         boolean matches = false;
         String actualText = "";
 
@@ -463,7 +464,7 @@ public abstract class BaseUiKeyword extends BaseKeyword {
 
             WebElement el = findElement(uiObject);
             Duration timeout = Duration.ofSeconds(20);
-            WebDriverWait wait = new WebDriverWait(driver, timeout);
+            WebDriverWait wait = new WebDriverWait(driver, timeout, POLLING_INTERVAL);
 
             if (expectedVisibility) {
                 wait.until(ExpectedConditions.visibilityOf(el));
@@ -504,7 +505,7 @@ public abstract class BaseUiKeyword extends BaseKeyword {
                 Assert.fail(msg);
             }
         }
-        WebDriverWait wait = new WebDriverWait(driver, DEFAULT_TIMEOUT);
+        WebDriverWait wait = new WebDriverWait(driver, DEFAULT_TIMEOUT, POLLING_INTERVAL);
         String actualValue;
         try {
             wait.until(d -> {
@@ -553,7 +554,7 @@ public abstract class BaseUiKeyword extends BaseKeyword {
             }
         }
 
-        WebDriverWait wait = new WebDriverWait(driver, DEFAULT_TIMEOUT);
+        WebDriverWait wait = new WebDriverWait(driver, DEFAULT_TIMEOUT, POLLING_INTERVAL);
         boolean contains = false;
         String actualValue = null;
 
@@ -601,7 +602,7 @@ public abstract class BaseUiKeyword extends BaseKeyword {
         execute(() -> {
             try {
                 Duration totalTimeout = Duration.ofSeconds(timeoutInSeconds);
-                WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), totalTimeout);
+                WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), totalTimeout, POLLING_INTERVAL);
                 By locator = uiObject.getActiveLocators().get(0).convertToBy();
                 wait.until(ExpectedConditions.presenceOfElementLocated(locator));
 

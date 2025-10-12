@@ -135,26 +135,6 @@
     "description" : "Thông báo tùy chỉnh khi assertion thất bại"
   } ]
 }, {
-  "name" : "assertTrue",
-  "description" : "Khẳng định rằng một điều kiện có giá trị true. Nếu điều kiện là false, test case sẽ dừng lại và báo lỗi.",
-  "category" : "Assertion",
-  "subCategory" : "HardAssert",
-  "example" : "assertTrue(isElementVisible);\nassertTrue(isLoggedIn, \"Người dùng phải đã đăng nhập\");\nassertTrue(isFormValid, \"Form phải hợp lệ trước khi submit\");",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "Assertion này kiểm tra điều kiện boolean phải là true. Thường được sử dụng để kiểm tra trạng thái hoặc kết quả của các phép so sánh.",
-  "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
-  "methodName" : "assertTrue",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "boolean",
-    "name" : "condition",
-    "description" : "Điều kiện boolean cần kiểm tra (phải là true)"
-  }, {
-    "type" : "String[]",
-    "name" : "customMessage",
-    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
-  } ]
-}, {
   "name" : "verifyOptionSelectedByLabelHard",
   "description" : "Khẳng định rằng option có text hiển thị (label) cụ thể đang được chọn trong dropdown.",
   "category" : "Web",
@@ -173,6 +153,26 @@
     "type" : "String",
     "name" : "expectedLabel",
     "description" : "text hiển thị của option mong đợi"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
+  "name" : "assertTrue",
+  "description" : "Khẳng định rằng một điều kiện có giá trị true. Nếu điều kiện là false, test case sẽ dừng lại và báo lỗi.",
+  "category" : "Assertion",
+  "subCategory" : "HardAssert",
+  "example" : "assertTrue(isElementVisible);\nassertTrue(isLoggedIn, \"Người dùng phải đã đăng nhập\");\nassertTrue(isFormValid, \"Form phải hợp lệ trước khi submit\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Assertion này kiểm tra điều kiện boolean phải là true. Thường được sử dụng để kiểm tra trạng thái hoặc kết quả của các phép so sánh.",
+  "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
+  "methodName" : "assertTrue",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "boolean",
+    "name" : "condition",
+    "description" : "Điều kiện boolean cần kiểm tra (phải là true)"
   }, {
     "type" : "String[]",
     "name" : "customMessage",
@@ -759,18 +759,6 @@
     "description" : "Thời gian chờ tối đa (tính bằng giây)"
   } ]
 }, {
-  "name" : "refresh",
-  "description" : "Tải lại (làm mới) trang web hiện tại đang hiển thị trên trình duyệt. Tương đương với việc người dùng nhấn phím F5 hoặc nút 'Reload'.",
-  "category" : "Web",
-  "subCategory" : "Browser",
-  "example" : "// Làm mới trang hiện tại\nwebKeyword.refresh();\n\n// Làm mới trang sau khi gửi biểu mẫu\nwebKeyword.click(submitButton);\nwebKeyword.refresh();",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, và đã tải một trang web trước đó. Có thể throw WebDriverException nếu có lỗi khi tương tác với trình duyệt, NoSuchSessionException nếu phiên WebDriver không còn hợp lệ, hoặc TimeoutException nếu trang không tải lại trong thời gian chờ mặc định.",
-  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
-  "methodName" : "refresh",
-  "returnType" : "void",
-  "parameters" : [ ]
-}, {
   "name" : "tapElementByIndex",
   "description" : "Thực hiện thao tác tap vào một phần tử cụ thể trong danh sách dựa trên chỉ số (index). Chỉ số bắt đầu từ 0. Ném IndexOutOfBoundsException nếu index không hợp lệ.",
   "category" : "Mobile",
@@ -911,18 +899,6 @@
     "description" : "Đường dẫn đến file dữ liệu chứa các tham số truy vấn và dữ liệu mong đợi"
   } ]
 }, {
-  "name" : "startBrowser",
-  "description" : "Khởi tạo và mở một phiên trình duyệt WEB mới. Nếu không có tham số, sẽ sử dụng trình duyệt mặc định trong file cấu hình.",
-  "category" : "Session",
-  "subCategory" : "Lifecycle",
-  "example" : "driverKeyword.startBrowser();",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "",
-  "className" : "com.vtnet.netat.core.keywords.DriverKeyword",
-  "methodName" : "startBrowser",
-  "returnType" : "void",
-  "parameters" : [ ]
-}, {
   "name" : "verifyElementVisibleSoft",
   "description" : "Verify một element có đang hiển thị trên giao diện hay không. Nếu Verify thất bại, kịch bản sẽ ghi nhận lỗi nhưng vẫn TIẾP TỤC chạy các bước tiếp theo.",
   "category" : "Web",
@@ -946,6 +922,18 @@
     "name" : "customMessage",
     "description" : "Thông báo tùy chỉnh khi assertion thất bại"
   } ]
+}, {
+  "name" : "startBrowser",
+  "description" : "Khởi tạo và mở một phiên trình duyệt WEB mới. Nếu không có tham số, sẽ sử dụng trình duyệt mặc định trong file cấu hình.",
+  "category" : "Session",
+  "subCategory" : "Lifecycle",
+  "example" : "driverKeyword.startBrowser();",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.core.keywords.DriverKeyword",
+  "methodName" : "startBrowser",
+  "returnType" : "void",
+  "parameters" : [ ]
 }, {
   "name" : "getRowCount",
   "description" : "Thực thi một câu lệnh SELECT và trả về tổng số bản ghi (dòng) trong kết quả.",
@@ -1111,6 +1099,26 @@
   "returnType" : "void",
   "parameters" : [ ]
 }, {
+  "name" : "selectByVisibleText",
+  "description" : "Chọn một option in dropdown dựa trên text hiển thị of nó.",
+  "category" : "Web",
+  "subCategory" : "Interaction",
+  "example" : "// Chọn quốc gia từ dropdown theo tên hiển thị\nwebKeyword.selectByVisibleText(countryDropdown, \"Việt Nam\");\n\n// Chọn danh mục sản phẩm\nwebKeyword.selectByVisibleText(categoryDropdown, \"Điện thoại & Máy tính bảng\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, element dropdown phải tồn tại trong DOM, phải is thẻ <select> hợp lệ, phải hiển thị và có thể tương tác được, phải tồn tại ít nhất một option có text hiển thị khớp chính xác với text cần chọn, và text cần chọn phải khớp chính xác với text hiển thị (phân biệt chữ hoa/thường, khoảng trắng, ký tự đặc biệt). Có thể throw NoSuchElementException nếu không tìm thấy option với text hiển thị chỉ định, ElementNotVisibleException nếu element không hiển thị trên trang, ElementNotInteractableException nếu element không thể tương tác, StaleElementReferenceException nếu element không còn gắn với DOM, UnexpectedTagNameException nếu element không phải is thẻ <select>, TimeoutException nếu element không xuất hiện trong thời gian chờ, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "selectByVisibleText",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "element dropdown (thẻ select)"
+  }, {
+    "type" : "String",
+    "name" : "text",
+    "description" : "text hiển thị of option cần chọn"
+  } ]
+}, {
   "name" : "assertNotContains",
   "description" : "Khẳng định rằng một chuỗi văn bản không chứa chuỗi con được chỉ định. Nếu có chứa, test case sẽ dừng lại và báo lỗi.",
   "category" : "Assertion",
@@ -1133,26 +1141,6 @@
     "type" : "String[]",
     "name" : "customMessage",
     "description" : "Thông báo tùy chỉnh khi assertion thất bại"
-  } ]
-}, {
-  "name" : "selectByVisibleText",
-  "description" : "Chọn một option in dropdown dựa trên text hiển thị of nó.",
-  "category" : "Web",
-  "subCategory" : "Interaction",
-  "example" : "// Chọn quốc gia từ dropdown theo tên hiển thị\nwebKeyword.selectByVisibleText(countryDropdown, \"Việt Nam\");\n\n// Chọn danh mục sản phẩm\nwebKeyword.selectByVisibleText(categoryDropdown, \"Điện thoại & Máy tính bảng\");",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, element dropdown phải tồn tại trong DOM, phải is thẻ <select> hợp lệ, phải hiển thị và có thể tương tác được, phải tồn tại ít nhất một option có text hiển thị khớp chính xác với text cần chọn, và text cần chọn phải khớp chính xác với text hiển thị (phân biệt chữ hoa/thường, khoảng trắng, ký tự đặc biệt). Có thể throw NoSuchElementException nếu không tìm thấy option với text hiển thị chỉ định, ElementNotVisibleException nếu element không hiển thị trên trang, ElementNotInteractableException nếu element không thể tương tác, StaleElementReferenceException nếu element không còn gắn với DOM, UnexpectedTagNameException nếu element không phải is thẻ <select>, TimeoutException nếu element không xuất hiện trong thời gian chờ, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
-  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
-  "methodName" : "selectByVisibleText",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "ObjectUI",
-    "name" : "uiObject",
-    "description" : "element dropdown (thẻ select)"
-  }, {
-    "type" : "String",
-    "name" : "text",
-    "description" : "text hiển thị of option cần chọn"
   } ]
 }, {
   "name" : "verifyAlertPresent",
@@ -1555,6 +1543,22 @@
     "description" : "Đối tượng giao diện đại diện cho các element cần lấy text"
   } ]
 }, {
+  "name" : "getElementWidth",
+  "description" : "Lấy và trả về chiều rộng (width) của một đối tượng (tính bằng pixel).",
+  "category" : "Web",
+  "subCategory" : "Getter",
+  "example" : "// Lấy chiều rộng của một banner quảng cáo\nint bannerWidth = webKeyword.getElementWidth(UiObjectHelper.getObject(\"homePage/adBanner\"));\nassertion.assertEquals(bannerWidth, 900);",
+  "returnValue" : "int - Chiều rộng của đối tượng.",
+  "note" : "Phần tử phải hiển thị trên trang để có chiều rộng hợp lệ.",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "getElementWidth",
+  "returnType" : "int",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "Đối tượng cần lấy chiều rộng"
+  } ]
+}, {
   "name" : "generateRandomIntegerNumber",
   "description" : "Tạo ra một số nguyên ngẫu nhiên trong một khoảng cho trước (bao gồm cả min và max).",
   "category" : "Utility",
@@ -1573,6 +1577,42 @@
     "type" : "int",
     "name" : "max",
     "description" : "Giá trị lớn nhất của khoảng."
+  } ]
+}, {
+  "name" : "clickByCoordinates",
+  "description" : "Thực hiện hành động click chuột tại một tọa độ (x, y) cụ thể trên trang. Hữu ích khi cần click vào một vị trí không có locator rõ ràng, ví dụ như trên một canvas hoặc bản đồ.",
+  "category" : "Web",
+  "subCategory" : "Interaction",
+  "example" : "// Click vào vị trí (150, 300) trên trang\nwebKeyword.clickByCoordinates(150, 300);",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Tọa độ được tính so với toàn bộ trang, không phải so với viewport hiện tại. Cần đảm bảo tọa độ nằm trong phạm vi hợp lệ.",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "clickByCoordinates",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "int",
+    "name" : "x",
+    "description" : "Tọa độ theo trục ngang (pixel), tính từ góc trên bên trái của trang"
+  }, {
+    "type" : "int",
+    "name" : "y",
+    "description" : "Tọa độ theo trục dọc (pixel), tính từ góc trên bên trái của trang"
+  } ]
+}, {
+  "name" : "getElementX",
+  "description" : "Lấy và trả về tọa độ theo trục X (ngang) của góc trên bên trái của một đối tượng.",
+  "category" : "Web",
+  "subCategory" : "Getter",
+  "example" : "// Lấy tọa độ X của một nút bấm\nint buttonX = webKeyword.getElementX(UiObjectHelper.getObject(\"loginScreen/loginButton\"));\nSystem.out.println(\"Nút bấm cách lề trái: \" + buttonX + \"px\");",
+  "returnValue" : "int - Tọa độ X của đối tượng.",
+  "note" : "Tọa độ được tính so với viewport (khung nhìn) hiện tại của trình duyệt.",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "getElementX",
+  "returnType" : "int",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "Đối tượng cần lấy tọa độ X"
   } ]
 }, {
   "name" : "generateRandomString",
@@ -1928,9 +1968,9 @@
   } ]
 }, {
   "name" : "assertAll",
-  "description" : "Thực hiện kiểm tra tất cả các soft assertion đã được thu thập trước đó. Nếu có bất kỳ assertion nào thất bại, phương thức sẽ ném ra ngoại lệ với thông tin chi tiết về các lỗi. Sau khi gọi phương thức này, soft assert sẽ được reset về null.",
+  "description" : "Thực hiện kiểm tra tất cả các soft assertion đã được thu thập trước đó. Nếu có bất kỳ assertion nào thất bại, phương thức sẽ ném ra ngoại lệ với thông tin chi tiết về các lỗi. Sau khi gọi phương thức này, soft assert sẽ được reset về null. Hãy gọi phương thức này bên trong @Test có sử dụng soft assert",
   "category" : "Assertion",
-  "subCategory" : "SoftAssert",
+  "subCategory" : "Soft",
   "example" : "// Sau khi thực hiện nhiều soft assertion\nsoftAssert.assertEquals(actualTitle, expectedTitle, \"Title không khớp\");\nsoftAssert.assertTrue(isElementDisplayed, \"Element không hiển thị\");\n// Thực hiện kiểm tra tất cả các assertion\nassertAll();\n\n// Với custom message\nassertAll(\"Kiểm tra tất cả các assertion trong test case đăng nhập\");",
   "returnValue" : "void - Không trả về giá trị",
   "note" : "",
@@ -3475,6 +3515,22 @@
     "description" : "Thông báo tùy chỉnh khi assertion thất bại"
   } ]
 }, {
+  "name" : "getElementHeight",
+  "description" : "Lấy và trả về chiều cao (height) của một đối tượng (tính bằng pixel).",
+  "category" : "Web",
+  "subCategory" : "Getter",
+  "example" : "// Lấy chiều cao của một ô input\nint inputHeight = webKeyword.getElementHeight(UiObjectHelper.getObject(\"loginScreen/usernameInput\"));\nSystem.out.println(\"Chiều cao của ô input là: \" + inputHeight);",
+  "returnValue" : "int - Chiều cao của đối tượng.",
+  "note" : "Phần tử phải hiển thị trên trang để có chiều cao hợp lệ.",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "getElementHeight",
+  "returnType" : "int",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "Đối tượng cần lấy chiều cao"
+  } ]
+}, {
   "name" : "verifyRecordExists",
   "description" : "Kiểm tra sự tồn tại của ít nhất một bản ghi thỏa mãn điều kiện trong câu truy vấn. Phương thức này thực thi câu lệnh SELECT và kiểm tra xem kết quả có trống không, sau đó so sánh với giá trị mong đợi.",
   "category" : "DB",
@@ -3628,7 +3684,7 @@
   } ]
 }, {
   "name" : "selectRadioByValue",
-  "description" : "Chọn một radio button trong một nhóm các radio button dựa trên giá trị of thuộc tính 'value'.",
+  "description" : "Chọn một radio button (tag <input type=radio> cùng thuộc tính name) trong một nhóm các radio button dựa trên giá trị of thuộc tính 'value'.",
   "category" : "Web",
   "subCategory" : "Interaction",
   "example" : "// Chọn radio button giới tính nữ\nwebKeyword.selectRadioByValue(genderRadioGroup, \"female\");\n\n// Chọn phương thức thanh toán\nwebKeyword.selectRadioByValue(paymentMethodRadioGroup, \"credit_card\");",
@@ -3826,6 +3882,22 @@
   "methodName" : "goForward",
   "returnType" : "void",
   "parameters" : [ ]
+}, {
+  "name" : "refresh",
+  "description" : "Tải lại trang hiện tại bằng JavaScript, cho phép tùy chọn bỏ qua bộ nhớ đệm (cache) để đảm bảo tất cả tài nguyên được tải lại từ máy chủ.",
+  "category" : "Web",
+  "subCategory" : "Browser",
+  "example" : "// Kịch bản 1: Làm mới thông thường, tương đương F5\nwebKeyword.refresh(false);\n\n// Kịch bản 2: Buộc tải lại toàn bộ trang từ server, bỏ qua cache, tương đương Ctrl+F5\nwebKeyword.refresh(true);",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Sử dụng 'hardRefresh = true' rất hữu ích sau khi deploy code mới hoặc khi bạn nghi ngờ lỗi giao diện là do cache của trình duyệt gây ra. Đây là keyword được khuyên dùng để đảm bảo tính ổn định trong môi trường CI/CD.",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "refresh",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "boolean",
+    "name" : "hardRefresh",
+    "description" : ""
+  } ]
 }, {
   "name" : "softAssertContains",
   "description" : "Kiểm tra một chuỗi có chứa một chuỗi con hay không. Nếu không, ghi nhận lỗi và TIẾP TỤC chạy.",
@@ -4247,8 +4319,24 @@
     "description" : "Thời gian thực hiện vuốt (ms), giá trị thấp hơn = vuốt nhanh hơn"
   } ]
 }, {
+  "name" : "getElementY",
+  "description" : "Lấy và trả về tọa độ theo trục Y (dọc) của góc trên bên trái của một đối tượng.",
+  "category" : "Web",
+  "subCategory" : "Getter",
+  "example" : "// Lấy tọa độ Y của một tiêu đề\nint titleY = webKeyword.getElementY(UiObjectHelper.getObject(\"homePage/mainTitle\"));\nSystem.out.println(\"Tiêu đề cách lề trên: \" + titleY + \"px\");",
+  "returnValue" : "int - Tọa độ Y của đối tượng.",
+  "note" : "Tọa độ được tính so với viewport (khung nhìn) hiện tại của trình duyệt.",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "getElementY",
+  "returnType" : "int",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "Đối tượng cần lấy tọa độ Y"
+  } ]
+}, {
   "name" : "selectByIndex",
-  "description" : "Chọn một option (option) trong một element dropdown (thẻ select) dựa trên chỉ số of nó (bắt đầu từ 0).",
+  "description" : "Chọn một option (option) trong một element dropdown (thẻ <select>) dựa trên chỉ số of nó (bắt đầu từ 0).",
   "category" : "Web",
   "subCategory" : "Interaction",
   "example" : "// Chọn option thứ hai in dropdown quốc gia\nwebKeyword.selectByIndex(countryDropdownObject, 1); // Chỉ số bắt đầu từ 0\n\n// Chọn option đầu tiên in dropdown ngôn ngữ\nwebKeyword.selectByIndex(languageDropdownObject, 0);",
