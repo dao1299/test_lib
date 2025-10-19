@@ -48,13 +48,13 @@ public class CapabilityFactory {
                     if (optionType.equalsIgnoreCase("binary")) {
                         ((ChromeOptions) capabilities).setBinary(value);
                     } else if (optionType.equalsIgnoreCase("args")) {
-                        ((ChromeOptions) capabilities).addArguments(value.split(","));
+                        ((ChromeOptions) capabilities).addArguments(value.split(";"));
                     }
                 } else if (capabilities instanceof FirefoxOptions) {
                     if (optionType.equalsIgnoreCase("binary")) {
                         ((FirefoxOptions) capabilities).setBinary(value);
                     } else if (optionType.equalsIgnoreCase("args")) {
-                        ((FirefoxOptions) capabilities).addArguments(value.split(","));
+                        ((FirefoxOptions) capabilities).addArguments(value.split(";"));
                     } else if (optionType.startsWith("prefs.")) {
                         String prefKey = optionType.substring("prefs.".length());
                         firefoxPrefs.put(prefKey, convertPrefValue(value));
@@ -63,7 +63,7 @@ public class CapabilityFactory {
                     if (optionType.equalsIgnoreCase("binary")) {
                         ((EdgeOptions) capabilities).setBinary(value);
                     } else if (optionType.equalsIgnoreCase("args")) {
-                        ((EdgeOptions) capabilities).addArguments(value.split(","));
+                        ((EdgeOptions) capabilities).addArguments(value.split(";"));
                     }
                 }
             }
@@ -95,9 +95,7 @@ public class CapabilityFactory {
             }
         }
 
-        // 3. Xử lý đường dẫn ứng dụng Appium
         String appName = ConfigReader.getProperty("app.name");
-        // Chỉ thiết lập đường dẫn app nếu app.name được cung cấp VÀ appPackage không được cung cấp
         if (appName != null && !appName.isEmpty() && !hasAppPackage) {
             String appPath = System.getProperty("user.dir") + "/src/test/resources/apps/" + appName;
             capabilities.setCapability("appium:app", appPath);
