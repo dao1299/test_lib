@@ -83,6 +83,26 @@
     "description" : "Tiêu đề chính xác of cửa sổ hoặc tab cần chuyển đến"
   } ]
 }, {
+  "name" : "assertNotEquals",
+  "description" : "Kiểm tra 2 giá trị KHÁC NHAU",
+  "category" : "API",
+  "subCategory" : "Assertion - General",
+  "example" : "verify.assertNotEquals(actualValue, forbiddenValue);",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiAssert",
+  "methodName" : "assertNotEquals",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "Object",
+    "name" : "actual",
+    "description" : ""
+  }, {
+    "type" : "Object",
+    "name" : "unexpected",
+    "description" : ""
+  } ]
+}, {
   "name" : "deleteAllCookies",
   "description" : "Xóa tất cả các cookie of phiên làm việc hiện tại trên trình duyệt.",
   "category" : "Web",
@@ -94,6 +114,26 @@
   "methodName" : "deleteAllCookies",
   "returnType" : "void",
   "parameters" : [ ]
+}, {
+  "name" : "headerExists",
+  "description" : "Kiểm tra header TỒN TẠI",
+  "category" : "API",
+  "subCategory" : "Assertion - Headers",
+  "example" : "verify.headerExists(response, \"Authorization\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiAssert",
+  "methodName" : "headerExists",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ApiResponse",
+    "name" : "response",
+    "description" : ""
+  }, {
+    "type" : "String",
+    "name" : "headerName",
+    "description" : ""
+  } ]
 }, {
   "name" : "clickAndSwitchToNewTab",
   "description" : "Click vào một element (thường is link) và tự động chuyển sự điều khiển sang tab/cửa sổ mới vừa được mở ra.",
@@ -157,6 +197,26 @@
     "type" : "String[]",
     "name" : "customMessage",
     "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
+  "name" : "addQueryParam",
+  "description" : "Thêm query parameter",
+  "category" : "API",
+  "subCategory" : "Parameters",
+  "example" : "api.addQueryParam(\"page\", 1);",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiKeyword",
+  "methodName" : "addQueryParam",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "paramName",
+    "description" : "Tên parameter"
+  }, {
+    "type" : "Object",
+    "name" : "paramValue",
+    "description" : "Giá trị parameter"
   } ]
 }, {
   "name" : "assertTrue",
@@ -259,6 +319,22 @@
     "description" : "Các tham số cần truyền vào câu truy vấn, theo thứ tự xuất hiện của các placeholder '?'"
   } ]
 }, {
+  "name" : "enableRequestLogging",
+  "description" : "Bật/tắt log chi tiết cho requests",
+  "category" : "API",
+  "subCategory" : "Configuration",
+  "example" : "api.enableRequestLogging(true);",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiKeyword",
+  "methodName" : "enableRequestLogging",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "boolean",
+    "name" : "enabled",
+    "description" : "true = bật, false = tắt"
+  } ]
+}, {
   "name" : "assertTextWithOptions",
   "description" : "So sánh văn bản của phần tử với nhiều tùy chọn linh hoạt: có thể bỏ qua sự khác biệt giữa chữ hoa/thường và/hoặc cắt khoảng trắng ở đầu/cuối. Hữu ích khi cần kiểm tra nội dung mà không quan tâm đến định dạng chính xác. Nếu văn bản không khớp theo các tùy chọn đã chọn, một AssertionError sẽ được ném ra.",
   "category" : "Mobile",
@@ -337,6 +413,22 @@
     "type" : "ObjectUI",
     "name" : "uiObject",
     "description" : "element contains text cần lấy"
+  } ]
+}, {
+  "name" : "setRequestBodyFromFile",
+  "description" : "Thiết lập body từ file",
+  "category" : "API",
+  "subCategory" : "Body",
+  "example" : "api.setRequestBodyFromFile(\"data/user.json\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiKeyword",
+  "methodName" : "setRequestBodyFromFile",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "filePath",
+    "description" : "Đường dẫn file"
   } ]
 }, {
   "name" : "installApp",
@@ -427,6 +519,18 @@
     "description" : "Thông báo tùy chỉnh khi assertion thất bại"
   } ]
 }, {
+  "name" : "resetApiContext",
+  "description" : "Reset toàn bộ API context về trạng thái ban đầu",
+  "category" : "API",
+  "subCategory" : "Configuration",
+  "example" : "api.resetApiContext();",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiKeyword",
+  "methodName" : "resetApiContext",
+  "returnType" : "void",
+  "parameters" : [ ]
+}, {
   "name" : "assertNotificationText",
   "description" : "Kiểm tra văn bản của một thông báo. Tự động chờ thông báo xuất hiện trước khi kiểm tra. Phương thức này sẽ tìm kiếm thông báo dựa trên một phần văn bản chứa trong đó, sau đó so sánh toàn bộ nội dung với văn bản mong đợi. Hữu ích để xác minh nội dung thông báo push, toast message, hoặc system notification.",
   "category" : "Mobile",
@@ -453,6 +557,38 @@
     "type" : "String[]",
     "name" : "customMessage",
     "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
+  "name" : "sendPatchRequest",
+  "description" : "Gửi PATCH request",
+  "category" : "API",
+  "subCategory" : "Requests",
+  "example" : "ApiResponse response = api.sendPatchRequest(\"/users/1\");",
+  "returnValue" : "ApiResponse - Response object",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiKeyword",
+  "methodName" : "sendPatchRequest",
+  "returnType" : "ApiResponse",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "endpoint",
+    "description" : "Endpoint URL"
+  } ]
+}, {
+  "name" : "getResponseTime",
+  "description" : "Lấy response time (milliseconds)",
+  "category" : "API",
+  "subCategory" : "Response",
+  "example" : "long time = api.getResponseTime(response);",
+  "returnValue" : "long - Response time in ms",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiKeyword",
+  "methodName" : "getResponseTime",
+  "returnType" : "long",
+  "parameters" : [ {
+    "type" : "ApiResponse",
+    "name" : "response",
+    "description" : ""
   } ]
 }, {
   "name" : "softAssertLessThanOrEqual",
@@ -493,6 +629,22 @@
     "type" : "ObjectUI",
     "name" : "uiObject",
     "description" : "Đối tượng UI đại diện cho các phần tử cần đếm"
+  } ]
+}, {
+  "name" : "fail",
+  "description" : "Force fail test với message (dùng cho conditional logic)",
+  "category" : "API",
+  "subCategory" : "Assertion - General",
+  "example" : "if (someCondition) { verify.fail(\"This should not happen\"); }",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiAssert",
+  "methodName" : "fail",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "message",
+    "description" : "Thông báo lỗi"
   } ]
 }, {
   "name" : "assertEquals",
@@ -546,6 +698,22 @@
   "methodName" : "switchToParentFrame",
   "returnType" : "void",
   "parameters" : [ ]
+}, {
+  "name" : "setApiBaseUrl",
+  "description" : "Thiết lập URL gốc cho API",
+  "category" : "API",
+  "subCategory" : "Configuration",
+  "example" : "api.setApiBaseUrl(\"https://api.example.com\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiKeyword",
+  "methodName" : "setApiBaseUrl",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "baseUrl",
+    "description" : "URL gốc (VD: https://api.example.com)"
+  } ]
 }, {
   "name" : "waitForElementVisible",
   "description" : "Chờ đợi một element trở nên visible (hiển thị) trên màn hình trong khoảng thời gian chỉ định. Sử dụng explicit wait để đảm bảo element không chỉ present trong DOM mà còn thực sự hiển thị cho người dùng.",
@@ -759,6 +927,30 @@
     "description" : "Thời gian chờ tối đa (tính bằng giây)"
   } ]
 }, {
+  "name" : "setApiKey",
+  "description" : "Thiết lập API Key (trong header hoặc query)",
+  "category" : "API",
+  "subCategory" : "Authentication",
+  "example" : "api.setApiKey(\"X-API-Key\", \"abc123xyz\", \"HEADER\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiKeyword",
+  "methodName" : "setApiKey",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "keyName",
+    "description" : "Tên key (VD: X-API-Key, api_key)"
+  }, {
+    "type" : "String",
+    "name" : "keyValue",
+    "description" : "Giá trị key"
+  }, {
+    "type" : "String",
+    "name" : "location",
+    "description" : "HEADER hoặc QUERY"
+  } ]
+}, {
   "name" : "tapElementByIndex",
   "description" : "Thực hiện thao tác tap vào một phần tử cụ thể trong danh sách dựa trên chỉ số (index). Chỉ số bắt đầu từ 0. Ném IndexOutOfBoundsException nếu index không hợp lệ.",
   "category" : "Mobile",
@@ -825,6 +1017,22 @@
     "type" : "String[]",
     "name" : "customMessage",
     "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
+  "name" : "getStatusCode",
+  "description" : "Lấy HTTP status code từ response",
+  "category" : "API",
+  "subCategory" : "Response",
+  "example" : "int code = api.getStatusCode(response);",
+  "returnValue" : "int - Status code",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiKeyword",
+  "methodName" : "getStatusCode",
+  "returnType" : "int",
+  "parameters" : [ {
+    "type" : "ApiResponse",
+    "name" : "response",
+    "description" : ""
   } ]
 }, {
   "name" : "verifyTextHard",
@@ -899,6 +1107,22 @@
     "description" : "Đường dẫn đến file dữ liệu chứa các tham số truy vấn và dữ liệu mong đợi"
   } ]
 }, {
+  "name" : "removeHeader",
+  "description" : "Xóa một header",
+  "category" : "API",
+  "subCategory" : "Headers",
+  "example" : "api.removeHeader(\"X-Custom-Header\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiKeyword",
+  "methodName" : "removeHeader",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "headerName",
+    "description" : ""
+  } ]
+}, {
   "name" : "verifyElementVisibleSoft",
   "description" : "Verify một element có đang hiển thị trên giao diện hay không. Nếu Verify thất bại, kịch bản sẽ ghi nhận lỗi nhưng vẫn TIẾP TỤC chạy các bước tiếp theo.",
   "category" : "Web",
@@ -934,6 +1158,22 @@
   "methodName" : "startBrowser",
   "returnType" : "void",
   "parameters" : [ ]
+}, {
+  "name" : "sendGetRequest",
+  "description" : "Gửi GET request",
+  "category" : "API",
+  "subCategory" : "Requests",
+  "example" : "ApiResponse response = api.sendGetRequest(\"/users/1\");",
+  "returnValue" : "ApiResponse - Response object",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiKeyword",
+  "methodName" : "sendGetRequest",
+  "returnType" : "ApiResponse",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "endpoint",
+    "description" : "Endpoint URL"
+  } ]
 }, {
   "name" : "getRowCount",
   "description" : "Thực thi một câu lệnh SELECT và trả về tổng số bản ghi (dòng) trong kết quả.",
@@ -1099,6 +1339,30 @@
   "returnType" : "void",
   "parameters" : [ ]
 }, {
+  "name" : "jsonPathEquals",
+  "description" : "Kiểm tra giá trị JSON path bằng với expected value",
+  "category" : "API",
+  "subCategory" : "Assertion - JSON",
+  "example" : "verify.jsonPathEquals(response, \"$.name\", \"John Doe\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiAssert",
+  "methodName" : "jsonPathEquals",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ApiResponse",
+    "name" : "response",
+    "description" : ""
+  }, {
+    "type" : "String",
+    "name" : "jsonPath",
+    "description" : "JSON Path (VD: $.user.name)"
+  }, {
+    "type" : "Object",
+    "name" : "expectedValue",
+    "description" : "Giá trị mong đợi"
+  } ]
+}, {
   "name" : "selectByVisibleText",
   "description" : "Chọn một option in dropdown dựa trên text hiển thị of nó.",
   "category" : "Web",
@@ -1141,6 +1405,22 @@
     "type" : "String[]",
     "name" : "customMessage",
     "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
+  "name" : "sendPutRequest",
+  "description" : "Gửi PUT request",
+  "category" : "API",
+  "subCategory" : "Requests",
+  "example" : "ApiResponse response = api.sendPutRequest(\"/users/1\");",
+  "returnValue" : "ApiResponse - Response object",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiKeyword",
+  "methodName" : "sendPutRequest",
+  "returnType" : "ApiResponse",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "endpoint",
+    "description" : "Endpoint URL"
   } ]
 }, {
   "name" : "verifyAlertPresent",
@@ -1195,6 +1475,30 @@
     "description" : "Thông báo tùy chỉnh khi assertion thất bại"
   } ]
 }, {
+  "name" : "arrayContains",
+  "description" : "Kiểm tra array chứa giá trị cụ thể",
+  "category" : "API",
+  "subCategory" : "Assertion - Arrays",
+  "example" : "verify.arrayContains(response, \"$.roles\", \"admin\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiAssert",
+  "methodName" : "arrayContains",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ApiResponse",
+    "name" : "response",
+    "description" : ""
+  }, {
+    "type" : "String",
+    "name" : "jsonPath",
+    "description" : ""
+  }, {
+    "type" : "Object",
+    "name" : "expectedValue",
+    "description" : ""
+  } ]
+}, {
   "name" : "setLocalStorage",
   "description" : "Ghi một cặp khóa-giá trị vào Local Storage of trình duyệt. Hữu ích để thiết lập trạng thái ứng dụng hoặc token.",
   "category" : "Web",
@@ -1213,6 +1517,46 @@
     "type" : "String",
     "name" : "value",
     "description" : "Giá trị (value) tương ứng"
+  } ]
+}, {
+  "name" : "setBasicAuth",
+  "description" : "Thiết lập Basic Authentication",
+  "category" : "API",
+  "subCategory" : "Authentication",
+  "example" : "api.setBasicAuth(\"admin\", \"password123\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiKeyword",
+  "methodName" : "setBasicAuth",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "username",
+    "description" : "Username"
+  }, {
+    "type" : "String",
+    "name" : "password",
+    "description" : "Password"
+  } ]
+}, {
+  "name" : "assertTrue",
+  "description" : "Kiểm tra điều kiện là TRUE",
+  "category" : "API",
+  "subCategory" : "Assertion - General",
+  "example" : "verify.assertTrue(isValid, \"Should be valid\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiAssert",
+  "methodName" : "assertTrue",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "boolean",
+    "name" : "condition",
+    "description" : "Điều kiện cần kiểm tra"
+  }, {
+    "type" : "String[]",
+    "name" : "message",
+    "description" : "Thông báo khi fail"
   } ]
 }, {
   "name" : "swipeUp",
@@ -1305,6 +1649,26 @@
     "type" : "String",
     "name" : "profilePath",
     "description" : "Đường dẫn đến file profile chứa thông tin cấu hình kết nối CSDL"
+  } ]
+}, {
+  "name" : "bodyNotContains",
+  "description" : "Kiểm tra body KHÔNG CHỨA substring",
+  "category" : "API",
+  "subCategory" : "Assertion - Body",
+  "example" : "verify.bodyNotContains(response, \"error\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiAssert",
+  "methodName" : "bodyNotContains",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ApiResponse",
+    "name" : "response",
+    "description" : ""
+  }, {
+    "type" : "String",
+    "name" : "substring",
+    "description" : ""
   } ]
 }, {
   "name" : "waitForNotVisible",
@@ -1421,6 +1785,22 @@
     "type" : "String",
     "name" : "url",
     "description" : "Địa chỉ trang web đầy đủ cần mở (ví dụ: 'https://www.google.com')"
+  } ]
+}, {
+  "name" : "assertNotNull",
+  "description" : "Kiểm tra giá trị KHÔNG NULL",
+  "category" : "API",
+  "subCategory" : "Assertion - General",
+  "example" : "verify.assertNotNull(userId);",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiAssert",
+  "methodName" : "assertNotNull",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "Object",
+    "name" : "object",
+    "description" : ""
   } ]
 }, {
   "name" : "hideKeyboard",
@@ -1615,6 +1995,22 @@
     "description" : "Đối tượng cần lấy tọa độ X"
   } ]
 }, {
+  "name" : "setAcceptHeader",
+  "description" : "Thiết lập Accept header",
+  "category" : "API",
+  "subCategory" : "Headers",
+  "example" : "api.setAcceptHeader(\"JSON\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiKeyword",
+  "methodName" : "setAcceptHeader",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "acceptType",
+    "description" : "JSON, XML, TEXT, hoặc full MIME type"
+  } ]
+}, {
   "name" : "generateRandomString",
   "description" : "Tạo ra một chuỗi ký tự ngẫu nhiên với độ dài và loại ký tự được chỉ định.",
   "category" : "Utility",
@@ -1683,6 +2079,26 @@
     "description" : "element cần thực hiện hành động click chuột phải"
   } ]
 }, {
+  "name" : "bodyContains",
+  "description" : "Kiểm tra body CHỨA substring",
+  "category" : "API",
+  "subCategory" : "Assertion - Body",
+  "example" : "verify.bodyContains(response, \"success\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiAssert",
+  "methodName" : "bodyContains",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ApiResponse",
+    "name" : "response",
+    "description" : ""
+  }, {
+    "type" : "String",
+    "name" : "substring",
+    "description" : ""
+  } ]
+}, {
   "name" : "takeScreenshot",
   "description" : "Chụp lại ảnh toàn bộ màn hình (viewport) of trình duyệt và lưu vào một file tại đường dẫn được chỉ định.",
   "category" : "Web",
@@ -1717,6 +2133,26 @@
     "type" : "String[]",
     "name" : "customMessage",
     "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
+  "name" : "getHeader",
+  "description" : "Lấy giá trị header từ response",
+  "category" : "API",
+  "subCategory" : "Response - Headers",
+  "example" : "String contentType = api.getHeader(response, \"Content-Type\");",
+  "returnValue" : "String - Header value",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiKeyword",
+  "methodName" : "getHeader",
+  "returnType" : "String",
+  "parameters" : [ {
+    "type" : "ApiResponse",
+    "name" : "response",
+    "description" : ""
+  }, {
+    "type" : "String",
+    "name" : "headerName",
+    "description" : ""
   } ]
 }, {
   "name" : "clear",
@@ -1785,6 +2221,26 @@
     "type" : "String[]",
     "name" : "customMessage",
     "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
+  "name" : "jsonPathNotExists",
+  "description" : "Kiểm tra JSON path KHÔNG TỒN TẠI (dùng cho security testing)",
+  "category" : "API",
+  "subCategory" : "Assertion - JSON",
+  "example" : "verify.jsonPathNotExists(response, \"$.user.password\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiAssert",
+  "methodName" : "jsonPathNotExists",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ApiResponse",
+    "name" : "response",
+    "description" : ""
+  }, {
+    "type" : "String",
+    "name" : "jsonPath",
+    "description" : ""
   } ]
 }, {
   "name" : "assertNotChecked",
@@ -2091,6 +2547,34 @@
     "description" : "(option) URL để mở trong tab mới. Nếu để trống, sẽ mở tab trống"
   } ]
 }, {
+  "name" : "clearAllRequestSettings",
+  "description" : "Xóa toàn bộ cấu hình request (headers, params, body...)",
+  "category" : "API",
+  "subCategory" : "Configuration",
+  "example" : "api.clearAllRequestSettings();",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiKeyword",
+  "methodName" : "clearAllRequestSettings",
+  "returnType" : "void",
+  "parameters" : [ ]
+}, {
+  "name" : "sendPostRequest",
+  "description" : "Gửi POST request",
+  "category" : "API",
+  "subCategory" : "Requests",
+  "example" : "ApiResponse response = api.sendPostRequest(\"/users\");",
+  "returnValue" : "ApiResponse - Response object",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiKeyword",
+  "methodName" : "sendPostRequest",
+  "returnType" : "ApiResponse",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "endpoint",
+    "description" : "Endpoint URL"
+  } ]
+}, {
   "name" : "highlightElement",
   "description" : "Tạm thời vẽ một đường viền màu đỏ xung quanh một element trên trang để dễ dàng nhận biết và gỡ lỗi trong quá trình chạy kịch bản.",
   "category" : "Web",
@@ -2123,6 +2607,18 @@
     "description" : "element cần click"
   } ]
 }, {
+  "name" : "clearQueryParams",
+  "description" : "Xóa tất cả query parameters",
+  "category" : "API",
+  "subCategory" : "Parameters",
+  "example" : "api.clearQueryParams();",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiKeyword",
+  "methodName" : "clearQueryParams",
+  "returnType" : "void",
+  "parameters" : [ ]
+}, {
   "name" : "executeMobileCommand",
   "description" : "Thực thi một lệnh Appium tùy chỉnh không có sẵn trong các keyword tiêu chuẩn. Cung cấp sự linh hoạt tối đa cho các tình huống đặc thù hoặc các tính năng mới của Appium chưa được bao gồm trong framework. Phương thức này cho phép truyền các tham số phức tạp dưới dạng Map. Lưu ý: Cần hiểu rõ về lệnh Appium cụ thể trước khi sử dụng.",
   "category" : "Mobile",
@@ -2143,6 +2639,22 @@
     "description" : "Các tham số của lệnh dưới dạng key-value"
   } ]
 }, {
+  "name" : "sendDeleteRequest",
+  "description" : "Gửi DELETE request",
+  "category" : "API",
+  "subCategory" : "Requests",
+  "example" : "ApiResponse response = api.sendDeleteRequest(\"/users/1\");",
+  "returnValue" : "ApiResponse - Response object",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiKeyword",
+  "methodName" : "sendDeleteRequest",
+  "returnType" : "ApiResponse",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "endpoint",
+    "description" : "Endpoint URL"
+  } ]
+}, {
   "name" : "longPress",
   "description" : "Thực hiện hành động chạm và giữ (long press) vào một phần tử trong một khoảng thời gian xác định. Hữu ích cho các thao tác như hiển thị menu ngữ cảnh, kéo thả, hoặc các tương tác đặc biệt yêu cầu nhấn giữ. Phương thức sẽ đợi phần tử hiển thị trước khi thực hiện.",
   "category" : "Mobile",
@@ -2161,6 +2673,26 @@
     "type" : "int",
     "name" : "durationInSeconds",
     "description" : "Thời gian giữ phần tử, tính bằng giây"
+  } ]
+}, {
+  "name" : "extractJsonInt",
+  "description" : "Trích xuất số nguyên từ JSON",
+  "category" : "API",
+  "subCategory" : "Response - JSON",
+  "example" : "int userId = api.extractJsonInt(response, \"$.id\");",
+  "returnValue" : "int",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiKeyword",
+  "methodName" : "extractJsonInt",
+  "returnType" : "int",
+  "parameters" : [ {
+    "type" : "ApiResponse",
+    "name" : "response",
+    "description" : ""
+  }, {
+    "type" : "String",
+    "name" : "jsonPath",
+    "description" : ""
   } ]
 }, {
   "name" : "closeSession",
@@ -2224,6 +2756,26 @@
   "parameters" : [ {
     "type" : "String",
     "name" : "key",
+    "description" : ""
+  } ]
+}, {
+  "name" : "extractJsonBoolean",
+  "description" : "Trích xuất boolean từ JSON",
+  "category" : "API",
+  "subCategory" : "Response - JSON",
+  "example" : "boolean isActive = api.extractJsonBoolean(response, \"$.active\");",
+  "returnValue" : "boolean",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiKeyword",
+  "methodName" : "extractJsonBoolean",
+  "returnType" : "boolean",
+  "parameters" : [ {
+    "type" : "ApiResponse",
+    "name" : "response",
+    "description" : ""
+  }, {
+    "type" : "String",
+    "name" : "jsonPath",
     "description" : ""
   } ]
 }, {
@@ -2339,6 +2891,26 @@
   "returnType" : "void",
   "parameters" : [ ]
 }, {
+  "name" : "statusCode",
+  "description" : "Kiểm tra status code bằng giá trị cụ thể",
+  "category" : "API",
+  "subCategory" : "Assertion - Status",
+  "example" : "verify.statusCode(response, 200);",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiAssert",
+  "methodName" : "statusCode",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ApiResponse",
+    "name" : "response",
+    "description" : ""
+  }, {
+    "type" : "int",
+    "name" : "expectedCode",
+    "description" : "Expected status code"
+  } ]
+}, {
   "name" : "switchToWindowByIndex",
   "description" : "Chuyển sự điều khiển of WebDriver sang một tab hoặc cửa sổ khác dựa trên chỉ số (index) of nó (bắt đầu từ 0).",
   "category" : "Web",
@@ -2355,6 +2927,26 @@
     "description" : "Chỉ số of cửa sổ/tab cần chuyển đến (0 is cửa sổ đầu tiên)"
   } ]
 }, {
+  "name" : "addHeader",
+  "description" : "Thêm HTTP header vào request",
+  "category" : "API",
+  "subCategory" : "Headers",
+  "example" : "api.addHeader(\"X-Request-ID\", \"12345\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiKeyword",
+  "methodName" : "addHeader",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "headerName",
+    "description" : "Tên header"
+  }, {
+    "type" : "String",
+    "name" : "headerValue",
+    "description" : "Giá trị header"
+  } ]
+}, {
   "name" : "Get Current App Package",
   "description" : "Lấy appPackage (Android) hoặc bundleId (iOS) của ứng dụng hiện tại đang được test",
   "category" : "Mobile",
@@ -2366,6 +2958,22 @@
   "methodName" : "getCurrentAppPackage",
   "returnType" : "String",
   "parameters" : [ ]
+}, {
+  "name" : "setContentType",
+  "description" : "Thiết lập Content-Type header (shortcut)",
+  "category" : "API",
+  "subCategory" : "Headers",
+  "example" : "api.setContentType(\"JSON\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiKeyword",
+  "methodName" : "setContentType",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "contentType",
+    "description" : "JSON, XML, FORM, TEXT, hoặc full MIME type"
+  } ]
 }, {
   "name" : "getDeviceTime",
   "description" : "Lấy thời gian hệ thống hiện tại từ thiết bị và định dạng theo mẫu chỉ định. Sử dụng mobile script execution để đảm bảo tương thích đa nền tảng.",
@@ -2623,6 +3231,26 @@
     "description" : "Package name (Android) hoặc bundle ID (iOS) của ứng dụng cần kiểm tra"
   } ]
 }, {
+  "name" : "arrayIsEmpty",
+  "description" : "Kiểm tra array RỖNG",
+  "category" : "API",
+  "subCategory" : "Assertion - Arrays",
+  "example" : "verify.arrayIsEmpty(response, \"$.errors\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiAssert",
+  "methodName" : "arrayIsEmpty",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ApiResponse",
+    "name" : "response",
+    "description" : ""
+  }, {
+    "type" : "String",
+    "name" : "jsonPath",
+    "description" : ""
+  } ]
+}, {
   "name" : "scrollToText",
   "description" : "Tự động cuộn màn hình (vuốt lên) cho đến khi tìm thấy một phần tử chứa văn bản mong muốn. Phương thức này sẽ thực hiện tối đa 10 lần vuốt lên để tìm kiếm. Cách hoạt động khác nhau giữa Android (sử dụng UiScrollable) và iOS (sử dụng vuốt tuần tự). Trả về WebElement nếu tìm thấy, hoặc ném NoSuchElementException nếu không tìm thấy sau khi đã cuộn hết.",
   "category" : "Mobile",
@@ -2719,6 +3347,62 @@
     "description" : "Giá trị thuộc tính 'value' of option cần chọn"
   } ]
 }, {
+  "name" : "setBearerToken",
+  "description" : "Thiết lập Bearer token (JWT)",
+  "category" : "API",
+  "subCategory" : "Authentication",
+  "example" : "api.setBearerToken(\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiKeyword",
+  "methodName" : "setBearerToken",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "token",
+    "description" : "Access token"
+  } ]
+}, {
+  "name" : "jsonPathNotNull",
+  "description" : "Kiểm tra giá trị tại JSON path KHÔNG NULL",
+  "category" : "API",
+  "subCategory" : "Assertion - JSON",
+  "example" : "verify.jsonPathNotNull(response, \"$.user.id\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiAssert",
+  "methodName" : "jsonPathNotNull",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ApiResponse",
+    "name" : "response",
+    "description" : ""
+  }, {
+    "type" : "String",
+    "name" : "jsonPath",
+    "description" : ""
+  } ]
+}, {
+  "name" : "assertEquals",
+  "description" : "Kiểm tra 2 giá trị BẰNG NHAU",
+  "category" : "API",
+  "subCategory" : "Assertion - General",
+  "example" : "verify.assertEquals(actualValue, expectedValue);",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiAssert",
+  "methodName" : "assertEquals",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "Object",
+    "name" : "actual",
+    "description" : "Giá trị thực tế"
+  }, {
+    "type" : "Object",
+    "name" : "expected",
+    "description" : "Giá trị mong đợi"
+  } ]
+}, {
   "name" : "openNotifications",
   "description" : "Mở thanh thông báo (notification shade) của hệ điều hành.",
   "category" : "Mobile",
@@ -2730,6 +3414,26 @@
   "methodName" : "openNotifications",
   "returnType" : "void",
   "parameters" : [ ]
+}, {
+  "name" : "extractJsonValue",
+  "description" : "Trích xuất giá trị từ JSON response (JSON Path)",
+  "category" : "API",
+  "subCategory" : "Response - JSON",
+  "example" : "String name = api.extractJsonValue(response, \"$.name\");",
+  "returnValue" : "String - Extracted value",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiKeyword",
+  "methodName" : "extractJsonValue",
+  "returnType" : "String",
+  "parameters" : [ {
+    "type" : "ApiResponse",
+    "name" : "response",
+    "description" : ""
+  }, {
+    "type" : "String",
+    "name" : "jsonPath",
+    "description" : "JSON Path expression (VD: $.user.name)"
+  } ]
 }, {
   "name" : "waitForElementAttributeNotContains",
   "description" : "Chờ đợi attribute của element KHÔNG chứa substring chỉ định trong khoảng thời gian cho phép. Hữu ích cho validation rằng partial attribute values đã được remove hoặc thay đổi, như CSS classes bị xóa, error states được clear.",
@@ -2891,6 +3595,66 @@
   "returnType" : "void",
   "parameters" : [ ]
 }, {
+  "name" : "getArraySize",
+  "description" : "Lấy số lượng phần tử trong JSON array",
+  "category" : "API",
+  "subCategory" : "Response - JSON",
+  "example" : "int count = api.getArraySize(response, \"$.users\");",
+  "returnValue" : "int - Array size",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiKeyword",
+  "methodName" : "getArraySize",
+  "returnType" : "int",
+  "parameters" : [ {
+    "type" : "ApiResponse",
+    "name" : "response",
+    "description" : ""
+  }, {
+    "type" : "String",
+    "name" : "jsonPath",
+    "description" : "Path đến array"
+  } ]
+}, {
+  "name" : "sendPutWithJson",
+  "description" : "Gửi PUT với JSON body (shortcut)",
+  "category" : "API",
+  "subCategory" : "Requests - Shortcuts",
+  "example" : "ApiResponse response = api.sendPutWithJson(\"/users/1\", \"{\\\"name\\\":\\\"Jane\\\"}\");",
+  "returnValue" : "ApiResponse",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiKeyword",
+  "methodName" : "sendPutWithJson",
+  "returnType" : "ApiResponse",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "endpoint",
+    "description" : ""
+  }, {
+    "type" : "String",
+    "name" : "jsonBody",
+    "description" : ""
+  } ]
+}, {
+  "name" : "responseTimeLessThan",
+  "description" : "Kiểm tra response time nhỏ hơn ngưỡng (ms)",
+  "category" : "API",
+  "subCategory" : "Assertion - Performance",
+  "example" : "verify.responseTimeLessThan(response, 2000);",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiAssert",
+  "methodName" : "responseTimeLessThan",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ApiResponse",
+    "name" : "response",
+    "description" : ""
+  }, {
+    "type" : "long",
+    "name" : "maxTimeMs",
+    "description" : "Thời gian tối đa cho phép (milliseconds)"
+  } ]
+}, {
   "name" : "dragAndDrop",
   "description" : "Thực hiện thao tác kéo một element (nguồn) và thả nó vào vị trí of một element khác (đích).",
   "category" : "Web",
@@ -2961,6 +3725,30 @@
     "type" : "String[]",
     "name" : "command",
     "description" : "Lệnh và các tham số của nó, mỗi phần tử trong mảng là một phần riêng biệt của lệnh"
+  } ]
+}, {
+  "name" : "arraySize",
+  "description" : "Kiểm tra kích thước array",
+  "category" : "API",
+  "subCategory" : "Assertion - Arrays",
+  "example" : "verify.arraySize(response, \"$.users\", 10);",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiAssert",
+  "methodName" : "arraySize",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ApiResponse",
+    "name" : "response",
+    "description" : ""
+  }, {
+    "type" : "String",
+    "name" : "jsonPath",
+    "description" : "Path đến array"
+  }, {
+    "type" : "int",
+    "name" : "expectedSize",
+    "description" : "Số lượng phần tử mong đợi"
   } ]
 }, {
   "name" : "startMobileSession",
@@ -3107,6 +3895,50 @@
     "description" : "Hướng màn hình mong đợi, phải là 'PORTRAIT' hoặc 'LANDSCAPE' (không phân biệt hoa/thường)"
   } ]
 }, {
+  "name" : "headerContains",
+  "description" : "Kiểm tra giá trị header CHỨA substring",
+  "category" : "API",
+  "subCategory" : "Assertion - Headers",
+  "example" : "verify.headerContains(response, \"Content-Type\", \"json\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiAssert",
+  "methodName" : "headerContains",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ApiResponse",
+    "name" : "response",
+    "description" : ""
+  }, {
+    "type" : "String",
+    "name" : "headerName",
+    "description" : ""
+  }, {
+    "type" : "String",
+    "name" : "substring",
+    "description" : ""
+  } ]
+}, {
+  "name" : "bodyEquals",
+  "description" : "Kiểm tra toàn bộ response body bằng với expected string",
+  "category" : "API",
+  "subCategory" : "Assertion - Body",
+  "example" : "verify.bodyEquals(response, \"{\\\"status\\\":\\\"ok\\\"}\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiAssert",
+  "methodName" : "bodyEquals",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ApiResponse",
+    "name" : "response",
+    "description" : ""
+  }, {
+    "type" : "String",
+    "name" : "expectedBody",
+    "description" : ""
+  } ]
+}, {
   "name" : "assertGreaterThan",
   "description" : "Khẳng định rằng giá trị thực tế lớn hơn giá trị so sánh. Nếu không thỏa mãn, test case sẽ dừng lại và báo lỗi.",
   "category" : "Assertion",
@@ -3179,6 +4011,30 @@
     "description" : "Thông báo tùy chỉnh khi assertion thất bại"
   } ]
 }, {
+  "name" : "jsonPathNotEquals",
+  "description" : "Kiểm tra giá trị JSON path KHÔNG bằng với unexpected value",
+  "category" : "API",
+  "subCategory" : "Assertion - JSON",
+  "example" : "verify.jsonPathNotEquals(response, \"$.status\", \"error\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiAssert",
+  "methodName" : "jsonPathNotEquals",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ApiResponse",
+    "name" : "response",
+    "description" : ""
+  }, {
+    "type" : "String",
+    "name" : "jsonPath",
+    "description" : ""
+  }, {
+    "type" : "Object",
+    "name" : "unexpectedValue",
+    "description" : ""
+  } ]
+}, {
   "name" : "shakeDevice",
   "description" : "Mô phỏng hành động lắc thiết bị để kích hoạt các tính năng sử dụng cảm biến gia tốc (accelerometer).",
   "category" : "Mobile",
@@ -3215,6 +4071,18 @@
     "description" : "Thời gian chờ tối đa tính bằng giây"
   } ]
 }, {
+  "name" : "clearAllHeaders",
+  "description" : "Xóa tất cả headers",
+  "category" : "API",
+  "subCategory" : "Headers",
+  "example" : "api.clearAllHeaders();",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiKeyword",
+  "methodName" : "clearAllHeaders",
+  "returnType" : "void",
+  "parameters" : [ ]
+}, {
   "name" : "hover",
   "description" : "Di chuyển con trỏ chuột đến vị trí of một element để hiển thị các menu con, tooltip, hoặc các hiệu ứng khác.",
   "category" : "Web",
@@ -3229,6 +4097,26 @@
     "type" : "ObjectUI",
     "name" : "uiObject",
     "description" : "element cần di chuột đến"
+  } ]
+}, {
+  "name" : "addPathParam",
+  "description" : "Thêm path parameter",
+  "category" : "API",
+  "subCategory" : "Parameters",
+  "example" : "api.addPathParam(\"userId\", 123);",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiKeyword",
+  "methodName" : "addPathParam",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "paramName",
+    "description" : "Tên parameter"
+  }, {
+    "type" : "Object",
+    "name" : "paramValue",
+    "description" : "Giá trị parameter"
   } ]
 }, {
   "name" : "waitForElementAttributeToBe",
@@ -3379,6 +4267,22 @@
     "description" : "Thông báo tùy chỉnh khi assertion thất bại"
   } ]
 }, {
+  "name" : "statusServerError",
+  "description" : "Kiểm tra status code là 5xx (server error)",
+  "category" : "API",
+  "subCategory" : "Assertion - Status",
+  "example" : "verify.statusServerError(response);",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiAssert",
+  "methodName" : "statusServerError",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ApiResponse",
+    "name" : "response",
+    "description" : ""
+  } ]
+}, {
   "name" : "pause",
   "description" : "Tạm dừng việc thực thi kịch bản trong một khoảng thời gian tĩnh. (Lưu ý: Chỉ nên dùng khi thực sự cần thiết, ưu tiên các keyword chờ động).",
   "category" : "Web",
@@ -3479,6 +4383,46 @@
     "description" : "Thời gian chờ tối đa tính bằng giây"
   } ]
 }, {
+  "name" : "jsonPathExists",
+  "description" : "Kiểm tra JSON path TỒN TẠI trong response",
+  "category" : "API",
+  "subCategory" : "Assertion - JSON",
+  "example" : "verify.jsonPathExists(response, \"$.user.email\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiAssert",
+  "methodName" : "jsonPathExists",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ApiResponse",
+    "name" : "response",
+    "description" : ""
+  }, {
+    "type" : "String",
+    "name" : "jsonPath",
+    "description" : ""
+  } ]
+}, {
+  "name" : "arrayNotEmpty",
+  "description" : "Kiểm tra array KHÔNG RỖNG",
+  "category" : "API",
+  "subCategory" : "Assertion - Arrays",
+  "example" : "verify.arrayNotEmpty(response, \"$.users\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiAssert",
+  "methodName" : "arrayNotEmpty",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ApiResponse",
+    "name" : "response",
+    "description" : ""
+  }, {
+    "type" : "String",
+    "name" : "jsonPath",
+    "description" : ""
+  } ]
+}, {
   "name" : "terminateApp",
   "description" : "Buộc dừng (kill) một tiến trình ứng dụng đang chạy. Khác với việc chỉ đưa ứng dụng về background, phương thức này thực sự kết thúc tiến trình của ứng dụng. Hữu ích khi cần kiểm tra khả năng khôi phục trạng thái của ứng dụng sau khi bị buộc dừng, hoặc để đảm bảo ứng dụng bắt đầu từ trạng thái sạch. Trả về true nếu ứng dụng đã được dừng thành công, false nếu ứng dụng không chạy.",
   "category" : "Mobile",
@@ -3494,6 +4438,18 @@
     "name" : "appId",
     "description" : "AppPackage (Android) hoặc BundleID (iOS) của ứng dụng cần dừng"
   } ]
+}, {
+  "name" : "clearRequestBody",
+  "description" : "Xóa request body",
+  "category" : "API",
+  "subCategory" : "Body",
+  "example" : "api.clearRequestBody();",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiKeyword",
+  "methodName" : "clearRequestBody",
+  "returnType" : "void",
+  "parameters" : [ ]
 }, {
   "name" : "assertDisabled",
   "description" : "Khẳng định rằng một phần tử đang ở trạng thái không thể tương tác (disabled). Phương thức này kiểm tra thuộc tính 'enabled' của phần tử và ném AssertionError nếu phần tử đang được kích hoạt (enabled). Hữu ích khi cần đảm bảo một nút hoặc trường nhập liệu đã bị vô hiệu hóa trong các trường hợp nhất định.",
@@ -3513,6 +4469,26 @@
     "type" : "String[]",
     "name" : "customMessage",
     "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
+  "name" : "assertFalse",
+  "description" : "Kiểm tra điều kiện là FALSE",
+  "category" : "API",
+  "subCategory" : "Assertion - General",
+  "example" : "verify.assertFalse(hasError, \"Should not have error\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiAssert",
+  "methodName" : "assertFalse",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "boolean",
+    "name" : "condition",
+    "description" : ""
+  }, {
+    "type" : "String[]",
+    "name" : "message",
+    "description" : ""
   } ]
 }, {
   "name" : "getElementHeight",
@@ -3583,6 +4559,26 @@
     "description" : "Thông điệp tùy chỉnh khi assertion fail"
   } ]
 }, {
+  "name" : "jsonPathIsNull",
+  "description" : "Kiểm tra giá trị tại JSON path là NULL",
+  "category" : "API",
+  "subCategory" : "Assertion - JSON",
+  "example" : "verify.jsonPathIsNull(response, \"$.deletedAt\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiAssert",
+  "methodName" : "jsonPathIsNull",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ApiResponse",
+    "name" : "response",
+    "description" : ""
+  }, {
+    "type" : "String",
+    "name" : "jsonPath",
+    "description" : ""
+  } ]
+}, {
   "name" : "waitForElementClickable",
   "description" : "Chờ đợi một element trở nên clickable (có thể click được) trong khoảng thời gian chỉ định. Element phải đồng thời visible và enabled để được coi là clickable. Đây là điều kiện lý tưởng trước khi thực hiện click action.",
   "category" : "Mobile",
@@ -3627,6 +4623,22 @@
     "description" : "Thông báo tùy chỉnh khi assertion thất bại"
   } ]
 }, {
+  "name" : "bodyIsEmpty",
+  "description" : "Kiểm tra body RỖNG",
+  "category" : "API",
+  "subCategory" : "Assertion - Body",
+  "example" : "verify.bodyIsEmpty(response);",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiAssert",
+  "methodName" : "bodyIsEmpty",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ApiResponse",
+    "name" : "response",
+    "description" : ""
+  } ]
+}, {
   "name" : "getElementWidth",
   "description" : "Lấy và trả về chiều rộng của một phần tử (tính bằng pixel). Hữu ích khi cần tính toán vị trí tương đối hoặc kiểm tra kích thước hiển thị của phần tử. Phương thức này trả về giá trị số nguyên đại diện cho chiều rộng theo pixel của phần tử. Lưu ý: Phần tử phải hiển thị trên màn hình để có thể lấy được kích thước chính xác.",
   "category" : "Mobile",
@@ -3661,6 +4673,54 @@
     "type" : "String[]",
     "name" : "message",
     "description" : "Thông điệp tùy chỉnh khi assertion fail"
+  } ]
+}, {
+  "name" : "statusClientError",
+  "description" : "Kiểm tra status code là 4xx (client error)",
+  "category" : "API",
+  "subCategory" : "Assertion - Status",
+  "example" : "verify.statusClientError(response);",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiAssert",
+  "methodName" : "statusClientError",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ApiResponse",
+    "name" : "response",
+    "description" : ""
+  } ]
+}, {
+  "name" : "removeAuthentication",
+  "description" : "Xóa toàn bộ authentication đã setup",
+  "category" : "API",
+  "subCategory" : "Authentication",
+  "example" : "api.removeAuthentication();",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiKeyword",
+  "methodName" : "removeAuthentication",
+  "returnType" : "void",
+  "parameters" : [ ]
+}, {
+  "name" : "statusIn",
+  "description" : "Kiểm tra status code nằm trong danh sách cho phép",
+  "category" : "API",
+  "subCategory" : "Assertion - Status",
+  "example" : "verify.statusIn(response, \"200,201,204\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiAssert",
+  "methodName" : "statusIn",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ApiResponse",
+    "name" : "response",
+    "description" : ""
+  }, {
+    "type" : "String",
+    "name" : "allowedCodes",
+    "description" : "Danh sách codes cách nhau bởi dấu phẩy (VD: 200,201,204)"
   } ]
 }, {
   "name" : "takeElementScreenshot",
@@ -3701,6 +4761,22 @@
     "type" : "String",
     "name" : "value",
     "description" : "Giá trị trong thuộc tính 'value' of radio button cần chọn"
+  } ]
+}, {
+  "name" : "setRequestTimeout",
+  "description" : "Thiết lập thời gian chờ tối đa (seconds)",
+  "category" : "API",
+  "subCategory" : "Configuration",
+  "example" : "api.setRequestTimeout(30);",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiKeyword",
+  "methodName" : "setRequestTimeout",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "int",
+    "name" : "timeoutSeconds",
+    "description" : "Số giây chờ tối đa"
   } ]
 }, {
   "name" : "tap",
@@ -3753,6 +4829,30 @@
     "type" : "ObjectUI",
     "name" : "uiObject",
     "description" : "Đối tượng giao diện đại diện cho các element cần tìm"
+  } ]
+}, {
+  "name" : "jsonPathContains",
+  "description" : "Kiểm tra giá trị string chứa substring",
+  "category" : "API",
+  "subCategory" : "Assertion - JSON",
+  "example" : "verify.jsonPathContains(response, \"$.message\", \"success\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiAssert",
+  "methodName" : "jsonPathContains",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ApiResponse",
+    "name" : "response",
+    "description" : ""
+  }, {
+    "type" : "String",
+    "name" : "jsonPath",
+    "description" : ""
+  }, {
+    "type" : "String",
+    "name" : "substring",
+    "description" : ""
   } ]
 }, {
   "name" : "tapAllElement",
@@ -3809,6 +4909,42 @@
     "type" : "String[]",
     "name" : "customMessage",
     "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
+  "name" : "sendGetWithParams",
+  "description" : "Gửi GET với query params từ JSON string (shortcut)",
+  "category" : "API",
+  "subCategory" : "Requests - Shortcuts",
+  "example" : "ApiResponse response = api.sendGetWithParams(\"/users\", \"{\\\"page\\\":1,\\\"limit\\\":10}\");",
+  "returnValue" : "ApiResponse",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiKeyword",
+  "methodName" : "sendGetWithParams",
+  "returnType" : "ApiResponse",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "endpoint",
+    "description" : ""
+  }, {
+    "type" : "String",
+    "name" : "paramsJson",
+    "description" : "VD: {\"page\":1,\"limit\":10}"
+  } ]
+}, {
+  "name" : "getBody",
+  "description" : "Lấy response body as string",
+  "category" : "API",
+  "subCategory" : "Response",
+  "example" : "String body = api.getBody(response);",
+  "returnValue" : "String - Response body",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiKeyword",
+  "methodName" : "getBody",
+  "returnType" : "String",
+  "parameters" : [ {
+    "type" : "ApiResponse",
+    "name" : "response",
+    "description" : ""
   } ]
 }, {
   "name" : "assertElementEnabled",
@@ -4123,6 +5259,22 @@
     "description" : "Thông báo tùy chỉnh khi assertion thất bại"
   } ]
 }, {
+  "name" : "setRequestBody",
+  "description" : "Thiết lập request body từ string",
+  "category" : "API",
+  "subCategory" : "Body",
+  "example" : "api.setRequestBody(\"{\\\"name\\\":\\\"John\\\"}\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiKeyword",
+  "methodName" : "setRequestBody",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "bodyContent",
+    "description" : "Nội dung body (JSON, XML, text...)"
+  } ]
+}, {
   "name" : "softAssertLessThan",
   "description" : "Kiểm tra giá trị thực tế có nhỏ hơn giá trị so sánh không. Nếu không, ghi nhận lỗi và TIẾP TỤC chạy.",
   "category" : "Assertion",
@@ -4169,6 +5321,26 @@
     "type" : "String[]",
     "name" : "customMessage",
     "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
+  "name" : "extractJsonDouble",
+  "description" : "Trích xuất số thực từ JSON",
+  "category" : "API",
+  "subCategory" : "Response - JSON",
+  "example" : "double price = api.extractJsonDouble(response, \"$.price\");",
+  "returnValue" : "double",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiKeyword",
+  "methodName" : "extractJsonDouble",
+  "returnType" : "double",
+  "parameters" : [ {
+    "type" : "ApiResponse",
+    "name" : "response",
+    "description" : ""
+  }, {
+    "type" : "String",
+    "name" : "jsonPath",
+    "description" : ""
   } ]
 }, {
   "name" : "assertAttributeEquals",
@@ -4257,6 +5429,22 @@
     "type" : "String",
     "name" : "cssSelectorInShadow",
     "description" : "Chuỗi CSS selector để Find element inside Shadow DOM"
+  } ]
+}, {
+  "name" : "bodyNotEmpty",
+  "description" : "Kiểm tra body KHÔNG RỖNG",
+  "category" : "API",
+  "subCategory" : "Assertion - Body",
+  "example" : "verify.bodyNotEmpty(response);",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiAssert",
+  "methodName" : "bodyNotEmpty",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ApiResponse",
+    "name" : "response",
+    "description" : ""
   } ]
 }, {
   "name" : "doubleClick",
@@ -4355,6 +5543,38 @@
     "description" : "Chỉ số of option cần chọn (ví dụ: 0 cho option đầu tiên)"
   } ]
 }, {
+  "name" : "statusSuccess",
+  "description" : "Kiểm tra status code là 2xx (success)",
+  "category" : "API",
+  "subCategory" : "Assertion - Status",
+  "example" : "verify.statusSuccess(response);",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiAssert",
+  "methodName" : "statusSuccess",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ApiResponse",
+    "name" : "response",
+    "description" : ""
+  } ]
+}, {
+  "name" : "assertNull",
+  "description" : "Kiểm tra giá trị là NULL",
+  "category" : "API",
+  "subCategory" : "Assertion - General",
+  "example" : "verify.assertNull(deletedValue);",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiAssert",
+  "methodName" : "assertNull",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "Object",
+    "name" : "object",
+    "description" : ""
+  } ]
+}, {
   "name" : "startBrowserSession",
   "description" : "Khởi tạo nhanh một phiên làm việc trên trình duyệt web bằng cách cung cấp thông tin trực tiếp.",
   "category" : "Driver",
@@ -4399,6 +5619,26 @@
     "description" : "Thời gian chờ tối đa tính bằng giây"
   } ]
 }, {
+  "name" : "sendPostWithJson",
+  "description" : "Gửi POST với JSON body (shortcut - 1 step)",
+  "category" : "API",
+  "subCategory" : "Requests - Shortcuts",
+  "example" : "ApiResponse response = api.sendPostWithJson(\"/users\", \"{\\\"name\\\":\\\"John\\\"}\");",
+  "returnValue" : "ApiResponse",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiKeyword",
+  "methodName" : "sendPostWithJson",
+  "returnType" : "ApiResponse",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "endpoint",
+    "description" : "Endpoint URL"
+  }, {
+    "type" : "String",
+    "name" : "jsonBody",
+    "description" : "JSON string"
+  } ]
+}, {
   "name" : "clickElementByIndex",
   "description" : "Click vào một element cụ thể trong một danh sách các element dựa trên chỉ số (index) of nó (bắt đầu từ 0).",
   "category" : "Web",
@@ -4437,6 +5677,30 @@
     "type" : "String[]",
     "name" : "customMessage",
     "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
+  "name" : "headerEquals",
+  "description" : "Kiểm tra giá trị header",
+  "category" : "API",
+  "subCategory" : "Assertion - Headers",
+  "example" : "verify.headerEquals(response, \"Content-Type\", \"application/json\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiAssert",
+  "methodName" : "headerEquals",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ApiResponse",
+    "name" : "response",
+    "description" : ""
+  }, {
+    "type" : "String",
+    "name" : "headerName",
+    "description" : ""
+  }, {
+    "type" : "String",
+    "name" : "expectedValue",
+    "description" : ""
   } ]
 }, {
   "name" : "modifyDateTime",
