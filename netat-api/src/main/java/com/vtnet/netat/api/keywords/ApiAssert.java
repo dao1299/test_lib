@@ -9,33 +9,13 @@ import org.testng.Assert;
 
 import java.util.List;
 
-/**
- * ⭐ API Assertion Keyword Class - Hybrid Approach
- * <p>
- * Chứa tất cả assertions và verifications cho API testing
- *
- * @author NETAT Framework
- * @version 2.0
- * <p>
- * Usage:
- * <pre>
- * ApiAssert verify = new ApiAssert();
- * verify.statusCode(response, 200);
- * verify.jsonPathEquals(response, "$.name", "John");
- * verify.responseTimeLessThan(response, 2000);
- * </pre>
- */
 public class ApiAssert extends BaseApiKeyword {
-
-    // ========================================================================
-    //  SECTION 1: STATUS CODE ASSERTIONS (6 methods)
-    // ========================================================================
 
     @NetatKeyword(
             name = "statusCode",
             description = "Kiểm tra status code bằng giá trị cụ thể",
             category = "API",
-            subCategory = "Assertion - Status",
+            subCategory = "Assertion/Status",
             parameters = {
                     "response: ApiResponse",
                     "expectedCode: int - Expected status code"
@@ -58,7 +38,7 @@ public class ApiAssert extends BaseApiKeyword {
             name = "statusSuccess",
             description = "Kiểm tra status code là 2xx (success)",
             category = "API",
-            subCategory = "Assertion - Status",
+            subCategory = "Assertion/Status",
             parameters = {"response: ApiResponse"},
             example = "verify.statusSuccess(response);",
             explainer = "Assert status is 2xx"
@@ -79,7 +59,7 @@ public class ApiAssert extends BaseApiKeyword {
             name = "statusClientError",
             description = "Kiểm tra status code là 4xx (client error)",
             category = "API",
-            subCategory = "Assertion - Status",
+            subCategory = "Assertion/Status",
             parameters = {"response: ApiResponse"},
             example = "verify.statusClientError(response);",
             explainer = "Assert status is 4xx"
@@ -100,7 +80,7 @@ public class ApiAssert extends BaseApiKeyword {
             name = "statusServerError",
             description = "Kiểm tra status code là 5xx (server error)",
             category = "API",
-            subCategory = "Assertion - Status",
+            subCategory = "Assertion/Status",
             parameters = {"response: ApiResponse"},
             example = "verify.statusServerError(response);",
             explainer = "Assert status is 5xx"
@@ -121,7 +101,7 @@ public class ApiAssert extends BaseApiKeyword {
             name = "statusIn",
             description = "Kiểm tra status code nằm trong danh sách cho phép",
             category = "API",
-            subCategory = "Assertion - Status",
+            subCategory = "Assertion/Status",
             parameters = {
                     "response: ApiResponse",
                     "allowedCodes: String - Danh sách codes cách nhau bởi dấu phẩy (VD: 200,201,204)"
@@ -150,15 +130,11 @@ public class ApiAssert extends BaseApiKeyword {
         }, response, allowedCodes);
     }
 
-    // ========================================================================
-    //  SECTION 2: JSON PATH ASSERTIONS (15 methods)
-    // ========================================================================
-
     @NetatKeyword(
             name = "jsonPathEquals",
             description = "Kiểm tra giá trị JSON path bằng với expected value",
             category = "API",
-            subCategory = "Assertion - JSON",
+            subCategory = "Assertion/JSON",
             parameters = {
                     "response: ApiResponse",
                     "jsonPath: String - JSON Path (VD: $.user.name)",
@@ -183,7 +159,7 @@ public class ApiAssert extends BaseApiKeyword {
             name = "jsonPathNotEquals",
             description = "Kiểm tra giá trị JSON path KHÔNG bằng với unexpected value",
             category = "API",
-            subCategory = "Assertion - JSON",
+            subCategory = "Assertion/JSON",
             parameters = {
                     "response: ApiResponse",
                     "jsonPath: String",
@@ -208,7 +184,7 @@ public class ApiAssert extends BaseApiKeyword {
             name = "jsonPathExists",
             description = "Kiểm tra JSON path TỒN TẠI trong response",
             category = "API",
-            subCategory = "Assertion - JSON",
+            subCategory = "Assertion/JSON",
             parameters = {
                     "response: ApiResponse",
                     "jsonPath: String"
@@ -233,7 +209,7 @@ public class ApiAssert extends BaseApiKeyword {
             name = "jsonPathNotExists",
             description = "Kiểm tra JSON path KHÔNG TỒN TẠI (dùng cho security testing)",
             category = "API",
-            subCategory = "Assertion - JSON",
+            subCategory = "Assertion/JSON",
             parameters = {
                     "response: ApiResponse",
                     "jsonPath: String"
@@ -261,7 +237,7 @@ public class ApiAssert extends BaseApiKeyword {
             name = "jsonPathIsNull",
             description = "Kiểm tra giá trị tại JSON path là NULL",
             category = "API",
-            subCategory = "Assertion - JSON",
+            subCategory = "Assertion/JSON",
             parameters = {
                     "response: ApiResponse",
                     "jsonPath: String"
@@ -288,7 +264,7 @@ public class ApiAssert extends BaseApiKeyword {
             name = "jsonPathNotNull",
             description = "Kiểm tra giá trị tại JSON path KHÔNG NULL",
             category = "API",
-            subCategory = "Assertion - JSON",
+            subCategory = "Assertion/JSON",
             parameters = {
                     "response: ApiResponse",
                     "jsonPath: String"
@@ -315,7 +291,7 @@ public class ApiAssert extends BaseApiKeyword {
             name = "jsonPathContains",
             description = "Kiểm tra giá trị string chứa substring",
             category = "API",
-            subCategory = "Assertion - JSON",
+            subCategory = "Assertion/JSON",
             parameters = {
                     "response: ApiResponse",
                     "jsonPath: String",
@@ -335,17 +311,11 @@ public class ApiAssert extends BaseApiKeyword {
         }, response, jsonPath, substring);
     }
 
-    // TODO: Copy thêm jsonPathGreaterThan, jsonPathLessThan, jsonPathMatches (regex), etc.
-
-    // ========================================================================
-    //  SECTION 3: ARRAY ASSERTIONS (5 methods)
-    // ========================================================================
-
     @NetatKeyword(
             name = "arraySize",
             description = "Kiểm tra kích thước array",
             category = "API",
-            subCategory = "Assertion - Arrays",
+            subCategory = "Assertion/Arrays",
             parameters = {
                     "response: ApiResponse",
                     "jsonPath: String - Path đến array",
@@ -370,7 +340,7 @@ public class ApiAssert extends BaseApiKeyword {
             name = "arrayNotEmpty",
             description = "Kiểm tra array KHÔNG RỖNG",
             category = "API",
-            subCategory = "Assertion - Arrays",
+            subCategory = "Assertion/Arrays",
             parameters = {
                     "response: ApiResponse",
                     "jsonPath: String"
@@ -394,7 +364,7 @@ public class ApiAssert extends BaseApiKeyword {
             name = "arrayIsEmpty",
             description = "Kiểm tra array RỖNG",
             category = "API",
-            subCategory = "Assertion - Arrays",
+            subCategory = "Assertion/Arrays",
             parameters = {
                     "response: ApiResponse",
                     "jsonPath: String"
@@ -418,7 +388,7 @@ public class ApiAssert extends BaseApiKeyword {
             name = "arrayContains",
             description = "Kiểm tra array chứa giá trị cụ thể",
             category = "API",
-            subCategory = "Assertion - Arrays",
+            subCategory = "Assertion/Arrays",
             parameters = {
                     "response: ApiResponse",
                     "jsonPath: String",
@@ -447,7 +417,7 @@ public class ApiAssert extends BaseApiKeyword {
             name = "bodyEquals",
             description = "Kiểm tra toàn bộ response body bằng với expected string",
             category = "API",
-            subCategory = "Assertion - Body",
+            subCategory = "Assertion/Body",
             parameters = {
                     "response: ApiResponse",
                     "expectedBody: String"
@@ -470,7 +440,7 @@ public class ApiAssert extends BaseApiKeyword {
             name = "bodyContains",
             description = "Kiểm tra body CHỨA substring",
             category = "API",
-            subCategory = "Assertion - Body",
+            subCategory = "Assertion/Body",
             parameters = {
                     "response: ApiResponse",
                     "substring: String"
@@ -493,7 +463,7 @@ public class ApiAssert extends BaseApiKeyword {
             name = "bodyNotContains",
             description = "Kiểm tra body KHÔNG CHỨA substring",
             category = "API",
-            subCategory = "Assertion - Body",
+            subCategory = "Assertion/Body",
             parameters = {
                     "response: ApiResponse",
                     "substring: String"
@@ -516,7 +486,7 @@ public class ApiAssert extends BaseApiKeyword {
             name = "bodyIsEmpty",
             description = "Kiểm tra body RỖNG",
             category = "API",
-            subCategory = "Assertion - Body",
+            subCategory = "Assertion/Body",
             parameters = {"response: ApiResponse"},
             example = "verify.bodyIsEmpty(response);",
             explainer = "Assert body is empty"
@@ -536,7 +506,7 @@ public class ApiAssert extends BaseApiKeyword {
             name = "bodyNotEmpty",
             description = "Kiểm tra body KHÔNG RỖNG",
             category = "API",
-            subCategory = "Assertion - Body",
+            subCategory = "Assertion/Body",
             parameters = {"response: ApiResponse"},
             example = "verify.bodyNotEmpty(response);",
             explainer = "Assert body is not empty"
@@ -560,7 +530,7 @@ public class ApiAssert extends BaseApiKeyword {
             name = "responseTimeLessThan",
             description = "Kiểm tra response time nhỏ hơn ngưỡng (ms)",
             category = "API",
-            subCategory = "Assertion - Performance",
+            subCategory = "Assertion/Performance",
             parameters = {
                     "response: ApiResponse",
                     "maxTimeMs: long - Thời gian tối đa cho phép (milliseconds)"
@@ -579,15 +549,11 @@ public class ApiAssert extends BaseApiKeyword {
         }, response, maxTimeMs);
     }
 
-    // ========================================================================
-    //  SECTION 6: HEADER ASSERTIONS (3 methods)
-    // ========================================================================
-
     @NetatKeyword(
             name = "headerEquals",
             description = "Kiểm tra giá trị header",
             category = "API",
-            subCategory = "Assertion - Headers",
+            subCategory = "Assertion/Headers",
             parameters = {
                     "response: ApiResponse",
                     "headerName: String",
@@ -611,7 +577,7 @@ public class ApiAssert extends BaseApiKeyword {
             name = "headerExists",
             description = "Kiểm tra header TỒN TẠI",
             category = "API",
-            subCategory = "Assertion - Headers",
+            subCategory = "Assertion/Headers",
             parameters = {
                     "response: ApiResponse",
                     "headerName: String"
@@ -634,7 +600,7 @@ public class ApiAssert extends BaseApiKeyword {
             name = "headerContains",
             description = "Kiểm tra giá trị header CHỨA substring",
             category = "API",
-            subCategory = "Assertion - Headers",
+            subCategory = "Assertion/Headers",
             parameters = {
                     "response: ApiResponse",
                     "headerName: String",
@@ -655,15 +621,12 @@ public class ApiAssert extends BaseApiKeyword {
         }, response, headerName, substring);
     }
 
-// ========================================================================
-//  SECTION 7: GENERAL ASSERTIONS (5 methods)
-// ========================================================================
 
     @NetatKeyword(
             name = "assertTrue",
             description = "Kiểm tra điều kiện là TRUE",
             category = "API",
-            subCategory = "Assertion - General",
+            subCategory = "Assertion/General",
             parameters = {
                     "condition: boolean - Điều kiện cần kiểm tra",
                     "message: String (optional) - Thông báo khi fail"
@@ -685,7 +648,7 @@ public class ApiAssert extends BaseApiKeyword {
             name = "assertFalse",
             description = "Kiểm tra điều kiện là FALSE",
             category = "API",
-            subCategory = "Assertion - General",
+            subCategory = "Assertion/General",
             parameters = {
                     "condition: boolean",
                     "message: String (optional)"
@@ -707,7 +670,7 @@ public class ApiAssert extends BaseApiKeyword {
             name = "assertEquals",
             description = "Kiểm tra 2 giá trị BẰNG NHAU",
             category = "API",
-            subCategory = "Assertion - General",
+            subCategory = "Assertion/General",
             parameters = {
                     "actual: Object - Giá trị thực tế",
                     "expected: Object - Giá trị mong đợi"
@@ -729,7 +692,7 @@ public class ApiAssert extends BaseApiKeyword {
             name = "assertNotEquals",
             description = "Kiểm tra 2 giá trị KHÁC NHAU",
             category = "API",
-            subCategory = "Assertion - General",
+            subCategory = "Assertion/General",
             parameters = {
                     "actual: Object",
                     "unexpected: Object"
@@ -751,7 +714,7 @@ public class ApiAssert extends BaseApiKeyword {
             name = "assertNull",
             description = "Kiểm tra giá trị là NULL",
             category = "API",
-            subCategory = "Assertion - General",
+            subCategory = "Assertion/General",
             parameters = {"object: Object"},
             example = "verify.assertNull(deletedValue);",
             explainer = "Assert null"
@@ -769,7 +732,7 @@ public class ApiAssert extends BaseApiKeyword {
             name = "assertNotNull",
             description = "Kiểm tra giá trị KHÔNG NULL",
             category = "API",
-            subCategory = "Assertion - General",
+            subCategory = "Assertion/General",
             parameters = {"object: Object"},
             example = "verify.assertNotNull(userId);",
             explainer = "Assert not null"
@@ -787,7 +750,7 @@ public class ApiAssert extends BaseApiKeyword {
             name = "fail",
             description = "Force fail test với message (dùng cho conditional logic)",
             category = "API",
-            subCategory = "Assertion - General",
+            subCategory = "Assertion/General",
             parameters = {"message: String - Thông báo lỗi"},
             example = "if (someCondition) { verify.fail(\"This should not happen\"); }",
             explainer = "Force fail: {0}"

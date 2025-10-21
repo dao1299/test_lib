@@ -1,44 +1,4 @@
 [ {
-  "name" : "connectDatabase",
-  "description" : "Khởi tạo kết nối CSDL bằng cách cung cấp các thông tin riêng lẻ. Thư viện sẽ tự động xây dựng URL kết nối.",
-  "category" : "DB",
-  "subCategory" : "Connection",
-  "example" : "// Kết nối đến PostgreSQL mà không cần biết cấu trúc URL\ndatabaseKeyword.connectDatabase(\"pg_server\", \"postgresql\", \"10.0.1.5\", 5432, \"app_db\", \"user\", \"pass\");",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "Đây là cách kết nối được khuyên dùng cho người dùng low-code để tránh lỗi cú pháp URL.",
-  "className" : "com.vtnet.netat.db.keywords.DatabaseKeyword",
-  "methodName" : "connectDatabase",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "String",
-    "name" : "profileName",
-    "description" : "Một tên định danh duy nhất cho kết nối này"
-  }, {
-    "type" : "String",
-    "name" : "dbType",
-    "description" : "Loại cơ sở dữ liệu (mariadb, postgresql, mysql, sqlserver, oracle, clickhouse)"
-  }, {
-    "type" : "String",
-    "name" : "host",
-    "description" : "Địa chỉ IP hoặc hostname của server"
-  }, {
-    "type" : "int",
-    "name" : "port",
-    "description" : "Cổng kết nối"
-  }, {
-    "type" : "String",
-    "name" : "databaseName",
-    "description" : "Tên của database (hoặc SID/Service Name cho Oracle)"
-  }, {
-    "type" : "String",
-    "name" : "username",
-    "description" : "Tên người dùng"
-  }, {
-    "type" : "String",
-    "name" : "password",
-    "description" : "Mật khẩu"
-  } ]
-}, {
   "name" : "assertAttributeContains",
   "description" : "Khẳng định rằng giá trị của một thuộc tính có chứa một chuỗi con. Khác với assertAttributeEquals, phương thức này chỉ kiểm tra sự xuất hiện của chuỗi con trong giá trị thuộc tính, không yêu cầu khớp hoàn toàn. Hữu ích khi giá trị thuộc tính có thể thay đổi nhưng vẫn chứa các phần quan trọng cần kiểm tra.",
   "category" : "Mobile",
@@ -175,6 +135,26 @@
     "description" : "Thông báo tùy chỉnh khi assertion thất bại"
   } ]
 }, {
+  "name" : "assertTrue",
+  "description" : "Khẳng định rằng một điều kiện có giá trị true. Nếu điều kiện là false, test case sẽ dừng lại và báo lỗi.",
+  "category" : "Assertion",
+  "subCategory" : "HardAssert",
+  "example" : "assertTrue(isElementVisible);\nassertTrue(isLoggedIn, \"Người dùng phải đã đăng nhập\");\nassertTrue(isFormValid, \"Form phải hợp lệ trước khi submit\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Assertion này kiểm tra điều kiện boolean phải là true. Thường được sử dụng để kiểm tra trạng thái hoặc kết quả của các phép so sánh.",
+  "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
+  "methodName" : "assertTrue",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "boolean",
+    "name" : "condition",
+    "description" : "Điều kiện boolean cần kiểm tra (phải là true)"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
   "name" : "verifyOptionSelectedByLabelHard",
   "description" : "Khẳng định rằng option có text hiển thị (label) cụ thể đang được chọn trong dropdown.",
   "category" : "Web",
@@ -217,26 +197,6 @@
     "type" : "Object",
     "name" : "paramValue",
     "description" : "Giá trị parameter"
-  } ]
-}, {
-  "name" : "assertTrue",
-  "description" : "Khẳng định rằng một điều kiện có giá trị true. Nếu điều kiện là false, test case sẽ dừng lại và báo lỗi.",
-  "category" : "Assertion",
-  "subCategory" : "HardAssert",
-  "example" : "assertTrue(isElementVisible);\nassertTrue(isLoggedIn, \"Người dùng phải đã đăng nhập\");\nassertTrue(isFormValid, \"Form phải hợp lệ trước khi submit\");",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "Assertion này kiểm tra điều kiện boolean phải là true. Thường được sử dụng để kiểm tra trạng thái hoặc kết quả của các phép so sánh.",
-  "className" : "com.vtnet.netat.core.keywords.AssertionKeyword",
-  "methodName" : "assertTrue",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "boolean",
-    "name" : "condition",
-    "description" : "Điều kiện boolean cần kiểm tra (phải là true)"
-  }, {
-    "type" : "String[]",
-    "name" : "customMessage",
-    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
   } ]
 }, {
   "name" : "assertElementPresent",
@@ -296,27 +256,27 @@
   } ]
 }, {
   "name" : "executeUpdate",
-  "description" : "Thực thi câu lệnh INSERT, UPDATE, DELETE và trả về số bản ghi bị ảnh hưởng. Hỗ trợ truyền tham số vào câu truy vấn để tránh SQL injection.",
-  "category" : "DB",
-  "subCategory" : "Execution",
-  "example" : "// Thêm một bản ghi mới vào bảng users\nint rowsAffected = databaseKeyword.executeUpdate(\n    \"mysql_dev\", \n    \"INSERT INTO users (username, email, status) VALUES (?, ?, ?)\", \n    \"john.doe\", \"john.doe@example.com\", \"active\"\n);\n\n// Kiểm tra xem có đúng một bản ghi được thêm vào không\nAssert.assertEquals(rowsAffected, 1);",
-  "returnValue" : "int - Số bản ghi bị ảnh hưởng bởi câu lệnh",
-  "note" : "Áp dụng cho tất cả nền tảng. Đã khởi tạo kết nối CSDL với profileName tương ứng. Có thể throw SQLException nếu có lỗi khi thực thi câu lệnh, hoặc IllegalArgumentException nếu profileName không tồn tại.",
+  "description" : "Thực thi câu lệnh INSERT, UPDATE, DELETE và trả về số lượng rows bị ảnh hưởng",
+  "category" : "Database",
+  "subCategory" : "Query Execution",
+  "example" : "DatabaseKeyword db = new DatabaseKeyword();\n\n// Insert một user mới\nint inserted = db.executeUpdate(\n    \"mysql-dev\",\n    \"INSERT INTO users (name, email, status) VALUES (?, ?, ?)\",\n    \"John Doe\",\n    \"john@test.com\",\n    \"active\"\n);\nSystem.out.println(\"Inserted \" + inserted + \" row(s)\");\n\n// Update user status\nint updated = db.executeUpdate(\n    \"mysql-dev\",\n    \"UPDATE users SET status = ? WHERE email = ?\",\n    \"inactive\",\n    \"john@test.com\"\n);\nSystem.out.println(\"Updated \" + updated + \" row(s)\");\n\n// Delete user\nint deleted = db.executeUpdate(\n    \"mysql-dev\",\n    \"DELETE FROM users WHERE id = ?\",\n    123\n);\nSystem.out.println(\"Deleted \" + deleted + \" row(s)\");\n\n// Update multiple rows\nint batchUpdated = db.executeUpdate(\n    \"mysql-dev\",\n    \"UPDATE users SET last_login = NOW() WHERE status = ?\",\n    \"active\"\n);\nSystem.out.println(\"Updated \" + batchUpdated + \" active users\");",
+  "returnValue" : "int - Số lượng rows đã được insert/update/delete",
+  "note" : "- Trả về 0 nếu không có row nào bị ảnh hưởng (ví dụ: WHERE condition không match)\n- INSERT thành công thường trả về 1\n- UPDATE/DELETE có thể trả về nhiều hơn 1 nếu WHERE condition match nhiều rows\n- Query sẽ được log với số rows affected\n- Throw DatabaseException nếu có lỗi (duplicate key, foreign key violation, etc.)",
   "className" : "com.vtnet.netat.db.keywords.DatabaseKeyword",
   "methodName" : "executeUpdate",
   "returnType" : "int",
   "parameters" : [ {
     "type" : "String",
     "name" : "profileName",
-    "description" : "Tên của profile kết nối CSDL đã được khởi tạo trước đó"
+    "description" : "Tên database profile đã cấu hình"
   }, {
     "type" : "String",
     "name" : "query",
-    "description" : "Câu lệnh SQL INSERT, UPDATE hoặc DELETE cần thực thi, có thể chứa các placeholder '?' cho tham số"
+    "description" : "Câu lệnh SQL INSERT/UPDATE/DELETE (có thể chứa ? placeholder)"
   }, {
     "type" : "Object[]",
     "name" : "params",
-    "description" : "Các tham số cần truyền vào câu truy vấn, theo thứ tự xuất hiện của các placeholder '?'"
+    "description" : "Các tham số để thay thế cho ? trong query (tùy chọn)"
   } ]
 }, {
   "name" : "enableRequestLogging",
@@ -399,6 +359,42 @@
     "description" : "Đường dẫn tuyệt đối đến file ứng dụng."
   } ]
 }, {
+  "name" : "commitTransaction",
+  "description" : "Commit transaction hiện tại, lưu tất cả thay đổi vào database",
+  "category" : "Database",
+  "subCategory" : "Transaction",
+  "example" : "DatabaseKeyword db = new DatabaseKeyword();\n\n// Simple transaction\ndb.beginTransaction(\"mysql-dev\");\ndb.executeUpdate(\n    \"mysql-dev\",\n    \"INSERT INTO orders (user_id, amount) VALUES (?, ?)\",\n    123,\n    99.99\n);\ndb.commitTransaction(\"mysql-dev\");\nSystem.out.println(\"✓ Order created\");\n\n// Transaction with multiple operations\ndb.beginTransaction(\"mysql-dev\");\ntry {\n    // Insert order\n    int orderId = db.executeUpdate(\n        \"mysql-dev\",\n        \"INSERT INTO orders (user_id, total) VALUES (?, ?)\",\n        123, 199.99\n    );\n    \n    // Insert order items\n    db.executeUpdate(\n        \"mysql-dev\",\n        \"INSERT INTO order_items (order_id, product_id, quantity) VALUES (?, ?, ?)\",\n        orderId, 456, 2\n    );\n    \n    // Update inventory\n    db.executeUpdate(\n        \"mysql-dev\",\n        \"UPDATE products SET stock = stock - ? WHERE id = ?\",\n        2, 456\n    );\n    \n    db.commitTransaction(\"mysql-dev\");\n    System.out.println(\"✓ Order and inventory updated\");\n} catch (Exception e) {\n    db.rollbackTransaction(\"mysql-dev\");\n    System.err.println(\"✗ Transaction failed: \" + e.getMessage());\n    throw e;\n}",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "- Tất cả thay đổi trong transaction sẽ được persist vào database\n- Connection sẽ được đóng và remove khỏi ThreadLocal\n- Auto-commit sẽ được bật lại sau khi commit\n- Throw IllegalStateException nếu không có active transaction\n- Transaction duration và operation count sẽ được log",
+  "className" : "com.vtnet.netat.db.keywords.DatabaseKeyword",
+  "methodName" : "commitTransaction",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "profileName",
+    "description" : "Tên database profile đã cấu hình"
+  } ]
+}, {
+  "name" : "dropTable",
+  "description" : "Xóa table khỏi database (DROP TABLE IF EXISTS)",
+  "category" : "Database",
+  "subCategory" : "Table Management",
+  "example" : "DatabaseKeyword db = new DatabaseKeyword();\n\n// Drop table an toàn (không throw error nếu không tồn tại)\ndb.dropTable(\"mysql-dev\", \"temp_users\");\nSystem.out.println(\"✓ Table dropped\");\n\n// Drop multiple tables\nString[] tables = {\"test_table1\", \"test_table2\", \"test_table3\"};\nfor (String table : tables) {\n    db.dropTable(\"mysql-dev\", table);\n    System.out.println(\"Dropped: \" + table);\n}\n\n// Drop và verify\ndb.dropTable(\"mysql-dev\", \"old_data\");\nboolean exists = db.tableExists(\"mysql-dev\", \"old_data\");\nif (!exists) {\n    System.out.println(\"✓ Table successfully dropped\");\n}\n\n// Test cleanup - drop all temp tables\nList<Object> tempTables = db.getColumnValues(\n    \"mysql-dev\",\n    \"SELECT table_name FROM information_schema.tables WHERE table_name LIKE 'temp_%'\",\n    \"table_name\"\n);\nfor (Object tableName : tempTables) {\n    db.dropTable(\"mysql-dev\", tableName.toString());\n}",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "- Sử dụng IF EXISTS nên không throw error nếu table không tồn tại\n- Xóa cả structure và data của table\n- Không thể rollback (DDL statement)\n- Cẩn thận khi drop table có foreign key references\n- Thích hợp cho cleanup sau integration tests",
+  "className" : "com.vtnet.netat.db.keywords.DatabaseKeyword",
+  "methodName" : "dropTable",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "profileName",
+    "description" : "Tên database profile đã cấu hình"
+  }, {
+    "type" : "String",
+    "name" : "tableName",
+    "description" : "Tên table cần drop"
+  } ]
+}, {
   "name" : "getText",
   "description" : "Lấy và trả về text of element. Keyword này sẽ tự động thử nhiều cách: 1. Lấy thuộc tính 'value' (cho ô input, textarea). 2. Lấy text hiển thị thông thường. 3. Lấy 'textContent' hoặc 'innerText' nếu 2 cách trên thất bại.",
   "category" : "Web",
@@ -464,27 +460,27 @@
   } ]
 }, {
   "name" : "executeQuery",
-  "description" : "Thực thi câu lệnh SELECT và trả về kết quả dưới dạng danh sách các bản ghi. Mỗi bản ghi là một Map với key là tên cột và value là giá trị của cột đó. Hỗ trợ truyền tham số vào câu truy vấn để tránh SQL injection.",
-  "category" : "DB",
-  "subCategory" : "Execution",
-  "example" : "// Thực thi câu lệnh SELECT với tham số\nList<Map<String, Object>> users = databaseKeyword.executeQuery(\n    \"mysql_dev\", \n    \"SELECT id, username, email FROM users WHERE status = ? AND created_date > ?\", \n    \"active\", \"2023-01-01\"\n);\n\n// Truy cập dữ liệu từ kết quả\nString username = users.get(0).get(\"username\").toString();",
-  "returnValue" : "List<Map<String, Object>> - Danh sách các bản ghi, mỗi bản ghi là một Map với key là tên cột và value là giá trị",
-  "note" : "Áp dụng cho tất cả nền tảng. Đã khởi tạo kết nối CSDL với profileName tương ứng. Có thể throw SQLException nếu có lỗi khi thực thi câu truy vấn, hoặc IllegalArgumentException nếu profileName không tồn tại.",
+  "description" : "Thực thi câu lệnh SELECT và trả về kết quả dưới dạng List các Map (mỗi Map đại diện cho 1 row)",
+  "category" : "Database",
+  "subCategory" : "Query Execution",
+  "example" : "// Lấy thông tin user theo email\nDatabaseKeyword db = new DatabaseKeyword();\nList<Map<String, Object>> users = db.executeQuery(\n    \"mysql-dev\",\n    \"SELECT * FROM users WHERE email = ?\",\n    \"john@test.com\"\n);\nSystem.out.println(\"User ID: \" + users.get(0).get(\"id\"));\nSystem.out.println(\"User Name: \" + users.get(0).get(\"name\"));\n\n// Query không có parameter\nList<Map<String, Object>> activeUsers = db.executeQuery(\n    \"mysql-dev\",\n    \"SELECT * FROM users WHERE status = 'active'\"\n);\n\n// Query với nhiều parameters\nList<Map<String, Object>> orders = db.executeQuery(\n    \"mysql-dev\",\n    \"SELECT * FROM orders WHERE user_id = ? AND status = ?\",\n    123,\n    \"completed\"\n);\n\n// Iterate qua tất cả results\nfor (Map<String, Object> order : orders) {\n    System.out.println(\"Order ID: \" + order.get(\"id\"));\n    System.out.println(\"Amount: \" + order.get(\"amount\"));\n}",
+  "returnValue" : "List<Map<String, Object>> - Danh sách các row, mỗi row là Map với key=column name, value=column value",
+  "note" : "- Query sẽ được log tự động với thời gian thực thi và số lượng rows trả về\n- Dữ liệu nhạy cảm (password, email) sẽ được mask trong log\n- Nếu query chậm hơn threshold (mặc định 1000ms), sẽ có warning log\n- Trả về empty list [] nếu không tìm thấy kết quả\n- Throw DatabaseException nếu có lỗi SQL",
   "className" : "com.vtnet.netat.db.keywords.DatabaseKeyword",
   "methodName" : "executeQuery",
   "returnType" : "List",
   "parameters" : [ {
     "type" : "String",
     "name" : "profileName",
-    "description" : "Tên của profile kết nối CSDL đã được khởi tạo trước đó"
+    "description" : "Tên database profile đã cấu hình"
   }, {
     "type" : "String",
     "name" : "query",
-    "description" : "Câu lệnh SQL SELECT cần thực thi, có thể chứa các placeholder '?' cho tham số"
+    "description" : "Câu lệnh SQL SELECT (có thể chứa ? placeholder)"
   }, {
     "type" : "Object[]",
     "name" : "params",
-    "description" : "Các tham số cần truyền vào câu truy vấn, theo thứ tự xuất hiện của các placeholder '?'"
+    "description" : "Các tham số để thay thế cho ? trong query (tùy chọn)"
   } ]
 }, {
   "name" : "pressBack",
@@ -613,6 +609,26 @@
     "type" : "String[]",
     "name" : "message",
     "description" : "Thông điệp tùy chỉnh khi assertion fail"
+  } ]
+}, {
+  "name" : "waitForConnectionAvailable",
+  "description" : "Đợi cho đến khi có connection available trong pool (polling với timeout)",
+  "category" : "Database",
+  "subCategory" : "Connection Management",
+  "example" : "DatabaseKeyword db = new DatabaseKeyword();\n\n// Wait for connection với 5 second timeout\ntry {\n    db.waitForConnectionAvailable(\"mysql-dev\", 5000);\n    System.out.println(\"✓ Connection available\");\n    // Proceed với operations\n} catch (DatabaseException e) {\n    System.out.println(\"✗ Timeout: No connections available\");\n}\n\n// Trong high load scenario\nfor (int i = 0; i < 1000; i++) {\n    // Wait before each operation\n    db.waitForConnectionAvailable(\"mysql-dev\", 10000);\n    db.executeQuery(\"mysql-dev\", \"SELECT * FROM users WHERE id = ?\", i);\n}\n\n// Retry logic với exponential backoff\nint maxRetries = 3;\nfor (int retry = 0; retry < maxRetries; retry++) {\n    try {\n        long timeout = (long) (1000 * Math.pow(2, retry)); // 1s, 2s, 4s\n        db.waitForConnectionAvailable(\"mysql-dev\", timeout);\n        // Execute operation\n        break;\n    } catch (DatabaseException e) {\n        if (retry == maxRetries - 1) throw e;\n        System.out.println(\"Retry \" + (retry + 1) + \" failed, waiting...\");\n    }\n}",
+  "returnValue" : "void - Không trả về giá trị (throw DatabaseException nếu timeout)",
+  "note" : "- Polling mỗi 100ms để check idle connections\n- Throw DatabaseException nếu không có connection available sau timeout\n- Hữu ích để tránh connection timeout errors trong high load\n- Có thể combine với retry logic cho reliability",
+  "className" : "com.vtnet.netat.db.keywords.DatabaseKeyword",
+  "methodName" : "waitForConnectionAvailable",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "profileName",
+    "description" : "Tên database profile đã cấu hình"
+  }, {
+    "type" : "long",
+    "name" : "timeoutMs",
+    "description" : "Timeout trong milliseconds"
   } ]
 }, {
   "name" : "getElementCount",
@@ -779,6 +795,38 @@
     "description" : "Thời gian chờ tối đa tính bằng giây"
   } ]
 }, {
+  "name" : "verifyColumnValue",
+  "description" : "Verify giá trị của một column cụ thể trong first row của query result",
+  "category" : "Database",
+  "subCategory" : "Verification",
+  "example" : "DatabaseKeyword db = new DatabaseKeyword();\n\n// Verify user status\nObject[] params1 = {123};\ndb.verifyColumnValue(\n    \"mysql-dev\",\n    \"SELECT status FROM users WHERE id = ?\",\n    params1,\n    \"status\",\n    \"active\"\n);\n\n// Verify order amount\nint orderId = 456;\ndouble expectedAmount = 99.99;\ndb.verifyColumnValue(\n    \"mysql-dev\",\n    \"SELECT total_amount FROM orders WHERE id = ?\",\n    new Object[]{orderId},\n    \"total_amount\",\n    expectedAmount\n);\n\n// Verify counter value\ndb.verifyColumnValue(\n    \"mysql-dev\",\n    \"SELECT COUNT(*) as cnt FROM users\",\n    new Object[]{},\n    \"cnt\",\n    10\n);\n\n// Verify email after update\nString newEmail = \"newemail@test.com\";\ndb.verifyColumnValue(\n    \"mysql-dev\",\n    \"SELECT email FROM users WHERE id = ?\",\n    new Object[]{123},\n    \"email\",\n    newEmail\n);\nSystem.out.println(\"✓ Email updated successfully to: \" + newEmail);",
+  "returnValue" : "void - Không trả về giá trị (throw AssertionError nếu value không khớp)",
+  "note" : "- Throw AssertionError nếu query không trả về row nào\n- Throw AssertionError nếu column value không khớp với expectedValue\n- Chỉ verify first row nếu query trả về nhiều rows\n- Comparison sử dụng Objects.equals() nên type phải match\n- Nếu cần verify nhiều rows, nên dùng executeQuery và verify manually",
+  "className" : "com.vtnet.netat.db.keywords.DatabaseKeyword",
+  "methodName" : "verifyColumnValue",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "profileName",
+    "description" : "Tên database profile đã cấu hình"
+  }, {
+    "type" : "String",
+    "name" : "query",
+    "description" : "Câu lệnh SELECT"
+  }, {
+    "type" : "Object[]",
+    "name" : "params",
+    "description" : "Parameters cho query"
+  }, {
+    "type" : "String",
+    "name" : "columnName",
+    "description" : "Tên column cần verify"
+  }, {
+    "type" : "Object",
+    "name" : "expectedValue",
+    "description" : "Giá trị mong đợi của column"
+  } ]
+}, {
   "name" : "verifyTitleHard",
   "description" : "Verify tiêu đề (title) của trang web hiện tại. Nếu tiêu đề không khớp chính xác, kịch bản sẽ DỪNG LẠI.",
   "category" : "Web",
@@ -797,38 +845,6 @@
     "type" : "String[]",
     "name" : "customMessage",
     "description" : "Thông báo tùy chỉnh khi assertion thất bại"
-  } ]
-}, {
-  "name" : "verifyDataSQL",
-  "description" : "Thực thi câu lệnh SQL và kiểm chứng kết quả với dữ liệu mong đợi. Phương thức này so sánh từng cột trong từng hàng của kết quả với dữ liệu mong đợi được cung cấp.",
-  "category" : "DB",
-  "subCategory" : "Verification",
-  "example" : "// Kiểm tra dữ liệu người dùng\nString[] columns = {\"username\", \"email\", \"status\"};\nObject[][] expectedData = {\n    {\"john.doe\", \"john.doe@example.com\", \"active\"},\n    {\"jane.smith\", \"jane.smith@example.com\", \"inactive\"}\n};\n\ndatabaseKeyword.verifyDataSQL(\n    \"mysql_dev\",\n    \"SELECT username, email, status FROM users WHERE department = ? ORDER BY username\",\n    columns,\n    expectedData,\n    \"IT\"\n);",
-  "returnValue" : "void - Không trả về giá trị, nhưng sẽ ném AssertionError nếu kiểm chứng thất bại",
-  "note" : "Áp dụng cho tất cả nền tảng. Đã khởi tạo kết nối CSDL với profileName tương ứng. Có thể throw SQLException nếu có lỗi khi thực thi câu truy vấn, AssertionError nếu kết quả kiểm chứng không khớp với dữ liệu mong đợi, hoặc IllegalArgumentException nếu cấu trúc dữ liệu mong đợi không hợp lệ.",
-  "className" : "com.vtnet.netat.db.keywords.DatabaseKeyword",
-  "methodName" : "verifyDataSQL",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "String",
-    "name" : "profileName",
-    "description" : "Tên của profile kết nối CSDL đã được khởi tạo trước đó"
-  }, {
-    "type" : "String",
-    "name" : "query",
-    "description" : "Câu lệnh SQL SELECT cần thực thi để lấy dữ liệu cần kiểm chứng"
-  }, {
-    "type" : "String[]",
-    "name" : "expectedColumnNames",
-    "description" : "Mảng các tên cột cần kiểm chứng"
-  }, {
-    "type" : "Object[][]",
-    "name" : "expectedData",
-    "description" : "Mảng 2 chiều chứa dữ liệu mong đợi, mỗi hàng tương ứng với một bản ghi và các cột tương ứng với expectedColumnNames"
-  }, {
-    "type" : "Object[]",
-    "name" : "queryParams",
-    "description" : "Các tham số cần truyền vào câu truy vấn, theo thứ tự xuất hiện của các placeholder '?'"
   } ]
 }, {
   "name" : "assertElementNotPresent",
@@ -971,18 +987,6 @@
     "description" : "Các vị trí của phần tử cần tap (bắt đầu từ 0)"
   } ]
 }, {
-  "name" : "disconnectAllDatabases",
-  "description" : "Đóng tất cả các connection pool đang hoạt động và giải phóng tài nguyên. Nên gọi phương thức này ở cuối mỗi test case hoặc test suite để đảm bảo tất cả kết nối được đóng đúng cách.",
-  "category" : "DB",
-  "subCategory" : "Connection",
-  "example" : "// Đóng tất cả kết nối CSDL sau khi hoàn thành test\ndatabaseKeyword.disconnectAllDatabases();",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "Áp dụng cho tất cả nền tảng. Đã khởi tạo ít nhất một kết nối CSDL trước đó. Có thể throw SQLException nếu có lỗi khi đóng kết nối.",
-  "className" : "com.vtnet.netat.db.keywords.DatabaseKeyword",
-  "methodName" : "disconnectAllDatabases",
-  "returnType" : "void",
-  "parameters" : [ ]
-}, {
   "name" : "getElementCount",
   "description" : "Đếm và trả về số lượng element trên trang khớp với locator được cung cấp. Hữu ích để Verify số lượng kết quả tìm kiếm, số hàng trong bảng,...",
   "category" : "Web",
@@ -1083,30 +1087,6 @@
     "description" : "Thông báo tùy chỉnh khi assertion thất bại"
   } ]
 }, {
-  "name" : "verifyDataByQueryFile",
-  "description" : "Thực thi câu lệnh SQL từ file và kiểm chứng kết quả với dữ liệu từ file dữ liệu. Phương thức này tách biệt câu truy vấn và dữ liệu kiểm chứng vào các file riêng biệt, giúp quản lý test case dễ dàng hơn.",
-  "category" : "DB",
-  "subCategory" : "Verification",
-  "example" : "// Kiểm tra dữ liệu người dùng sử dụng file\ndatabaseKeyword.verifyDataByQueryFile(\n    \"mysql_dev\",\n    \"sql/get_user_by_department.sql\",\n    \"testdata/user_verification_data.xlsx\"\n);\n\n// File SQL có thể chứa: SELECT username, email, status FROM users WHERE department = ?\n// File dữ liệu có thể chứa: {param_1: \"IT\", username: \"john.doe\", email: \"john.doe@example.com\", status: \"active\"}",
-  "returnValue" : "void - Không trả về giá trị, nhưng sẽ ném AssertionError nếu kiểm chứng thất bại",
-  "note" : "Áp dụng cho tất cả nền tảng. Đã khởi tạo kết nối CSDL với profileName tương ứng, File SQL và file dữ liệu phải tồn tại và có định dạng hợp lệ. Có thể throw SQLException nếu có lỗi khi thực thi câu truy vấn, AssertionError nếu kết quả kiểm chứng không khớp với dữ liệu mong đợi, FileNotFoundException nếu không tìm thấy file SQL hoặc file dữ liệu, hoặc IOException nếu có lỗi khi đọc file.",
-  "className" : "com.vtnet.netat.db.keywords.DatabaseKeyword",
-  "methodName" : "verifyDataByQueryFile",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "String",
-    "name" : "profileName",
-    "description" : "Tên của profile kết nối CSDL đã được khởi tạo trước đó"
-  }, {
-    "type" : "String",
-    "name" : "queryPath",
-    "description" : "Đường dẫn đến file chứa câu lệnh SQL cần thực thi"
-  }, {
-    "type" : "String",
-    "name" : "dataFilePath",
-    "description" : "Đường dẫn đến file dữ liệu chứa các tham số truy vấn và dữ liệu mong đợi"
-  } ]
-}, {
   "name" : "removeHeader",
   "description" : "Xóa một header",
   "category" : "API",
@@ -1176,27 +1156,27 @@
   } ]
 }, {
   "name" : "getRowCount",
-  "description" : "Thực thi một câu lệnh SELECT và trả về tổng số bản ghi (dòng) trong kết quả.",
-  "category" : "DB",
+  "description" : "Đếm số lượng rows từ query hoặc table. Tự động wrap với COUNT(*) nếu input là table name",
+  "category" : "Database",
   "subCategory" : "Data Retrieval",
-  "example" : "// Đếm số lượng đơn hàng đã được giao thành công\nint deliveredOrders = databaseKeyword.getRowCount(\"mysql_dev\", \"SELECT * FROM orders WHERE status = ?\", \"DELIVERED\");",
-  "returnValue" : "int - Số lượng bản ghi trong kết quả.",
-  "note" : "Keyword này là một cách khác để kiểm tra sự tồn tại của dữ liệu. Khác với executeUpdate, nó không thay đổi dữ liệu.",
+  "example" : "DatabaseKeyword db = new DatabaseKeyword();\n\n// Đếm rows từ query\nint activeCount = db.getRowCount(\n    \"mysql-dev\",\n    \"SELECT * FROM users WHERE status = ?\",\n    \"active\"\n);\nSystem.out.println(\"Active users: \" + activeCount);\n\n// Đếm rows từ table name (không cần viết SELECT COUNT)\nint totalUsers = db.getRowCount(\"mysql-dev\", \"users\");\nSystem.out.println(\"Total users in table: \" + totalUsers);\n\n// Đếm với nhiều conditions\nint completedOrders = db.getRowCount(\n    \"mysql-dev\",\n    \"SELECT * FROM orders WHERE user_id = ? AND status = ?\",\n    123,\n    \"completed\"\n);\n\n// So sánh counts\nint before = db.getRowCount(\"mysql-dev\", \"temp_table\");\n// ... perform some operations ...\nint after = db.getRowCount(\"mysql-dev\", \"temp_table\");\nSystem.out.println(\"Added \" + (after - before) + \" rows\");",
+  "returnValue" : "int - Số lượng rows. Trả về 0 nếu không có data",
+  "note" : "- Nếu input không bắt đầu bằng SELECT, sẽ tự động tạo query COUNT(*) cho table\n- Trả về 0 nếu table/query không có data\n- Hiệu suất tốt hơn so với executeQuery rồi check size\n- Có thể dùng với complex queries có WHERE, JOIN, etc.",
   "className" : "com.vtnet.netat.db.keywords.DatabaseKeyword",
   "methodName" : "getRowCount",
   "returnType" : "int",
   "parameters" : [ {
     "type" : "String",
     "name" : "profileName",
-    "description" : "Tên của profile kết nối CSDL"
+    "description" : "Tên database profile đã cấu hình"
   }, {
     "type" : "String",
-    "name" : "query",
-    "description" : "Câu lệnh SQL SELECT"
+    "name" : "queryOrTable",
+    "description" : "Câu SELECT query hoặc table name"
   }, {
     "type" : "Object[]",
     "name" : "params",
-    "description" : "Các tham số cần truyền vào câu truy vấn"
+    "description" : "Parameters cho query nếu có (tùy chọn)"
   } ]
 }, {
   "name" : "uploadFile",
@@ -1363,26 +1343,6 @@
     "description" : "Giá trị mong đợi"
   } ]
 }, {
-  "name" : "selectByVisibleText",
-  "description" : "Chọn một option in dropdown dựa trên text hiển thị of nó.",
-  "category" : "Web",
-  "subCategory" : "Interaction",
-  "example" : "// Chọn quốc gia từ dropdown theo tên hiển thị\nwebKeyword.selectByVisibleText(countryDropdown, \"Việt Nam\");\n\n// Chọn danh mục sản phẩm\nwebKeyword.selectByVisibleText(categoryDropdown, \"Điện thoại & Máy tính bảng\");",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, element dropdown phải tồn tại trong DOM, phải is thẻ <select> hợp lệ, phải hiển thị và có thể tương tác được, phải tồn tại ít nhất một option có text hiển thị khớp chính xác với text cần chọn, và text cần chọn phải khớp chính xác với text hiển thị (phân biệt chữ hoa/thường, khoảng trắng, ký tự đặc biệt). Có thể throw NoSuchElementException nếu không tìm thấy option với text hiển thị chỉ định, ElementNotVisibleException nếu element không hiển thị trên trang, ElementNotInteractableException nếu element không thể tương tác, StaleElementReferenceException nếu element không còn gắn với DOM, UnexpectedTagNameException nếu element không phải is thẻ <select>, TimeoutException nếu element không xuất hiện trong thời gian chờ, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
-  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
-  "methodName" : "selectByVisibleText",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "ObjectUI",
-    "name" : "uiObject",
-    "description" : "element dropdown (thẻ select)"
-  }, {
-    "type" : "String",
-    "name" : "text",
-    "description" : "text hiển thị of option cần chọn"
-  } ]
-}, {
   "name" : "assertNotContains",
   "description" : "Khẳng định rằng một chuỗi văn bản không chứa chuỗi con được chỉ định. Nếu có chứa, test case sẽ dừng lại và báo lỗi.",
   "category" : "Assertion",
@@ -1405,6 +1365,26 @@
     "type" : "String[]",
     "name" : "customMessage",
     "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
+  "name" : "selectByVisibleText",
+  "description" : "Chọn một option in dropdown dựa trên text hiển thị of nó.",
+  "category" : "Web",
+  "subCategory" : "Interaction",
+  "example" : "// Chọn quốc gia từ dropdown theo tên hiển thị\nwebKeyword.selectByVisibleText(countryDropdown, \"Việt Nam\");\n\n// Chọn danh mục sản phẩm\nwebKeyword.selectByVisibleText(categoryDropdown, \"Điện thoại & Máy tính bảng\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, element dropdown phải tồn tại trong DOM, phải is thẻ <select> hợp lệ, phải hiển thị và có thể tương tác được, phải tồn tại ít nhất một option có text hiển thị khớp chính xác với text cần chọn, và text cần chọn phải khớp chính xác với text hiển thị (phân biệt chữ hoa/thường, khoảng trắng, ký tự đặc biệt). Có thể throw NoSuchElementException nếu không tìm thấy option với text hiển thị chỉ định, ElementNotVisibleException nếu element không hiển thị trên trang, ElementNotInteractableException nếu element không thể tương tác, StaleElementReferenceException nếu element không còn gắn với DOM, UnexpectedTagNameException nếu element không phải is thẻ <select>, TimeoutException nếu element không xuất hiện trong thời gian chờ, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "selectByVisibleText",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "element dropdown (thẻ select)"
+  }, {
+    "type" : "String",
+    "name" : "text",
+    "description" : "text hiển thị of option cần chọn"
   } ]
 }, {
   "name" : "sendPutRequest",
@@ -1619,6 +1599,38 @@
     "description" : "Thông báo tùy chỉnh khi assertion thất bại"
   } ]
 }, {
+  "name" : "waitForRowCount",
+  "description" : "Đợi cho đến khi row count đạt expected value (polling với timeout) - hữu ích cho async operations",
+  "category" : "Database",
+  "subCategory" : "Utility",
+  "example" : "DatabaseKeyword db = new DatabaseKeyword();\n\n// Đợi async insert hoàn thành\n// Trigger async operation\ntriggerAsyncDataImport();\n\n// Wait for 100 records to be inserted\ndb.waitForRowCount(\n    \"mysql-dev\",\n    \"SELECT * FROM imported_data\",\n    100,\n    30000 // 30 second timeout\n);\nSystem.out.println(\"✓ All records imported\");\n\n// Wait for queue to be processed\ndb.waitForRowCount(\n    \"mysql-dev\",\n    \"SELECT * FROM queue WHERE status = ?\",\n    0, // Wait until queue is empty\n    60000,\n    \"pending\"\n);\nSystem.out.println(\"✓ Queue processed\");\n\n// Wait for specific user's orders\nint userId = 123;\ndb.waitForRowCount(\n    \"mysql-dev\",\n    \"SELECT * FROM orders WHERE user_id = ? AND status = ?\",\n    5,\n    10000,\n    userId,\n    \"completed\"\n);\n\n// With error handling\ntry {\n    db.waitForRowCount(\n        \"mysql-dev\",\n        \"SELECT * FROM async_results\",\n        10,\n        5000\n    );\n} catch (AssertionError e) {\n    System.out.println(\"Timeout: Expected count not reached\");\n}",
+  "returnValue" : "void - Không trả về giá trị (throw AssertionError nếu timeout)",
+  "note" : "- Polling mỗi 500ms để check row count\n- Throw AssertionError nếu không đạt expected count sau timeout\n- Hữu ích cho testing async operations, message queues, background jobs\n- Có thể dùng expectedCount = 0 để wait until empty",
+  "className" : "com.vtnet.netat.db.keywords.DatabaseKeyword",
+  "methodName" : "waitForRowCount",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "profileName",
+    "description" : "Tên database profile đã cấu hình"
+  }, {
+    "type" : "String",
+    "name" : "query",
+    "description" : "Câu SELECT query"
+  }, {
+    "type" : "int",
+    "name" : "expectedCount",
+    "description" : "Số lượng rows mong đợi"
+  }, {
+    "type" : "long",
+    "name" : "timeoutMs",
+    "description" : "Timeout trong milliseconds"
+  }, {
+    "type" : "Object[]",
+    "name" : "params",
+    "description" : "Parameters cho query (tùy chọn)"
+  } ]
+}, {
   "name" : "pullFile",
   "description" : "Kéo một file từ thiết bị về máy tính và trả về nội dung dưới dạng chuỗi (đã được giải mã Base64). Hữu ích khi cần lấy các file log, dữ liệu hoặc tài nguyên từ thiết bị để phân tích hoặc xác minh. Lưu ý: Đường dẫn phải trỏ đến một file có thể truy cập được từ ứng dụng (với quyền thích hợp). Trên Android không root, thường chỉ có thể truy cập các file trong thư mục ứng dụng.",
   "category" : "Mobile",
@@ -1633,22 +1645,6 @@
     "type" : "String",
     "name" : "devicePath",
     "description" : "Đường dẫn đến file trên thiết bị"
-  } ]
-}, {
-  "name" : "connectDatabase",
-  "description" : "Khởi tạo một connection pool dựa trên file profile. File profile chứa các thông tin cấu hình kết nối như URL, username, password, driver class, và các thuộc tính kết nối khác.",
-  "category" : "DB",
-  "subCategory" : "Connection",
-  "example" : "// Khởi tạo kết nối đến cơ sở dữ liệu từ file cấu hình\ndatabaseKeyword.connectDatabase(\"profiles/mysql_dev.properties\");",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "Áp dụng cho tất cả nền tảng. File profile phải tồn tại và chứa thông tin cấu hình hợp lệ. Có thể throw SQLException nếu không thể thiết lập kết nối đến CSDL, FileNotFoundException nếu không tìm thấy file profile, hoặc ConfigurationException nếu thông tin cấu hình trong profile không hợp lệ.",
-  "className" : "com.vtnet.netat.db.keywords.DatabaseKeyword",
-  "methodName" : "connectDatabase",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "String",
-    "name" : "profilePath",
-    "description" : "Đường dẫn đến file profile chứa thông tin cấu hình kết nối CSDL"
   } ]
 }, {
   "name" : "bodyNotContains",
@@ -1717,6 +1713,30 @@
     "type" : "String[]",
     "name" : "customMessage",
     "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
+  "name" : "getScalarValue",
+  "description" : "Lấy một giá trị scalar (single value) từ query - thường dùng cho COUNT, MAX, MIN, SUM, AVG",
+  "category" : "Database",
+  "subCategory" : "Data Retrieval",
+  "example" : "DatabaseKeyword db = new DatabaseKeyword();\n\n// Đếm số lượng users\nObject countObj = db.getScalarValue(\n    \"mysql-dev\",\n    \"SELECT COUNT(*) FROM users\"\n);\nint totalUsers = ((Number) countObj).intValue();\nSystem.out.println(\"Total users: \" + totalUsers);\n\n// Lấy tên user theo ID\nString userName = (String) db.getScalarValue(\n    \"mysql-dev\",\n    \"SELECT name FROM users WHERE id = ?\",\n    123\n);\nSystem.out.println(\"User name: \" + userName);\n\n// Lấy max order amount\nObject maxAmountObj = db.getScalarValue(\n    \"mysql-dev\",\n    \"SELECT MAX(amount) FROM orders WHERE user_id = ?\",\n    123\n);\ndouble maxAmount = ((Number) maxAmountObj).doubleValue();\nSystem.out.println(\"Max order amount: $\" + maxAmount);\n\n// Lấy average rating\nObject avgObj = db.getScalarValue(\n    \"mysql-dev\",\n    \"SELECT AVG(rating) FROM reviews WHERE product_id = ?\",\n    456\n);\nif (avgObj != null) {\n    double avgRating = ((Number) avgObj).doubleValue();\n    System.out.println(\"Average rating: \" + String.format(\"%.2f\", avgRating));\n}",
+  "returnValue" : "Object - Giá trị scalar (có thể là Integer, String, Date, etc. tùy query). Trả về null nếu không có result",
+  "note" : "- Trả về giá trị của column đầu tiên trong row đầu tiên\n- Trả về null nếu query không có result\n- Thích hợp cho aggregate functions (COUNT, SUM, AVG, MAX, MIN)\n- Nếu query trả về nhiều columns, chỉ lấy column đầu tiên\n- Type của return value tùy thuộc vào column type trong database\n- Cần cast về đúng type khi sử dụng (Integer, String, Double, etc.)",
+  "className" : "com.vtnet.netat.db.keywords.DatabaseKeyword",
+  "methodName" : "getScalarValue",
+  "returnType" : "Object",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "profileName",
+    "description" : "Tên database profile đã cấu hình"
+  }, {
+    "type" : "String",
+    "name" : "query",
+    "description" : "Câu lệnh SELECT trả về 1 giá trị"
+  }, {
+    "type" : "Object[]",
+    "name" : "params",
+    "description" : "Parameters cho query (tùy chọn)"
   } ]
 }, {
   "name" : "isElementPresent",
@@ -1803,6 +1823,26 @@
     "description" : ""
   } ]
 }, {
+  "name" : "executeScript",
+  "description" : "Thực thi một SQL script chứa nhiều statements (phân cách bằng dấu ;)",
+  "category" : "Database",
+  "subCategory" : "Query Execution",
+  "example" : "DatabaseKeyword db = new DatabaseKeyword();\n\n// Execute script để tạo và populate table\nString script = \n    \"CREATE TABLE IF NOT EXISTS test_users (\" +\n    \"    id INT PRIMARY KEY AUTO_INCREMENT,\" +\n    \"    name VARCHAR(100),\" +\n    \"    email VARCHAR(100)\" +\n    \");\" +\n    \"INSERT INTO test_users (name, email) VALUES ('John', 'john@test.com');\" +\n    \"INSERT INTO test_users (name, email) VALUES ('Jane', 'jane@test.com');\";\n\ndb.executeScript(\"mysql-dev\", script);\n\n// Execute setup script từ file\nString setupSql = new String(Files.readAllBytes(\n    Paths.get(\"src/test/resources/setup.sql\")\n));\ndb.executeScript(\"mysql-dev\", setupSql);\n\n// Multi-line script với StringBuilder\nStringBuilder sb = new StringBuilder();\nsb.append(\"DROP TABLE IF EXISTS temp_table;\");\nsb.append(\"CREATE TABLE temp_table (id INT, value VARCHAR(50));\");\nsb.append(\"INSERT INTO temp_table VALUES (1, 'test');\");\ndb.executeScript(\"mysql-dev\", sb.toString());",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "- Script sẽ được split theo dấu ; và execute từng statement riêng biệt\n- Nếu 1 statement fail, các statement sau sẽ không được execute\n- Thích hợp cho database setup/teardown scripts\n- Empty statements (chỉ có whitespace) sẽ bị bỏ qua\n- Throw DatabaseException nếu có bất kỳ statement nào fail",
+  "className" : "com.vtnet.netat.db.keywords.DatabaseKeyword",
+  "methodName" : "executeScript",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "profileName",
+    "description" : "Tên database profile đã cấu hình"
+  }, {
+    "type" : "String",
+    "name" : "script",
+    "description" : "SQL script với nhiều statements, phân cách bằng dấu ;"
+  } ]
+}, {
   "name" : "hideKeyboard",
   "description" : "Ẩn bàn phím ảo nếu nó đang hiển thị trên màn hình. Hữu ích khi cần giải phóng không gian màn hình sau khi nhập liệu hoặc trước khi thực hiện các thao tác khác. Nếu bàn phím không hiển thị, phương thức này có thể gây ra lỗi trên một số thiết bị.",
   "category" : "Mobile",
@@ -1816,31 +1856,31 @@
   "parameters" : [ ]
 }, {
   "name" : "getColumnValues",
-  "description" : "Thực thi câu lệnh SELECT và trả về tất cả giá trị của một cột cụ thể dưới dạng một danh sách.",
-  "category" : "DB",
+  "description" : "Lấy tất cả giá trị của một column cụ thể dưới dạng List",
+  "category" : "Database",
   "subCategory" : "Data Retrieval",
-  "example" : "// Lấy danh sách email của tất cả người dùng đang hoạt động\nList<Object> emails = databaseKeyword.getColumnValues(\"mysql_dev\", \"email\", \"SELECT email FROM users WHERE status = ?\", \"active\");",
-  "returnValue" : "List<Object> - Một danh sách chứa tất cả các giá trị từ cột được chỉ định.",
-  "note" : "Đảm bảo rằng tên cột bạn cung cấp khớp chính xác với tên cột trong kết quả trả về của câu lệnh SELECT.",
+  "example" : "DatabaseKeyword db = new DatabaseKeyword();\n\n// Lấy danh sách email của active users\nList<Object> emails = db.getColumnValues(\n    \"mysql-dev\",\n    \"SELECT email FROM users WHERE status = ?\",\n    \"email\",\n    \"active\"\n);\nfor (Object email : emails) {\n    System.out.println(\"Email: \" + email);\n}\n\n// Lấy danh sách IDs\nList<Object> orderIds = db.getColumnValues(\n    \"mysql-dev\",\n    \"SELECT id FROM orders WHERE user_id = ?\",\n    \"id\",\n    123\n);\nSystem.out.println(\"Found \" + orderIds.size() + \" orders\");\n\n// Lấy danh sách product names\nList<Object> productNames = db.getColumnValues(\n    \"mysql-dev\",\n    \"SELECT name FROM products WHERE category = ?\",\n    \"name\",\n    \"Electronics\"\n);\n\n// Check if list contains specific value\nif (emails.contains(\"john@test.com\")) {\n    System.out.println(\"✓ John's email found in active users\");\n}",
+  "returnValue" : "List<Object> - List các giá trị của column (có thể chứa null). Empty list nếu không có results",
+  "note" : "- Trả về List chứa giá trị của column từ tất cả rows\n- Trả về empty list [] nếu query không có result\n- List có thể chứa null values nếu column cho phép NULL\n- List có thể chứa duplicate values\n- Thứ tự trong list giống thứ tự rows trả về từ query",
   "className" : "com.vtnet.netat.db.keywords.DatabaseKeyword",
   "methodName" : "getColumnValues",
   "returnType" : "List",
   "parameters" : [ {
     "type" : "String",
     "name" : "profileName",
-    "description" : "Tên của profile kết nối CSDL"
-  }, {
-    "type" : "String",
-    "name" : "columnName",
-    "description" : "Tên của cột mà bạn muốn lấy dữ liệu"
+    "description" : "Tên database profile đã cấu hình"
   }, {
     "type" : "String",
     "name" : "query",
-    "description" : "Câu lệnh SQL SELECT"
+    "description" : "Câu lệnh SELECT"
+  }, {
+    "type" : "String",
+    "name" : "columnName",
+    "description" : "Tên column cần lấy giá trị"
   }, {
     "type" : "Object[]",
     "name" : "params",
-    "description" : "Các tham số cần truyền vào câu truy vấn"
+    "description" : "Parameters cho query (tùy chọn)"
   } ]
 }, {
   "name" : "assertElementNotSelected",
@@ -2133,6 +2173,58 @@
     "type" : "String[]",
     "name" : "customMessage",
     "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
+  "name" : "verifyRecordNotExists",
+  "description" : "Verify rằng KHÔNG có record nào thỏa mãn điều kiện query trong database",
+  "category" : "Database",
+  "subCategory" : "Verification",
+  "example" : "DatabaseKeyword db = new DatabaseKeyword();\n\n// Verify user đã bị delete\ndb.verifyRecordNotExists(\n    \"mysql-dev\",\n    \"SELECT * FROM users WHERE email = ?\",\n    \"deleted@test.com\"\n);\n\n// Verify không có pending orders\ndb.verifyRecordNotExists(\n    \"mysql-dev\",\n    \"SELECT * FROM orders WHERE user_id = ? AND status = ?\",\n    123,\n    \"pending\"\n);\n\n// Verify session đã expire\nString oldToken = \"expired_token_123\";\ndb.verifyRecordNotExists(\n    \"mysql-dev\",\n    \"SELECT * FROM sessions WHERE token = ? AND expires_at > NOW()\",\n    oldToken\n);\n\n// Test cleanup verification\ntry {\n    db.verifyRecordNotExists(\n        \"mysql-dev\",\n        \"SELECT * FROM temp_data WHERE created_at < DATE_SUB(NOW(), INTERVAL 7 DAY)\"\n    );\n    System.out.println(\"✓ Old temp data cleaned up\");\n} catch (AssertionError e) {\n    System.out.println(\"✗ Cleanup incomplete: \" + e.getMessage());\n}",
+  "returnValue" : "void - Không trả về giá trị (throw AssertionError nếu tìm thấy record)",
+  "note" : "- Throw AssertionError nếu tìm thấy bất kỳ record nào\n- Pass nếu query trả về 0 results\n- Thích hợp cho verification sau khi delete hoặc cleanup\n- Hữu ích để đảm bảo data đã được remove hoàn toàn",
+  "className" : "com.vtnet.netat.db.keywords.DatabaseKeyword",
+  "methodName" : "verifyRecordNotExists",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "profileName",
+    "description" : "Tên database profile đã cấu hình"
+  }, {
+    "type" : "String",
+    "name" : "query",
+    "description" : "Câu lệnh SELECT để tìm record"
+  }, {
+    "type" : "Object[]",
+    "name" : "params",
+    "description" : "Parameters cho query (tùy chọn)"
+  } ]
+}, {
+  "name" : "exportQueryToCSV",
+  "description" : "Export kết quả query ra file CSV - hữu ích cho data extraction và reporting",
+  "category" : "Database",
+  "subCategory" : "Utility",
+  "example" : "DatabaseKeyword db = new DatabaseKeyword();\n\n// Export tất cả users ra CSV\ndb.exportQueryToCSV(\n    \"mysql-dev\",\n    \"SELECT id, name, email, created_at FROM users\",\n    \"/tmp/users_export.csv\"\n);\nSystem.out.println(\"✓ Users exported to CSV\");\n\n// Export với filtering\ndb.exportQueryToCSV(\n    \"mysql-dev\",\n    \"SELECT * FROM orders WHERE created_at >= ?\",\n    \"./reports/orders_2025.csv\",\n    \"2025-01-01\"\n);\n\n// Export aggregated data\ndb.exportQueryToCSV(\n    \"mysql-dev\",\n    \"SELECT category, COUNT(*) as total, AVG(price) as avg_price \" +\n    \"FROM products GROUP BY category\",\n    \"./reports/product_summary.csv\"\n);\n\n// Generate report với timestamp\nString timestamp = new SimpleDateFormat(\"yyyyMMdd_HHmmss\").format(new Date());\nString reportPath = \"./reports/daily_stats_\" + timestamp + \".csv\";\ndb.exportQueryToCSV(\n    \"mysql-dev\",\n    \"SELECT * FROM daily_statistics WHERE date = CURDATE()\",\n    reportPath\n);\nSystem.out.println(\"Report generated: \" + reportPath);",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "- File CSV sẽ có header row với column names\n- Values được comma-separated, null values hiển thị là empty string\n- File sẽ bị overwrite nếu đã tồn tại\n- Throw exception nếu không thể write file\n- Hữu ích cho data export, reporting, và data analysis",
+  "className" : "com.vtnet.netat.db.keywords.DatabaseKeyword",
+  "methodName" : "exportQueryToCSV",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "profileName",
+    "description" : "Tên database profile đã cấu hình"
+  }, {
+    "type" : "String",
+    "name" : "query",
+    "description" : "Câu SELECT query"
+  }, {
+    "type" : "String",
+    "name" : "filePath",
+    "description" : "Đường dẫn file CSV output"
+  }, {
+    "type" : "Object[]",
+    "name" : "params",
+    "description" : "Parameters cho query (tùy chọn)"
   } ]
 }, {
   "name" : "getHeader",
@@ -2495,28 +2587,28 @@
   "returnType" : "void",
   "parameters" : [ ]
 }, {
-  "name" : "getQueryResultsAsString",
-  "description" : "Thực thi câu lệnh SELECT và trả về toàn bộ kết quả dưới dạng một chuỗi String duy nhất, được định dạng sẵn. Rất hữu ích để kiểm tra nhanh hoặc xác thực một phần dữ liệu.",
-  "category" : "DB",
-  "subCategory" : "Data Retrieval",
-  "example" : "// Lấy thông tin sinh viên và kiểm tra xem có chứa tên 'Nguyen Van A' không\nString result = databaseKeyword.getQueryResultsAsString(\"dbMariaLocal\", \"SELECT ma_sv, ten_sv FROM sinhvien\");\nassertion.assertContains(result, \"Nguyen Van A\");",
-  "returnValue" : "String - Toàn bộ bảng kết quả đã được định dạng.",
-  "note" : "Chuỗi trả về sẽ bao gồm cả tiêu đề cột và tất cả các dòng dữ liệu, mỗi dòng trên một hàng mới.",
-  "className" : "com.vtnet.netat.db.keywords.DatabaseKeyword",
-  "methodName" : "getQueryResultsAsString",
-  "returnType" : "String",
+  "name" : "verifyApiCalled",
+  "description" : "Verify API được gọi với path và params cụ thể. Fail test nếu không tìm thấy.",
+  "category" : "Web",
+  "subCategory" : "Network",
+  "example" : "web.verifyApiCalled(\"/api/status\", params, 15);",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "verifyApiCalled",
+  "returnType" : "void",
   "parameters" : [ {
     "type" : "String",
-    "name" : "profileName",
-    "description" : "Tên của profile kết nối CSDL"
+    "name" : "apiPath",
+    "description" : "Path của API"
   }, {
-    "type" : "String",
-    "name" : "query",
-    "description" : "Câu lệnh SQL SELECT"
+    "type" : "Map",
+    "name" : "expectedParams",
+    "description" : "Query params mong đợi"
   }, {
-    "type" : "Object[]",
-    "name" : "params",
-    "description" : "Các tham số cần truyền vào câu truy vấn"
+    "type" : "int",
+    "name" : "timeoutSeconds",
+    "description" : "Thời gian chờ"
   } ]
 }, {
   "name" : "denySystemDialog",
@@ -2573,6 +2665,22 @@
     "type" : "String",
     "name" : "endpoint",
     "description" : "Endpoint URL"
+  } ]
+}, {
+  "name" : "checkConnection",
+  "description" : "Kiểm tra connection có hoạt động không bằng cách thực thi simple query",
+  "category" : "Database",
+  "subCategory" : "Connection Management",
+  "example" : "DatabaseKeyword db = new DatabaseKeyword();\n\n// Check connection trước khi execute queries\nif (db.checkConnection(\"mysql-dev\")) {\n    System.out.println(\"✓ Database connection is healthy\");\n    // Proceed with queries\n} else {\n    System.out.println(\"✗ Database connection failed\");\n    // Handle connection error\n}\n\n// Health check trong loop\nfor (int i = 0; i < 3; i++) {\n    boolean isConnected = db.checkConnection(\"mysql-dev\");\n    System.out.println(\"Attempt \" + (i + 1) + \": \" + (isConnected ? \"OK\" : \"FAILED\"));\n    if (isConnected) break;\n    Thread.sleep(1000); // Wait before retry\n}\n\n// Check multiple profiles\nString[] profiles = {\"mysql-dev\", \"postgres-prod\", \"oracle-test\"};\nfor (String profile : profiles) {\n    boolean status = db.checkConnection(profile);\n    System.out.println(profile + \": \" + (status ? \"✓\" : \"✗\"));\n}",
+  "returnValue" : "boolean - true nếu connection hoạt động, false nếu không",
+  "note" : "- Thực thi simple query (SELECT 1) để test connection\n- Trả về false nếu có SQLException, không throw exception\n- Hữu ích cho health checks và pre-flight validations\n- Có thể dùng để verify connection sau khi reconnect",
+  "className" : "com.vtnet.netat.db.keywords.DatabaseKeyword",
+  "methodName" : "checkConnection",
+  "returnType" : "boolean",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "profileName",
+    "description" : "Tên database profile đã cấu hình"
   } ]
 }, {
   "name" : "highlightElement",
@@ -2673,6 +2781,30 @@
     "type" : "int",
     "name" : "durationInSeconds",
     "description" : "Thời gian giữ phần tử, tính bằng giây"
+  } ]
+}, {
+  "name" : "verifyRecordExists",
+  "description" : "Verify rằng ít nhất một record thỏa mãn điều kiện query tồn tại trong database",
+  "category" : "Database",
+  "subCategory" : "Verification",
+  "example" : "DatabaseKeyword db = new DatabaseKeyword();\n\n// Verify user với email cụ thể tồn tại\ndb.verifyRecordExists(\n    \"mysql-dev\",\n    \"SELECT * FROM users WHERE email = ?\",\n    \"john@test.com\"\n);\n\n// Verify order đã được tạo\ndb.verifyRecordExists(\n    \"mysql-dev\",\n    \"SELECT * FROM orders WHERE user_id = ? AND status = ?\",\n    123,\n    \"completed\"\n);\n\n// Verify session còn active\nString sessionToken = \"abc123xyz\";\ndb.verifyRecordExists(\n    \"mysql-dev\",\n    \"SELECT * FROM sessions WHERE token = ? AND expires_at > NOW()\",\n    sessionToken\n);\n\n// Trong test case với try-catch\ntry {\n    db.verifyRecordExists(\n        \"mysql-dev\",\n        \"SELECT * FROM users WHERE id = ?\",\n        999\n    );\n    System.out.println(\"✓ User exists\");\n} catch (AssertionError e) {\n    System.out.println(\"✗ User not found: \" + e.getMessage());\n}",
+  "returnValue" : "void - Không trả về giá trị (throw AssertionError nếu không tìm thấy)",
+  "note" : "- Throw AssertionError với message rõ ràng nếu không tìm thấy record\n- Pass nếu tìm thấy >= 1 record matching query\n- Thích hợp cho verification sau khi create/update data\n- Query nên được design để return đúng records cần verify",
+  "className" : "com.vtnet.netat.db.keywords.DatabaseKeyword",
+  "methodName" : "verifyRecordExists",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "profileName",
+    "description" : "Tên database profile đã cấu hình"
+  }, {
+    "type" : "String",
+    "name" : "query",
+    "description" : "Câu lệnh SELECT để tìm record"
+  }, {
+    "type" : "Object[]",
+    "name" : "params",
+    "description" : "Parameters cho query (tùy chọn)"
   } ]
 }, {
   "name" : "extractJsonInt",
@@ -2837,30 +2969,6 @@
     "type" : "String[]",
     "name" : "customMessage",
     "description" : "Thông báo tùy chỉnh khi assertion thất bại"
-  } ]
-}, {
-  "name" : "getCellValue",
-  "description" : "Thực thi câu lệnh SELECT và trả về giá trị của ô đầu tiên (dòng 1, cột 1). Rất hữu ích để lấy một giá trị duy nhất để xác thực hoặc sử dụng trong các bước tiếp theo.",
-  "category" : "DB",
-  "subCategory" : "Data Retrieval",
-  "example" : "// Lấy email của một người dùng cụ thể\nString email = databaseKeyword.getCellValue(\"mysql_dev\", \"SELECT email FROM users WHERE id = ?\", 123);",
-  "returnValue" : "String - Giá trị của ô dưới dạng chuỗi, hoặc null nếu không có kết quả.",
-  "note" : "Nếu câu truy vấn trả về nhiều dòng hoặc nhiều cột, keyword này sẽ chỉ lấy giá trị của cột đầu tiên ở dòng đầu tiên.",
-  "className" : "com.vtnet.netat.db.keywords.DatabaseKeyword",
-  "methodName" : "getCellValue",
-  "returnType" : "String",
-  "parameters" : [ {
-    "type" : "String",
-    "name" : "profileName",
-    "description" : "Tên của profile kết nối CSDL"
-  }, {
-    "type" : "String",
-    "name" : "query",
-    "description" : "Câu lệnh SQL SELECT, thường chỉ chọn một cột"
-  }, {
-    "type" : "Object[]",
-    "name" : "params",
-    "description" : "Các tham số cần truyền vào câu truy vấn"
   } ]
 }, {
   "name" : "startApplication",
@@ -3347,6 +3455,34 @@
     "description" : "Giá trị thuộc tính 'value' of option cần chọn"
   } ]
 }, {
+  "name" : "verifyRowCount",
+  "description" : "Verify số lượng rows trả về từ query bằng đúng expected count",
+  "category" : "Database",
+  "subCategory" : "Verification",
+  "example" : "DatabaseKeyword db = new DatabaseKeyword();\n\n// Verify có đúng 5 active users\ndb.verifyRowCount(\n    \"mysql-dev\",\n    \"SELECT * FROM users WHERE status = ?\",\n    5,\n    \"active\"\n);\n\n// Verify user có đúng 3 orders\ndb.verifyRowCount(\n    \"mysql-dev\",\n    \"SELECT * FROM orders WHERE user_id = ?\",\n    3,\n    123\n);\n\n// Verify không có records (count = 0)\ndb.verifyRowCount(\n    \"mysql-dev\",\n    \"SELECT * FROM temp_table\",\n    0\n);\n\n// Verify batch insert count\nint insertedCount = 10;\ndb.verifyRowCount(\n    \"mysql-dev\",\n    \"SELECT * FROM users WHERE created_at > DATE_SUB(NOW(), INTERVAL 1 MINUTE)\",\n    insertedCount\n);\nSystem.out.println(\"✓ All \" + insertedCount + \" records inserted successfully\");",
+  "returnValue" : "void - Không trả về giá trị (throw AssertionError nếu count không khớp)",
+  "note" : "- Throw AssertionError với actual vs expected count nếu không khớp\n- Pass nếu số lượng rows = expectedCount\n- Có thể dùng expectedCount = 0 để verify empty result\n- Hữu ích cho batch operation verification",
+  "className" : "com.vtnet.netat.db.keywords.DatabaseKeyword",
+  "methodName" : "verifyRowCount",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "profileName",
+    "description" : "Tên database profile đã cấu hình"
+  }, {
+    "type" : "String",
+    "name" : "query",
+    "description" : "Câu lệnh SELECT"
+  }, {
+    "type" : "int",
+    "name" : "expectedCount",
+    "description" : "Số lượng rows mong đợi"
+  }, {
+    "type" : "Object[]",
+    "name" : "params",
+    "description" : "Parameters cho query (tùy chọn)"
+  } ]
+}, {
   "name" : "setBearerToken",
   "description" : "Thiết lập Bearer token (JWT)",
   "category" : "API",
@@ -3381,6 +3517,30 @@
     "type" : "String",
     "name" : "jsonPath",
     "description" : ""
+  } ]
+}, {
+  "name" : "compareQueryResults",
+  "description" : "So sánh kết quả của 2 queries - kiểm tra cả số lượng rows và content",
+  "category" : "Database",
+  "subCategory" : "Utility",
+  "example" : "DatabaseKeyword db = new DatabaseKeyword();\n\n// So sánh data giữa 2 tables\nboolean isSame = db.compareQueryResults(\n    \"mysql-dev\",\n    \"SELECT * FROM users ORDER BY id\",\n    \"SELECT * FROM users_backup ORDER BY id\"\n);\nif (isSame) {\n    System.out.println(\"✓ Tables are identical\");\n} else {\n    System.out.println(\"✗ Tables differ\");\n}\n\n// Verify data migration\nboolean migrated = db.compareQueryResults(\n    \"mysql-dev\",\n    \"SELECT id, name, email FROM old_schema.users\",\n    \"SELECT id, name, email FROM new_schema.users\"\n);\nSystem.out.println(\"Migration successful: \" + migrated);\n\n// Compare aggregations\nboolean countsMatch = db.compareQueryResults(\n    \"mysql-dev\",\n    \"SELECT status, COUNT(*) as cnt FROM orders GROUP BY status\",\n    \"SELECT status, COUNT(*) as cnt FROM orders_archive GROUP BY status\"\n);\n\n// Assert results match\nif (!db.compareQueryResults(\n    \"mysql-dev\",\n    \"SELECT * FROM expected_results\",\n    \"SELECT * FROM actual_results\"\n)) {\n    throw new AssertionError(\"Query results do not match!\");\n}",
+  "returnValue" : "boolean - true nếu kết quả giống nhau, false nếu khác",
+  "note" : "- So sánh cả row count và content của từng row\n- Trả về false nếu số lượng rows khác nhau\n- Trả về false nếu bất kỳ row nào khác nhau\n- Queries nên có ORDER BY để đảm bảo consistent ordering\n- Hữu ích cho data migration verification và regression testing",
+  "className" : "com.vtnet.netat.db.keywords.DatabaseKeyword",
+  "methodName" : "compareQueryResults",
+  "returnType" : "boolean",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "profileName",
+    "description" : "Tên database profile đã cấu hình"
+  }, {
+    "type" : "String",
+    "name" : "query1",
+    "description" : "Query thứ nhất"
+  }, {
+    "type" : "String",
+    "name" : "query2",
+    "description" : "Query thứ hai"
   } ]
 }, {
   "name" : "assertEquals",
@@ -4035,6 +4195,26 @@
     "description" : ""
   } ]
 }, {
+  "name" : "truncateTable",
+  "description" : "Xóa tất cả data trong table (TRUNCATE) - nhanh hơn DELETE và reset auto-increment",
+  "category" : "Database",
+  "subCategory" : "Table Management",
+  "example" : "DatabaseKeyword db = new DatabaseKeyword();\n\n// Truncate table trước test\ndb.truncateTable(\"mysql-dev\", \"temp_users\");\nSystem.out.println(\"✓ Table truncated\");\n\n// Cleanup multiple tables\nString[] tables = {\"sessions\", \"temp_data\", \"cache\"};\nfor (String table : tables) {\n    db.truncateTable(\"mysql-dev\", table);\n    System.out.println(\"Truncated: \" + table);\n}\n\n// Truncate và verify\ndb.truncateTable(\"mysql-dev\", \"test_orders\");\nint count = db.getRowCount(\"mysql-dev\", \"test_orders\");\nif (count == 0) {\n    System.out.println(\"✓ Table successfully truncated\");\n}\n\n// Trong test teardown\ntry {\n    db.truncateTable(\"mysql-dev\", \"test_results\");\n} catch (DatabaseException e) {\n    System.err.println(\"Warning: Could not truncate table - \" + e.getMessage());\n}",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "- TRUNCATE nhanh hơn DELETE vì không log từng row\n- Auto-increment counter sẽ được reset về 1\n- Không thể rollback trong transaction (DDL statement)\n- Throw exception nếu table có foreign key constraints\n- Thích hợp cho cleanup test data",
+  "className" : "com.vtnet.netat.db.keywords.DatabaseKeyword",
+  "methodName" : "truncateTable",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "profileName",
+    "description" : "Tên database profile đã cấu hình"
+  }, {
+    "type" : "String",
+    "name" : "tableName",
+    "description" : "Tên table cần truncate"
+  } ]
+}, {
   "name" : "shakeDevice",
   "description" : "Mô phỏng hành động lắc thiết bị để kích hoạt các tính năng sử dụng cảm biến gia tốc (accelerometer).",
   "category" : "Mobile",
@@ -4439,6 +4619,30 @@
     "description" : "AppPackage (Android) hoặc BundleID (iOS) của ứng dụng cần dừng"
   } ]
 }, {
+  "name" : "isApiCalled",
+  "description" : "Kiểm tra xem API có được gọi hay không bằng JavaScript injection. Hỗ trợ check params linh hoạt: exact match, ignore ('*'), hoặc check not null ('?')",
+  "category" : "Web",
+  "subCategory" : "Network",
+  "example" : "// Check với timestamp động\nMap<String, String> params = new HashMap<>();\nparams.put(\"start\", \"?\");  // Check not null\nparams.put(\"end\", \"?\");    // Check not null\nparams.put(\"service\", \"tv360\"); // Exact match\nweb.isApiCalled(\"/service-stats\", params, 15);",
+  "returnValue" : "boolean - true nếu API được gọi, false nếu không",
+  "note" : "Hoạt động với mọi browser. Giá trị đặc biệt: '*'=ignore, '?'=not null",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "isApiCalled",
+  "returnType" : "boolean",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "apiPath",
+    "description" : "Path của API cần monitor"
+  }, {
+    "type" : "Map",
+    "name" : "expectedParams",
+    "description" : "Query params. Giá trị: '*'=ignore, '?'=not null, còn lại=exact match"
+  }, {
+    "type" : "int",
+    "name" : "timeoutSeconds",
+    "description" : "Thời gian chờ tối đa"
+  } ]
+}, {
   "name" : "clearRequestBody",
   "description" : "Xóa request body",
   "category" : "API",
@@ -4505,34 +4709,6 @@
     "type" : "ObjectUI",
     "name" : "uiObject",
     "description" : "Đối tượng cần lấy chiều cao"
-  } ]
-}, {
-  "name" : "verifyRecordExists",
-  "description" : "Kiểm tra sự tồn tại của ít nhất một bản ghi thỏa mãn điều kiện trong câu truy vấn. Phương thức này thực thi câu lệnh SELECT và kiểm tra xem kết quả có trống không, sau đó so sánh với giá trị mong đợi.",
-  "category" : "DB",
-  "subCategory" : "Verification",
-  "example" : "// Kiểm tra xem người dùng với email cụ thể có tồn tại không\ndatabaseKeyword.verifyRecordExists(\n    \"mysql_dev\", \n    \"SELECT * FROM users WHERE email = ?\", \n    true, // Mong đợi bản ghi tồn tại\n    \"john.doe@example.com\"\n);\n\n// Kiểm tra xem không có đơn hàng nào có trạng thái 'cancelled'\ndatabaseKeyword.verifyRecordExists(\n    \"mysql_dev\", \n    \"SELECT * FROM orders WHERE status = ?\", \n    false, // Mong đợi không có bản ghi nào\n    \"cancelled\"\n);",
-  "returnValue" : "void - Không trả về giá trị, nhưng sẽ ném AssertionError nếu kiểm chứng thất bại",
-  "note" : "Áp dụng cho tất cả nền tảng. Đã khởi tạo kết nối CSDL với profileName tương ứng. Có thể throw SQLException nếu có lỗi khi thực thi câu truy vấn, hoặc AssertionError nếu kết quả kiểm chứng không khớp với giá trị mong đợi.",
-  "className" : "com.vtnet.netat.db.keywords.DatabaseKeyword",
-  "methodName" : "verifyRecordExists",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "String",
-    "name" : "profileName",
-    "description" : "Tên của profile kết nối CSDL đã được khởi tạo trước đó"
-  }, {
-    "type" : "String",
-    "name" : "query",
-    "description" : "Câu lệnh SQL SELECT cần thực thi để kiểm tra sự tồn tại của bản ghi"
-  }, {
-    "type" : "boolean",
-    "name" : "expectedExists",
-    "description" : "Giá trị mong đợi: true nếu mong đợi bản ghi tồn tại, false nếu mong đợi không tồn tại"
-  }, {
-    "type" : "Object[]",
-    "name" : "params",
-    "description" : "Các tham số cần truyền vào câu truy vấn, theo thứ tự xuất hiện của các placeholder '?'"
   } ]
 }, {
   "name" : "softAssertGreaterThan",
@@ -4987,6 +5163,46 @@
     "description" : "Thời gian tối đa (giây) để chờ phần tử có thể tương tác"
   } ]
 }, {
+  "name" : "executeBatch",
+  "description" : "Thực thi batch operations - insert/update nhiều records cùng lúc cho hiệu suất tốt hơn",
+  "category" : "Database",
+  "subCategory" : "Query Execution",
+  "example" : "DatabaseKeyword db = new DatabaseKeyword();\n\n// Tạo list parameters cho batch insert\nList<Object[]> batchParams = new ArrayList<>();\nbatchParams.add(new Object[]{\"John Doe\", \"john@test.com\", \"active\"});\nbatchParams.add(new Object[]{\"Jane Smith\", \"jane@test.com\", \"active\"});\nbatchParams.add(new Object[]{\"Bob Johnson\", \"bob@test.com\", \"inactive\"});\n\n// Execute batch insert\nint[] results = db.executeBatch(\n    \"mysql-dev\",\n    \"INSERT INTO users (name, email, status) VALUES (?, ?, ?)\",\n    batchParams\n);\nSystem.out.println(\"Inserted \" + results.length + \" users\");\n\n// Batch update example\nList<Object[]> updates = new ArrayList<>();\nupdates.add(new Object[]{\"active\", 123});\nupdates.add(new Object[]{\"active\", 456});\nupdates.add(new Object[]{\"inactive\", 789});\n\nint[] updated = db.executeBatch(\n    \"mysql-dev\",\n    \"UPDATE users SET status = ? WHERE id = ?\",\n    updates\n);\n\n// Check individual results\nfor (int i = 0; i < updated.length; i++) {\n    System.out.println(\"Batch \" + i + \": \" + updated[i] + \" row(s) affected\");\n}",
+  "returnValue" : "int[] - Mảng số lượng rows affected cho mỗi batch operation",
+  "note" : "- Hiệu suất tốt hơn nhiều so với loop executeUpdate cho từng record\n- Nên dùng khi cần insert/update >= 10 records\n- Tất cả operations trong batch dùng chung 1 connection\n- Nếu 1 operation fail, các operation khác vẫn có thể thành công (tùy database)\n- Trả về mảng với length = số lượng batch operations",
+  "className" : "com.vtnet.netat.db.keywords.DatabaseKeyword",
+  "methodName" : "executeBatch",
+  "returnType" : "int[]",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "profileName",
+    "description" : "Tên database profile đã cấu hình"
+  }, {
+    "type" : "String",
+    "name" : "query",
+    "description" : "Câu lệnh SQL với ? placeholders"
+  }, {
+    "type" : "List",
+    "name" : "batchParams",
+    "description" : "List các mảng parameters, mỗi mảng tương ứng với 1 execution"
+  } ]
+}, {
+  "name" : "getConnectionPoolStats",
+  "description" : "Lấy thống kê connection pool (size, active, idle, waiting threads)",
+  "category" : "Database",
+  "subCategory" : "Connection Management",
+  "example" : "DatabaseKeyword db = new DatabaseKeyword();\n\n// Lấy và hiển thị pool stats\nMap<String, Object> stats = db.getConnectionPoolStats(\"mysql-dev\");\nSystem.out.println(\"Pool Size: \" + stats.get(\"poolSize\"));\nSystem.out.println(\"Active: \" + stats.get(\"activeConnections\"));\nSystem.out.println(\"Idle: \" + stats.get(\"idleConnections\"));\nSystem.out.println(\"Waiting: \" + stats.get(\"waitingThreads\"));\nSystem.out.println(\"Utilization: \" + stats.get(\"utilizationPercent\") + \"%\");\n\n// Check if pool is healthy\ndouble utilization = (Double) stats.get(\"utilizationPercent\");\nif (utilization > 80) {\n    System.out.println(\"⚠️  Warning: High pool utilization!\");\n} else if (utilization > 90) {\n    System.out.println(\"\uD83D\uDD25 Critical: Pool nearly exhausted!\");\n}\n\n// Monitor pool during load test\nfor (int i = 0; i < 100; i++) {\n    db.executeQuery(\"mysql-dev\", \"SELECT * FROM users LIMIT 10\");\n    \n    if (i % 10 == 0) {\n        Map<String, Object> currentStats = db.getConnectionPoolStats(\"mysql-dev\");\n        System.out.println(\"Iteration \" + i + \": \" + \n            currentStats.get(\"activeConnections\") + \"/\" + \n            currentStats.get(\"poolSize\") + \" active\");\n    }\n}",
+  "returnValue" : "Map<String, Object> - Map chứa pool statistics (poolSize, activeConnections, idleConnections, waitingThreads, utilizationPercent)",
+  "note" : "- Pool statistics sẽ được log tự động\n- Warning log nếu utilization > 80%\n- Hữu ích cho monitoring và capacity planning\n- Có thể integrate với monitoring tools (Prometheus, Grafana)",
+  "className" : "com.vtnet.netat.db.keywords.DatabaseKeyword",
+  "methodName" : "getConnectionPoolStats",
+  "returnType" : "Map",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "profileName",
+    "description" : "Tên database profile đã cấu hình"
+  } ]
+}, {
   "name" : "resizeWindow",
   "description" : "Thay đổi kích thước of cửa sổ trình duyệt hiện tại theo chiều rộng và chiều cao được chỉ định.",
   "category" : "Web",
@@ -5371,30 +5587,6 @@
     "description" : "Thông báo tùy chỉnh khi assertion thất bại"
   } ]
 }, {
-  "name" : "getRow",
-  "description" : "Thực thi câu lệnh SELECT và trả về bản ghi đầu tiên dưới dạng một Map. Hữu ích khi bạn cần kiểm tra nhiều trường của một đối tượng duy nhất.",
-  "category" : "DB",
-  "subCategory" : "Data Retrieval",
-  "example" : "// Lấy toàn bộ thông tin của một sản phẩm\nMap<String, Object> product = databaseKeyword.getRow(\"mysql_dev\", \"SELECT * FROM products WHERE id = ?\", \"PROD-001\");\nString productName = product.get(\"name\").toString();\ndouble price = (Double) product.get(\"price\");",
-  "returnValue" : "Map<String, Object> - Một Map biểu diễn bản ghi đầu tiên, với key là tên cột và value là giá trị.",
-  "note" : "Nếu câu truy vấn trả về nhiều bản ghi, chỉ có bản ghi đầu tiên được trả về. Trả về null nếu không có kết quả.",
-  "className" : "com.vtnet.netat.db.keywords.DatabaseKeyword",
-  "methodName" : "getRow",
-  "returnType" : "Map",
-  "parameters" : [ {
-    "type" : "String",
-    "name" : "profileName",
-    "description" : "Tên của profile kết nối CSDL"
-  }, {
-    "type" : "String",
-    "name" : "query",
-    "description" : "Câu lệnh SQL SELECT"
-  }, {
-    "type" : "Object[]",
-    "name" : "params",
-    "description" : "Các tham số cần truyền vào câu truy vấn"
-  } ]
-}, {
   "name" : "getCurrentDateTime",
   "description" : "Lấy và trả về chuỗi ngày giờ hiện tại theo một định dạng cho trước. Sử dụng các mẫu định dạng chuẩn của Java như 'yyyy' cho năm, 'MM' cho tháng, 'dd' cho ngày, 'HH' cho giờ (24h), 'mm' cho phút và 'ss' cho giây.",
   "category" : "Utility",
@@ -5475,6 +5667,26 @@
   "returnType" : "void",
   "parameters" : [ ]
 }, {
+  "name" : "getTableColumns",
+  "description" : "Lấy danh sách tất cả columns của table",
+  "category" : "Database",
+  "subCategory" : "Table Management",
+  "example" : "DatabaseKeyword db = new DatabaseKeyword();\n\n// Lấy danh sách columns\nList<String> columns = db.getTableColumns(\"mysql-dev\", \"users\");\nSystem.out.println(\"Columns in users table:\");\nfor (String column : columns) {\n    System.out.println(\"  - \" + column);\n}\n\n// Check if column exists\nList<String> userColumns = db.getTableColumns(\"mysql-dev\", \"users\");\nif (userColumns.contains(\"email\")) {\n    System.out.println(\"✓ Email column exists\");\n}\n\n// Dynamic query building\nList<String> cols = db.getTableColumns(\"mysql-dev\", \"products\");\nString query = \"SELECT \" + String.join(\", \", cols) + \" FROM products\";\nList<Map<String, Object>> results = db.executeQuery(\"mysql-dev\", query);\n\n// Validate table structure\nList<String> expectedColumns = Arrays.asList(\"id\", \"name\", \"email\", \"created_at\");\nList<String> actualColumns = db.getTableColumns(\"mysql-dev\", \"users\");\nif (actualColumns.containsAll(expectedColumns)) {\n    System.out.println(\"✓ Table structure is correct\");\n} else {\n    System.out.println(\"✗ Missing columns\");\n}",
+  "returnValue" : "List<String> - List tên các columns trong table",
+  "note" : "- Sử dụng DatabaseMetaData để lấy column information\n- Trả về empty list nếu table không tồn tại\n- Column names được return theo thứ tự định nghĩa trong table\n- Hữu ích cho schema validation và dynamic query building",
+  "className" : "com.vtnet.netat.db.keywords.DatabaseKeyword",
+  "methodName" : "getTableColumns",
+  "returnType" : "List",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "profileName",
+    "description" : "Tên database profile đã cấu hình"
+  }, {
+    "type" : "String",
+    "name" : "tableName",
+    "description" : "Tên table"
+  } ]
+}, {
   "name" : "swipe",
   "description" : "Thực hiện hành động vuốt trên màn hình từ điểm bắt đầu đến điểm kết thúc. Cho phép kiểm soát chính xác tọa độ bắt đầu, kết thúc và tốc độ vuốt. Tọa độ được tính theo pixel từ góc trên bên trái của màn hình (0,0).",
   "category" : "Mobile",
@@ -5505,6 +5717,26 @@
     "type" : "int",
     "name" : "durationInMs",
     "description" : "Thời gian thực hiện vuốt (ms), giá trị thấp hơn = vuốt nhanh hơn"
+  } ]
+}, {
+  "name" : "tableExists",
+  "description" : "Kiểm tra table có tồn tại trong database không",
+  "category" : "Database",
+  "subCategory" : "Table Management",
+  "example" : "DatabaseKeyword db = new DatabaseKeyword();\n\n// Check table existence\nif (db.tableExists(\"mysql-dev\", \"users\")) {\n    System.out.println(\"✓ Table 'users' exists\");\n} else {\n    System.out.println(\"✗ Table 'users' does not exist\");\n}\n\n// Conditional table creation\nif (!db.tableExists(\"mysql-dev\", \"test_data\")) {\n    String createTable = \n        \"CREATE TABLE test_data (\" +\n        \"    id INT PRIMARY KEY AUTO_INCREMENT,\" +\n        \"    value VARCHAR(100)\" +\n        \")\";\n    db.executeUpdate(\"mysql-dev\", createTable);\n    System.out.println(\"✓ Table created\");\n}\n\n// Verify table after creation\ndb.executeScript(\"mysql-dev\", \"CREATE TABLE IF NOT EXISTS new_table (id INT)\");\nboolean created = db.tableExists(\"mysql-dev\", \"new_table\");\nSystem.out.println(\"Table created: \" + created);\n\n// Check multiple tables\nString[] requiredTables = {\"users\", \"orders\", \"products\"};\nboolean allExist = true;\nfor (String table : requiredTables) {\n    if (!db.tableExists(\"mysql-dev\", table)) {\n        System.out.println(\"Missing table: \" + table);\n        allExist = false;\n    }\n}\nif (allExist) {\n    System.out.println(\"✓ All required tables exist\");\n}",
+  "returnValue" : "boolean - true nếu table tồn tại, false nếu không",
+  "note" : "- Sử dụng DatabaseMetaData để check table existence\n- Case-sensitive trên một số databases (Linux MySQL)\n- Không throw exception, chỉ return true/false\n- Hữu ích cho pre-flight checks và conditional logic",
+  "className" : "com.vtnet.netat.db.keywords.DatabaseKeyword",
+  "methodName" : "tableExists",
+  "returnType" : "boolean",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "profileName",
+    "description" : "Tên database profile đã cấu hình"
+  }, {
+    "type" : "String",
+    "name" : "tableName",
+    "description" : "Tên table cần check"
   } ]
 }, {
   "name" : "getElementY",
@@ -5575,6 +5807,26 @@
     "description" : ""
   } ]
 }, {
+  "name" : "rollbackTransaction",
+  "description" : "Rollback transaction hiện tại, hủy bỏ tất cả thay đổi",
+  "category" : "Database",
+  "subCategory" : "Transaction",
+  "example" : "DatabaseKeyword db = new DatabaseKeyword();\n\n// Rollback on error\ndb.beginTransaction(\"mysql-dev\");\ntry {\n    db.executeUpdate(\n        \"mysql-dev\",\n        \"UPDATE accounts SET balance = balance - ? WHERE id = ?\",\n        1000.0,\n        1\n    );\n    \n    // Check balance\n    Object balance = db.getScalarValue(\n        \"mysql-dev\",\n        \"SELECT balance FROM accounts WHERE id = ?\",\n        1\n    );\n    \n    if (((Number) balance).doubleValue() < 0) {\n        db.rollbackTransaction(\"mysql-dev\", \"Insufficient balance\");\n        System.out.println(\"✗ Transaction cancelled: Insufficient funds\");\n        return;\n    }\n    \n    db.executeUpdate(\n        \"mysql-dev\",\n        \"UPDATE accounts SET balance = balance + ? WHERE id = ?\",\n        1000.0,\n        2\n    );\n    \n    db.commitTransaction(\"mysql-dev\");\n} catch (Exception e) {\n    db.rollbackTransaction(\"mysql-dev\", \"Error: \" + e.getMessage());\n    System.err.println(\"✗ Transaction rolled back due to error\");\n}\n\n// Manual rollback for business logic\ndb.beginTransaction(\"mysql-dev\");\ndb.executeUpdate(\"mysql-dev\", \"INSERT INTO temp_data VALUES (?)\", \"test\");\n// Decide to cancel\ndb.rollbackTransaction(\"mysql-dev\", \"Manual cancellation\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "- Tất cả thay đổi trong transaction sẽ bị hủy bỏ\n- Connection sẽ được đóng và remove khỏi ThreadLocal\n- Auto-commit sẽ được bật lại sau khi rollback\n- Throw IllegalStateException nếu không có active transaction\n- Reason parameter sẽ được log để track lý do rollback",
+  "className" : "com.vtnet.netat.db.keywords.DatabaseKeyword",
+  "methodName" : "rollbackTransaction",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "profileName",
+    "description" : "Tên database profile đã cấu hình"
+  }, {
+    "type" : "String[]",
+    "name" : "reason",
+    "description" : "Lý do rollback (tùy chọn, dùng cho logging)"
+  } ]
+}, {
   "name" : "startBrowserSession",
   "description" : "Khởi tạo nhanh một phiên làm việc trên trình duyệt web bằng cách cung cấp thông tin trực tiếp.",
   "category" : "Driver",
@@ -5617,6 +5869,26 @@
     "type" : "int",
     "name" : "timeoutInSeconds",
     "description" : "Thời gian chờ tối đa tính bằng giây"
+  } ]
+}, {
+  "name" : "beginTransaction",
+  "description" : "Bắt đầu một transaction với isolation level tùy chọn",
+  "category" : "Database",
+  "subCategory" : "Transaction",
+  "example" : "DatabaseKeyword db = new DatabaseKeyword();\n\n// Begin transaction với default isolation (READ_COMMITTED)\ndb.beginTransaction(\"mysql-dev\");\ntry {\n    db.executeUpdate(\n        \"mysql-dev\",\n        \"UPDATE accounts SET balance = balance - ? WHERE id = ?\",\n        100.0,\n        1\n    );\n    db.executeUpdate(\n        \"mysql-dev\",\n        \"UPDATE accounts SET balance = balance + ? WHERE id = ?\",\n        100.0,\n        2\n    );\n    db.commitTransaction(\"mysql-dev\");\n    System.out.println(\"✓ Transaction committed successfully\");\n} catch (Exception e) {\n    db.rollbackTransaction(\"mysql-dev\", \"Error: \" + e.getMessage());\n    System.out.println(\"✗ Transaction rolled back\");\n}\n\n// Begin transaction với specific isolation level\ndb.beginTransaction(\"mysql-dev\", \"SERIALIZABLE\");\ntry {\n    // Critical operations requiring highest isolation\n    db.executeUpdate(\"mysql-dev\", \"UPDATE inventory SET stock = stock - 1 WHERE id = ?\", 123);\n    db.commitTransaction(\"mysql-dev\");\n} catch (Exception e) {\n    db.rollbackTransaction(\"mysql-dev\");\n}",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "- Connection sẽ được lưu trong ThreadLocal cho các operations tiếp theo\n- Auto-commit sẽ bị tắt cho đến khi commit hoặc rollback\n- Phải gọi commitTransaction hoặc rollbackTransaction để kết thúc transaction\n- Isolation levels: READ_UNCOMMITTED (lowest), READ_COMMITTED (default), REPEATABLE_READ, SERIALIZABLE (highest)\n- Nên sử dụng try-catch-finally để đảm bảo transaction được close",
+  "className" : "com.vtnet.netat.db.keywords.DatabaseKeyword",
+  "methodName" : "beginTransaction",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "profileName",
+    "description" : "Tên database profile đã cấu hình"
+  }, {
+    "type" : "String[]",
+    "name" : "isolationLevel",
+    "description" : "Isolation level (tùy chọn): READ_UNCOMMITTED, READ_COMMITTED, REPEATABLE_READ, SERIALIZABLE. Default: READ_COMMITTED"
   } ]
 }, {
   "name" : "sendPostWithJson",

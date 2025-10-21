@@ -12,31 +12,10 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 
-/**
- * ⭐ Main API Keyword Class - Hybrid Approach
- *
- * Chứa tất cả operations: config, auth, headers, params, body, requests, response extraction
- *
- * @author NETAT Framework
- * @version 2.0
- *
- * Usage:
- * <pre>
- * ApiKeyword api = new ApiKeyword();
- * api.setApiBaseUrl("https://api.example.com");
- * api.setBearerToken("token123");
- * ApiResponse response = api.sendGetRequest("/users/1");
- * String name = api.extractJsonValue(response, "$.name");
- * </pre>
- */
+
 public class ApiKeyword extends BaseApiKeyword {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
-
-    // ========================================================================
-    //  SECTION 1: CONFIGURATION (5 methods)
-    // Từ RestConfigKeyword.java
-    // ========================================================================
 
     @NetatKeyword(
             name = "setApiBaseUrl",
@@ -209,14 +188,7 @@ public class ApiKeyword extends BaseApiKeyword {
             return null;
         });
     }
-
-    // TODO: Copy thêm obtainOAuth2TokenByPassword, obtainOAuth2TokenByClientCredentials từ RestAuthKeyword
-
-    // ========================================================================
-    //  SECTION 3: HEADERS (6 methods)
-    // Từ RestHeaderKeyword.java
-    // ========================================================================
-
+    
     @NetatKeyword(
             name = "addHeader",
             description = "Thêm HTTP header vào request",
@@ -311,12 +283,7 @@ public class ApiKeyword extends BaseApiKeyword {
             return null;
         });
     }
-
-    // ========================================================================
-    //  SECTION 4: PARAMETERS (6 methods)
-    // Từ RestParameterKeyword.java
-    // ========================================================================
-
+    
     @NetatKeyword(
             name = "addQueryParam",
             description = "Thêm query parameter",
@@ -376,12 +343,6 @@ public class ApiKeyword extends BaseApiKeyword {
         });
     }
 
-    // TODO: Copy thêm addMultipleQueryParams, removeQueryParam, etc.
-
-    // ========================================================================
-    //  SECTION 5: REQUEST BODY (7 methods)
-    // Từ RestBodyKeyword.java
-    // ========================================================================
 
     @NetatKeyword(
             name = "setRequestBody",
@@ -437,12 +398,6 @@ public class ApiKeyword extends BaseApiKeyword {
         });
     }
 
-    // TODO: Copy thêm setRequestBodyFromMap, addFormParameter, etc.
-
-    // ========================================================================
-    //  SECTION 6: SEND REQUESTS (15 methods)
-    // Từ RestRequestKeyword.java
-    // ========================================================================
 
     @NetatKeyword(
             name = "sendGetRequest",
@@ -538,16 +493,12 @@ public class ApiKeyword extends BaseApiKeyword {
             return response;
         }, endpoint);
     }
-
-    // ========================================================================
-    //  SECTION 6B: SHORTCUT REQUESTS (5 methods) - Quan trọng cho Low-Code!
-    // ========================================================================
-
+    
     @NetatKeyword(
             name = "sendPostWithJson",
             description = "Gửi POST với JSON body (shortcut - 1 step)",
             category = "API",
-            subCategory = "Requests - Shortcuts",
+            subCategory = "Requests",
             parameters = {
                     "endpoint: String - Endpoint URL",
                     "jsonBody: String - JSON string"
@@ -575,7 +526,7 @@ public class ApiKeyword extends BaseApiKeyword {
             name = "sendPutWithJson",
             description = "Gửi PUT với JSON body (shortcut)",
             category = "API",
-            subCategory = "Requests - Shortcuts",
+            subCategory = "Requests",
             parameters = {
                     "endpoint: String",
                     "jsonBody: String"
@@ -601,7 +552,7 @@ public class ApiKeyword extends BaseApiKeyword {
             name = "sendGetWithParams",
             description = "Gửi GET với query params từ JSON string (shortcut)",
             category = "API",
-            subCategory = "Requests - Shortcuts",
+            subCategory = "Requests",
             parameters = {
                     "endpoint: String",
                     "paramsJson: String - VD: {\"page\":1,\"limit\":10}"
@@ -694,7 +645,7 @@ public class ApiKeyword extends BaseApiKeyword {
             name = "extractJsonValue",
             description = "Trích xuất giá trị từ JSON response (JSON Path)",
             category = "API",
-            subCategory = "Response - JSON",
+            subCategory = "Response",
             parameters = {
                     "response: ApiResponse",
                     "jsonPath: String - JSON Path expression (VD: $.user.name)"
@@ -716,7 +667,7 @@ public class ApiKeyword extends BaseApiKeyword {
             name = "extractJsonInt",
             description = "Trích xuất số nguyên từ JSON",
             category = "API",
-            subCategory = "Response - JSON",
+            subCategory = "Response",
             parameters = {
                     "response: ApiResponse",
                     "jsonPath: String"
@@ -741,7 +692,7 @@ public class ApiKeyword extends BaseApiKeyword {
             name = "extractJsonDouble",
             description = "Trích xuất số thực từ JSON",
             category = "API",
-            subCategory = "Response - JSON",
+            subCategory = "Response",
             parameters = {
                     "response: ApiResponse",
                     "jsonPath: String"
@@ -766,7 +717,7 @@ public class ApiKeyword extends BaseApiKeyword {
             name = "extractJsonBoolean",
             description = "Trích xuất boolean từ JSON",
             category = "API",
-            subCategory = "Response - JSON",
+            subCategory = "Response",
             parameters = {
                     "response: ApiResponse",
                     "jsonPath: String"
@@ -791,7 +742,7 @@ public class ApiKeyword extends BaseApiKeyword {
             name = "getArraySize",
             description = "Lấy số lượng phần tử trong JSON array",
             category = "API",
-            subCategory = "Response - JSON",
+            subCategory = "Response",
             parameters = {
                     "response: ApiResponse",
                     "jsonPath: String - Path đến array"
@@ -814,7 +765,7 @@ public class ApiKeyword extends BaseApiKeyword {
             name = "getHeader",
             description = "Lấy giá trị header từ response",
             category = "API",
-            subCategory = "Response - Headers",
+            subCategory = "Response",
             parameters = {
                     "response: ApiResponse",
                     "headerName: String"

@@ -266,10 +266,12 @@ public class DriverKeyword extends BaseKeyword {
             DesiredCapabilities caps = new DesiredCapabilities();
             caps.setCapability("platformName", platformName);
             caps.setCapability("udid", udid);
-            caps.setCapability("appPackage", appActivity);
+            caps.setCapability("appPackage", appPackage);
             caps.setCapability("appActivity", appActivity);
             // Một số capabilities quan trọng khác có thể thêm vào đây
             caps.setCapability("automationName", automationName);
+            caps.setCapability("noReset",true);
+            caps.setCapability("autoGrantPermissions",true);
 
             WebDriver driver = new AppiumDriver(new URL(appiumServerUrl), caps);
             SessionManager.getInstance().addSession(sessionName, driver);

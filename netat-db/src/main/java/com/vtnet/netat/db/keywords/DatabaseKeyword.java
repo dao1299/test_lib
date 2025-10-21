@@ -2,528 +2,2051 @@ package com.vtnet.netat.db.keywords;
 
 import com.vtnet.netat.core.BaseKeyword;
 import com.vtnet.netat.core.annotations.NetatKeyword;
-import com.vtnet.netat.core.utils.DataFileHelper;
-import com.vtnet.netat.db.config.DatabaseProfile;
+import com.vtnet.netat.core.context.ExecutionContext;
 import com.vtnet.netat.db.connection.ConnectionManager;
-import com.vtnet.netat.db.utils.DatabaseHelper;
-import com.vtnet.netat.db.utils.JdbcUrlBuilder;
-import com.vtnet.netat.db.utils.QueryHelper;
-import io.qameta.allure.Step;
-import org.testng.Assert;
+import com.vtnet.netat.db.exceptions.DatabaseException;
+import com.vtnet.netat.db.exceptions.ErrorSeverity;
+import com.vtnet.netat.db.exceptions.GenericDatabaseException;
+import com.vtnet.netat.db.exceptions.SqlStateMapper;
+import com.vtnet.netat.db.exceptions.query.QueryExecutionException;
+import com.vtnet.netat.db.logging.DatabaseLogger;
+import com.vtnet.netat.db.logging.LogContext;
+import com.vtnet.netat.db.logging.model.PoolStats;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
- * Provides a set of keywords for interacting with and testing databases.
- * Inherits from BaseKeyword to have logging, retry, and reporting features.
+ * Database keyword với đầy đủ logging support.
+ * Mọi operation đều được log với context, duration, và error details.
+ *
+ * @author NETAT Team
+ * @version 1.1.0
  */
 public class DatabaseKeyword extends BaseKeyword {
 
-    // =================================================================================================
-    // CONNECTION MANAGEMENT KEYWORDS
-    // =================================================================================================
+    private static final DatabaseLogger dbLogger = DatabaseLogger.getInstance();
 
-    @NetatKeyword(
-            name = "connectDatabase",
-            description = "Khởi tạo một connection pool dựa trên file profile. " +
-                    "File profile chứa các thông tin cấu hình kết nối như URL, username, password, driver class, và các thuộc tính kết nối khác.",
-            category = "DB",
-subCategory="Connection",
-            parameters = {
-                    "profilePath: String - Đường dẫn đến file profile chứa thông tin cấu hình kết nối CSDL"
-            },
-            returnValue = "void - Không trả về giá trị",
-            example = "// Khởi tạo kết nối đến cơ sở dữ liệu từ file cấu hình\n" +
-                    "databaseKeyword.connectDatabase(\"profiles/mysql_dev.properties\");",
-            note = "Áp dụng cho tất cả nền tảng. File profile phải tồn tại và chứa thông tin cấu hình hợp lệ. " +
-                    "Có thể throw SQLException nếu không thể thiết lập kết nối đến CSDL, " +
-                    "FileNotFoundException nếu không tìm thấy file profile, " +
-                    "hoặc ConfigurationException nếu thông tin cấu hình trong profile không hợp lệ."
-    )
-    @Step("Initialize database connection from profile: {0}")
-    public void connectDatabase(String profilePath) {
-        execute(() -> {
-            DatabaseProfile profile = DatabaseHelper.getProfile(profilePath);
-            ConnectionManager.createConnectionPool(profile);
-            return null;
-        }, profilePath);
-    }
-
-    @NetatKeyword(
-            name = "connectDatabase",
-            description = "Khởi tạo kết nối CSDL bằng cách cung cấp các thông tin riêng lẻ. Thư viện sẽ tự động xây dựng URL kết nối.",
-            category = "DB",
-            subCategory = "Connection",
-            parameters = {
-                    "profileName: String - Một tên định danh duy nhất cho kết nối này",
-                    "dbType: String - Loại cơ sở dữ liệu (mariadb, postgresql, mysql, sqlserver, oracle, clickhouse)",
-                    "host: String - Địa chỉ IP hoặc hostname của server",
-                    "port: int - Cổng kết nối",
-                    "databaseName: String - Tên của database (hoặc SID/Service Name cho Oracle)",
-                    "username: String - Tên người dùng",
-                    "password: String - Mật khẩu"
-            },
-            returnValue = "void - Không trả về giá trị",
-            example = "// Kết nối đến PostgreSQL mà không cần biết cấu trúc URL\n" +
-                    "databaseKeyword.connectDatabase(\"pg_server\", \"postgresql\", \"10.0.1.5\", 5432, \"app_db\", \"user\", \"pass\");",
-            note = "Đây là cách kết nối được khuyên dùng cho người dùng low-code để tránh lỗi cú pháp URL."
-    )
-    @Step("Initialize database connection for profile: {0} ({1} on {2})")
-    public void connectDatabase(String profileName, String dbType, String host, int port, String databaseName, String username, String password) {
-        execute(() -> {
-            String jdbcUrl = JdbcUrlBuilder.buildUrl(dbType, host, port, databaseName);
-
-            DatabaseProfile profile = new DatabaseProfile();
-            profile.setProfileName(profileName);
-            profile.setJdbcUrl(jdbcUrl);
-            profile.setUsername(username);
-            profile.setPassword(password);
-            ConnectionManager.createConnectionPool(profile);
-            return null;
-        }, profileName, dbType, host, port, databaseName, username, password);
-    }
-
-    @NetatKeyword(
-            name = "disconnectAllDatabases",
-            description = "Đóng tất cả các connection pool đang hoạt động và giải phóng tài nguyên. " +
-                    "Nên gọi phương thức này ở cuối mỗi test case hoặc test suite để đảm bảo tất cả kết nối được đóng đúng cách.",
-            category = "DB",
-subCategory="Connection",
-            parameters = {},
-            returnValue = "void - Không trả về giá trị",
-            example = "// Đóng tất cả kết nối CSDL sau khi hoàn thành test\n" +
-                    "databaseKeyword.disconnectAllDatabases();",
-            note = "Áp dụng cho tất cả nền tảng. Đã khởi tạo ít nhất một kết nối CSDL trước đó. " +
-                    "Có thể throw SQLException nếu có lỗi khi đóng kết nối."
-    )
-    @Step("Close all database connections")
-    public void disconnectAllDatabases() {
-        execute(() -> {
-            ConnectionManager.closeAll();
-            return null;
-        });
-    }
-
-    // =================================================================================================
-    // EXECUTION KEYWORDS (PRO-CODE)
-    // =================================================================================================
+    // ========================================================================
+    // QUERY EXECUTION KEYWORDS
+    // ========================================================================
 
     @NetatKeyword(
             name = "executeQuery",
-            description = "Thực thi câu lệnh SELECT và trả về kết quả dưới dạng danh sách các bản ghi. " +
-                    "Mỗi bản ghi là một Map với key là tên cột và value là giá trị của cột đó. " +
-                    "Hỗ trợ truyền tham số vào câu truy vấn để tránh SQL injection.",
-            category = "DB",
-subCategory="Execution",
+            description = "Thực thi câu lệnh SELECT và trả về kết quả dưới dạng List các Map (mỗi Map đại diện cho 1 row)",
+            category = "Database",
+            subCategory = "Query Execution",
             parameters = {
-                    "profileName: String - Tên của profile kết nối CSDL đã được khởi tạo trước đó",
-                    "query: String - Câu lệnh SQL SELECT cần thực thi, có thể chứa các placeholder '?' cho tham số",
-                    "params: Object... - Các tham số cần truyền vào câu truy vấn, theo thứ tự xuất hiện của các placeholder '?'"
+                    "profileName: String - Tên database profile đã cấu hình",
+                    "query: String - Câu lệnh SQL SELECT (có thể chứa ? placeholder)",
+                    "params: Object... - Các tham số để thay thế cho ? trong query (tùy chọn)"
             },
-            returnValue = "List<Map<String, Object>> - Danh sách các bản ghi, mỗi bản ghi là một Map với key là tên cột và value là giá trị",
-            example = "// Thực thi câu lệnh SELECT với tham số\n" +
-                    "List<Map<String, Object>> users = databaseKeyword.executeQuery(\n" +
-                    "    \"mysql_dev\", \n" +
-                    "    \"SELECT id, username, email FROM users WHERE status = ? AND created_date > ?\", \n" +
-                    "    \"active\", \"2023-01-01\"\n" +
-                    ");\n\n" +
-                    "// Truy cập dữ liệu từ kết quả\n" +
-                    "String username = users.get(0).get(\"username\").toString();",
-            note = "Áp dụng cho tất cả nền tảng. Đã khởi tạo kết nối CSDL với profileName tương ứng. " +
-                    "Có thể throw SQLException nếu có lỗi khi thực thi câu truy vấn, " +
-                    "hoặc IllegalArgumentException nếu profileName không tồn tại."
+            returnValue = "List<Map<String, Object>> - Danh sách các row, mỗi row là Map với key=column name, value=column value",
+            example =
+                    "// Lấy thông tin user theo email\n" +
+                            "DatabaseKeyword db = new DatabaseKeyword();\n" +
+                            "List<Map<String, Object>> users = db.executeQuery(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"SELECT * FROM users WHERE email = ?\",\n" +
+                            "    \"john@test.com\"\n" +
+                            ");\n" +
+                            "System.out.println(\"User ID: \" + users.get(0).get(\"id\"));\n" +
+                            "System.out.println(\"User Name: \" + users.get(0).get(\"name\"));\n" +
+                            "\n" +
+                            "// Query không có parameter\n" +
+                            "List<Map<String, Object>> activeUsers = db.executeQuery(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"SELECT * FROM users WHERE status = 'active'\"\n" +
+                            ");\n" +
+                            "\n" +
+                            "// Query với nhiều parameters\n" +
+                            "List<Map<String, Object>> orders = db.executeQuery(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"SELECT * FROM orders WHERE user_id = ? AND status = ?\",\n" +
+                            "    123,\n" +
+                            "    \"completed\"\n" +
+                            ");\n" +
+                            "\n" +
+                            "// Iterate qua tất cả results\n" +
+                            "for (Map<String, Object> order : orders) {\n" +
+                            "    System.out.println(\"Order ID: \" + order.get(\"id\"));\n" +
+                            "    System.out.println(\"Amount: \" + order.get(\"amount\"));\n" +
+                            "}",
+            note = "- Query sẽ được log tự động với thời gian thực thi và số lượng rows trả về\n" +
+                    "- Dữ liệu nhạy cảm (password, email) sẽ được mask trong log\n" +
+                    "- Nếu query chậm hơn threshold (mặc định 1000ms), sẽ có warning log\n" +
+                    "- Trả về empty list [] nếu không tìm thấy kết quả\n" +
+                    "- Throw DatabaseException nếu có lỗi SQL"
     )
-    @Step("Execute SELECT statement on [{0}]: {1}")
     public List<Map<String, Object>> executeQuery(String profileName, String query, Object... params) {
-        return execute(() -> executeQueryWithParams(profileName, query, params), profileName, query, params);
+        return executeWithLogging(
+                "executeQuery",
+                profileName,
+                query,
+                params,
+                () -> executeQueryInternal(profileName, query, params)
+        );
     }
 
     @NetatKeyword(
             name = "executeUpdate",
-            description = "Thực thi câu lệnh INSERT, UPDATE, DELETE và trả về số bản ghi bị ảnh hưởng. " +
-                    "Hỗ trợ truyền tham số vào câu truy vấn để tránh SQL injection.",
-            category = "DB",
-subCategory="Execution",
+            description = "Thực thi câu lệnh INSERT, UPDATE, DELETE và trả về số lượng rows bị ảnh hưởng",
+            category = "Database",
+            subCategory = "Query Execution",
             parameters = {
-                    "profileName: String - Tên của profile kết nối CSDL đã được khởi tạo trước đó",
-                    "query: String - Câu lệnh SQL INSERT, UPDATE hoặc DELETE cần thực thi, có thể chứa các placeholder '?' cho tham số",
-                    "params: Object... - Các tham số cần truyền vào câu truy vấn, theo thứ tự xuất hiện của các placeholder '?'"
+                    "profileName: String - Tên database profile đã cấu hình",
+                    "query: String - Câu lệnh SQL INSERT/UPDATE/DELETE (có thể chứa ? placeholder)",
+                    "params: Object... - Các tham số để thay thế cho ? trong query (tùy chọn)"
             },
-            returnValue = "int - Số bản ghi bị ảnh hưởng bởi câu lệnh",
-            example = "// Thêm một bản ghi mới vào bảng users\n" +
-                    "int rowsAffected = databaseKeyword.executeUpdate(\n" +
-                    "    \"mysql_dev\", \n" +
-                    "    \"INSERT INTO users (username, email, status) VALUES (?, ?, ?)\", \n" +
-                    "    \"john.doe\", \"john.doe@example.com\", \"active\"\n" +
-                    ");\n\n" +
-                    "// Kiểm tra xem có đúng một bản ghi được thêm vào không\n" +
-                    "Assert.assertEquals(rowsAffected, 1);",
-            note = "Áp dụng cho tất cả nền tảng. Đã khởi tạo kết nối CSDL với profileName tương ứng. " +
-                    "Có thể throw SQLException nếu có lỗi khi thực thi câu lệnh, " +
-                    "hoặc IllegalArgumentException nếu profileName không tồn tại."
+            returnValue = "int - Số lượng rows đã được insert/update/delete",
+            example =
+                    "DatabaseKeyword db = new DatabaseKeyword();\n" +
+                            "\n" +
+                            "// Insert một user mới\n" +
+                            "int inserted = db.executeUpdate(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"INSERT INTO users (name, email, status) VALUES (?, ?, ?)\",\n" +
+                            "    \"John Doe\",\n" +
+                            "    \"john@test.com\",\n" +
+                            "    \"active\"\n" +
+                            ");\n" +
+                            "System.out.println(\"Inserted \" + inserted + \" row(s)\");\n" +
+                            "\n" +
+                            "// Update user status\n" +
+                            "int updated = db.executeUpdate(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"UPDATE users SET status = ? WHERE email = ?\",\n" +
+                            "    \"inactive\",\n" +
+                            "    \"john@test.com\"\n" +
+                            ");\n" +
+                            "System.out.println(\"Updated \" + updated + \" row(s)\");\n" +
+                            "\n" +
+                            "// Delete user\n" +
+                            "int deleted = db.executeUpdate(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"DELETE FROM users WHERE id = ?\",\n" +
+                            "    123\n" +
+                            ");\n" +
+                            "System.out.println(\"Deleted \" + deleted + \" row(s)\");\n" +
+                            "\n" +
+                            "// Update multiple rows\n" +
+                            "int batchUpdated = db.executeUpdate(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"UPDATE users SET last_login = NOW() WHERE status = ?\",\n" +
+                            "    \"active\"\n" +
+                            ");\n" +
+                            "System.out.println(\"Updated \" + batchUpdated + \" active users\");",
+            note = "- Trả về 0 nếu không có row nào bị ảnh hưởng (ví dụ: WHERE condition không match)\n" +
+                    "- INSERT thành công thường trả về 1\n" +
+                    "- UPDATE/DELETE có thể trả về nhiều hơn 1 nếu WHERE condition match nhiều rows\n" +
+                    "- Query sẽ được log với số rows affected\n" +
+                    "- Throw DatabaseException nếu có lỗi (duplicate key, foreign key violation, etc.)"
     )
-    @Step("Execute UPDATE statement on [{0}]: {1}")
     public int executeUpdate(String profileName, String query, Object... params) {
-        return execute(() -> {
-            try (Connection conn = ConnectionManager.getConnection(profileName);
-                 PreparedStatement pstmt = conn.prepareStatement(query)) {
-                for (int i = 0; i < params.length; i++) {
-                    pstmt.setObject(i + 1, params[i]);
-                }
-                return pstmt.executeUpdate();
-            }
-        }, profileName, query, params);
+        return executeWithLogging(
+                "executeUpdate",
+                profileName,
+                query,
+                params,
+                () -> executeUpdateInternal(profileName, query, params)
+        );
     }
 
-    // =================================================================================================
-    // VERIFICATION KEYWORDS (PRO-CODE & LOW-CODE)
-    // =================================================================================================
+    @NetatKeyword(
+            name = "executeBatch",
+            description = "Thực thi batch operations - insert/update nhiều records cùng lúc cho hiệu suất tốt hơn",
+            category = "Database",
+            subCategory = "Query Execution",
+            parameters = {
+                    "profileName: String - Tên database profile đã cấu hình",
+                    "query: String - Câu lệnh SQL với ? placeholders",
+                    "batchParams: List<Object[]> - List các mảng parameters, mỗi mảng tương ứng với 1 execution"
+            },
+            returnValue = "int[] - Mảng số lượng rows affected cho mỗi batch operation",
+            example =
+                    "DatabaseKeyword db = new DatabaseKeyword();\n" +
+                            "\n" +
+                            "// Tạo list parameters cho batch insert\n" +
+                            "List<Object[]> batchParams = new ArrayList<>();\n" +
+                            "batchParams.add(new Object[]{\"John Doe\", \"john@test.com\", \"active\"});\n" +
+                            "batchParams.add(new Object[]{\"Jane Smith\", \"jane@test.com\", \"active\"});\n" +
+                            "batchParams.add(new Object[]{\"Bob Johnson\", \"bob@test.com\", \"inactive\"});\n" +
+                            "\n" +
+                            "// Execute batch insert\n" +
+                            "int[] results = db.executeBatch(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"INSERT INTO users (name, email, status) VALUES (?, ?, ?)\",\n" +
+                            "    batchParams\n" +
+                            ");\n" +
+                            "System.out.println(\"Inserted \" + results.length + \" users\");\n" +
+                            "\n" +
+                            "// Batch update example\n" +
+                            "List<Object[]> updates = new ArrayList<>();\n" +
+                            "updates.add(new Object[]{\"active\", 123});\n" +
+                            "updates.add(new Object[]{\"active\", 456});\n" +
+                            "updates.add(new Object[]{\"inactive\", 789});\n" +
+                            "\n" +
+                            "int[] updated = db.executeBatch(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"UPDATE users SET status = ? WHERE id = ?\",\n" +
+                            "    updates\n" +
+                            ");\n" +
+                            "\n" +
+                            "// Check individual results\n" +
+                            "for (int i = 0; i < updated.length; i++) {\n" +
+                            "    System.out.println(\"Batch \" + i + \": \" + updated[i] + \" row(s) affected\");\n" +
+                            "}",
+            note = "- Hiệu suất tốt hơn nhiều so với loop executeUpdate cho từng record\n" +
+                    "- Nên dùng khi cần insert/update >= 10 records\n" +
+                    "- Tất cả operations trong batch dùng chung 1 connection\n" +
+                    "- Nếu 1 operation fail, các operation khác vẫn có thể thành công (tùy database)\n" +
+                    "- Trả về mảng với length = số lượng batch operations"
+    )
+    public int[] executeBatch(String profileName, String query, List<Object[]> batchParams) {
+        return executeWithLogging(
+                "executeBatch",
+                profileName,
+                query,
+                new Object[]{batchParams.size() + " batches"},
+                () -> executeBatchInternal(profileName, query, batchParams)
+        );
+    }
+
+    @NetatKeyword(
+            name = "executeScript",
+            description = "Thực thi một SQL script chứa nhiều statements (phân cách bằng dấu ;)",
+            category = "Database",
+            subCategory = "Query Execution",
+            parameters = {
+                    "profileName: String - Tên database profile đã cấu hình",
+                    "script: String - SQL script với nhiều statements, phân cách bằng dấu ;"
+            },
+            returnValue = "void - Không trả về giá trị",
+            example =
+                    "DatabaseKeyword db = new DatabaseKeyword();\n" +
+                            "\n" +
+                            "// Execute script để tạo và populate table\n" +
+                            "String script = \n" +
+                            "    \"CREATE TABLE IF NOT EXISTS test_users (\" +\n" +
+                            "    \"    id INT PRIMARY KEY AUTO_INCREMENT,\" +\n" +
+                            "    \"    name VARCHAR(100),\" +\n" +
+                            "    \"    email VARCHAR(100)\" +\n" +
+                            "    \");\" +\n" +
+                            "    \"INSERT INTO test_users (name, email) VALUES ('John', 'john@test.com');\" +\n" +
+                            "    \"INSERT INTO test_users (name, email) VALUES ('Jane', 'jane@test.com');\";\n" +
+                            "\n" +
+                            "db.executeScript(\"mysql-dev\", script);\n" +
+                            "\n" +
+                            "// Execute setup script từ file\n" +
+                            "String setupSql = new String(Files.readAllBytes(\n" +
+                            "    Paths.get(\"src/test/resources/setup.sql\")\n" +
+                            "));\n" +
+                            "db.executeScript(\"mysql-dev\", setupSql);\n" +
+                            "\n" +
+                            "// Multi-line script với StringBuilder\n" +
+                            "StringBuilder sb = new StringBuilder();\n" +
+                            "sb.append(\"DROP TABLE IF EXISTS temp_table;\");\n" +
+                            "sb.append(\"CREATE TABLE temp_table (id INT, value VARCHAR(50));\");\n" +
+                            "sb.append(\"INSERT INTO temp_table VALUES (1, 'test');\");\n" +
+                            "db.executeScript(\"mysql-dev\", sb.toString());",
+            note = "- Script sẽ được split theo dấu ; và execute từng statement riêng biệt\n" +
+                    "- Nếu 1 statement fail, các statement sau sẽ không được execute\n" +
+                    "- Thích hợp cho database setup/teardown scripts\n" +
+                    "- Empty statements (chỉ có whitespace) sẽ bị bỏ qua\n" +
+                    "- Throw DatabaseException nếu có bất kỳ statement nào fail"
+    )
+    public void executeScript(String profileName, String script) {
+        executeWithLogging(
+                "executeScript",
+                profileName,
+                script,
+                new Object[0],
+                () -> {
+                    executeScriptInternal(profileName, script);
+                    return null;
+                }
+        );
+    }
+
+    // ========================================================================
+    // VERIFICATION KEYWORDS
+    // ========================================================================
 
     @NetatKeyword(
             name = "verifyRecordExists",
-            description = "Kiểm tra sự tồn tại của ít nhất một bản ghi thỏa mãn điều kiện trong câu truy vấn. " +
-                    "Phương thức này thực thi câu lệnh SELECT và kiểm tra xem kết quả có trống không, " +
-                    "sau đó so sánh với giá trị mong đợi.",
-            category = "DB",
-subCategory="Verification",
+            description = "Verify rằng ít nhất một record thỏa mãn điều kiện query tồn tại trong database",
+            category = "Database",
+            subCategory = "Verification",
             parameters = {
-                    "profileName: String - Tên của profile kết nối CSDL đã được khởi tạo trước đó",
-                    "query: String - Câu lệnh SQL SELECT cần thực thi để kiểm tra sự tồn tại của bản ghi",
-                    "expectedExists: boolean - Giá trị mong đợi: true nếu mong đợi bản ghi tồn tại, false nếu mong đợi không tồn tại",
-                    "params: Object... - Các tham số cần truyền vào câu truy vấn, theo thứ tự xuất hiện của các placeholder '?'"
+                    "profileName: String - Tên database profile đã cấu hình",
+                    "query: String - Câu lệnh SELECT để tìm record",
+                    "params: Object... - Parameters cho query (tùy chọn)"
             },
-            returnValue = "void - Không trả về giá trị, nhưng sẽ ném AssertionError nếu kiểm chứng thất bại",
-            example = "// Kiểm tra xem người dùng với email cụ thể có tồn tại không\n" +
-                    "databaseKeyword.verifyRecordExists(\n" +
-                    "    \"mysql_dev\", \n" +
-                    "    \"SELECT * FROM users WHERE email = ?\", \n" +
-                    "    true, // Mong đợi bản ghi tồn tại\n" +
-                    "    \"john.doe@example.com\"\n" +
-                    ");\n\n" +
-                    "// Kiểm tra xem không có đơn hàng nào có trạng thái 'cancelled'\n" +
-                    "databaseKeyword.verifyRecordExists(\n" +
-                    "    \"mysql_dev\", \n" +
-                    "    \"SELECT * FROM orders WHERE status = ?\", \n" +
-                    "    false, // Mong đợi không có bản ghi nào\n" +
-                    "    \"cancelled\"\n" +
-                    ");",
-            note = "Áp dụng cho tất cả nền tảng. Đã khởi tạo kết nối CSDL với profileName tương ứng. " +
-                    "Có thể throw SQLException nếu có lỗi khi thực thi câu truy vấn, " +
-                    "hoặc AssertionError nếu kết quả kiểm chứng không khớp với giá trị mong đợi."
+            returnValue = "void - Không trả về giá trị (throw AssertionError nếu không tìm thấy)",
+            example =
+                    "DatabaseKeyword db = new DatabaseKeyword();\n" +
+                            "\n" +
+                            "// Verify user với email cụ thể tồn tại\n" +
+                            "db.verifyRecordExists(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"SELECT * FROM users WHERE email = ?\",\n" +
+                            "    \"john@test.com\"\n" +
+                            ");\n" +
+                            "\n" +
+                            "// Verify order đã được tạo\n" +
+                            "db.verifyRecordExists(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"SELECT * FROM orders WHERE user_id = ? AND status = ?\",\n" +
+                            "    123,\n" +
+                            "    \"completed\"\n" +
+                            ");\n" +
+                            "\n" +
+                            "// Verify session còn active\n" +
+                            "String sessionToken = \"abc123xyz\";\n" +
+                            "db.verifyRecordExists(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"SELECT * FROM sessions WHERE token = ? AND expires_at > NOW()\",\n" +
+                            "    sessionToken\n" +
+                            ");\n" +
+                            "\n" +
+                            "// Trong test case với try-catch\n" +
+                            "try {\n" +
+                            "    db.verifyRecordExists(\n" +
+                            "        \"mysql-dev\",\n" +
+                            "        \"SELECT * FROM users WHERE id = ?\",\n" +
+                            "        999\n" +
+                            "    );\n" +
+                            "    System.out.println(\"✓ User exists\");\n" +
+                            "} catch (AssertionError e) {\n" +
+                            "    System.out.println(\"✗ User not found: \" + e.getMessage());\n" +
+                            "}",
+            note = "- Throw AssertionError với message rõ ràng nếu không tìm thấy record\n" +
+                    "- Pass nếu tìm thấy >= 1 record matching query\n" +
+                    "- Thích hợp cho verification sau khi create/update data\n" +
+                    "- Query nên được design để return đúng records cần verify"
     )
-    @Step("Check record existence on [{0}] matching condition: {1}")
-    public void verifyRecordExists(String profileName, String query, boolean expectedExists, Object... params) {
-        execute(() -> {
-            List<Map<String, Object>> result = executeQueryWithParams(profileName, query, params);
-            Assert.assertEquals(!result.isEmpty(), expectedExists, "Record existence verification failed.");
-            return null;
-        }, profileName, query, expectedExists, params);
-    }
-
-    @NetatKeyword(
-            name = "verifyDataSQL",
-            description = "Thực thi câu lệnh SQL và kiểm chứng kết quả với dữ liệu mong đợi. " +
-                    "Phương thức này so sánh từng cột trong từng hàng của kết quả với dữ liệu mong đợi được cung cấp.",
-            category = "DB",
-subCategory="Verification",
-            parameters = {
-                    "profileName: String - Tên của profile kết nối CSDL đã được khởi tạo trước đó",
-                    "query: String - Câu lệnh SQL SELECT cần thực thi để lấy dữ liệu cần kiểm chứng",
-                    "expectedColumnNames: String[] - Mảng các tên cột cần kiểm chứng",
-                    "expectedData: Object[][] - Mảng 2 chiều chứa dữ liệu mong đợi, mỗi hàng tương ứng với một bản ghi và các cột tương ứng với expectedColumnNames",
-                    "queryParams: Object... - Các tham số cần truyền vào câu truy vấn, theo thứ tự xuất hiện của các placeholder '?'"
-            },
-            returnValue = "void - Không trả về giá trị, nhưng sẽ ném AssertionError nếu kiểm chứng thất bại",
-            example = "// Kiểm tra dữ liệu người dùng\n" +
-                    "String[] columns = {\"username\", \"email\", \"status\"};\n" +
-                    "Object[][] expectedData = {\n" +
-                    "    {\"john.doe\", \"john.doe@example.com\", \"active\"},\n" +
-                    "    {\"jane.smith\", \"jane.smith@example.com\", \"inactive\"}\n" +
-                    "};\n\n" +
-                    "databaseKeyword.verifyDataSQL(\n" +
-                    "    \"mysql_dev\",\n" +
-                    "    \"SELECT username, email, status FROM users WHERE department = ? ORDER BY username\",\n" +
-                    "    columns,\n" +
-                    "    expectedData,\n" +
-                    "    \"IT\"\n" +
-                    ");",
-            note = "Áp dụng cho tất cả nền tảng. Đã khởi tạo kết nối CSDL với profileName tương ứng. " +
-                    "Có thể throw SQLException nếu có lỗi khi thực thi câu truy vấn, " +
-                    "AssertionError nếu kết quả kiểm chứng không khớp với dữ liệu mong đợi, " +
-                    "hoặc IllegalArgumentException nếu cấu trúc dữ liệu mong đợi không hợp lệ."
-    )
-    @Step("Verify data on [{0}] using direct SQL statement")
-    public void verifyDataSQL(String profileName, String query, String[] expectedColumnNames, Object[][] expectedData, Object... queryParams) {
-        execute(() -> {
-            List<Map<String, Object>> actualResult = executeQueryWithParams(profileName, query, queryParams);
-            Assert.assertEquals(actualResult.size(), expectedData.length, "Verification error: Number of returned rows does not match.");
-
-            for (int i = 0; i < expectedData.length; i++) {
-                Map<String, Object> actualRow = actualResult.get(i);
-                Object[] expectedRow = expectedData[i];
-                Assert.assertEquals(expectedRow.length, expectedColumnNames.length, "Configuration error: Number of columns in expected data does not match number of header columns at row " + (i + 1));
-
-                for (int j = 0; j < expectedColumnNames.length; j++) {
-                    String columnName = expectedColumnNames[j];
-                    Object expectedValue = expectedRow[j];
-                    Assert.assertTrue(actualRow.containsKey(columnName), "Column '" + columnName + "' does not exist in query result.");
-                    Object actualValue = actualRow.get(columnName);
-                    Assert.assertEquals(String.valueOf(actualValue), String.valueOf(expectedValue), "Verification error at row " + (i + 1) + ", column '" + columnName + "' does not match.");
-                }
-            }
-            return null;
-        }, profileName, query, expectedColumnNames, expectedData, queryParams);
-    }
-
-    @NetatKeyword(
-            name = "verifyDataByQueryFile",
-            description = "Thực thi câu lệnh SQL từ file và kiểm chứng kết quả với dữ liệu từ file dữ liệu. " +
-                    "Phương thức này tách biệt câu truy vấn và dữ liệu kiểm chứng vào các file riêng biệt, " +
-                    "giúp quản lý test case dễ dàng hơn.",
-            category = "DB",
-subCategory="Verification",
-            parameters = {
-                    "profileName: String - Tên của profile kết nối CSDL đã được khởi tạo trước đó",
-                    "queryPath: String - Đường dẫn đến file chứa câu lệnh SQL cần thực thi",
-                    "dataFilePath: String - Đường dẫn đến file dữ liệu chứa các tham số truy vấn và dữ liệu mong đợi"
-            },
-            returnValue = "void - Không trả về giá trị, nhưng sẽ ném AssertionError nếu kiểm chứng thất bại",
-            example = "// Kiểm tra dữ liệu người dùng sử dụng file\n" +
-                    "databaseKeyword.verifyDataByQueryFile(\n" +
-                    "    \"mysql_dev\",\n" +
-                    "    \"sql/get_user_by_department.sql\",\n" +
-                    "    \"testdata/user_verification_data.xlsx\"\n" +
-                    ");\n\n" +
-                    "// File SQL có thể chứa: SELECT username, email, status FROM users WHERE department = ?\n" +
-                    "// File dữ liệu có thể chứa: {param_1: \"IT\", username: \"john.doe\", email: \"john.doe@example.com\", status: \"active\"}",
-            note = "Áp dụng cho tất cả nền tảng. Đã khởi tạo kết nối CSDL với profileName tương ứng, " +
-                    "File SQL và file dữ liệu phải tồn tại và có định dạng hợp lệ. " +
-                    "Có thể throw SQLException nếu có lỗi khi thực thi câu truy vấn, " +
-                    "AssertionError nếu kết quả kiểm chứng không khớp với dữ liệu mong đợi, " +
-                    "FileNotFoundException nếu không tìm thấy file SQL hoặc file dữ liệu, " +
-                    "hoặc IOException nếu có lỗi khi đọc file."
-    )
-    @Step("Verify data on [{0}] using query file [{1}] and data file [{2}]")
-    public void verifyDataByQueryFile(String profileName, String queryPath, String dataFilePath) {
-        execute(() -> {
-            String baseQuery = QueryHelper.getQuery(queryPath);
-            Object[][] data = DataFileHelper.getTestData(dataFilePath);
-            Assert.assertTrue(data.length > 0, "Verification data file has no data: " + dataFilePath);
-            Map<String, String> expectedDataMap = (Map<String, String>) data[0][0];
-
-            List<Object> queryParams = new ArrayList<>();
-            Map<String, Object> verificationData = new HashMap<>();
-            for (Map.Entry<String, String> entry : expectedDataMap.entrySet()) {
-                if (entry.getKey().startsWith("param_")) {
-                    queryParams.add(entry.getValue());
-                } else {
-                    verificationData.put(entry.getKey(), entry.getValue());
-                }
-            }
-
-            List<Map<String, Object>> result = executeQueryWithParams(profileName, baseQuery, queryParams.toArray());
-            Assert.assertFalse(result.isEmpty(), "SELECT statement returned no records.");
-            Map<String, Object> actualDataRow = result.get(0);
-
-            for (Map.Entry<String, Object> entry : verificationData.entrySet()) {
-                String columnName = entry.getKey();
-                Object expectedValue = entry.getValue();
-                Assert.assertTrue(actualDataRow.containsKey(columnName), "Column '" + columnName + "' does not exist.");
-                Assert.assertEquals(String.valueOf(actualDataRow.get(columnName)), String.valueOf(expectedValue));
-            }
-            return null;
-        }, profileName, queryPath, dataFilePath);
-    }
-
-    // =================================================================================================
-    // SUPPORT METHODS (PRIVATE)
-    // =================================================================================================
-
-    private List<Map<String, Object>> executeQueryWithParams(String profileName, String query, Object... params) throws SQLException {
-        List<Map<String, Object>> results = new ArrayList<>();
-        try (Connection conn = ConnectionManager.getConnection(profileName);
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
-
-            for (int i = 0; i < params.length; i++) {
-                pstmt.setObject(i + 1, params[i]);
-            }
-
-            try (ResultSet rs = pstmt.executeQuery()) {
-                ResultSetMetaData md = rs.getMetaData();
-                int columns = md.getColumnCount();
-                while (rs.next()) {
-                    Map<String, Object> row = new HashMap<>(columns);
-                    for (int i = 1; i <= columns; ++i) {
-                        row.put(md.getColumnName(i), rs.getObject(i));
+    public void verifyRecordExists(String profileName, String query, Object... params) {
+        executeWithLogging(
+                "verifyRecordExists",
+                profileName,
+                query,
+                params,
+                () -> {
+                    List<Map<String, Object>> results = executeQueryInternal(profileName, query, params);
+                    if (results.isEmpty()) {
+                        throw new AssertionError("Expected record to exist but none found");
                     }
-                    results.add(row);
+                    return null;
                 }
-            }
-        }
-        return results;
-    }
-
-    // =================================================================================================
-// DATA RETRIEVAL KEYWORDS (NEW UTILITY KEYWORDS)
-// =================================================================================================
-
-    @NetatKeyword(
-            name = "getCellValue",
-            description = "Thực thi câu lệnh SELECT và trả về giá trị của ô đầu tiên (dòng 1, cột 1). Rất hữu ích để lấy một giá trị duy nhất để xác thực hoặc sử dụng trong các bước tiếp theo.",
-            category = "DB",
-            subCategory = "Data Retrieval",
-            parameters = {
-                    "profileName: String - Tên của profile kết nối CSDL",
-                    "query: String - Câu lệnh SQL SELECT, thường chỉ chọn một cột",
-                    "params: Object... - Các tham số cần truyền vào câu truy vấn"
-            },
-            returnValue = "String - Giá trị của ô dưới dạng chuỗi, hoặc null nếu không có kết quả.",
-            example = "// Lấy email của một người dùng cụ thể\n" +
-                    "String email = databaseKeyword.getCellValue(\"mysql_dev\", \"SELECT email FROM users WHERE id = ?\", 123);",
-            note = "Nếu câu truy vấn trả về nhiều dòng hoặc nhiều cột, keyword này sẽ chỉ lấy giá trị của cột đầu tiên ở dòng đầu tiên."
-    )
-    @Step("Get single cell value from [{0}] with query: {1}")
-    public String getCellValue(String profileName, String query, Object... params) {
-        return execute(() -> {
-            List<Map<String, Object>> result = executeQueryWithParams(profileName, query, params);
-            if (result == null || result.isEmpty()) {
-                return null; // Không có bản ghi nào được tìm thấy
-            }
-            Map<String, Object> firstRow = result.get(0);
-            if (firstRow == null || firstRow.isEmpty()) {
-                return null; // Dòng đầu tiên rỗng
-            }
-            // Lấy giá trị của cột đầu tiên, bất kể tên cột là gì
-            Object value = firstRow.values().iterator().next();
-            return value != null ? value.toString() : null;
-        });
+        );
     }
 
     @NetatKeyword(
-            name = "getRow",
-            description = "Thực thi câu lệnh SELECT và trả về bản ghi đầu tiên dưới dạng một Map. Hữu ích khi bạn cần kiểm tra nhiều trường của một đối tượng duy nhất.",
-            category = "DB",
+            name = "verifyRecordNotExists",
+            description = "Verify rằng KHÔNG có record nào thỏa mãn điều kiện query trong database",
+            category = "Database",
+            subCategory = "Verification",
+            parameters = {
+                    "profileName: String - Tên database profile đã cấu hình",
+                    "query: String - Câu lệnh SELECT để tìm record",
+                    "params: Object... - Parameters cho query (tùy chọn)"
+            },
+            returnValue = "void - Không trả về giá trị (throw AssertionError nếu tìm thấy record)",
+            example =
+                    "DatabaseKeyword db = new DatabaseKeyword();\n" +
+                            "\n" +
+                            "// Verify user đã bị delete\n" +
+                            "db.verifyRecordNotExists(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"SELECT * FROM users WHERE email = ?\",\n" +
+                            "    \"deleted@test.com\"\n" +
+                            ");\n" +
+                            "\n" +
+                            "// Verify không có pending orders\n" +
+                            "db.verifyRecordNotExists(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"SELECT * FROM orders WHERE user_id = ? AND status = ?\",\n" +
+                            "    123,\n" +
+                            "    \"pending\"\n" +
+                            ");\n" +
+                            "\n" +
+                            "// Verify session đã expire\n" +
+                            "String oldToken = \"expired_token_123\";\n" +
+                            "db.verifyRecordNotExists(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"SELECT * FROM sessions WHERE token = ? AND expires_at > NOW()\",\n" +
+                            "    oldToken\n" +
+                            ");\n" +
+                            "\n" +
+                            "// Test cleanup verification\n" +
+                            "try {\n" +
+                            "    db.verifyRecordNotExists(\n" +
+                            "        \"mysql-dev\",\n" +
+                            "        \"SELECT * FROM temp_data WHERE created_at < DATE_SUB(NOW(), INTERVAL 7 DAY)\"\n" +
+                            "    );\n" +
+                            "    System.out.println(\"✓ Old temp data cleaned up\");\n" +
+                            "} catch (AssertionError e) {\n" +
+                            "    System.out.println(\"✗ Cleanup incomplete: \" + e.getMessage());\n" +
+                            "}",
+            note = "- Throw AssertionError nếu tìm thấy bất kỳ record nào\n" +
+                    "- Pass nếu query trả về 0 results\n" +
+                    "- Thích hợp cho verification sau khi delete hoặc cleanup\n" +
+                    "- Hữu ích để đảm bảo data đã được remove hoàn toàn"
+    )
+    public void verifyRecordNotExists(String profileName, String query, Object... params) {
+        executeWithLogging(
+                "verifyRecordNotExists",
+                profileName,
+                query,
+                params,
+                () -> {
+                    List<Map<String, Object>> results = executeQueryInternal(profileName, query, params);
+                    if (!results.isEmpty()) {
+                        throw new AssertionError("Expected no records but found " + results.size());
+                    }
+                    return null;
+                }
+        );
+    }
+
+    @NetatKeyword(
+            name = "verifyRowCount",
+            description = "Verify số lượng rows trả về từ query bằng đúng expected count",
+            category = "Database",
+            subCategory = "Verification",
+            parameters = {
+                    "profileName: String - Tên database profile đã cấu hình",
+                    "query: String - Câu lệnh SELECT",
+                    "expectedCount: int - Số lượng rows mong đợi",
+                    "params: Object... - Parameters cho query (tùy chọn)"
+            },
+            returnValue = "void - Không trả về giá trị (throw AssertionError nếu count không khớp)",
+            example =
+                    "DatabaseKeyword db = new DatabaseKeyword();\n" +
+                            "\n" +
+                            "// Verify có đúng 5 active users\n" +
+                            "db.verifyRowCount(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"SELECT * FROM users WHERE status = ?\",\n" +
+                            "    5,\n" +
+                            "    \"active\"\n" +
+                            ");\n" +
+                            "\n" +
+                            "// Verify user có đúng 3 orders\n" +
+                            "db.verifyRowCount(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"SELECT * FROM orders WHERE user_id = ?\",\n" +
+                            "    3,\n" +
+                            "    123\n" +
+                            ");\n" +
+                            "\n" +
+                            "// Verify không có records (count = 0)\n" +
+                            "db.verifyRowCount(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"SELECT * FROM temp_table\",\n" +
+                            "    0\n" +
+                            ");\n" +
+                            "\n" +
+                            "// Verify batch insert count\n" +
+                            "int insertedCount = 10;\n" +
+                            "db.verifyRowCount(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"SELECT * FROM users WHERE created_at > DATE_SUB(NOW(), INTERVAL 1 MINUTE)\",\n" +
+                            "    insertedCount\n" +
+                            ");\n" +
+                            "System.out.println(\"✓ All \" + insertedCount + \" records inserted successfully\");",
+            note = "- Throw AssertionError với actual vs expected count nếu không khớp\n" +
+                    "- Pass nếu số lượng rows = expectedCount\n" +
+                    "- Có thể dùng expectedCount = 0 để verify empty result\n" +
+                    "- Hữu ích cho batch operation verification"
+    )
+    public void verifyRowCount(String profileName, String query, int expectedCount, Object... params) {
+        executeWithLogging(
+                "verifyRowCount",
+                profileName,
+                query,
+                params,
+                () -> {
+                    List<Map<String, Object>> results = executeQueryInternal(profileName, query, params);
+                    if (results.size() != expectedCount) {
+                        throw new AssertionError(
+                                String.format("Expected %d rows but got %d", expectedCount, results.size())
+                        );
+                    }
+                    return null;
+                }
+        );
+    }
+
+    @NetatKeyword(
+            name = "verifyColumnValue",
+            description = "Verify giá trị của một column cụ thể trong first row của query result",
+            category = "Database",
+            subCategory = "Verification",
+            parameters = {
+                    "profileName: String - Tên database profile đã cấu hình",
+                    "query: String - Câu lệnh SELECT",
+                    "params: Object[] - Parameters cho query",
+                    "columnName: String - Tên column cần verify",
+                    "expectedValue: Object - Giá trị mong đợi của column"
+            },
+            returnValue = "void - Không trả về giá trị (throw AssertionError nếu value không khớp)",
+            example =
+                    "DatabaseKeyword db = new DatabaseKeyword();\n" +
+                            "\n" +
+                            "// Verify user status\n" +
+                            "Object[] params1 = {123};\n" +
+                            "db.verifyColumnValue(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"SELECT status FROM users WHERE id = ?\",\n" +
+                            "    params1,\n" +
+                            "    \"status\",\n" +
+                            "    \"active\"\n" +
+                            ");\n" +
+                            "\n" +
+                            "// Verify order amount\n" +
+                            "int orderId = 456;\n" +
+                            "double expectedAmount = 99.99;\n" +
+                            "db.verifyColumnValue(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"SELECT total_amount FROM orders WHERE id = ?\",\n" +
+                            "    new Object[]{orderId},\n" +
+                            "    \"total_amount\",\n" +
+                            "    expectedAmount\n" +
+                            ");\n" +
+                            "\n" +
+                            "// Verify counter value\n" +
+                            "db.verifyColumnValue(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"SELECT COUNT(*) as cnt FROM users\",\n" +
+                            "    new Object[]{},\n" +
+                            "    \"cnt\",\n" +
+                            "    10\n" +
+                            ");\n" +
+                            "\n" +
+                            "// Verify email after update\n" +
+                            "String newEmail = \"newemail@test.com\";\n" +
+                            "db.verifyColumnValue(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"SELECT email FROM users WHERE id = ?\",\n" +
+                            "    new Object[]{123},\n" +
+                            "    \"email\",\n" +
+                            "    newEmail\n" +
+                            ");\n" +
+                            "System.out.println(\"✓ Email updated successfully to: \" + newEmail);",
+            note = "- Throw AssertionError nếu query không trả về row nào\n" +
+                    "- Throw AssertionError nếu column value không khớp với expectedValue\n" +
+                    "- Chỉ verify first row nếu query trả về nhiều rows\n" +
+                    "- Comparison sử dụng Objects.equals() nên type phải match\n" +
+                    "- Nếu cần verify nhiều rows, nên dùng executeQuery và verify manually"
+    )
+    public void verifyColumnValue(String profileName, String query, Object[] params,
+                                  String columnName, Object expectedValue) {
+        executeWithLogging(
+                "verifyColumnValue",
+                profileName,
+                query,
+                params,
+                () -> {
+                    List<Map<String, Object>> results = executeQueryInternal(profileName, query, params);
+                    if (results.isEmpty()) {
+                        throw new AssertionError("No records found");
+                    }
+
+                    Object actualValue = results.get(0).get(columnName);
+                    if (!Objects.equals(actualValue, expectedValue)) {
+                        throw new AssertionError(
+                                String.format("Expected column '%s' to be '%s' but was '%s'",
+                                        columnName, expectedValue, actualValue)
+                        );
+                    }
+                    return null;
+                }
+        );
+    }
+
+    // ========================================================================
+    // DATA RETRIEVAL KEYWORDS
+    // ========================================================================
+
+    @NetatKeyword(
+            name = "getScalarValue",
+            description = "Lấy một giá trị scalar (single value) từ query - thường dùng cho COUNT, MAX, MIN, SUM, AVG",
+            category = "Database",
             subCategory = "Data Retrieval",
             parameters = {
-                    "profileName: String - Tên của profile kết nối CSDL",
-                    "query: String - Câu lệnh SQL SELECT",
-                    "params: Object... - Các tham số cần truyền vào câu truy vấn"
+                    "profileName: String - Tên database profile đã cấu hình",
+                    "query: String - Câu lệnh SELECT trả về 1 giá trị",
+                    "params: Object... - Parameters cho query (tùy chọn)"
             },
-            returnValue = "Map<String, Object> - Một Map biểu diễn bản ghi đầu tiên, với key là tên cột và value là giá trị.",
-            example = "// Lấy toàn bộ thông tin của một sản phẩm\n" +
-                    "Map<String, Object> product = databaseKeyword.getRow(\"mysql_dev\", \"SELECT * FROM products WHERE id = ?\", \"PROD-001\");\n" +
-                    "String productName = product.get(\"name\").toString();\n" +
-                    "double price = (Double) product.get(\"price\");",
-            note = "Nếu câu truy vấn trả về nhiều bản ghi, chỉ có bản ghi đầu tiên được trả về. Trả về null nếu không có kết quả."
+            returnValue = "Object - Giá trị scalar (có thể là Integer, String, Date, etc. tùy query). Trả về null nếu không có result",
+            example =
+                    "DatabaseKeyword db = new DatabaseKeyword();\n" +
+                            "\n" +
+                            "// Đếm số lượng users\n" +
+                            "Object countObj = db.getScalarValue(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"SELECT COUNT(*) FROM users\"\n" +
+                            ");\n" +
+                            "int totalUsers = ((Number) countObj).intValue();\n" +
+                            "System.out.println(\"Total users: \" + totalUsers);\n" +
+                            "\n" +
+                            "// Lấy tên user theo ID\n" +
+                            "String userName = (String) db.getScalarValue(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"SELECT name FROM users WHERE id = ?\",\n" +
+                            "    123\n" +
+                            ");\n" +
+                            "System.out.println(\"User name: \" + userName);\n" +
+                            "\n" +
+                            "// Lấy max order amount\n" +
+                            "Object maxAmountObj = db.getScalarValue(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"SELECT MAX(amount) FROM orders WHERE user_id = ?\",\n" +
+                            "    123\n" +
+                            ");\n" +
+                            "double maxAmount = ((Number) maxAmountObj).doubleValue();\n" +
+                            "System.out.println(\"Max order amount: $\" + maxAmount);\n" +
+                            "\n" +
+                            "// Lấy average rating\n" +
+                            "Object avgObj = db.getScalarValue(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"SELECT AVG(rating) FROM reviews WHERE product_id = ?\",\n" +
+                            "    456\n" +
+                            ");\n" +
+                            "if (avgObj != null) {\n" +
+                            "    double avgRating = ((Number) avgObj).doubleValue();\n" +
+                            "    System.out.println(\"Average rating: \" + String.format(\"%.2f\", avgRating));\n" +
+                            "}",
+            note = "- Trả về giá trị của column đầu tiên trong row đầu tiên\n" +
+                    "- Trả về null nếu query không có result\n" +
+                    "- Thích hợp cho aggregate functions (COUNT, SUM, AVG, MAX, MIN)\n" +
+                    "- Nếu query trả về nhiều columns, chỉ lấy column đầu tiên\n" +
+                    "- Type của return value tùy thuộc vào column type trong database\n" +
+                    "- Cần cast về đúng type khi sử dụng (Integer, String, Double, etc.)"
     )
-    @Step("Get first row from [{0}] with query: {1}")
-    public Map<String, Object> getRow(String profileName, String query, Object... params) {
-        return execute(() -> {
-            List<Map<String, Object>> result = executeQueryWithParams(profileName, query, params);
-            return result.isEmpty() ? null : result.get(0);
-        });
+    public Object getScalarValue(String profileName, String query, Object... params) {
+        return executeWithLogging(
+                "getScalarValue",
+                profileName,
+                query,
+                params,
+                () -> {
+                    List<Map<String, Object>> results = executeQueryInternal(profileName, query, params);
+                    if (results.isEmpty()) {
+                        return null;
+                    }
+
+                    Map<String, Object> firstRow = results.get(0);
+                    if (firstRow.isEmpty()) {
+                        return null;
+                    }
+
+                    return firstRow.values().iterator().next();
+                }
+        );
     }
 
     @NetatKeyword(
             name = "getColumnValues",
-            description = "Thực thi câu lệnh SELECT và trả về tất cả giá trị của một cột cụ thể dưới dạng một danh sách.",
-            category = "DB",
+            description = "Lấy tất cả giá trị của một column cụ thể dưới dạng List",
+            category = "Database",
             subCategory = "Data Retrieval",
             parameters = {
-                    "profileName: String - Tên của profile kết nối CSDL",
-                    "columnName: String - Tên của cột mà bạn muốn lấy dữ liệu",
-                    "query: String - Câu lệnh SQL SELECT",
-                    "params: Object... - Các tham số cần truyền vào câu truy vấn"
+                    "profileName: String - Tên database profile đã cấu hình",
+                    "query: String - Câu lệnh SELECT",
+                    "columnName: String - Tên column cần lấy giá trị",
+                    "params: Object... - Parameters cho query (tùy chọn)"
             },
-            returnValue = "List<Object> - Một danh sách chứa tất cả các giá trị từ cột được chỉ định.",
-            example = "// Lấy danh sách email của tất cả người dùng đang hoạt động\n" +
-                    "List<Object> emails = databaseKeyword.getColumnValues(\"mysql_dev\", \"email\", \"SELECT email FROM users WHERE status = ?\", \"active\");",
-            note = "Đảm bảo rằng tên cột bạn cung cấp khớp chính xác với tên cột trong kết quả trả về của câu lệnh SELECT."
+            returnValue = "List<Object> - List các giá trị của column (có thể chứa null). Empty list nếu không có results",
+            example =
+                    "DatabaseKeyword db = new DatabaseKeyword();\n" +
+                            "\n" +
+                            "// Lấy danh sách email của active users\n" +
+                            "List<Object> emails = db.getColumnValues(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"SELECT email FROM users WHERE status = ?\",\n" +
+                            "    \"email\",\n" +
+                            "    \"active\"\n" +
+                            ");\n" +
+                            "for (Object email : emails) {\n" +
+                            "    System.out.println(\"Email: \" + email);\n" +
+                            "}\n" +
+                            "\n" +
+                            "// Lấy danh sách IDs\n" +
+                            "List<Object> orderIds = db.getColumnValues(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"SELECT id FROM orders WHERE user_id = ?\",\n" +
+                            "    \"id\",\n" +
+                            "    123\n" +
+                            ");\n" +
+                            "System.out.println(\"Found \" + orderIds.size() + \" orders\");\n" +
+                            "\n" +
+                            "// Lấy danh sách product names\n" +
+                            "List<Object> productNames = db.getColumnValues(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"SELECT name FROM products WHERE category = ?\",\n" +
+                            "    \"name\",\n" +
+                            "    \"Electronics\"\n" +
+                            ");\n" +
+                            "\n" +
+                            "// Check if list contains specific value\n" +
+                            "if (emails.contains(\"john@test.com\")) {\n" +
+                            "    System.out.println(\"✓ John's email found in active users\");\n" +
+                            "}",
+            note = "- Trả về List chứa giá trị của column từ tất cả rows\n" +
+                    "- Trả về empty list [] nếu query không có result\n" +
+                    "- List có thể chứa null values nếu column cho phép NULL\n" +
+                    "- List có thể chứa duplicate values\n" +
+                    "- Thứ tự trong list giống thứ tự rows trả về từ query"
     )
-    @Step("Get values from column [{1}] on [{0}] with query: {2}")
-    public List<Object> getColumnValues(String profileName, String columnName, String query, Object... params) {
-        return execute(() -> {
-            List<Map<String, Object>> result = executeQueryWithParams(profileName, query, params);
-            List<Object> columnValues = new ArrayList<>();
-            if (result.isEmpty()) {
-                return columnValues; // Trả về danh sách rỗng
-            }
-            for (Map<String, Object> row : result) {
-                columnValues.add(row.get(columnName));
-            }
-            return columnValues;
-        });
+    public List<Object> getColumnValues(String profileName, String query, String columnName, Object... params) {
+        return executeWithLogging(
+                "getColumnValues",
+                profileName,
+                query,
+                params,
+                () -> {
+                    List<Map<String, Object>> results = executeQueryInternal(profileName, query, params);
+                    List<Object> values = new ArrayList<>();
+
+                    for (Map<String, Object> row : results) {
+                        values.add(row.get(columnName));
+                    }
+
+                    return values;
+                }
+        );
     }
 
     @NetatKeyword(
             name = "getRowCount",
-            description = "Thực thi một câu lệnh SELECT và trả về tổng số bản ghi (dòng) trong kết quả.",
-            category = "DB",
+            description = "Đếm số lượng rows từ query hoặc table. Tự động wrap với COUNT(*) nếu input là table name",
+            category = "Database",
             subCategory = "Data Retrieval",
             parameters = {
-                    "profileName: String - Tên của profile kết nối CSDL",
-                    "query: String - Câu lệnh SQL SELECT",
-                    "params: Object... - Các tham số cần truyền vào câu truy vấn"
+                    "profileName: String - Tên database profile đã cấu hình",
+                    "queryOrTable: String - Câu SELECT query hoặc table name",
+                    "params: Object... - Parameters cho query nếu có (tùy chọn)"
             },
-            returnValue = "int - Số lượng bản ghi trong kết quả.",
-            example = "// Đếm số lượng đơn hàng đã được giao thành công\n" +
-                    "int deliveredOrders = databaseKeyword.getRowCount(\"mysql_dev\", \"SELECT * FROM orders WHERE status = ?\", \"DELIVERED\");",
-            note = "Keyword này là một cách khác để kiểm tra sự tồn tại của dữ liệu. Khác với executeUpdate, nó không thay đổi dữ liệu."
+            returnValue = "int - Số lượng rows. Trả về 0 nếu không có data",
+            example =
+                    "DatabaseKeyword db = new DatabaseKeyword();\n" +
+                            "\n" +
+                            "// Đếm rows từ query\n" +
+                            "int activeCount = db.getRowCount(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"SELECT * FROM users WHERE status = ?\",\n" +
+                            "    \"active\"\n" +
+                            ");\n" +
+                            "System.out.println(\"Active users: \" + activeCount);\n" +
+                            "\n" +
+                            "// Đếm rows từ table name (không cần viết SELECT COUNT)\n" +
+                            "int totalUsers = db.getRowCount(\"mysql-dev\", \"users\");\n" +
+                            "System.out.println(\"Total users in table: \" + totalUsers);\n" +
+                            "\n" +
+                            "// Đếm với nhiều conditions\n" +
+                            "int completedOrders = db.getRowCount(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"SELECT * FROM orders WHERE user_id = ? AND status = ?\",\n" +
+                            "    123,\n" +
+                            "    \"completed\"\n" +
+                            ");\n" +
+                            "\n" +
+                            "// So sánh counts\n" +
+                            "int before = db.getRowCount(\"mysql-dev\", \"temp_table\");\n" +
+                            "// ... perform some operations ...\n" +
+                            "int after = db.getRowCount(\"mysql-dev\", \"temp_table\");\n" +
+                            "System.out.println(\"Added \" + (after - before) + \" rows\");",
+            note = "- Nếu input không bắt đầu bằng SELECT, sẽ tự động tạo query COUNT(*) cho table\n" +
+                    "- Trả về 0 nếu table/query không có data\n" +
+                    "- Hiệu suất tốt hơn so với executeQuery rồi check size\n" +
+                    "- Có thể dùng với complex queries có WHERE, JOIN, etc."
     )
-    @Step("Get row count from [{0}] with query: {1}")
-    public int getRowCount(String profileName, String query, Object... params) {
-        return execute(() -> {
-            List<Map<String, Object>> result = executeQueryWithParams(profileName, query, params);
-            return result.size();
-        });
+    public int getRowCount(String profileName, String queryOrTable, Object... params) {
+        return executeWithLogging(
+                "getRowCount",
+                profileName,
+                queryOrTable,
+                params,
+                () -> {
+                    String query = queryOrTable;
+
+                    // If it's just a table name, create COUNT query
+                    if (!query.trim().toUpperCase().startsWith("SELECT")) {
+                        query = "SELECT COUNT(*) FROM " + query;
+                    }
+
+                    Object count = getScalarValue(profileName, query, params);
+                    return count != null ? ((Number) count).intValue() : 0;
+                }
+        );
+    }
+
+    // ========================================================================
+    // TRANSACTION KEYWORDS
+    // ========================================================================
+
+    @NetatKeyword(
+            name = "beginTransaction",
+            description = "Bắt đầu một transaction với isolation level tùy chọn",
+            category = "Database",
+            subCategory = "Transaction",
+            parameters = {
+                    "profileName: String - Tên database profile đã cấu hình",
+                    "isolationLevel: String... - Isolation level (tùy chọn): READ_UNCOMMITTED, READ_COMMITTED, REPEATABLE_READ, SERIALIZABLE. Default: READ_COMMITTED"
+            },
+            returnValue = "void - Không trả về giá trị",
+            example =
+                    "DatabaseKeyword db = new DatabaseKeyword();\n" +
+                            "\n" +
+                            "// Begin transaction với default isolation (READ_COMMITTED)\n" +
+                            "db.beginTransaction(\"mysql-dev\");\n" +
+                            "try {\n" +
+                            "    db.executeUpdate(\n" +
+                            "        \"mysql-dev\",\n" +
+                            "        \"UPDATE accounts SET balance = balance - ? WHERE id = ?\",\n" +
+                            "        100.0,\n" +
+                            "        1\n" +
+                            "    );\n" +
+                            "    db.executeUpdate(\n" +
+                            "        \"mysql-dev\",\n" +
+                            "        \"UPDATE accounts SET balance = balance + ? WHERE id = ?\",\n" +
+                            "        100.0,\n" +
+                            "        2\n" +
+                            "    );\n" +
+                            "    db.commitTransaction(\"mysql-dev\");\n" +
+                            "    System.out.println(\"✓ Transaction committed successfully\");\n" +
+                            "} catch (Exception e) {\n" +
+                            "    db.rollbackTransaction(\"mysql-dev\", \"Error: \" + e.getMessage());\n" +
+                            "    System.out.println(\"✗ Transaction rolled back\");\n" +
+                            "}\n" +
+                            "\n" +
+                            "// Begin transaction với specific isolation level\n" +
+                            "db.beginTransaction(\"mysql-dev\", \"SERIALIZABLE\");\n" +
+                            "try {\n" +
+                            "    // Critical operations requiring highest isolation\n" +
+                            "    db.executeUpdate(\"mysql-dev\", \"UPDATE inventory SET stock = stock - 1 WHERE id = ?\", 123);\n" +
+                            "    db.commitTransaction(\"mysql-dev\");\n" +
+                            "} catch (Exception e) {\n" +
+                            "    db.rollbackTransaction(\"mysql-dev\");\n" +
+                            "}",
+            note = "- Connection sẽ được lưu trong ThreadLocal cho các operations tiếp theo\n" +
+                    "- Auto-commit sẽ bị tắt cho đến khi commit hoặc rollback\n" +
+                    "- Phải gọi commitTransaction hoặc rollbackTransaction để kết thúc transaction\n" +
+                    "- Isolation levels: READ_UNCOMMITTED (lowest), READ_COMMITTED (default), REPEATABLE_READ, SERIALIZABLE (highest)\n" +
+                    "- Nên sử dụng try-catch-finally để đảm bảo transaction được close"
+    )
+    public void beginTransaction(String profileName, String... isolationLevel) {
+        String isolation = isolationLevel.length > 0 ? isolationLevel[0] : "READ_COMMITTED";
+
+        executeWithLogging(
+                "beginTransaction",
+                profileName,
+                "BEGIN TRANSACTION",
+                new Object[]{isolation},
+                () -> {
+                    // ✅ Log transaction begin
+                    dbLogger.logTransactionBegin(profileName, isolation);
+
+                    Connection conn = ConnectionManager.getConnection(profileName);
+                    conn.setAutoCommit(false);
+
+                    // Set isolation level if specified
+                    if (isolationLevel.length > 0) {
+                        int level = mapIsolationLevel(isolationLevel[0]);
+                        conn.setTransactionIsolation(level);
+                    }
+
+                    // Store connection in context for subsequent operations
+                    storeConnection(profileName, conn);
+
+                    return null;
+                }
+        );
     }
 
     @NetatKeyword(
-            name = "getQueryResultsAsString",
-            description = "Thực thi câu lệnh SELECT và trả về toàn bộ kết quả dưới dạng một chuỗi String duy nhất, được định dạng sẵn. Rất hữu ích để kiểm tra nhanh hoặc xác thực một phần dữ liệu.",
-            category = "DB",
-            subCategory = "Data Retrieval",
+            name = "commitTransaction",
+            description = "Commit transaction hiện tại, lưu tất cả thay đổi vào database",
+            category = "Database",
+            subCategory = "Transaction",
             parameters = {
-                    "profileName: String - Tên của profile kết nối CSDL",
-                    "query: String - Câu lệnh SQL SELECT",
-                    "params: Object... - Các tham số cần truyền vào câu truy vấn"
+                    "profileName: String - Tên database profile đã cấu hình"
             },
-            returnValue = "String - Toàn bộ bảng kết quả đã được định dạng.",
-            example = "// Lấy thông tin sinh viên và kiểm tra xem có chứa tên 'Nguyen Van A' không\n" +
-                    "String result = databaseKeyword.getQueryResultsAsString(\"dbMariaLocal\", \"SELECT ma_sv, ten_sv FROM sinhvien\");\n" +
-                    "assertion.assertContains(result, \"Nguyen Van A\");",
-            note = "Chuỗi trả về sẽ bao gồm cả tiêu đề cột và tất cả các dòng dữ liệu, mỗi dòng trên một hàng mới."
+            returnValue = "void - Không trả về giá trị",
+            example =
+                    "DatabaseKeyword db = new DatabaseKeyword();\n" +
+                            "\n" +
+                            "// Simple transaction\n" +
+                            "db.beginTransaction(\"mysql-dev\");\n" +
+                            "db.executeUpdate(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"INSERT INTO orders (user_id, amount) VALUES (?, ?)\",\n" +
+                            "    123,\n" +
+                            "    99.99\n" +
+                            ");\n" +
+                            "db.commitTransaction(\"mysql-dev\");\n" +
+                            "System.out.println(\"✓ Order created\");\n" +
+                            "\n" +
+                            "// Transaction with multiple operations\n" +
+                            "db.beginTransaction(\"mysql-dev\");\n" +
+                            "try {\n" +
+                            "    // Insert order\n" +
+                            "    int orderId = db.executeUpdate(\n" +
+                            "        \"mysql-dev\",\n" +
+                            "        \"INSERT INTO orders (user_id, total) VALUES (?, ?)\",\n" +
+                            "        123, 199.99\n" +
+                            "    );\n" +
+                            "    \n" +
+                            "    // Insert order items\n" +
+                            "    db.executeUpdate(\n" +
+                            "        \"mysql-dev\",\n" +
+                            "        \"INSERT INTO order_items (order_id, product_id, quantity) VALUES (?, ?, ?)\",\n" +
+                            "        orderId, 456, 2\n" +
+                            "    );\n" +
+                            "    \n" +
+                            "    // Update inventory\n" +
+                            "    db.executeUpdate(\n" +
+                            "        \"mysql-dev\",\n" +
+                            "        \"UPDATE products SET stock = stock - ? WHERE id = ?\",\n" +
+                            "        2, 456\n" +
+                            "    );\n" +
+                            "    \n" +
+                            "    db.commitTransaction(\"mysql-dev\");\n" +
+                            "    System.out.println(\"✓ Order and inventory updated\");\n" +
+                            "} catch (Exception e) {\n" +
+                            "    db.rollbackTransaction(\"mysql-dev\");\n" +
+                            "    System.err.println(\"✗ Transaction failed: \" + e.getMessage());\n" +
+                            "    throw e;\n" +
+                            "}",
+            note = "- Tất cả thay đổi trong transaction sẽ được persist vào database\n" +
+                    "- Connection sẽ được đóng và remove khỏi ThreadLocal\n" +
+                    "- Auto-commit sẽ được bật lại sau khi commit\n" +
+                    "- Throw IllegalStateException nếu không có active transaction\n" +
+                    "- Transaction duration và operation count sẽ được log"
     )
-    @Step("Get query results as formatted string from [{0}] with query: {1}")
-    public String getQueryResultsAsString(String profileName, String query, Object... params) {
-        return execute(() -> {
-            List<Map<String, Object>> result = executeQueryWithParams(profileName, query, params);
+    public void commitTransaction(String profileName) {
+        long startTime = System.currentTimeMillis();
 
-            if (result == null || result.isEmpty()) {
-                return "Query returned no results.";
-            }
+        executeWithLogging(
+                "commitTransaction",
+                profileName,
+                "COMMIT",
+                new Object[0],
+                () -> {
+                    Connection conn = getStoredConnection(profileName);
+                    if (conn == null) {
+                        throw new IllegalStateException("No active transaction for profile: " + profileName);
+                    }
 
-            StringBuilder sb = new StringBuilder();
+                    conn.commit();
+                    conn.setAutoCommit(true);
 
-            // Lấy và thêm tiêu đề cột
-            String headers = String.join(" | ", result.get(0).keySet());
-            sb.append(headers).append("\n");
-            sb.append("---------------------------------\n");
+                    // ✅ Log transaction commit
+                    long duration = System.currentTimeMillis() - startTime;
+                    dbLogger.logTransactionCommit(profileName, duration, getOperationCount(profileName));
 
-            // Thêm từng dòng dữ liệu
-            for (Map<String, Object> row : result) {
-                List<String> values = new ArrayList<>();
-                for (Object value : row.values()) {
-                    values.add(String.valueOf(value));
+                    // Cleanup
+                    removeConnection(profileName);
+                    conn.close();
+
+                    return null;
                 }
-                sb.append(String.join(" | ", values)).append("\n");
+        );
+    }
+
+    @NetatKeyword(
+            name = "rollbackTransaction",
+            description = "Rollback transaction hiện tại, hủy bỏ tất cả thay đổi",
+            category = "Database",
+            subCategory = "Transaction",
+            parameters = {
+                    "profileName: String - Tên database profile đã cấu hình",
+                    "reason: String... - Lý do rollback (tùy chọn, dùng cho logging)"
+            },
+            returnValue = "void - Không trả về giá trị",
+            example =
+                    "DatabaseKeyword db = new DatabaseKeyword();\n" +
+                            "\n" +
+                            "// Rollback on error\n" +
+                            "db.beginTransaction(\"mysql-dev\");\n" +
+                            "try {\n" +
+                            "    db.executeUpdate(\n" +
+                            "        \"mysql-dev\",\n" +
+                            "        \"UPDATE accounts SET balance = balance - ? WHERE id = ?\",\n" +
+                            "        1000.0,\n" +
+                            "        1\n" +
+                            "    );\n" +
+                            "    \n" +
+                            "    // Check balance\n" +
+                            "    Object balance = db.getScalarValue(\n" +
+                            "        \"mysql-dev\",\n" +
+                            "        \"SELECT balance FROM accounts WHERE id = ?\",\n" +
+                            "        1\n" +
+                            "    );\n" +
+                            "    \n" +
+                            "    if (((Number) balance).doubleValue() < 0) {\n" +
+                            "        db.rollbackTransaction(\"mysql-dev\", \"Insufficient balance\");\n" +
+                            "        System.out.println(\"✗ Transaction cancelled: Insufficient funds\");\n" +
+                            "        return;\n" +
+                            "    }\n" +
+                            "    \n" +
+                            "    db.executeUpdate(\n" +
+                            "        \"mysql-dev\",\n" +
+                            "        \"UPDATE accounts SET balance = balance + ? WHERE id = ?\",\n" +
+                            "        1000.0,\n" +
+                            "        2\n" +
+                            "    );\n" +
+                            "    \n" +
+                            "    db.commitTransaction(\"mysql-dev\");\n" +
+                            "} catch (Exception e) {\n" +
+                            "    db.rollbackTransaction(\"mysql-dev\", \"Error: \" + e.getMessage());\n" +
+                            "    System.err.println(\"✗ Transaction rolled back due to error\");\n" +
+                            "}\n" +
+                            "\n" +
+                            "// Manual rollback for business logic\n" +
+                            "db.beginTransaction(\"mysql-dev\");\n" +
+                            "db.executeUpdate(\"mysql-dev\", \"INSERT INTO temp_data VALUES (?)\", \"test\");\n" +
+                            "// Decide to cancel\n" +
+                            "db.rollbackTransaction(\"mysql-dev\", \"Manual cancellation\");",
+            note = "- Tất cả thay đổi trong transaction sẽ bị hủy bỏ\n" +
+                    "- Connection sẽ được đóng và remove khỏi ThreadLocal\n" +
+                    "- Auto-commit sẽ được bật lại sau khi rollback\n" +
+                    "- Throw IllegalStateException nếu không có active transaction\n" +
+                    "- Reason parameter sẽ được log để track lý do rollback"
+    )
+    public void rollbackTransaction(String profileName, String... reason) {
+        String rollbackReason = reason.length > 0 ? reason[0] : "Manual rollback";
+
+        executeWithLogging(
+                "rollbackTransaction",
+                profileName,
+                "ROLLBACK",
+                new Object[]{rollbackReason},
+                () -> {
+                    Connection conn = getStoredConnection(profileName);
+                    if (conn == null) {
+                        throw new IllegalStateException("No active transaction for profile: " + profileName);
+                    }
+
+                    conn.rollback();
+                    conn.setAutoCommit(true);
+
+                    // ✅ Log transaction rollback
+                    dbLogger.logTransactionRollback(profileName, rollbackReason);
+
+                    // Cleanup
+                    removeConnection(profileName);
+                    conn.close();
+
+                    return null;
+                }
+        );
+    }
+
+    // ========================================================================
+    // CONNECTION MANAGEMENT KEYWORDS
+    // ========================================================================
+
+    @NetatKeyword(
+            name = "checkConnection",
+            description = "Kiểm tra connection có hoạt động không bằng cách thực thi simple query",
+            category = "Database",
+            subCategory = "Connection Management",
+            parameters = {
+                    "profileName: String - Tên database profile đã cấu hình"
+            },
+            returnValue = "boolean - true nếu connection hoạt động, false nếu không",
+            example =
+                    "DatabaseKeyword db = new DatabaseKeyword();\n" +
+                            "\n" +
+                            "// Check connection trước khi execute queries\n" +
+                            "if (db.checkConnection(\"mysql-dev\")) {\n" +
+                            "    System.out.println(\"✓ Database connection is healthy\");\n" +
+                            "    // Proceed with queries\n" +
+                            "} else {\n" +
+                            "    System.out.println(\"✗ Database connection failed\");\n" +
+                            "    // Handle connection error\n" +
+                            "}\n" +
+                            "\n" +
+                            "// Health check trong loop\n" +
+                            "for (int i = 0; i < 3; i++) {\n" +
+                            "    boolean isConnected = db.checkConnection(\"mysql-dev\");\n" +
+                            "    System.out.println(\"Attempt \" + (i + 1) + \": \" + (isConnected ? \"OK\" : \"FAILED\"));\n" +
+                            "    if (isConnected) break;\n" +
+                            "    Thread.sleep(1000); // Wait before retry\n" +
+                            "}\n" +
+                            "\n" +
+                            "// Check multiple profiles\n" +
+                            "String[] profiles = {\"mysql-dev\", \"postgres-prod\", \"oracle-test\"};\n" +
+                            "for (String profile : profiles) {\n" +
+                            "    boolean status = db.checkConnection(profile);\n" +
+                            "    System.out.println(profile + \": \" + (status ? \"✓\" : \"✗\"));\n" +
+                            "}",
+            note = "- Thực thi simple query (SELECT 1) để test connection\n" +
+                    "- Trả về false nếu có SQLException, không throw exception\n" +
+                    "- Hữu ích cho health checks và pre-flight validations\n" +
+                    "- Có thể dùng để verify connection sau khi reconnect"
+    )
+    public boolean checkConnection(String profileName) {
+        return executeWithLogging(
+                "checkConnection",
+                profileName,
+                "SELECT 1",
+                new Object[0],
+                () -> {
+                    try (Connection conn = ConnectionManager.getConnection(profileName);
+                         Statement stmt = conn.createStatement()) {
+
+                        ResultSet rs = stmt.executeQuery("SELECT 1");
+                        return rs.next();
+
+                    } catch (SQLException e) {
+                        return false;
+                    }
+                }
+        );
+    }
+
+    @NetatKeyword(
+            name = "getConnectionPoolStats",
+            description = "Lấy thống kê connection pool (size, active, idle, waiting threads)",
+            category = "Database",
+            subCategory = "Connection Management",
+            parameters = {
+                    "profileName: String - Tên database profile đã cấu hình"
+            },
+            returnValue = "Map<String, Object> - Map chứa pool statistics (poolSize, activeConnections, idleConnections, waitingThreads, utilizationPercent)",
+            example =
+                    "DatabaseKeyword db = new DatabaseKeyword();\n" +
+                            "\n" +
+                            "// Lấy và hiển thị pool stats\n" +
+                            "Map<String, Object> stats = db.getConnectionPoolStats(\"mysql-dev\");\n" +
+                            "System.out.println(\"Pool Size: \" + stats.get(\"poolSize\"));\n" +
+                            "System.out.println(\"Active: \" + stats.get(\"activeConnections\"));\n" +
+                            "System.out.println(\"Idle: \" + stats.get(\"idleConnections\"));\n" +
+                            "System.out.println(\"Waiting: \" + stats.get(\"waitingThreads\"));\n" +
+                            "System.out.println(\"Utilization: \" + stats.get(\"utilizationPercent\") + \"%\");\n" +
+                            "\n" +
+                            "// Check if pool is healthy\n" +
+                            "double utilization = (Double) stats.get(\"utilizationPercent\");\n" +
+                            "if (utilization > 80) {\n" +
+                            "    System.out.println(\"⚠️  Warning: High pool utilization!\");\n" +
+                            "} else if (utilization > 90) {\n" +
+                            "    System.out.println(\"🔥 Critical: Pool nearly exhausted!\");\n" +
+                            "}\n" +
+                            "\n" +
+                            "// Monitor pool during load test\n" +
+                            "for (int i = 0; i < 100; i++) {\n" +
+                            "    db.executeQuery(\"mysql-dev\", \"SELECT * FROM users LIMIT 10\");\n" +
+                            "    \n" +
+                            "    if (i % 10 == 0) {\n" +
+                            "        Map<String, Object> currentStats = db.getConnectionPoolStats(\"mysql-dev\");\n" +
+                            "        System.out.println(\"Iteration \" + i + \": \" + \n" +
+                            "            currentStats.get(\"activeConnections\") + \"/\" + \n" +
+                            "            currentStats.get(\"poolSize\") + \" active\");\n" +
+                            "    }\n" +
+                            "}",
+            note = "- Pool statistics sẽ được log tự động\n" +
+                    "- Warning log nếu utilization > 80%\n" +
+                    "- Hữu ích cho monitoring và capacity planning\n" +
+                    "- Có thể integrate với monitoring tools (Prometheus, Grafana)"
+    )
+    public Map<String, Object> getConnectionPoolStats(String profileName) {
+        return executeWithLogging(
+                "getConnectionPoolStats",
+                profileName,
+                "GET_POOL_STATS",
+                new Object[0],
+                () -> {
+                    PoolStats stats = ConnectionManager.getPoolStats(profileName);
+
+                    // ✅ Log pool stats
+                    dbLogger.logConnectionPoolStats(profileName, stats);
+
+                    Map<String, Object> result = new HashMap<>();
+                    result.put("poolSize", stats.getPoolSize());
+                    result.put("activeConnections", stats.getActiveConnections());
+                    result.put("idleConnections", stats.getIdleConnections());
+                    result.put("waitingThreads", stats.getWaitingThreads());
+                    result.put("utilizationPercent", stats.getUtilizationPercent());
+
+                    return result;
+                }
+        );
+    }
+
+    @NetatKeyword(
+            name = "waitForConnectionAvailable",
+            description = "Đợi cho đến khi có connection available trong pool (polling với timeout)",
+            category = "Database",
+            subCategory = "Connection Management",
+            parameters = {
+                    "profileName: String - Tên database profile đã cấu hình",
+                    "timeoutMs: long - Timeout trong milliseconds"
+            },
+            returnValue = "void - Không trả về giá trị (throw DatabaseException nếu timeout)",
+            example =
+                    "DatabaseKeyword db = new DatabaseKeyword();\n" +
+                            "\n" +
+                            "// Wait for connection với 5 second timeout\n" +
+                            "try {\n" +
+                            "    db.waitForConnectionAvailable(\"mysql-dev\", 5000);\n" +
+                            "    System.out.println(\"✓ Connection available\");\n" +
+                            "    // Proceed với operations\n" +
+                            "} catch (DatabaseException e) {\n" +
+                            "    System.out.println(\"✗ Timeout: No connections available\");\n" +
+                            "}\n" +
+                            "\n" +
+                            "// Trong high load scenario\n" +
+                            "for (int i = 0; i < 1000; i++) {\n" +
+                            "    // Wait before each operation\n" +
+                            "    db.waitForConnectionAvailable(\"mysql-dev\", 10000);\n" +
+                            "    db.executeQuery(\"mysql-dev\", \"SELECT * FROM users WHERE id = ?\", i);\n" +
+                            "}\n" +
+                            "\n" +
+                            "// Retry logic với exponential backoff\n" +
+                            "int maxRetries = 3;\n" +
+                            "for (int retry = 0; retry < maxRetries; retry++) {\n" +
+                            "    try {\n" +
+                            "        long timeout = (long) (1000 * Math.pow(2, retry)); // 1s, 2s, 4s\n" +
+                            "        db.waitForConnectionAvailable(\"mysql-dev\", timeout);\n" +
+                            "        // Execute operation\n" +
+                            "        break;\n" +
+                            "    } catch (DatabaseException e) {\n" +
+                            "        if (retry == maxRetries - 1) throw e;\n" +
+                            "        System.out.println(\"Retry \" + (retry + 1) + \" failed, waiting...\");\n" +
+                            "    }\n" +
+                            "}",
+            note = "- Polling mỗi 100ms để check idle connections\n" +
+                    "- Throw DatabaseException nếu không có connection available sau timeout\n" +
+                    "- Hữu ích để tránh connection timeout errors trong high load\n" +
+                    "- Có thể combine với retry logic cho reliability"
+    )
+    public void waitForConnectionAvailable(String profileName, long timeoutMs) {
+        executeWithLogging(
+                "waitForConnectionAvailable",
+                profileName,
+                "WAIT_FOR_CONNECTION",
+                new Object[]{timeoutMs},
+                () -> {
+                    long startTime = System.currentTimeMillis();
+
+                    while (System.currentTimeMillis() - startTime < timeoutMs) {
+                        PoolStats stats = ConnectionManager.getPoolStats(profileName);
+                        if (stats.getIdleConnections() > 0) {
+                            return null;
+                        }
+
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                            break;
+                        }
+                    }
+
+                    throw GenericDatabaseException.builder()
+                            .message("Timeout waiting for available connection after " + timeoutMs + "ms")
+                            .profileName(profileName)
+                            .severity(ErrorSeverity.ERROR)
+                            .retryable(true)
+                            .build();
+                }
+        );
+    }
+
+    // ========================================================================
+    // TABLE MANAGEMENT KEYWORDS
+    // ========================================================================
+
+    @NetatKeyword(
+            name = "truncateTable",
+            description = "Xóa tất cả data trong table (TRUNCATE) - nhanh hơn DELETE và reset auto-increment",
+            category = "Database",
+            subCategory = "Table Management",
+            parameters = {
+                    "profileName: String - Tên database profile đã cấu hình",
+                    "tableName: String - Tên table cần truncate"
+            },
+            returnValue = "void - Không trả về giá trị",
+            example =
+                    "DatabaseKeyword db = new DatabaseKeyword();\n" +
+                            "\n" +
+                            "// Truncate table trước test\n" +
+                            "db.truncateTable(\"mysql-dev\", \"temp_users\");\n" +
+                            "System.out.println(\"✓ Table truncated\");\n" +
+                            "\n" +
+                            "// Cleanup multiple tables\n" +
+                            "String[] tables = {\"sessions\", \"temp_data\", \"cache\"};\n" +
+                            "for (String table : tables) {\n" +
+                            "    db.truncateTable(\"mysql-dev\", table);\n" +
+                            "    System.out.println(\"Truncated: \" + table);\n" +
+                            "}\n" +
+                            "\n" +
+                            "// Truncate và verify\n" +
+                            "db.truncateTable(\"mysql-dev\", \"test_orders\");\n" +
+                            "int count = db.getRowCount(\"mysql-dev\", \"test_orders\");\n" +
+                            "if (count == 0) {\n" +
+                            "    System.out.println(\"✓ Table successfully truncated\");\n" +
+                            "}\n" +
+                            "\n" +
+                            "// Trong test teardown\n" +
+                            "try {\n" +
+                            "    db.truncateTable(\"mysql-dev\", \"test_results\");\n" +
+                            "} catch (DatabaseException e) {\n" +
+                            "    System.err.println(\"Warning: Could not truncate table - \" + e.getMessage());\n" +
+                            "}",
+            note = "- TRUNCATE nhanh hơn DELETE vì không log từng row\n" +
+                    "- Auto-increment counter sẽ được reset về 1\n" +
+                    "- Không thể rollback trong transaction (DDL statement)\n" +
+                    "- Throw exception nếu table có foreign key constraints\n" +
+                    "- Thích hợp cho cleanup test data"
+    )
+    public void truncateTable(String profileName, String tableName) {
+        String query = "TRUNCATE TABLE " + tableName;
+        executeWithLogging(
+                "truncateTable",
+                profileName,
+                query,
+                new Object[0],
+                () -> {
+                    executeUpdateInternal(profileName, query);
+                    return null;
+                }
+        );
+    }
+
+    @NetatKeyword(
+            name = "dropTable",
+            description = "Xóa table khỏi database (DROP TABLE IF EXISTS)",
+            category = "Database",
+            subCategory = "Table Management",
+            parameters = {
+                    "profileName: String - Tên database profile đã cấu hình",
+                    "tableName: String - Tên table cần drop"
+            },
+            returnValue = "void - Không trả về giá trị",
+            example =
+                    "DatabaseKeyword db = new DatabaseKeyword();\n" +
+                            "\n" +
+                            "// Drop table an toàn (không throw error nếu không tồn tại)\n" +
+                            "db.dropTable(\"mysql-dev\", \"temp_users\");\n" +
+                            "System.out.println(\"✓ Table dropped\");\n" +
+                            "\n" +
+                            "// Drop multiple tables\n" +
+                            "String[] tables = {\"test_table1\", \"test_table2\", \"test_table3\"};\n" +
+                            "for (String table : tables) {\n" +
+                            "    db.dropTable(\"mysql-dev\", table);\n" +
+                            "    System.out.println(\"Dropped: \" + table);\n" +
+                            "}\n" +
+                            "\n" +
+                            "// Drop và verify\n" +
+                            "db.dropTable(\"mysql-dev\", \"old_data\");\n" +
+                            "boolean exists = db.tableExists(\"mysql-dev\", \"old_data\");\n" +
+                            "if (!exists) {\n" +
+                            "    System.out.println(\"✓ Table successfully dropped\");\n" +
+                            "}\n" +
+                            "\n" +
+                            "// Test cleanup - drop all temp tables\n" +
+                            "List<Object> tempTables = db.getColumnValues(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"SELECT table_name FROM information_schema.tables WHERE table_name LIKE 'temp_%'\",\n" +
+                            "    \"table_name\"\n" +
+                            ");\n" +
+                            "for (Object tableName : tempTables) {\n" +
+                            "    db.dropTable(\"mysql-dev\", tableName.toString());\n" +
+                            "}",
+            note = "- Sử dụng IF EXISTS nên không throw error nếu table không tồn tại\n" +
+                    "- Xóa cả structure và data của table\n" +
+                    "- Không thể rollback (DDL statement)\n" +
+                    "- Cẩn thận khi drop table có foreign key references\n" +
+                    "- Thích hợp cho cleanup sau integration tests"
+    )
+    public void dropTable(String profileName, String tableName) {
+        String query = "DROP TABLE IF EXISTS " + tableName;
+        executeWithLogging(
+                "dropTable",
+                profileName,
+                query,
+                new Object[0],
+                () -> {
+                    executeUpdateInternal(profileName, query);
+                    return null;
+                }
+        );
+    }
+
+    @NetatKeyword(
+            name = "tableExists",
+            description = "Kiểm tra table có tồn tại trong database không",
+            category = "Database",
+            subCategory = "Table Management",
+            parameters = {
+                    "profileName: String - Tên database profile đã cấu hình",
+                    "tableName: String - Tên table cần check"
+            },
+            returnValue = "boolean - true nếu table tồn tại, false nếu không",
+            example =
+                    "DatabaseKeyword db = new DatabaseKeyword();\n" +
+                            "\n" +
+                            "// Check table existence\n" +
+                            "if (db.tableExists(\"mysql-dev\", \"users\")) {\n" +
+                            "    System.out.println(\"✓ Table 'users' exists\");\n" +
+                            "} else {\n" +
+                            "    System.out.println(\"✗ Table 'users' does not exist\");\n" +
+                            "}\n" +
+                            "\n" +
+                            "// Conditional table creation\n" +
+                            "if (!db.tableExists(\"mysql-dev\", \"test_data\")) {\n" +
+                            "    String createTable = \n" +
+                            "        \"CREATE TABLE test_data (\" +\n" +
+                            "        \"    id INT PRIMARY KEY AUTO_INCREMENT,\" +\n" +
+                            "        \"    value VARCHAR(100)\" +\n" +
+                            "        \")\";\n" +
+                            "    db.executeUpdate(\"mysql-dev\", createTable);\n" +
+                            "    System.out.println(\"✓ Table created\");\n" +
+                            "}\n" +
+                            "\n" +
+                            "// Verify table after creation\n" +
+                            "db.executeScript(\"mysql-dev\", \"CREATE TABLE IF NOT EXISTS new_table (id INT)\");\n" +
+                            "boolean created = db.tableExists(\"mysql-dev\", \"new_table\");\n" +
+                            "System.out.println(\"Table created: \" + created);\n" +
+                            "\n" +
+                            "// Check multiple tables\n" +
+                            "String[] requiredTables = {\"users\", \"orders\", \"products\"};\n" +
+                            "boolean allExist = true;\n" +
+                            "for (String table : requiredTables) {\n" +
+                            "    if (!db.tableExists(\"mysql-dev\", table)) {\n" +
+                            "        System.out.println(\"Missing table: \" + table);\n" +
+                            "        allExist = false;\n" +
+                            "    }\n" +
+                            "}\n" +
+                            "if (allExist) {\n" +
+                            "    System.out.println(\"✓ All required tables exist\");\n" +
+                            "}",
+            note = "- Sử dụng DatabaseMetaData để check table existence\n" +
+                    "- Case-sensitive trên một số databases (Linux MySQL)\n" +
+                    "- Không throw exception, chỉ return true/false\n" +
+                    "- Hữu ích cho pre-flight checks và conditional logic"
+    )
+    public boolean tableExists(String profileName, String tableName) {
+        return executeWithLogging(
+                "tableExists",
+                profileName,
+                "CHECK_TABLE_EXISTS",
+                new Object[]{tableName},
+                () -> {
+                    try (Connection conn = ConnectionManager.getConnection(profileName)) {
+                        DatabaseMetaData metadata = conn.getMetaData();
+                        ResultSet rs = metadata.getTables(null, null, tableName, new String[]{"TABLE"});
+                        return rs.next();
+                    } catch (SQLException e) {
+                        throw SqlStateMapper.mapException(e, null, null, profileName);
+                    }
+                }
+        );
+    }
+
+    @NetatKeyword(
+            name = "getTableColumns",
+            description = "Lấy danh sách tất cả columns của table",
+            category = "Database",
+            subCategory = "Table Management",
+            parameters = {
+                    "profileName: String - Tên database profile đã cấu hình",
+                    "tableName: String - Tên table"
+            },
+            returnValue = "List<String> - List tên các columns trong table",
+            example =
+                    "DatabaseKeyword db = new DatabaseKeyword();\n" +
+                            "\n" +
+                            "// Lấy danh sách columns\n" +
+                            "List<String> columns = db.getTableColumns(\"mysql-dev\", \"users\");\n" +
+                            "System.out.println(\"Columns in users table:\");\n" +
+                            "for (String column : columns) {\n" +
+                            "    System.out.println(\"  - \" + column);\n" +
+                            "}\n" +
+                            "\n" +
+                            "// Check if column exists\n" +
+                            "List<String> userColumns = db.getTableColumns(\"mysql-dev\", \"users\");\n" +
+                            "if (userColumns.contains(\"email\")) {\n" +
+                            "    System.out.println(\"✓ Email column exists\");\n" +
+                            "}\n" +
+                            "\n" +
+                            "// Dynamic query building\n" +
+                            "List<String> cols = db.getTableColumns(\"mysql-dev\", \"products\");\n" +
+                            "String query = \"SELECT \" + String.join(\", \", cols) + \" FROM products\";\n" +
+                            "List<Map<String, Object>> results = db.executeQuery(\"mysql-dev\", query);\n" +
+                            "\n" +
+                            "// Validate table structure\n" +
+                            "List<String> expectedColumns = Arrays.asList(\"id\", \"name\", \"email\", \"created_at\");\n" +
+                            "List<String> actualColumns = db.getTableColumns(\"mysql-dev\", \"users\");\n" +
+                            "if (actualColumns.containsAll(expectedColumns)) {\n" +
+                            "    System.out.println(\"✓ Table structure is correct\");\n" +
+                            "} else {\n" +
+                            "    System.out.println(\"✗ Missing columns\");\n" +
+                            "}",
+            note = "- Sử dụng DatabaseMetaData để lấy column information\n" +
+                    "- Trả về empty list nếu table không tồn tại\n" +
+                    "- Column names được return theo thứ tự định nghĩa trong table\n" +
+                    "- Hữu ích cho schema validation và dynamic query building"
+    )
+    public List<String> getTableColumns(String profileName, String tableName) {
+        return executeWithLogging(
+                "getTableColumns",
+                profileName,
+                "GET_TABLE_COLUMNS",
+                new Object[]{tableName},
+                () -> {
+                    List<String> columns = new ArrayList<>();
+
+                    try (Connection conn = ConnectionManager.getConnection(profileName)) {
+                        DatabaseMetaData metadata = conn.getMetaData();
+                        ResultSet rs = metadata.getColumns(null, null, tableName, null);
+
+                        while (rs.next()) {
+                            columns.add(rs.getString("COLUMN_NAME"));
+                        }
+
+                        return columns;
+                    } catch (SQLException e) {
+                        throw SqlStateMapper.mapException(e, null, null, profileName);
+                    }
+                }
+        );
+    }
+
+    // ========================================================================
+    // UTILITY KEYWORDS
+    // ========================================================================
+
+    @NetatKeyword(
+            name = "waitForRowCount",
+            description = "Đợi cho đến khi row count đạt expected value (polling với timeout) - hữu ích cho async operations",
+            category = "Database",
+            subCategory = "Utility",
+            parameters = {
+                    "profileName: String - Tên database profile đã cấu hình",
+                    "query: String - Câu SELECT query",
+                    "expectedCount: int - Số lượng rows mong đợi",
+                    "timeoutMs: long - Timeout trong milliseconds",
+                    "params: Object... - Parameters cho query (tùy chọn)"
+            },
+            returnValue = "void - Không trả về giá trị (throw AssertionError nếu timeout)",
+            example =
+                    "DatabaseKeyword db = new DatabaseKeyword();\n" +
+                            "\n" +
+                            "// Đợi async insert hoàn thành\n" +
+                            "// Trigger async operation\n" +
+                            "triggerAsyncDataImport();\n" +
+                            "\n" +
+                            "// Wait for 100 records to be inserted\n" +
+                            "db.waitForRowCount(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"SELECT * FROM imported_data\",\n" +
+                            "    100,\n" +
+                            "    30000 // 30 second timeout\n" +
+                            ");\n" +
+                            "System.out.println(\"✓ All records imported\");\n" +
+                            "\n" +
+                            "// Wait for queue to be processed\n" +
+                            "db.waitForRowCount(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"SELECT * FROM queue WHERE status = ?\",\n" +
+                            "    0, // Wait until queue is empty\n" +
+                            "    60000,\n" +
+                            "    \"pending\"\n" +
+                            ");\n" +
+                            "System.out.println(\"✓ Queue processed\");\n" +
+                            "\n" +
+                            "// Wait for specific user's orders\n" +
+                            "int userId = 123;\n" +
+                            "db.waitForRowCount(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"SELECT * FROM orders WHERE user_id = ? AND status = ?\",\n" +
+                            "    5,\n" +
+                            "    10000,\n" +
+                            "    userId,\n" +
+                            "    \"completed\"\n" +
+                            ");\n" +
+                            "\n" +
+                            "// With error handling\n" +
+                            "try {\n" +
+                            "    db.waitForRowCount(\n" +
+                            "        \"mysql-dev\",\n" +
+                            "        \"SELECT * FROM async_results\",\n" +
+                            "        10,\n" +
+                            "        5000\n" +
+                            "    );\n" +
+                            "} catch (AssertionError e) {\n" +
+                            "    System.out.println(\"Timeout: Expected count not reached\");\n" +
+                            "}",
+            note = "- Polling mỗi 500ms để check row count\n" +
+                    "- Throw AssertionError nếu không đạt expected count sau timeout\n" +
+                    "- Hữu ích cho testing async operations, message queues, background jobs\n" +
+                    "- Có thể dùng expectedCount = 0 để wait until empty"
+    )
+    public void waitForRowCount(String profileName, String query, int expectedCount,
+                                long timeoutMs, Object... params) {
+        executeWithLogging(
+                "waitForRowCount",
+                profileName,
+                query,
+                params,
+                () -> {
+                    long startTime = System.currentTimeMillis();
+
+                    while (System.currentTimeMillis() - startTime < timeoutMs) {
+                        List<Map<String, Object>> results = executeQueryInternal(profileName, query, params);
+                        if (results.size() == expectedCount) {
+                            return null;
+                        }
+
+                        try {
+                            Thread.sleep(500);
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                            break;
+                        }
+                    }
+
+                    throw new AssertionError(
+                            String.format("Timeout waiting for row count %d", expectedCount)
+                    );
+                }
+        );
+    }
+
+    @NetatKeyword(
+            name = "compareQueryResults",
+            description = "So sánh kết quả của 2 queries - kiểm tra cả số lượng rows và content",
+            category = "Database",
+            subCategory = "Utility",
+            parameters = {
+                    "profileName: String - Tên database profile đã cấu hình",
+                    "query1: String - Query thứ nhất",
+                    "query2: String - Query thứ hai"
+            },
+            returnValue = "boolean - true nếu kết quả giống nhau, false nếu khác",
+            example =
+                    "DatabaseKeyword db = new DatabaseKeyword();\n" +
+                            "\n" +
+                            "// So sánh data giữa 2 tables\n" +
+                            "boolean isSame = db.compareQueryResults(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"SELECT * FROM users ORDER BY id\",\n" +
+                            "    \"SELECT * FROM users_backup ORDER BY id\"\n" +
+                            ");\n" +
+                            "if (isSame) {\n" +
+                            "    System.out.println(\"✓ Tables are identical\");\n" +
+                            "} else {\n" +
+                            "    System.out.println(\"✗ Tables differ\");\n" +
+                            "}\n" +
+                            "\n" +
+                            "// Verify data migration\n" +
+                            "boolean migrated = db.compareQueryResults(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"SELECT id, name, email FROM old_schema.users\",\n" +
+                            "    \"SELECT id, name, email FROM new_schema.users\"\n" +
+                            ");\n" +
+                            "System.out.println(\"Migration successful: \" + migrated);\n" +
+                            "\n" +
+                            "// Compare aggregations\n" +
+                            "boolean countsMatch = db.compareQueryResults(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"SELECT status, COUNT(*) as cnt FROM orders GROUP BY status\",\n" +
+                            "    \"SELECT status, COUNT(*) as cnt FROM orders_archive GROUP BY status\"\n" +
+                            ");\n" +
+                            "\n" +
+                            "// Assert results match\n" +
+                            "if (!db.compareQueryResults(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"SELECT * FROM expected_results\",\n" +
+                            "    \"SELECT * FROM actual_results\"\n" +
+                            ")) {\n" +
+                            "    throw new AssertionError(\"Query results do not match!\");\n" +
+                            "}",
+            note = "- So sánh cả row count và content của từng row\n" +
+                    "- Trả về false nếu số lượng rows khác nhau\n" +
+                    "- Trả về false nếu bất kỳ row nào khác nhau\n" +
+                    "- Queries nên có ORDER BY để đảm bảo consistent ordering\n" +
+                    "- Hữu ích cho data migration verification và regression testing"
+    )
+    public boolean compareQueryResults(String profileName, String query1, String query2) {
+        return executeWithLogging(
+                "compareQueryResults",
+                profileName,
+                query1 + " vs " + query2,
+                new Object[0],
+                () -> {
+                    List<Map<String, Object>> results1 = executeQueryInternal(profileName, query1);
+                    List<Map<String, Object>> results2 = executeQueryInternal(profileName, query2);
+
+                    if (results1.size() != results2.size()) {
+                        return false;
+                    }
+
+                    return results1.equals(results2);
+                }
+        );
+    }
+
+    @NetatKeyword(
+            name = "exportQueryToCSV",
+            description = "Export kết quả query ra file CSV - hữu ích cho data extraction và reporting",
+            category = "Database",
+            subCategory = "Utility",
+            parameters = {
+                    "profileName: String - Tên database profile đã cấu hình",
+                    "query: String - Câu SELECT query",
+                    "filePath: String - Đường dẫn file CSV output",
+                    "params: Object... - Parameters cho query (tùy chọn)"
+            },
+            returnValue = "void - Không trả về giá trị",
+            example =
+                    "DatabaseKeyword db = new DatabaseKeyword();\n" +
+                            "\n" +
+                            "// Export tất cả users ra CSV\n" +
+                            "db.exportQueryToCSV(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"SELECT id, name, email, created_at FROM users\",\n" +
+                            "    \"/tmp/users_export.csv\"\n" +
+                            ");\n" +
+                            "System.out.println(\"✓ Users exported to CSV\");\n" +
+                            "\n" +
+                            "// Export với filtering\n" +
+                            "db.exportQueryToCSV(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"SELECT * FROM orders WHERE created_at >= ?\",\n" +
+                            "    \"./reports/orders_2025.csv\",\n" +
+                            "    \"2025-01-01\"\n" +
+                            ");\n" +
+                            "\n" +
+                            "// Export aggregated data\n" +
+                            "db.exportQueryToCSV(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"SELECT category, COUNT(*) as total, AVG(price) as avg_price \" +\n" +
+                            "    \"FROM products GROUP BY category\",\n" +
+                            "    \"./reports/product_summary.csv\"\n" +
+                            ");\n" +
+                            "\n" +
+                            "// Generate report với timestamp\n" +
+                            "String timestamp = new SimpleDateFormat(\"yyyyMMdd_HHmmss\").format(new Date());\n" +
+                            "String reportPath = \"./reports/daily_stats_\" + timestamp + \".csv\";\n" +
+                            "db.exportQueryToCSV(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"SELECT * FROM daily_statistics WHERE date = CURDATE()\",\n" +
+                            "    reportPath\n" +
+                            ");\n" +
+                            "System.out.println(\"Report generated: \" + reportPath);",
+            note = "- File CSV sẽ có header row với column names\n" +
+                    "- Values được comma-separated, null values hiển thị là empty string\n" +
+                    "- File sẽ bị overwrite nếu đã tồn tại\n" +
+                    "- Throw exception nếu không thể write file\n" +
+                    "- Hữu ích cho data export, reporting, và data analysis"
+    )
+    public void exportQueryToCSV(String profileName, String query, String filePath, Object... params) {
+        executeWithLogging(
+                "exportQueryToCSV",
+                profileName,
+                query,
+                params,
+                () -> {
+                    List<Map<String, Object>> results = executeQueryInternal(profileName, query, params);
+
+                    try (java.io.PrintWriter writer = new java.io.PrintWriter(filePath)) {
+                        if (!results.isEmpty()) {
+                            // Write header
+                            String header = String.join(",", results.get(0).keySet());
+                            writer.println(header);
+
+                            // Write rows
+                            for (Map<String, Object> row : results) {
+                                String line = String.join(",",
+                                        row.values().stream()
+                                                .map(v -> v != null ? v.toString() : "")
+                                                .toArray(String[]::new)
+                                );
+                                writer.println(line);
+                            }
+                        }
+                    }
+
+                    return null;
+                }
+        );
+    }
+
+    // ========================================================================
+    // INTERNAL HELPER METHODS
+    // ========================================================================
+
+    /**
+     * Generic method to execute operations with logging.
+     */
+    /**
+     * Generic method to execute operations with logging.
+     */
+    private <T> T executeWithLogging(String keywordName, String profileName, String query,
+                                     Object[] params, DatabaseOperation<T> operation) {
+        LogContext.setDatabaseContext(profileName, getCurrentTestCase(), keywordName);
+
+        long startTime = System.currentTimeMillis();
+
+        dbLogger.logQueryStart(profileName, query, params);
+
+        try {
+            T result = operation.execute();
+
+            long duration = System.currentTimeMillis() - startTime;
+            int rowsAffected = calculateRowsAffected(result);
+            dbLogger.logQuerySuccess(profileName, query, params, duration, rowsAffected);
+
+            return result;
+
+        } catch (DatabaseException e) {
+            long duration = System.currentTimeMillis() - startTime;
+            dbLogger.logQueryFailure(profileName, query, params, duration, e);
+            throw e;
+
+        } catch (Exception e) {
+            long duration = System.currentTimeMillis() - startTime;
+
+            DatabaseException dbEx = GenericDatabaseException.builder()
+                    .message("Unexpected error: " + e.getMessage())
+                    .cause(e)
+                    .profileName(profileName)
+                    .query(query)
+                    .parameters(params)
+                    .severity(ErrorSeverity.ERROR)
+                    .retryable(false)
+                    .build();
+
+            dbLogger.logQueryFailure(profileName, query, params, duration, dbEx);
+            throw dbEx;
+
+        } finally {
+            LogContext.clear();
+        }
+    }
+
+    /**
+     * Internal query execution without logging (used by logged methods).
+     */
+    private List<Map<String, Object>> executeQueryInternal(String profileName, String query, Object... params) {
+        try (Connection conn = ConnectionManager.getConnection(profileName);
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            // Set parameters
+            for (int i = 0; i < params.length; i++) {
+                pstmt.setObject(i + 1, params[i]);
             }
 
-            return sb.toString();
-        });
+            // Execute query
+            ResultSet rs = pstmt.executeQuery();
+
+            // Convert to List<Map>
+            return resultSetToList(rs);
+
+        } catch (SQLException e) {
+            throw SqlStateMapper.mapException(e, query, params, profileName);
+        }
+    }
+
+    /**
+     * Internal update execution without logging.
+     */
+    private int executeUpdateInternal(String profileName, String query, Object... params) {
+        try (Connection conn = ConnectionManager.getConnection(profileName);
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            // Set parameters
+            for (int i = 0; i < params.length; i++) {
+                pstmt.setObject(i + 1, params[i]);
+            }
+
+            // Execute update
+            return pstmt.executeUpdate();
+
+        } catch (SQLException e) {
+            throw SqlStateMapper.mapException(e, query, params, profileName);
+        }
+    }
+
+    /**
+     * Internal batch execution without logging.
+     */
+    private int[] executeBatchInternal(String profileName, String query, List<Object[]> batchParams) {
+        try (Connection conn = ConnectionManager.getConnection(profileName);
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            for (Object[] params : batchParams) {
+                for (int i = 0; i < params.length; i++) {
+                    pstmt.setObject(i + 1, params[i]);
+                }
+                pstmt.addBatch();
+            }
+
+            return pstmt.executeBatch();
+
+        } catch (SQLException e) {
+            throw SqlStateMapper.mapException(e, query, null, profileName);
+        }
+    }
+
+    /**
+     * Internal script execution without logging.
+     */
+    private void executeScriptInternal(String profileName, String script) {
+        try (Connection conn = ConnectionManager.getConnection(profileName);
+             Statement stmt = conn.createStatement()) {
+
+            // Split by semicolon and execute each statement
+            String[] statements = script.split(";");
+            for (String sql : statements) {
+                String trimmed = sql.trim();
+                if (!trimmed.isEmpty()) {
+                    stmt.execute(trimmed);
+                }
+            }
+
+        } catch (SQLException e) {
+            throw SqlStateMapper.mapException(e, script, null, profileName);
+        }
+    }
+
+    /**
+     * Converts ResultSet to List<Map<String, Object>>.
+     */
+    private List<Map<String, Object>> resultSetToList(ResultSet rs) throws SQLException {
+        List<Map<String, Object>> results = new ArrayList<>();
+        ResultSetMetaData metadata = rs.getMetaData();
+        int columnCount = metadata.getColumnCount();
+
+        while (rs.next()) {
+            Map<String, Object> row = new LinkedHashMap<>();
+            for (int i = 1; i <= columnCount; i++) {
+                String columnName = metadata.getColumnName(i);
+                Object value = rs.getObject(i);
+                row.put(columnName, value);
+            }
+            results.add(row);
+        }
+
+        return results;
+    }
+
+    /**
+     * Calculates rows affected from operation result.
+     */
+    private int calculateRowsAffected(Object result) {
+        if (result == null) {
+            return 0;
+        }
+        if (result instanceof Integer) {
+            return (Integer) result;
+        }
+        if (result instanceof List) {
+            return ((List<?>) result).size();
+        }
+        if (result instanceof int[]) {
+            int[] arr = (int[]) result;
+            int total = 0;
+            for (int count : arr) {
+                total += count;
+            }
+            return total;
+        }
+        return 1; // Default for other operations
+    }
+
+    /**
+     * Gets current test case name from ExecutionContext.
+     */
+    private String getCurrentTestCase() {
+        try {
+            return ExecutionContext.getInstance().getCurrentTestCase();
+        } catch (Exception e) {
+            return "unknown";
+        }
+    }
+
+    // ========================================================================
+    // TRANSACTION CONNECTION STORAGE
+    // ========================================================================
+
+    // ThreadLocal storage for transaction connections
+    private static final ThreadLocal<Map<String, Connection>> TRANSACTION_CONNECTIONS =
+            ThreadLocal.withInitial(HashMap::new);
+
+    // ThreadLocal storage for operation count per transaction
+    private static final ThreadLocal<Map<String, Integer>> OPERATION_COUNTS =
+            ThreadLocal.withInitial(HashMap::new);
+
+    /**
+     * Stores connection for transaction scope.
+     */
+    private void storeConnection(String profileName, Connection conn) {
+        TRANSACTION_CONNECTIONS.get().put(profileName, conn);
+        OPERATION_COUNTS.get().put(profileName, 0);
+    }
+
+    /**
+     * Gets stored connection for transaction.
+     */
+    private Connection getStoredConnection(String profileName) {
+        return TRANSACTION_CONNECTIONS.get().get(profileName);
+    }
+
+    /**
+     * Removes connection after transaction ends.
+     */
+    private void removeConnection(String profileName) {
+        TRANSACTION_CONNECTIONS.get().remove(profileName);
+        OPERATION_COUNTS.get().remove(profileName);
+    }
+
+    /**
+     * Increments operation count for transaction.
+     */
+    private void incrementOperationCount(String profileName) {
+        Map<String, Integer> counts = OPERATION_COUNTS.get();
+        counts.put(profileName, counts.getOrDefault(profileName, 0) + 1);
+    }
+
+    /**
+     * Gets operation count for transaction.
+     */
+    private int getOperationCount(String profileName) {
+        return OPERATION_COUNTS.get().getOrDefault(profileName, 0);
+    }
+
+    /**
+     * Maps isolation level string to JDBC constant.
+     */
+    private int mapIsolationLevel(String level) {
+        switch (level.toUpperCase()) {
+            case "READ_UNCOMMITTED":
+                return Connection.TRANSACTION_READ_UNCOMMITTED;
+            case "READ_COMMITTED":
+                return Connection.TRANSACTION_READ_COMMITTED;
+            case "REPEATABLE_READ":
+                return Connection.TRANSACTION_REPEATABLE_READ;
+            case "SERIALIZABLE":
+                return Connection.TRANSACTION_SERIALIZABLE;
+            default:
+                return Connection.TRANSACTION_READ_COMMITTED;
+        }
+    }
+
+    // ========================================================================
+    // FUNCTIONAL INTERFACE FOR OPERATIONS
+    // ========================================================================
+
+    @FunctionalInterface
+    private interface DatabaseOperation<T> {
+        T execute() throws Exception;
     }
 }

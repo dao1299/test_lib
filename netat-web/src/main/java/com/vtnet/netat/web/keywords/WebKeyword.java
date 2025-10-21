@@ -1,16 +1,14 @@
 package com.vtnet.netat.web.keywords;
+
 import com.vtnet.netat.core.BaseUiKeyword;
 import com.vtnet.netat.core.annotations.NetatKeyword;
 import com.vtnet.netat.core.context.ExecutionContext;
 import com.vtnet.netat.core.ui.Locator;
 import com.vtnet.netat.core.ui.ObjectUI;
-import com.vtnet.netat.core.utils.SecureText;
 import com.vtnet.netat.driver.ConfigReader;
 import com.vtnet.netat.driver.DriverManager;
 import com.vtnet.netat.driver.SessionManager;
 import com.vtnet.netat.web.ai.AiModelFactory;
-import com.vtnet.netat.web.ai.AiSelfHealingService;
-import com.vtnet.netat.web.ai.IAiSelfHealingService;
 import dev.langchain4j.model.chat.ChatModel;
 import io.qameta.allure.Step;
 import org.apache.commons.io.FileUtils;
@@ -1559,7 +1557,7 @@ public class WebKeyword extends BaseUiKeyword {
     @Step("Wait for element {0.name} to be present in DOM trong {1} seconds")
     public void waitForElementPresent(ObjectUI uiObject, int timeoutInSeconds) {
         execute(() -> {
-            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds),POLLING_INTERVAL);
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds), POLLING_INTERVAL);
             wait.until(ExpectedConditions.presenceOfElementLocated(uiObject.getActiveLocators().get(0).convertToBy()));
             return null;
         }, uiObject, timeoutInSeconds);
@@ -1593,7 +1591,7 @@ public class WebKeyword extends BaseUiKeyword {
     @Step("Wait for page to load trong {0} seconds")
     public void waitForPageLoaded(int timeoutInSeconds) {
         execute(() -> {
-            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds),POLLING_INTERVAL);
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds), POLLING_INTERVAL);
             wait.until(driver -> ((JavascriptExecutor) driver).executeScript("return document.readyState").equals("complete"));
             return null;
         }, timeoutInSeconds);
@@ -1700,7 +1698,6 @@ public class WebKeyword extends BaseUiKeyword {
     }
 
 
-
     @NetatKeyword(
             name = "waitForElementNotPresent",
             description = "Chờ đợi một element bị xóa hoàn toàn khỏi DOM trong khoảng thời gian chỉ định. Khác với waitForElementNotVisible (chỉ ẩn), method này đảm bảo element không còn tồn tại trong page source. Rất hữu ích cho cleanup testing và dynamic content.",
@@ -1716,7 +1713,7 @@ public class WebKeyword extends BaseUiKeyword {
     @Step("Wait for element '{0}' to be removed from DOM within {1} seconds")
     public void waitForElementNotPresent(ObjectUI uiObject, int timeoutInSeconds) {
         execute(() -> {
-            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds),POLLING_INTERVAL);
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds), POLLING_INTERVAL);
             By by = uiObject.getActiveLocators().get(0).convertToBy();
             wait.until(ExpectedConditions.not(ExpectedConditions.presenceOfElementLocated(by)));
             return null;
@@ -1739,7 +1736,7 @@ public class WebKeyword extends BaseUiKeyword {
     @Step("Wait for element '{0}' text to contain '{1}' within {2} seconds")
     public void waitForElementTextContains(ObjectUI uiObject, String expectedText, int timeoutInSeconds) {
         execute(() -> {
-            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds),POLLING_INTERVAL);
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds), POLLING_INTERVAL);
             wait.until(ExpectedConditions.textToBePresentInElement(findElement(uiObject), expectedText));
             return null;
         }, uiObject, expectedText, timeoutInSeconds);
@@ -1762,7 +1759,7 @@ public class WebKeyword extends BaseUiKeyword {
     @Step("Wait for element '{0}' attribute '{1}' to be '{2}' within {3} seconds")
     public void waitForElementAttributeToBe(ObjectUI uiObject, String attributeName, String expectedValue, int timeoutInSeconds) {
         execute(() -> {
-            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds),POLLING_INTERVAL);
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds), POLLING_INTERVAL);
             wait.until(ExpectedConditions.attributeToBe(findElement(uiObject), attributeName, expectedValue));
             return null;
         }, uiObject, attributeName, expectedValue, timeoutInSeconds);
@@ -1784,7 +1781,7 @@ public class WebKeyword extends BaseUiKeyword {
     @Step("Wait for JavaScript '{0}' to return '{1}' within {2} seconds")
     public void waitForJavaScriptReturnsValue(String script, Object expectedValue, int timeoutInSeconds) {
         execute(() -> {
-            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds),POLLING_INTERVAL);
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds), POLLING_INTERVAL);
             wait.until(driver -> {
                 try {
                     JavascriptExecutor js = (JavascriptExecutor) driver;
@@ -1815,7 +1812,7 @@ public class WebKeyword extends BaseUiKeyword {
     @Step("Wait for element '{0}' text to NOT contain '{1}' within {2} seconds")
     public void waitForElementTextNotContains(ObjectUI uiObject, String unwantedText, int timeoutInSeconds) {
         execute(() -> {
-            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds),POLLING_INTERVAL);
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds), POLLING_INTERVAL);
             wait.until(driver -> {
                 try {
                     String actualText = getText(uiObject);
@@ -1844,7 +1841,7 @@ public class WebKeyword extends BaseUiKeyword {
     @Step("Wait for element '{0}' text to be '{1}' within {2} seconds")
     public void waitForElementTextToBe(ObjectUI uiObject, String expectedText, int timeoutInSeconds) {
         execute(() -> {
-            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds),POLLING_INTERVAL);
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds), POLLING_INTERVAL);
             wait.until(driver -> {
                 try {
                     String actualText = getText(uiObject);
@@ -1873,7 +1870,7 @@ public class WebKeyword extends BaseUiKeyword {
     @Step("Wait for element '{0}' text to NOT be '{1}' within {2} seconds")
     public void waitForElementTextNotToBe(ObjectUI uiObject, String unwantedText, int timeoutInSeconds) {
         execute(() -> {
-            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds),POLLING_INTERVAL);
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds), POLLING_INTERVAL);
             wait.until(driver -> {
                 try {
                     String actualText = getText(uiObject);
@@ -1903,7 +1900,7 @@ public class WebKeyword extends BaseUiKeyword {
     @Step("Wait for element '{0}' attribute '{1}' to NOT be '{2}' within {3} seconds")
     public void waitForElementAttributeNotToBe(ObjectUI uiObject, String attributeName, String unwantedValue, int timeoutInSeconds) {
         execute(() -> {
-            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds),POLLING_INTERVAL);
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds), POLLING_INTERVAL);
             wait.until(driver -> {
                 try {
                     String actualValue = getAttribute(uiObject, attributeName);
@@ -1933,7 +1930,7 @@ public class WebKeyword extends BaseUiKeyword {
     @Step("Wait for element '{0}' attribute '{1}' to contain '{2}' within {3} seconds")
     public void waitForElementAttributeContains(ObjectUI uiObject, String attributeName, String partialValue, int timeoutInSeconds) {
         execute(() -> {
-            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds),POLLING_INTERVAL);
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds), POLLING_INTERVAL);
             wait.until(driver -> {
                 try {
                     String actualValue = getAttribute(uiObject, attributeName);
@@ -1945,6 +1942,7 @@ public class WebKeyword extends BaseUiKeyword {
             return null;
         }, uiObject, attributeName, partialValue, timeoutInSeconds);
     }
+
     @NetatKeyword(
             name = "waitForElementAttributeNotContains",
             description = "Chờ đợi attribute của element KHÔNG chứa substring chỉ định trong khoảng thời gian cho phép. Hữu ích cho validation rằng partial attribute values đã được remove hoặc thay đổi, như CSS classes bị xóa, error states được clear.",
@@ -1962,7 +1960,7 @@ public class WebKeyword extends BaseUiKeyword {
     @Step("Wait for element '{0}' attribute '{1}' to NOT contain '{2}' within {3} seconds")
     public void waitForElementAttributeNotContains(ObjectUI uiObject, String attributeName, String unwantedPartialValue, int timeoutInSeconds) {
         execute(() -> {
-            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds),POLLING_INTERVAL);
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds), POLLING_INTERVAL);
             wait.until(driver -> {
                 try {
                     String actualValue = getAttribute(uiObject, attributeName);
@@ -1992,7 +1990,7 @@ public class WebKeyword extends BaseUiKeyword {
     @Step("Wait for JavaScript '{0}' to NOT return '{1}' within {2} seconds")
     public void waitForJavaScriptNotReturnsValue(String script, Object unwantedValue, int timeoutInSeconds) {
         execute(() -> {
-            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds),POLLING_INTERVAL);
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds), POLLING_INTERVAL);
             wait.until(driver -> {
                 try {
                     JavascriptExecutor js = (JavascriptExecutor) driver;
@@ -3135,7 +3133,7 @@ public class WebKeyword extends BaseUiKeyword {
     public void verifyAlertPresent(int timeoutInSeconds) {
         execute(() -> {
             try {
-                WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds),POLLING_INTERVAL);
+                WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds), POLLING_INTERVAL);
                 wait.until(ExpectedConditions.alertIsPresent());
             } catch (Exception e) {
                 throw new AssertionError("HARD ASSERT FAILED: Alert does not appear after " + timeoutInSeconds + " seconds.");
@@ -3652,7 +3650,7 @@ public class WebKeyword extends BaseUiKeyword {
         execute(() -> {
             try {
                 WebDriver driver = ExecutionContext.getInstance().getWebDriver();
-                if (driver==null) driver = SessionManager.getInstance().getCurrentDriver();
+                if (driver == null) driver = SessionManager.getInstance().getCurrentDriver();
                 if (driver instanceof TakesScreenshot) {
                     File scrFile = ((TakesScreenshot) DriverManager.getDriver()).getScreenshotAs(OutputType.FILE);
                     FileUtils.copyFile(scrFile, new File(filePath));
@@ -3773,5 +3771,183 @@ public class WebKeyword extends BaseUiKeyword {
             }
             return null;
         }, milliseconds);
+    }
+
+    @NetatKeyword(
+            name = "isApiCalled",
+            description = "Kiểm tra xem API có được gọi hay không bằng JavaScript injection. " +
+                    "Hỗ trợ check params linh hoạt: exact match, ignore ('*'), hoặc check not null ('?')",
+            category = "Web",
+            subCategory = "Network",
+            parameters = {
+                    "apiPath: String - Path của API cần monitor",
+                    "expectedParams: Map<String, String> - Query params. Giá trị: '*'=ignore, '?'=not null, còn lại=exact match",
+                    "timeoutSeconds: int - Thời gian chờ tối đa"
+            },
+            returnValue = "boolean - true nếu API được gọi, false nếu không",
+            example = "// Check với timestamp động\n" +
+                    "Map<String, String> params = new HashMap<>();\n" +
+                    "params.put(\"start\", \"?\");  // Check not null\n" +
+                    "params.put(\"end\", \"?\");    // Check not null\n" +
+                    "params.put(\"service\", \"tv360\"); // Exact match\n" +
+                    "web.isApiCalled(\"/service-stats\", params, 15);",
+            note = "Hoạt động với mọi browser. Giá trị đặc biệt: '*'=ignore, '?'=not null"
+    )
+    @Step("Check if API called: {0}")
+    public boolean isApiCalled(String apiPath,
+                               Map<String, String> expectedParams,
+                               int timeoutSeconds) {
+        return execute(() -> {
+            JavascriptExecutor js = (JavascriptExecutor) DriverManager.getDriver();
+
+            String paramChecks = buildParamCheckScript(expectedParams);
+
+            String script = String.format(
+                    "window.__apiMonitor = window.__apiMonitor || { calls: [], found: false };" +
+
+                            // Hook fetch API
+                            "if (!window.__apiMonitor.fetchHooked) {" +
+                            "  const originalFetch = window.fetch;" +
+                            "  window.fetch = function(...args) {" +
+                            "    const url = args[0];" +
+                            "    if (url.includes('%s')) {" +
+                            "      console.log('[API Monitor] Detected:', url);" +
+                            "      window.__apiMonitor.calls.push({url: url, timestamp: Date.now()});" +
+                            "      %s" + // Param check logic
+                            "    }" +
+                            "    return originalFetch.apply(this, args);" +
+                            "  };" +
+                            "  window.__apiMonitor.fetchHooked = true;" +
+                            "}" +
+
+                            // Hook XMLHttpRequest
+                            "if (!window.__apiMonitor.xhrHooked) {" +
+                            "  const originalOpen = XMLHttpRequest.prototype.open;" +
+                            "  XMLHttpRequest.prototype.open = function(method, url, ...rest) {" +
+                            "    if (url.includes('%s')) {" +
+                            "      console.log('[API Monitor] Detected (XHR):', url);" +
+                            "      window.__apiMonitor.calls.push({url: url, timestamp: Date.now()});" +
+                            "      %s" + // Param check logic
+                            "    }" +
+                            "    return originalOpen.apply(this, [method, url, ...rest]);" +
+                            "  };" +
+                            "  window.__apiMonitor.xhrHooked = true;" +
+                            "}",
+                    apiPath, paramChecks, apiPath, paramChecks
+            );
+
+            // Inject script
+            js.executeScript(script);
+            logger.info("Injected API monitoring script for path: '{}'", apiPath);
+
+            // Poll for result
+            long startTime = System.currentTimeMillis();
+            long timeout = timeoutSeconds * 1000L;
+            boolean found = false;
+
+            while (!found && (System.currentTimeMillis() - startTime) < timeout) {
+                try {
+                    Thread.sleep(500);
+
+                    Boolean result = (Boolean) js.executeScript(
+                            "return window.__apiMonitor.found;"
+                    );
+
+                    if (Boolean.TRUE.equals(result)) {
+                        found = true;
+
+                        String matchedUrl = (String) js.executeScript(
+                                "return window.__apiMonitor.calls[window.__apiMonitor.calls.length - 1]?.url || 'N/A';"
+                        );
+                        logger.info("API '{}' detected: {}", apiPath, matchedUrl);
+                    }
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+
+            // Cleanup
+            js.executeScript(
+                    "delete window.__apiMonitor;" +
+                            "console.log('[API Monitor] Cleaned up');"
+            );
+
+            return found;
+
+        }, apiPath, expectedParams, timeoutSeconds);
+    }
+
+    private String buildParamCheckScript(Map<String, String> expectedParams) {
+        if (expectedParams == null || expectedParams.isEmpty()) {
+            return "window.__apiMonitor.found = true;";
+        }
+
+        StringBuilder script = new StringBuilder();
+        script.append("if (");
+
+        boolean first = true;
+        for (Map.Entry<String, String> entry : expectedParams.entrySet()) {
+            String paramName = entry.getKey();
+            String expectedValue = entry.getValue();
+
+            if (!first) {
+                script.append(" && ");
+            }
+            first = false;
+
+            if ("*".equals(expectedValue)) {
+                // Ignore this param
+                script.append("true");
+            } else if ("?".equals(expectedValue)) {
+                // Check param exists and not empty
+                script.append(String.format(
+                        "(url.includes('%s=') && url.match(/%s=([^&]+)/)?.[1])",
+                        paramName, paramName
+                ));
+            } else {
+                // Exact match
+                script.append(String.format(
+                        "url.includes('%s=%s')",
+                        paramName, expectedValue
+                ));
+            }
+        }
+
+        script.append(") { window.__apiMonitor.found = true; }");
+
+        return script.toString();
+    }
+
+    @NetatKeyword(
+            name = "verifyApiCalled",
+            description = "Verify API được gọi với path và params cụ thể. Fail test nếu không tìm thấy.",
+            category = "Web",
+            subCategory = "Network",
+            parameters = {
+                    "apiPath: String - Path của API",
+                    "expectedParams: Map<String, String> - Query params mong đợi",
+                    "timeoutSeconds: int - Thời gian chờ"
+            },
+            example = "web.verifyApiCalled(\"/api/status\", params, 15);"
+    )
+    @Step("Verify API called: {0}")
+    public void verifyApiCalled(String apiPath,
+                                Map<String, String> expectedParams,
+                                int timeoutSeconds) {
+        execute(() -> {
+            boolean found = isApiCalled(apiPath, expectedParams, timeoutSeconds);
+
+            if (!found) {
+                String paramsStr = expectedParams != null ? expectedParams.toString() : "any";
+                throw new AssertionError(
+                        String.format("API '%s' with params %s NOT called in %d second",
+                                apiPath, paramsStr, timeoutSeconds)
+                );
+            }
+
+            logger.info("Verified: API '{}' is called", apiPath);
+            return null;
+        }, apiPath, expectedParams, timeoutSeconds);
     }
 }
