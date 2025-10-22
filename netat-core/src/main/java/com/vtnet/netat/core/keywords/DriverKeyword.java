@@ -4,6 +4,8 @@ import com.vtnet.netat.core.BaseKeyword;
 import com.vtnet.netat.core.annotations.NetatKeyword;
 import com.vtnet.netat.driver.*;
 import io.appium.java_client.AppiumDriver;
+import io.appium.java_client.android.AndroidDriver;
+import io.appium.java_client.ios.IOSDriver;
 import io.qameta.allure.Step;
 import org.openqa.selenium.MutableCapabilities;
 import org.openqa.selenium.WebDriver;
@@ -234,10 +236,16 @@ public class DriverKeyword extends BaseKeyword {
             caps.setCapability("platformName", platformName);
             caps.setCapability("udid", udid);
             caps.setCapability("app", appPath);
+            caps.setCapability("noReset",true);
+            caps.setCapability("autoGrantPermissions",true);
             // Một số capabilities quan trọng khác có thể thêm vào đây
             caps.setCapability("automationName", automationName);
-
-            WebDriver driver = new AppiumDriver(new URL(appiumServerUrl), caps);
+            WebDriver driver;
+            if (platformName.equalsIgnoreCase("android"))
+                driver = new AndroidDriver(new URL(appiumServerUrl),caps);
+            else if (platformName.equalsIgnoreCase("ios"))
+                driver = new IOSDriver(new URL(appiumServerUrl),caps);
+            else throw new IllegalArgumentException("Unsupported mobile platform: " + platformName);
             SessionManager.getInstance().addSession(sessionName, driver);
             return null;
         }, sessionName, platformName, udid, appPath, appiumServerUrl);
@@ -272,8 +280,12 @@ public class DriverKeyword extends BaseKeyword {
             caps.setCapability("automationName", automationName);
             caps.setCapability("noReset",true);
             caps.setCapability("autoGrantPermissions",true);
-
-            WebDriver driver = new AppiumDriver(new URL(appiumServerUrl), caps);
+            WebDriver driver;
+            if (platformName.equalsIgnoreCase("android"))
+                driver = new AndroidDriver(new URL(appiumServerUrl),caps);
+            else if (platformName.equalsIgnoreCase("ios"))
+                driver = new IOSDriver(new URL(appiumServerUrl),caps);
+            else throw new IllegalArgumentException("Unsupported mobile platform: " + platformName);
             SessionManager.getInstance().addSession(sessionName, driver);
             return null;
         }, sessionName, platformName, udid, appPackage,appActivity, appiumServerUrl);
