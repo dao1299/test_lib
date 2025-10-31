@@ -3,6 +3,7 @@ package com.vtnet.netat.core;
 import com.vtnet.netat.core.context.ExecutionContext;
 import com.vtnet.netat.core.ui.Locator;
 import com.vtnet.netat.core.ui.ObjectUI;
+import com.vtnet.netat.core.utils.ScreenshotUtils;
 import com.vtnet.netat.driver.DriverManager;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -75,6 +76,25 @@ public abstract class BaseUiKeyword extends BaseKeyword {
             By by = uiObject.getActiveLocators().get(0).convertToBy();
             return driver.findElements(by);
         }, uiObject != null ? uiObject.getName() : "null");
+    }
+
+    protected void highlightAndScreenshot(WebElement element, String stepName) {
+        if (element == null) {
+            logger.warn("Element is null, cannot highlight or screenshot.");
+            return;
+        }
+
+        WebDriver driver = DriverManager.getDriver();
+        if (driver == null) {
+            logger.warn("Driver is null, cannot highlight or screenshot.");
+            return;
+        }
+        try {
+            ScreenshotUtils.highlightAndTakeScreenshot(driver, element, stepName);
+
+        } catch (Exception e) {
+            logger.warn("Could not highlight or attach screenshot: " + e.getMessage());
+        }
     }
 
     // =================================================================================
