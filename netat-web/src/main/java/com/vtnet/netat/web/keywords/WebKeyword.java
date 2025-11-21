@@ -13,17 +13,24 @@ import dev.langchain4j.model.chat.ChatModel;
 import io.qameta.allure.Step;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.*;
+import org.openqa.selenium.Dimension;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.remote.CommandExecutor;
+import org.openqa.selenium.remote.HttpCommandExecutor;
+import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.remote.service.DriverCommandExecutor;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.*;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -252,7 +259,7 @@ public class WebKeyword extends BaseUiKeyword {
     public void goBack() {
         execute(() -> {
             JavascriptExecutor js = (JavascriptExecutor) DriverManager.getDriver();
-            js.executeScript("history.back();");
+            js.executeScript("window.history.back();");
             return null;
         });
     }
@@ -335,7 +342,16 @@ public class WebKeyword extends BaseUiKeyword {
     @Step("Maximize browser window")
     public void maximizeWindow() {
         execute(() -> {
-            DriverManager.getDriver().manage().window().maximize();
+            String headless = ConfigReader.getProperty("browser.headless", "false");
+            logger.info("Headless status: "+headless);
+            if ("true".equalsIgnoreCase(headless)) {
+                logger.info("Headless mode detected. Setting window size to 1920x1080.");
+                Dimension dimension = new Dimension(1920, 1080);
+                DriverManager.getDriver().manage().window().setSize(dimension);
+            } else {
+                logger.info("Standard mode detected. Maximizing window.");
+                DriverManager.getDriver().manage().window().maximize();
+            }
             return null;
         });
     }
@@ -674,9 +690,84 @@ public class WebKeyword extends BaseUiKeyword {
         }, uiObject, filePath);
     }
 
+//    @NetatKeyword(
+//            name = "dragAndDrop",
+//            description = "Thực hiện thao tác kéo một element (nguồn) và thả nó vào vị trí of một element khác (đích).",
+//            category = "Web",
+//            subCategory = "Interaction",
+//            parameters = {
+//                    "sourceObject: ObjectUI - element nguồn cần được kéo đi",
+//                    "targetObject: ObjectUI - element đích, nơi element nguồn sẽ được thả vào"
+//            },
+//            returnValue = "void - Không trả về giá trị",
+//            example = "// Kéo và thả một mục vào giỏ hàng\n" +
+//                    "webKeyword.dragAndDrop(productItemObject, cartDropZoneObject);\n\n" +
+//                    "// Kéo và thả để sắp xếp lại danh sách\n" +
+//                    "webKeyword.dragAndDrop(taskItemObject, topOfListObject);",
+//            note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
+//                    "cả hai element nguồn và đích phải tồn tại trong DOM, phải hiển thị và có thể tương tác được, " +
+//                    "trang web phải hỗ trợ thao tác kéo và thả, và trình duyệt phải hỗ trợ thao tác kéo và thả " +
+//                    "(một số trình duyệt di động có thể không hỗ trợ đầy đủ). " +
+//                    "Có thể throw ElementNotVisibleException nếu một trong hai element không hiển thị trên trang, " +
+//                    "ElementNotInteractableException nếu một trong hai element không thể tương tác, " +
+//                    "StaleElementReferenceException nếu một trong hai element không còn gắn với DOM, " +
+//                    "TimeoutException nếu một trong hai element không xuất hiện trong thời gian chờ, " +
+//                    "WebDriverException nếu có lỗi khi tương tác với trình duyệt, " +
+//                    "hoặc MoveTargetOutOfBoundsException nếu element đích nằm ngoài viewport hiện tại."
+//    )
+//    @Step("Drag element {0.name} and drop to {1.name}")
+//    public void dragAndDrop(ObjectUI sourceObject, ObjectUI targetObject) {
+//        execute(() -> {
+//            WebElement sourceElement = findElement(sourceObject);
+//            WebElement targetElement = findElement(targetObject);
+//            Actions actions = new Actions(DriverManager.getDriver());
+//            actions.dragAndDrop(sourceElement, targetElement).perform();
+//            return null;
+//        }, sourceObject, targetObject);
+//    }
+//
+//    @NetatKeyword(
+//            name = "dragAndDropByOffset",
+//            description = "Kéo một element theo một khoảng cách (độ lệch x, y) so với vị trí hiện tại of nó. Rất hữu ích cho các thanh trượt (slider).",
+//            category = "Web",
+//            subCategory = "Interaction",
+//            parameters = {
+//                    "uiObject: ObjectUI - element cần kéo",
+//                    "xOffset: int - Độ lệch theo trục ngang (pixel)",
+//                    "yOffset: int - Độ lệch theo trục dọc (pixel)"
+//            },
+//            returnValue = "void - Không trả về giá trị",
+//            example = "// Kéo thanh trượt giá sang phải 100px\n" +
+//                    "webKeyword.dragAndDropByOffset(priceSliderHandle, 100, 0);\n\n" +
+//                    "// Kéo thanh trượt âm lượng xuống 50px\n" +
+//                    "webKeyword.dragAndDropByOffset(volumeSliderObject, 0, -50);",
+//            note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
+//                    "element cần kéo phải tồn tại trong DOM, phải hiển thị và có thể tương tác được, " +
+//                    "trang web phải hỗ trợ thao tác kéo và thả, và trình duyệt phải hỗ trợ thao tác kéo và thả " +
+//                    "(một số trình duyệt di động có thể không hỗ trợ đầy đủ). " +
+//                    "Có thể throw ElementNotVisibleException nếu element không hiển thị trên trang, " +
+//                    "ElementNotInteractableException nếu element không thể tương tác, " +
+//                    "StaleElementReferenceException nếu element không còn gắn với DOM, " +
+//                    "TimeoutException nếu element không xuất hiện trong thời gian chờ, " +
+//                    "WebDriverException nếu có lỗi khi tương tác với trình duyệt, " +
+//                    "hoặc MoveTargetOutOfBoundsException nếu vị trí đích nằm ngoài viewport hiện tại."
+//    )
+//    @Step("Drag element {0.name} by offset ({1}, {2})")
+//    public void dragAndDropByOffset(ObjectUI uiObject, int xOffset, int yOffset) {
+//        execute(() -> {
+//            WebElement element = findElement(uiObject);
+//            new Actions(DriverManager.getDriver()).dragAndDropBy(element, xOffset, yOffset).perform();
+//            return null;
+//        }, uiObject, xOffset, yOffset);
+//    }
+
+    // ============================================================================
+// DRAG AND DROP - ENHANCED VERSIONS
+// ============================================================================
+
     @NetatKeyword(
             name = "dragAndDrop",
-            description = "Thực hiện thao tác kéo một element (nguồn) và thả nó vào vị trí of một element khác (đích).",
+            description = "Thực hiện thao tác kéo và thả cơ bản. Nếu không hoạt động, thử dragAndDropWithPause hoặc dragAndDropHTML5.",
             category = "Web",
             subCategory = "Interaction",
             parameters = {
@@ -684,65 +775,335 @@ public class WebKeyword extends BaseUiKeyword {
                     "targetObject: ObjectUI - element đích, nơi element nguồn sẽ được thả vào"
             },
             returnValue = "void - Không trả về giá trị",
-            example = "// Kéo và thả một mục vào giỏ hàng\n" +
-                    "webKeyword.dragAndDrop(productItemObject, cartDropZoneObject);\n\n" +
-                    "// Kéo và thả để sắp xếp lại danh sách\n" +
-                    "webKeyword.dragAndDrop(taskItemObject, topOfListObject);",
-            note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "cả hai element nguồn và đích phải tồn tại trong DOM, phải hiển thị và có thể tương tác được, " +
-                    "trang web phải hỗ trợ thao tác kéo và thả, và trình duyệt phải hỗ trợ thao tác kéo và thả " +
-                    "(một số trình duyệt di động có thể không hỗ trợ đầy đủ). " +
-                    "Có thể throw ElementNotVisibleException nếu một trong hai element không hiển thị trên trang, " +
-                    "ElementNotInteractableException nếu một trong hai element không thể tương tác, " +
-                    "StaleElementReferenceException nếu một trong hai element không còn gắn với DOM, " +
-                    "TimeoutException nếu một trong hai element không xuất hiện trong thời gian chờ, " +
-                    "WebDriverException nếu có lỗi khi tương tác với trình duyệt, " +
-                    "hoặc MoveTargetOutOfBoundsException nếu element đích nằm ngoài viewport hiện tại."
+            example = "webKeyword.dragAndDrop(productItemObject, cartDropZoneObject);",
+            note = "Phương pháp cơ bản sử dụng Actions.dragAndDrop(). Nếu không hoạt động, dùng dragAndDropWithPause hoặc dragAndDropHTML5."
     )
     @Step("Drag element {0.name} and drop to {1.name}")
     public void dragAndDrop(ObjectUI sourceObject, ObjectUI targetObject) {
         execute(() -> {
             WebElement sourceElement = findElement(sourceObject);
             WebElement targetElement = findElement(targetObject);
+
+            // Scroll elements into view
+            scrollToElement(sourceObject);
+            scrollToElement(targetObject);
+
             Actions actions = new Actions(DriverManager.getDriver());
             actions.dragAndDrop(sourceElement, targetElement).perform();
+
+            logger.info("Drag and drop from '{}' to '{}'",
+                    sourceObject.getName(), targetObject.getName());
+
             return null;
         }, sourceObject, targetObject);
     }
 
     @NetatKeyword(
-            name = "dragAndDropByOffset",
-            description = "Kéo một element theo một khoảng cách (độ lệch x, y) so với vị trí hiện tại of nó. Rất hữu ích cho các thanh trượt (slider).",
+            name = "dragAndDropWithPause",
+            description = "Thực hiện drag & drop với pause giữa các bước. Hiệu quả hơn cho các trang web phức tạp.",
             category = "Web",
             subCategory = "Interaction",
             parameters = {
-                    "uiObject: ObjectUI - element cần kéo",
-                    "xOffset: int - Độ lệch theo trục ngang (pixel)",
-                    "yOffset: int - Độ lệch theo trục dọc (pixel)"
+                    "sourceObject: ObjectUI - element nguồn",
+                    "targetObject: ObjectUI - element đích",
+                    "pauseMillis: int - Thời gian pause giữa các bước (milliseconds)"
             },
-            returnValue = "void - Không trả về giá trị",
-            example = "// Kéo thanh trượt giá sang phải 100px\n" +
-                    "webKeyword.dragAndDropByOffset(priceSliderHandle, 100, 0);\n\n" +
-                    "// Kéo thanh trượt âm lượng xuống 50px\n" +
-                    "webKeyword.dragAndDropByOffset(volumeSliderObject, 0, -50);",
-            note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "element cần kéo phải tồn tại trong DOM, phải hiển thị và có thể tương tác được, " +
-                    "trang web phải hỗ trợ thao tác kéo và thả, và trình duyệt phải hỗ trợ thao tác kéo và thả " +
-                    "(một số trình duyệt di động có thể không hỗ trợ đầy đủ). " +
-                    "Có thể throw ElementNotVisibleException nếu element không hiển thị trên trang, " +
-                    "ElementNotInteractableException nếu element không thể tương tác, " +
-                    "StaleElementReferenceException nếu element không còn gắn với DOM, " +
-                    "TimeoutException nếu element không xuất hiện trong thời gian chờ, " +
-                    "WebDriverException nếu có lỗi khi tương tác với trình duyệt, " +
-                    "hoặc MoveTargetOutOfBoundsException nếu vị trí đích nằm ngoài viewport hiện tại."
+            returnValue = "void",
+            example = "// Drag & drop với pause 500ms giữa các bước\n" +
+                    "webKeyword.dragAndDropWithPause(taskItem, dropZone, 500);",
+            note = "Phương pháp này chia nhỏ thao tác: clickAndHold -> pause -> moveToElement -> pause -> release. " +
+                    "Hiệu quả với các framework như React, Angular."
     )
-    @Step("Drag element {0.name} by offset ({1}, {2})")
-    public void dragAndDropByOffset(ObjectUI uiObject, int xOffset, int yOffset) {
+    @Step("Drag {0.name} to {1.name} with {2}ms pause")
+    public void dragAndDropWithPause(ObjectUI sourceObject, ObjectUI targetObject, int pauseMillis) {
         execute(() -> {
-            WebElement element = findElement(uiObject);
-            new Actions(DriverManager.getDriver()).dragAndDropBy(element, xOffset, yOffset).perform();
+            WebElement sourceElement = findElement(sourceObject);
+            WebElement targetElement = findElement(targetObject);
+
+            // Scroll into view
+            scrollToElement(sourceObject);
+            scrollToElement(targetObject);
+
+            Actions actions = new Actions(DriverManager.getDriver());
+
+            // Step-by-step drag and drop with pauses
+            actions.clickAndHold(sourceElement).perform();
+            Thread.sleep(pauseMillis);
+
+            actions.moveToElement(targetElement).perform();
+            Thread.sleep(pauseMillis);
+
+            actions.release(targetElement).perform();
+            Thread.sleep(pauseMillis);
+
+            logger.info("Drag and drop (with pause) from '{}' to '{}'",
+                    sourceObject.getName(), targetObject.getName());
+
             return null;
-        }, uiObject, xOffset, yOffset);
+        }, sourceObject, targetObject, pauseMillis);
+    }
+
+    @NetatKeyword(
+            name = "dragAndDropByOffset",
+            description = "Kéo element theo offset x,y. Hữu ích khi element đích không có locator rõ ràng.",
+            category = "Web",
+            subCategory = "Interaction",
+            parameters = {
+                    "sourceObject: ObjectUI - element nguồn",
+                    "xOffset: int - Độ lệch theo trục X",
+                    "yOffset: int - Độ lệch theo trục Y"
+            },
+            example = "// Kéo element sang phải 200px, xuống 100px\n" +
+                    "webKeyword.dragAndDropByOffset(draggableItem, 200, 100);"
+    )
+    @Step("Drag {0.name} by offset ({1}, {2})")
+    public void dragAndDropByOffset(ObjectUI sourceObject, int xOffset, int yOffset) {
+        execute(() -> {
+            WebElement sourceElement = findElement(sourceObject);
+            scrollToElement(sourceObject);
+
+            Actions actions = new Actions(DriverManager.getDriver());
+            actions.dragAndDropBy(sourceElement, xOffset, yOffset).perform();
+
+            logger.info("Drag '{}' by offset ({}, {})",
+                    sourceObject.getName(), xOffset, yOffset);
+
+            return null;
+        }, sourceObject, xOffset, yOffset);
+    }
+
+    @NetatKeyword(
+            name = "dragAndDropHTML5",
+            description = "Thực hiện drag & drop cho HTML5 draggable elements bằng JavaScript. " +
+                    "Sử dụng khi các phương pháp khác không hoạt động với HTML5 drag & drop.",
+            category = "Web",
+            subCategory = "Interaction",
+            parameters = {
+                    "sourceObject: ObjectUI - element nguồn (phải có draggable=true)",
+                    "targetObject: ObjectUI - element đích (phải có drop zone)"
+            },
+            example = "// Drag & drop cho HTML5 elements\n" +
+                    "webKeyword.dragAndDropHTML5(fileElement, uploadZone);",
+            note = "Phương pháp này sử dụng JavaScript để simulate HTML5 drag & drop events. " +
+                    "Hiệu quả với các trang web sử dụng HTML5 Drag and Drop API."
+    )
+    @Step("HTML5 Drag {0.name} to {1.name}")
+    public void dragAndDropHTML5(ObjectUI sourceObject, ObjectUI targetObject) {
+        execute(() -> {
+            WebElement sourceElement = findElement(sourceObject);
+            WebElement targetElement = findElement(targetObject);
+
+            scrollToElement(sourceObject);
+            scrollToElement(targetObject);
+
+            JavascriptExecutor js = (JavascriptExecutor) DriverManager.getDriver();
+
+            // HTML5 Drag and Drop simulation script
+            String script =
+                    "function createDragEvent(type) {" +
+                            "  const event = new DragEvent(type, {" +
+                            "    bubbles: true," +
+                            "    cancelable: true," +
+                            "    dataTransfer: new DataTransfer()" +
+                            "  });" +
+                            "  return event;" +
+                            "}" +
+                            "" +
+                            "const source = arguments[0];" +
+                            "const target = arguments[1];" +
+                            "" +
+                            "const dragStartEvent = createDragEvent('dragstart');" +
+                            "source.dispatchEvent(dragStartEvent);" +
+                            "" +
+                            "const dragEnterEvent = createDragEvent('dragenter');" +
+                            "target.dispatchEvent(dragEnterEvent);" +
+                            "" +
+                            "const dragOverEvent = createDragEvent('dragover');" +
+                            "target.dispatchEvent(dragOverEvent);" +
+                            "" +
+                            "const dropEvent = createDragEvent('drop');" +
+                            "target.dispatchEvent(dropEvent);" +
+                            "" +
+                            "const dragEndEvent = createDragEvent('dragend');" +
+                            "source.dispatchEvent(dragEndEvent);";
+
+            js.executeScript(script, sourceElement, targetElement);
+
+            logger.info("HTML5 drag and drop from '{}' to '{}'",
+                    sourceObject.getName(), targetObject.getName());
+
+            return null;
+        }, sourceObject, targetObject);
+    }
+
+    @NetatKeyword(
+            name = "dragAndDropAdvanced",
+            description = "Phương pháp drag & drop nâng cao với nhiều tùy chọn. Tự động thử nhiều cách nếu cách trước không thành công.",
+            category = "Web",
+            subCategory = "Interaction",
+            parameters = {
+                    "sourceObject: ObjectUI - element nguồn",
+                    "targetObject: ObjectUI - element đích",
+                    "strategy: String - Chiến lược: 'auto', 'actions', 'javascript', 'html5'"
+            },
+            example = "// Tự động chọn phương pháp tốt nhất\n" +
+                    "webKeyword.dragAndDropAdvanced(sourceItem, targetZone, \"auto\");\n\n" +
+                    "// Buộc dùng JavaScript\n" +
+                    "webKeyword.dragAndDropAdvanced(sourceItem, targetZone, \"javascript\");",
+            note = "Strategy 'auto' sẽ thử các phương pháp theo thứ tự: Actions -> JavaScript -> HTML5"
+    )
+    @Step("Advanced drag {0.name} to {1.name} (strategy: {2})")
+    public void dragAndDropAdvanced(ObjectUI sourceObject, ObjectUI targetObject, String strategy) {
+        execute(() -> {
+            if ("auto".equalsIgnoreCase(strategy)) {
+                // Try multiple strategies
+                try {
+                    logger.info("Trying Actions-based drag and drop...");
+                    dragAndDropWithPause(sourceObject, targetObject, 300);
+                    logger.info("Actions strategy succeeded");
+                    return null;
+                } catch (Exception e1) {
+                    logger.warn("Actions strategy failed: {}", e1.getMessage());
+
+                    try {
+                        logger.info("Trying JavaScript drag and drop...");
+                        dragAndDropWithJavaScript(sourceObject, targetObject);
+                        logger.info("JavaScript strategy succeeded");
+                        return null;
+                    } catch (Exception e2) {
+                        logger.warn("JavaScript strategy failed: {}", e2.getMessage());
+
+                        try {
+                            logger.info("Trying HTML5 drag and drop...");
+                            dragAndDropHTML5(sourceObject, targetObject);
+                            logger.info("HTML5 strategy succeeded");
+                            return null;
+                        } catch (Exception e3) {
+                            logger.error("All drag and drop strategies failed");
+                            throw new RuntimeException(
+                                    "All drag and drop strategies failed. Last error: " + e3.getMessage(), e3
+                            );
+                        }
+                    }
+                }
+            } else if ("actions".equalsIgnoreCase(strategy)) {
+                dragAndDropWithPause(sourceObject, targetObject, 300);
+            } else if ("javascript".equalsIgnoreCase(strategy)) {
+                dragAndDropWithJavaScript(sourceObject, targetObject);
+            } else if ("html5".equalsIgnoreCase(strategy)) {
+                dragAndDropHTML5(sourceObject, targetObject);
+            } else {
+                throw new IllegalArgumentException(
+                        "Invalid strategy: " + strategy + ". Use: 'auto', 'actions', 'javascript', or 'html5'"
+                );
+            }
+
+            return null;
+        }, sourceObject, targetObject, strategy);
+    }
+
+// ============================================================================
+// PRIVATE HELPER METHODS
+// ============================================================================
+
+    /**
+     * Helper: Drag and drop sử dụng JavaScript (không phải HTML5)
+     */
+    private void dragAndDropWithJavaScript(ObjectUI sourceObject, ObjectUI targetObject) {
+        WebElement sourceElement = findElement(sourceObject);
+        WebElement targetElement = findElement(targetObject);
+
+        scrollToElement(sourceObject);
+        scrollToElement(targetObject);
+
+        JavascriptExecutor js = (JavascriptExecutor) DriverManager.getDriver();
+
+        // JavaScript drag and drop simulation
+        String script =
+                "function simulateDragDrop(sourceNode, targetNode) {" +
+                        "  const EVENT_TYPES = {" +
+                        "    DRAG_START: 'dragstart'," +
+                        "    DRAG_ENTER: 'dragenter'," +
+                        "    DRAG_OVER: 'dragover'," +
+                        "    DROP: 'drop'," +
+                        "    DRAG_END: 'dragend'" +
+                        "  };" +
+                        "" +
+                        "  function createMouseEvent(type, clientX, clientY) {" +
+                        "    return new MouseEvent(type, {" +
+                        "      bubbles: true," +
+                        "      cancelable: true," +
+                        "      view: window," +
+                        "      clientX: clientX," +
+                        "      clientY: clientY" +
+                        "    });" +
+                        "  }" +
+                        "" +
+                        "  const sourceRect = sourceNode.getBoundingClientRect();" +
+                        "  const targetRect = targetNode.getBoundingClientRect();" +
+                        "" +
+                        "  const sourceCenterX = sourceRect.left + sourceRect.width / 2;" +
+                        "  const sourceCenterY = sourceRect.top + sourceRect.height / 2;" +
+                        "  const targetCenterX = targetRect.left + targetRect.width / 2;" +
+                        "  const targetCenterY = targetRect.top + targetRect.height / 2;" +
+                        "" +
+                        "  sourceNode.dispatchEvent(createMouseEvent('mousedown', sourceCenterX, sourceCenterY));" +
+                        "  sourceNode.dispatchEvent(createMouseEvent(EVENT_TYPES.DRAG_START, sourceCenterX, sourceCenterY));" +
+                        "" +
+                        "  targetNode.dispatchEvent(createMouseEvent(EVENT_TYPES.DRAG_ENTER, targetCenterX, targetCenterY));" +
+                        "  targetNode.dispatchEvent(createMouseEvent(EVENT_TYPES.DRAG_OVER, targetCenterX, targetCenterY));" +
+                        "  targetNode.dispatchEvent(createMouseEvent(EVENT_TYPES.DROP, targetCenterX, targetCenterY));" +
+                        "" +
+                        "  sourceNode.dispatchEvent(createMouseEvent(EVENT_TYPES.DRAG_END, targetCenterX, targetCenterY));" +
+                        "  targetNode.dispatchEvent(createMouseEvent('mouseup', targetCenterX, targetCenterY));" +
+                        "}" +
+                        "" +
+                        "simulateDragDrop(arguments[0], arguments[1]);";
+
+        js.executeScript(script, sourceElement, targetElement);
+
+        logger.info("JavaScript drag and drop from '{}' to '{}'",
+                sourceObject.getName(), targetObject.getName());
+    }
+
+    @NetatKeyword(
+            name = "dragAndDropWithOffset",
+            description = "Kéo element từ vị trí hiện tại sang vị trí mới với offset cụ thể. " +
+                    "Khác với dragAndDropByOffset, method này kéo element đến vị trí tuyệt đối của target element cộng với offset.",
+            category = "Web",
+            subCategory = "Interaction",
+            parameters = {
+                    "sourceObject: ObjectUI - element nguồn",
+                    "targetObject: ObjectUI - element đích (vị trí tham chiếu)",
+                    "xOffset: int - Độ lệch X so với target (pixels)",
+                    "yOffset: int - Độ lệch Y so với target (pixels)"
+            },
+            example = "// Kéo vào vị trí 10px bên phải và 5px phía dưới target\n" +
+                    "webKeyword.dragAndDropWithOffset(sourceItem, targetZone, 10, 5);"
+    )
+    @Step("Drag {0.name} to {1.name} with offset ({2}, {3})")
+    public void dragAndDropWithOffset(ObjectUI sourceObject, ObjectUI targetObject,
+                                      int xOffset, int yOffset) {
+        execute(() -> {
+            WebElement sourceElement = findElement(sourceObject);
+            WebElement targetElement = findElement(targetObject);
+
+            scrollToElement(sourceObject);
+            scrollToElement(targetObject);
+
+            Actions actions = new Actions(DriverManager.getDriver());
+
+            // Move to target with offset
+            actions.clickAndHold(sourceElement)
+                    .moveToElement(targetElement, xOffset, yOffset)
+                    .release()
+                    .perform();
+
+            logger.info("Drag '{}' to '{}' with offset ({}, {})",
+                    sourceObject.getName(), targetObject.getName(), xOffset, yOffset);
+
+            return null;
+        }, sourceObject, targetObject, xOffset, yOffset);
     }
 
     @NetatKeyword(
@@ -3087,22 +3448,17 @@ public class WebKeyword extends BaseUiKeyword {
     public boolean isElementPresent(ObjectUI uiObject, int timeoutInSeconds) {
         return execute(() -> {
             WebDriver driver = DriverManager.getDriver();
-            // Sử dụng locator đầu tiên được kích hoạt để Verify
             By by = uiObject.getActiveLocators().get(0).convertToBy();
 
             try {
-                // Tạm thời tắt implicit wait để WebDriverWait hoạt động chính xác
                 driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(0));
 
                 WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(timeoutInSeconds));
-                // Chờ cho đến khi danh sách các element tìm thấy không còn rỗng
                 wait.until(d -> !d.findElements(by).isEmpty());
 
                 return true; // Tìm thấy element
             } catch (TimeoutException e) {
-                return false; // Hết thời gian chờ mà không tìm thấy
-            } finally {
-                // Framework NETAT mặc định implicit wait is 0 nên không cần khôi phục.
+                return false;
             }
         }, uiObject, timeoutInSeconds);
     }
@@ -3950,4 +4306,184 @@ public class WebKeyword extends BaseUiKeyword {
             return null;
         }, apiPath, expectedParams, timeoutSeconds);
     }
+
+    @NetatKeyword(
+            name = "verifyMultipleApisCalledParallel",
+            description = "Verify nhiều API được gọi đồng thời (parallel monitoring). Hiệu quả hơn khi có nhiều API cần kiểm tra.",
+            category = "Web",
+            subCategory = "Network",
+            parameters = {
+                    "apiConfigs: List<Map<String, Object>> - Danh sách config của các API",
+                    "maxTimeoutSeconds: int - Thời gian chờ tối đa cho tất cả API"
+            },
+            example = "web.verifyMultipleApisCalledParallel(apiConfigs, 30);"
+    )
+    @Step("Verify multiple APIs called (parallel)")
+    public void verifyMultipleApisCalledParallel(List<Map<String, Object>> apiConfigs, int maxTimeoutSeconds) {
+        execute(() -> {
+            JavascriptExecutor js = (JavascriptExecutor) DriverManager.getDriver();
+
+            StringBuilder monitorScript = new StringBuilder();
+            monitorScript.append("window.__apiMonitors = window.__apiMonitors || {};\n");
+
+            for (int i = 0; i < apiConfigs.size(); i++) {
+                Map<String, Object> config = apiConfigs.get(i);
+                String apiPath = (String) config.get("apiPath");
+                String monitorKey = "api_" + i;
+
+                monitorScript.append(String.format(
+                        "window.__apiMonitors['%s'] = { path: '%s', found: false, calls: [] };\n",
+                        monitorKey, apiPath
+                ));
+            }
+
+            monitorScript.append(
+                    "if (!window.__multiApiHooked) {\n" +
+                            "  const originalFetch = window.fetch;\n" +
+                            "  window.fetch = function(...args) {\n" +
+                            "    const url = args[0];\n"
+            );
+
+            for (int i = 0; i < apiConfigs.size(); i++) {
+                String apiPath = (String) apiConfigs.get(i).get("apiPath");
+                String monitorKey = "api_" + i;
+                @SuppressWarnings("unchecked")
+                Map<String, String> expectedParams = (Map<String, String>) apiConfigs.get(i).get("expectedParams");
+
+                String paramChecks = buildParamCheckScriptInline(expectedParams, monitorKey);
+
+                monitorScript.append(String.format(
+                        "    if (url.includes('%s')) {\n" +
+                                "      console.log('[Multi-API Monitor] Detected [%s]:', url);\n" +
+                                "      window.__apiMonitors['%s'].calls.push({url: url, timestamp: Date.now()});\n" +
+                                "      %s\n" +
+                                "    }\n",
+                        apiPath, monitorKey, monitorKey, paramChecks
+                ));
+            }
+
+            monitorScript.append(
+                    "    return originalFetch.apply(this, args);\n" +
+                            "  };\n"
+            );
+
+            monitorScript.append(
+                    "  const originalOpen = XMLHttpRequest.prototype.open;\n" +
+                            "  XMLHttpRequest.prototype.open = function(method, url, ...rest) {\n"
+            );
+
+            for (int i = 0; i < apiConfigs.size(); i++) {
+                String apiPath = (String) apiConfigs.get(i).get("apiPath");
+                String monitorKey = "api_" + i;
+                @SuppressWarnings("unchecked")
+                Map<String, String> expectedParams = (Map<String, String>) apiConfigs.get(i).get("expectedParams");
+
+                String paramChecks = buildParamCheckScriptInline(expectedParams, monitorKey);
+
+                monitorScript.append(String.format(
+                        "    if (url.includes('%s')) {\n" +
+                                "      console.log('[Multi-API Monitor] Detected (XHR) [%s]:', url);\n" +
+                                "      window.__apiMonitors['%s'].calls.push({url: url, timestamp: Date.now()});\n" +
+                                "      %s\n" +
+                                "    }\n",
+                        apiPath, monitorKey, monitorKey, paramChecks
+                ));
+            }
+
+            monitorScript.append(
+                    "    return originalOpen.apply(this, [method, url, ...rest]);\n" +
+                            "  };\n" +
+                            "  window.__multiApiHooked = true;\n" +
+                            "}\n"
+            );
+
+            js.executeScript(monitorScript.toString());
+            logger.info("Injected parallel monitoring for {} APIs", apiConfigs.size());
+
+            long startTime = System.currentTimeMillis();
+            long timeout = maxTimeoutSeconds * 1000L;
+            Map<String, Boolean> results = new HashMap<>();
+
+            while ((System.currentTimeMillis() - startTime) < timeout) {
+                try {
+                    Thread.sleep(500);
+                    for (int i = 0; i < apiConfigs.size(); i++) {
+                        String monitorKey = "api_" + i;
+
+                        if (!results.getOrDefault(monitorKey, false)) {
+                            Boolean found = (Boolean) js.executeScript(
+                                    String.format("return window.__apiMonitors['%s']?.found || false;", monitorKey)
+                            );
+
+                            if (Boolean.TRUE.equals(found)) {
+                                results.put(monitorKey, true);
+                                String apiPath = (String) apiConfigs.get(i).get("apiPath");
+                                logger.info("✓ API '{}' detected", apiPath);
+                            }
+                        }
+                    }
+
+                    if (results.size() == apiConfigs.size() && results.values().stream().allMatch(v -> v)) {
+                        logger.info("All {} APIs detected successfully", apiConfigs.size());
+                        break;
+                    }
+
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+
+            js.executeScript("delete window.__apiMonitors; delete window.__multiApiHooked;");
+
+            List<String> notFound = new ArrayList<>();
+            for (int i = 0; i < apiConfigs.size(); i++) {
+                String monitorKey = "api_" + i;
+                if (!results.getOrDefault(monitorKey, false)) {
+                    String apiPath = (String) apiConfigs.get(i).get("apiPath");
+                    @SuppressWarnings("unchecked")
+                    Map<String, String> expectedParams = (Map<String, String>) apiConfigs.get(i).get("expectedParams");
+                    String paramsStr = expectedParams != null ? expectedParams.toString() : "any";
+                    notFound.add(String.format("API '%s' with params %s", apiPath, paramsStr));
+                }
+            }
+
+            if (!notFound.isEmpty()) {
+                throw new AssertionError(
+                        String.format("Failed to detect %d API(s) in %d seconds:\n%s",
+                                notFound.size(), maxTimeoutSeconds, String.join("\n", notFound))
+                );
+            }
+
+            return null;
+        }, apiConfigs, maxTimeoutSeconds);
+    }
+
+    private String buildParamCheckScriptInline(Map<String, String> expectedParams, String monitorKey) {
+        if (expectedParams == null || expectedParams.isEmpty()) {
+            return String.format("window.__apiMonitors['%s'].found = true;", monitorKey);
+        }
+        StringBuilder script = new StringBuilder();
+        script.append("if (");
+        boolean first = true;
+        for (Map.Entry<String, String> entry : expectedParams.entrySet()) {
+            String paramName = entry.getKey();
+            String expectedValue = entry.getValue();
+            if (!first) script.append(" && ");
+            first = false;
+            if ("*".equals(expectedValue)) {
+                script.append("true");
+            } else if ("?".equals(expectedValue)) {
+                script.append(String.format(
+                        "(url.includes('%s=') && url.match(/%s=([^&]+)/)?.[1])",
+                        paramName, paramName
+                ));
+            } else {
+                script.append(String.format("url.includes('%s=%s')", paramName, expectedValue));
+            }
+        }
+        script.append(String.format(") { window.__apiMonitors['%s'].found = true; }", monitorKey));
+        return script.toString();
+    }
+
 }

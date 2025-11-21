@@ -7,6 +7,8 @@ import io.qameta.allure.Attachment;
 import io.restassured.http.Cookie;
 import io.restassured.http.Header;
 import io.restassured.response.Response;
+import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.PathNotFoundException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -75,42 +77,76 @@ public class ApiResponse {
     // === JSON ===
 
     public String getJsonPath(String path) {
+        String normalizedPath = (path != null && !path.startsWith("$")) ? "$." + path : path;
+
         try {
-            return restAssuredResponse.jsonPath().getString(path);
-        } catch (Exception e) {
+            Object result = JsonPath.read(getBody(), normalizedPath);
+            return result != null ? result.toString() : null;
+        } catch (PathNotFoundException e) {
             return null;
+        } catch (Exception e) {
+            try {
+                String restPath = path.startsWith("$.") ? path.substring(2) : path;
+                return restAssuredResponse.jsonPath().getString(restPath);
+            } catch (Exception ex) {
+                return null;
+            }
         }
     }
 
     public Integer getJsonPathAsInt(String path) {
+        String normalizedPath = (path != null && !path.startsWith("$")) ? "$." + path : path;
         try {
-            return restAssuredResponse.jsonPath().getInt(path);
+            return JsonPath.read(getBody(), normalizedPath);
         } catch (Exception e) {
-            return null;
+            try {
+                String restPath = path.startsWith("$.") ? path.substring(2) : path;
+                return restAssuredResponse.jsonPath().getInt(restPath);
+            } catch (Exception ex) {
+                return null;
+            }
         }
     }
 
     public Double getJsonPathAsDouble(String path) {
+        String normalizedPath = (path != null && !path.startsWith("$")) ? "$." + path : path;
         try {
-            return restAssuredResponse.jsonPath().getDouble(path);
+            return JsonPath.read(getBody(), normalizedPath);
         } catch (Exception e) {
-            return null;
+            try {
+                String restPath = path.startsWith("$.") ? path.substring(2) : path;
+                return restAssuredResponse.jsonPath().getDouble(restPath);
+            } catch (Exception ex) {
+                return null;
+            }
         }
     }
 
     public Boolean getJsonPathAsBoolean(String path) {
+        String normalizedPath = (path != null && !path.startsWith("$")) ? "$." + path : path;
         try {
-            return restAssuredResponse.jsonPath().getBoolean(path);
+            return JsonPath.read(getBody(), normalizedPath);
         } catch (Exception e) {
-            return null;
+            try {
+                String restPath = path.startsWith("$.") ? path.substring(2) : path;
+                return restAssuredResponse.jsonPath().getBoolean(restPath);
+            } catch (Exception ex) {
+                return null;
+            }
         }
     }
 
     public <T> List<T> getJsonPathAsList(String path) {
+        String normalizedPath = (path != null && !path.startsWith("$")) ? "$." + path : path;
         try {
-            return restAssuredResponse.jsonPath().getList(path);
+            return JsonPath.read(getBody(), normalizedPath);
         } catch (Exception e) {
-            return null;
+            try {
+                String restPath = path.startsWith("$.") ? path.substring(2) : path;
+                return restAssuredResponse.jsonPath().getList(restPath);
+            } catch (Exception ex) {
+                return null;
+            }
         }
     }
 

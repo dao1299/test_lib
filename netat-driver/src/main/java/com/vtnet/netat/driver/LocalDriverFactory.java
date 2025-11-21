@@ -1,6 +1,7 @@
 package com.vtnet.netat.driver;
 
 import org.openqa.selenium.MutableCapabilities;
+import org.openqa.selenium.PageLoadStrategy;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeDriverService;
@@ -17,6 +18,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.util.Optional;
 
 public class LocalDriverFactory implements IDriverFactory {
     private static final Logger log = LoggerFactory.getLogger(LocalDriverFactory.class);
@@ -49,21 +52,71 @@ public class LocalDriverFactory implements IDriverFactory {
                         .usingDriverExecutable(new File(getDriverPath("webdriver.chrome.driver")))
                         .build();
                 return new ChromeDriver(chromeService, (ChromeOptions) capabilities);
+//                ChromeOptions options = buildChromeOptions(capabilities);
+//                return new ChromeDriver(options);
         }
     }
 
-    /**
-     * Phương thức trợ giúp để lấy đường dẫn driver từ file config.
-     */
+    private ChromeOptions buildChromeOptions(MutableCapabilities baseCaps) {
+        ChromeOptions options = (baseCaps instanceof ChromeOptions)
+                ? (ChromeOptions) baseCaps
+                : new ChromeOptions().merge(baseCaps);
+
+        String pls = Optional.ofNullable(ConfigReader.getProperty("webdriver.chrome.pageLoadStrategy"))
+                .orElse("EAGER");
+        try {
+            options.setPageLoadStrategy(PageLoadStrategy.valueOf(pls.toUpperCase()));
+        } catch (Exception ignored) {
+            options.setPageLoadStrategy(PageLoadStrategy.EAGER);
+        }
+
+        boolean headless = Boolean.parseBoolean(
+                Optional.ofNullable(ConfigReader.getProperty("browser.headless")).orElse("false")
+        );
+        if (headless) {
+            options.addArguments("--headless=new");
+        }
+
+        options.addArguments(
+                "--no-first-run",
+                "--no-default-browser-check",
+                "--disable-features=Translate,AutomationControlled,InterestFeed",
+                "--disable-background-networking",
+                "--disable-background-timer-throttling",
+                "--disable-client-side-phishing-detection",
+                "--disable-default-apps",
+                "--disable-popup-blocking",
+                "--disable-renderer-backgrounding",
+                "--disable-extensions",
+                "--metrics-recording-only",
+                "--mute-audio",
+                "--disable-dev-shm-usage", "--no-sandbox"
+        );
+
+        boolean blockImages = Boolean.parseBoolean(
+                Optional.ofNullable(ConfigReader.getProperty("webdriver.chrome.blockImages")).orElse("false")
+        );
+        if (blockImages) {
+            options.setExperimentalOption("prefs", java.util.Map.of(
+                    "profile.managed_default_content_settings.images", 2
+            ));
+        }
+
+        boolean acceptInsecure = Boolean.parseBoolean(
+                Optional.ofNullable(ConfigReader.getProperty("capability.acceptInsecureCerts")).orElse("true")
+        );
+        options.setAcceptInsecureCerts(acceptInsecure);
+
+        return options;
+    }
+
     private String getDriverPath(String driverPropertyKey) {
         String driverPath = ConfigReader.getProperty(driverPropertyKey);
         if (driverPath != null && !driverPath.isEmpty()) {
             log.info("Using manual driver at: {}", driverPath);
             return driverPath;
-        } else {
-            // Xử lý UpdateChromeHelper hoặc các cơ chế khác nếu cần
+        } else if (ConfigReader.getProperty("company","").equalsIgnoreCase("ttcds")){
             if (driverPropertyKey.contains("chrome")) {
-                // Giả định bạn có cơ chế tự động cập nhật
                 String version = new UpdateChromeHelper().updateAutomaticallyChromeDriver();
                 return System.getProperty("user.dir") + "/driver/chromedriver" + version + ".exe";
             }else if (driverPropertyKey.contains("edge")) {
@@ -73,6 +126,7 @@ public class LocalDriverFactory implements IDriverFactory {
             }
             throw new RuntimeException("Cannot find driver path for: " + driverPropertyKey + " in configuration file.");
         }
+        return null;
     }
 
     private void setupProxy() {

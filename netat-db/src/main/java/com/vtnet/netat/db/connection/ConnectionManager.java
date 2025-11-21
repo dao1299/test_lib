@@ -19,7 +19,7 @@ public class ConnectionManager {
     private static final DatabaseLogger logger = DatabaseLogger.getInstance();
 
     public static void createConnectionPool(DatabaseProfile profile) {
-        if (dataSources.containsKey(profile.getProfileName())) {
+        if (dataSources.containsKey(profile.getName())) {
             return;
         }
 
@@ -29,9 +29,9 @@ public class ConnectionManager {
         config.setPassword(profile.getPassword());
         config.setMaximumPoolSize(profile.getPoolSize());
 
-        logger.logConnectionOpen(profile.getProfileName(), profile.getJdbcUrl());
+        logger.logConnectionOpen(profile.getName(), profile.getJdbcUrl());
 
-        dataSources.put(profile.getProfileName(), new HikariDataSource(config));
+        dataSources.put(profile.getName(), new HikariDataSource(config));
     }
 
     public static Connection getConnection(String profileName) throws SQLException {
@@ -92,5 +92,21 @@ public class ConnectionManager {
             ds.close();
         });
         dataSources.clear();
+    }
+
+    public static void registerProfile(DatabaseProfile profile) {
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl(profile.getJdbcUrl());
+        config.setUsername(profile.getUsername());
+        config.setPassword(profile.getPassword());
+        config.setDriverClassName(profile.getDriverClassName());
+        config.setMaximumPoolSize(profile.getPoolSize());
+        config.setConnectionTimeout(profile.getConnectionTimeout());
+        config.setPoolName("HikariPool-" + profile.getName());
+
+        HikariDataSource dataSource = new HikariDataSource(config);
+        dataSources.put(profile.getName(), dataSource);
+
+        logger.logConnectionOpen(profile.getName(), profile.getJdbcUrl());
     }
 }

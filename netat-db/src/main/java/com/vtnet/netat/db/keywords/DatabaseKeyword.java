@@ -3,6 +3,8 @@ package com.vtnet.netat.db.keywords;
 import com.vtnet.netat.core.BaseKeyword;
 import com.vtnet.netat.core.annotations.NetatKeyword;
 import com.vtnet.netat.core.context.ExecutionContext;
+import com.vtnet.netat.core.logging.NetatLogger;
+import com.vtnet.netat.db.config.DatabaseProfile;
 import com.vtnet.netat.db.connection.ConnectionManager;
 import com.vtnet.netat.db.exceptions.DatabaseException;
 import com.vtnet.netat.db.exceptions.ErrorSeverity;
@@ -12,20 +14,220 @@ import com.vtnet.netat.db.exceptions.query.QueryExecutionException;
 import com.vtnet.netat.db.logging.DatabaseLogger;
 import com.vtnet.netat.db.logging.LogContext;
 import com.vtnet.netat.db.logging.model.PoolStats;
+import io.qameta.allure.Step;
 
 import java.sql.*;
 import java.util.*;
 
-/**
- * Database keyword với đầy đủ logging support.
- * Mọi operation đều được log với context, duration, và error details.
- *
- * @author NETAT Team
- * @version 1.1.0
- */
 public class DatabaseKeyword extends BaseKeyword {
 
     private static final DatabaseLogger dbLogger = DatabaseLogger.getInstance();
+    private static final NetatLogger netatLogger = NetatLogger.getInstance(DatabaseKeyword.class);
+
+    @NetatKeyword(
+            name = "connectDatabase",
+            description = "Tạo kết nối database động mà không cần file cấu hình profile - hữu ích cho ad-hoc testing và quick connections",
+            category = "Database",
+            subCategory = "Connection Management",
+            parameters = {
+                    "profileName: String - Tên profile để lưu connection (dùng cho các operations sau)",
+                    "databaseType: String - Loại database: mysql, mariadb, postgresql, oracle, sqlserver, h2",
+                    "host: String - Database host (e.g., localhost, 192.168.1.100)",
+                    "port: int - Database port (e.g., 3306 for MySQL/MariaDB, 5432 for PostgreSQL)",
+                    "database: String - Tên database/schema",
+                    "username: String - Database username",
+                    "password: String - Database password"
+            },
+            returnValue = "void - Không trả về giá trị (throw DatabaseException nếu không thể kết nối)",
+            example =
+                    "DatabaseKeyword db = new DatabaseKeyword();\n" +
+                            "\n" +
+                            "// Kết nối MariaDB local\n" +
+                            "db.connectDatabase(\n" +
+                            "    \"dbLocal\",\n" +
+                            "    \"mariadb\",\n" +
+                            "    \"localhost\",\n" +
+                            "    3306,\n" +
+                            "    \"quanlysinhvien\",\n" +
+                            "    \"root\",\n" +
+                            "    \"123qwe!@#\"\n" +
+                            ");\n" +
+                            "System.out.println(\"✓ Connected to MariaDB\");\n" +
+                            "\n" +
+                            "// Sau đó có thể dùng profileName 'dbLocal' cho các operations\n" +
+                            "List<Map<String, Object>> students = db.executeQuery(\n" +
+                            "    \"dbLocal\",\n" +
+                            "    \"SELECT * FROM sinhvien\"\n" +
+                            ");\n" +
+                            "\n" +
+                            "// Kết nối PostgreSQL\n" +
+                            "db.connectDatabase(\n" +
+                            "    \"postgres-dev\",\n" +
+                            "    \"postgresql\",\n" +
+                            "    \"192.168.1.100\",\n" +
+                            "    5432,\n" +
+                            "    \"myapp\",\n" +
+                            "    \"admin\",\n" +
+                            "    \"secretpass\"\n" +
+                            ");\n" +
+                            "\n" +
+                            "// Kết nối MySQL production\n" +
+                            "db.connectDatabase(\n" +
+                            "    \"mysql-prod\",\n" +
+                            "    \"mysql\",\n" +
+                            "    \"prod-db.example.com\",\n" +
+                            "    3306,\n" +
+                            "    \"production_db\",\n" +
+                            "    \"prod_user\",\n" +
+                            "    \"prod_password\"\n" +
+                            ");\n" +
+                            "\n" +
+                            "// Kết nối H2 in-memory cho testing\n" +
+                            "db.connectDatabase(\n" +
+                            "    \"h2-test\",\n" +
+                            "    \"h2\",\n" +
+                            "    \"mem\",\n" +
+                            "    0,\n" +
+                            "    \"testdb\",\n" +
+                            "    \"sa\",\n" +
+                            "    \"\"\n" +
+                            ");\n" +
+                            "\n" +
+                            "// Verify connection\n" +
+                            "if (db.checkConnection(\"dbLocal\")) {\n" +
+                            "    System.out.println(\"✓ Connection successful\");\n" +
+                            "    \n" +
+                            "    // Get connection pool stats\n" +
+                            "    Map<String, Object> stats = db.getConnectionPoolStats(\"dbLocal\");\n" +
+                            "    System.out.println(\"Pool size: \" + stats.get(\"poolSize\"));\n" +
+                            "}",
+            note = "- Profile được tạo động sẽ tồn tại trong suốt test session\n" +
+                    "- Sử dụng HikariCP với default configuration (pool size=10, timeout=30s)\n" +
+                    "- Thích hợp cho ad-hoc testing, không cần tạo file config\n" +
+                    "- Có thể override profile đã tồn tại bằng cách gọi lại với cùng profileName\n" +
+                    "- Nên dùng profile config file cho production/long-term tests\n" +
+                    "- Password được lưu trong memory (không mã hóa), cẩn thận với sensitive data\n" +
+                    "- Supported database types: mysql, mariadb, postgresql, oracle, sqlserver, h2, sqlite"
+    )
+    @Step("Connect to database {profileName} - {databaseType}://{host}:{port}/{database}")
+    public void connectDatabase(String profileName, String databaseType, String host,
+                                int port, String database, String username, String password) {
+        executeWithLogging(
+                "connectDatabase",
+                profileName,
+                String.format("CONNECT TO %s@%s:%d/%s", databaseType, host, port, database),
+                new Object[]{username},
+                () -> {
+                    String jdbcUrl = buildJdbcUrl(databaseType, host, port, database);
+
+                    netatLogger.info("Creating dynamic database profile: {} [{}]", profileName, jdbcUrl);
+
+
+                    // Create profile configuration
+                    DatabaseProfile profile = DatabaseProfile.builder()
+                            .name(profileName)
+                            .jdbcUrl(jdbcUrl)
+                            .username(username)
+                            .password(password)
+                            .driverClassName(getDriverClassName(databaseType))
+                            .poolSize(10)
+                            .connectionTimeout(30000)
+                            .build();
+
+                    ConnectionManager.registerProfile(profile);
+
+                    // Test connection
+                    try (Connection conn = ConnectionManager.getConnection(profileName)) {
+                        DatabaseMetaData metadata = conn.getMetaData();
+                        netatLogger.info("Connected to {} {} successfully",
+                                metadata.getDatabaseProductName(),
+                                metadata.getDatabaseProductVersion());
+                    } catch (SQLException e) {
+                        throw SqlStateMapper.mapException(e, null, null, profileName);
+                    }
+
+                    return null;
+                }
+        );
+    }
+
+
+    private String buildJdbcUrl(String databaseType, String host, int port, String database) {
+        String type = databaseType.toLowerCase();
+
+        switch (type) {
+            case "mysql":
+                return String.format("jdbc:mysql://%s:%d/%s?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC",
+                        host, port, database);
+
+            case "mariadb":
+                return String.format("jdbc:mariadb://%s:%d/%s?useSSL=false&serverTimezone=UTC",
+                        host, port, database);
+
+            case "postgresql":
+            case "postgres":
+                return String.format("jdbc:postgresql://%s:%d/%s", host, port, database);
+
+            case "oracle":
+                return String.format("jdbc:oracle:thin:@%s:%d:%s", host, port, database);
+
+            case "sqlserver":
+            case "mssql":
+                return String.format("jdbc:sqlserver://%s:%d;databaseName=%s;encrypt=false",
+                        host, port, database);
+
+            case "h2":
+                if ("mem".equals(host)) {
+                    return String.format("jdbc:h2:mem:%s;DB_CLOSE_DELAY=-1", database);
+                } else {
+                    return String.format("jdbc:h2:tcp://%s:%d/%s", host, port, database);
+                }
+
+            case "sqlite":
+                return String.format("jdbc:sqlite:%s", database); // database = file path
+
+            default:
+                throw new IllegalArgumentException(
+                        "Unsupported database type: " + databaseType + ". " +
+                                "Supported types: mysql, mariadb, postgresql, oracle, sqlserver, h2, sqlite"
+                );
+        }
+    }
+
+    /**
+     * Gets JDBC driver class name for database type.
+     */
+    private String getDriverClassName(String databaseType) {
+        String type = databaseType.toLowerCase();
+
+        switch (type) {
+            case "mysql":
+                return "com.mysql.cj.jdbc.Driver";
+
+            case "mariadb":
+                return "org.mariadb.jdbc.Driver";
+
+            case "postgresql":
+            case "postgres":
+                return "org.postgresql.Driver";
+
+            case "oracle":
+                return "oracle.jdbc.OracleDriver";
+
+            case "sqlserver":
+            case "mssql":
+                return "com.microsoft.sqlserver.jdbc.SQLServerDriver";
+
+            case "h2":
+                return "org.h2.Driver";
+
+            case "sqlite":
+                return "org.sqlite.JDBC";
+
+            default:
+                throw new IllegalArgumentException("Unsupported database type: " + databaseType);
+        }
+    }
 
     // ========================================================================
     // QUERY EXECUTION KEYWORDS
@@ -78,6 +280,7 @@ public class DatabaseKeyword extends BaseKeyword {
                     "- Trả về empty list [] nếu không tìm thấy kết quả\n" +
                     "- Throw DatabaseException nếu có lỗi SQL"
     )
+    @Step("Execute query in database {0}: {1}")
     public List<Map<String, Object>> executeQuery(String profileName, String query, Object... params) {
         return executeWithLogging(
                 "executeQuery",
@@ -88,6 +291,228 @@ public class DatabaseKeyword extends BaseKeyword {
         );
     }
 
+    @Step("Ngắt kết nối và cleanup database profile {profileName}")
+    @NetatKeyword(
+            name = "disconnectDatabase",
+            description = "Ngắt kết nối và cleanup connection pool của một database profile",
+            category = "Database",
+            subCategory = "Connection Management",
+            parameters = {
+                    "profileName: String - Tên database profile cần disconnect"
+            },
+            returnValue = "void - Không trả về giá trị",
+            example =
+                    "DatabaseKeyword db = new DatabaseKeyword();\n" +
+                            "\n" +
+                            "// Tạo connection\n" +
+                            "db.connectDatabase(\n" +
+                            "    \"temp-db\",\n" +
+                            "    \"mariadb\",\n" +
+                            "    \"localhost\",\n" +
+                            "    3306,\n" +
+                            "    \"test_db\",\n" +
+                            "    \"root\",\n" +
+                            "    \"password\"\n" +
+                            ");\n" +
+                            "\n" +
+                            "// Sử dụng connection\n" +
+                            "db.executeQuery(\"temp-db\", \"SELECT * FROM users\");\n" +
+                            "\n" +
+                            "// Cleanup sau khi xong\n" +
+                            "db.disconnectDatabase(\"temp-db\");\n" +
+                            "System.out.println(\"✓ Database disconnected and pool cleaned up\");\n" +
+                            "\n" +
+                            "// Disconnect multiple profiles\n" +
+                            "String[] profiles = {\"dev-db\", \"test-db\", \"staging-db\"};\n" +
+                            "for (String profile : profiles) {\n" +
+                            "    try {\n" +
+                            "        db.disconnectDatabase(profile);\n" +
+                            "        System.out.println(\"Disconnected: \" + profile);\n" +
+                            "    } catch (Exception e) {\n" +
+                            "        System.err.println(\"Failed to disconnect \" + profile + \": \" + e.getMessage());\n" +
+                            "    }\n" +
+                            "}\n" +
+                            "\n" +
+                            "// Trong test teardown\n" +
+                            "@AfterTest\n" +
+                            "public void cleanup() {\n" +
+                            "    db.disconnectDatabase(\"temp-db\");\n" +
+                            "}",
+            note = "- Đóng tất cả connections trong pool\n" +
+                    "- Giải phóng resources (memory, threads)\n" +
+                    "- Profile sẽ bị remove khỏi ConnectionManager\n" +
+                    "- Throw exception nếu profile không tồn tại\n" +
+                    "- Nên gọi trong @AfterTest hoặc finally block để đảm bảo cleanup\n" +
+                    "- Safe to call multiple times (idempotent)"
+    )
+    public void disconnectDatabase(String profileName) {
+        executeWithLogging(
+                "disconnectDatabase",
+                profileName,
+                "DISCONNECT",
+                new Object[0],
+                () -> {
+                    dbLogger.logConnectionClose(profileName,2000L);
+                    ConnectionManager.closeAll();
+                    return null;
+                }
+        );
+    }
+
+    @Step("Lấy query results dưới dạng String từ database {profileName}: {query}")
+    @NetatKeyword(
+            name = "getQueryResultsAsString",
+            description = "Lấy kết quả query dưới dạng String formatted table - hữu ích cho logging và debugging",
+            category = "Database",
+            subCategory = "Data Retrieval",
+            parameters = {
+                    "profileName: String - Tên database profile đã cấu hình",
+                    "query: String - Câu lệnh SELECT",
+                    "params: Object... - Parameters cho query (tùy chọn)"
+            },
+            returnValue = "String - Query results formatted dạng table (ASCII table hoặc JSON string)",
+            example =
+                    "DatabaseKeyword db = new DatabaseKeyword();\n" +
+                            "\n" +
+                            "// Lấy results dạng table string\n" +
+                            "String results = db.getQueryResultsAsString(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"SELECT id, name, email FROM users WHERE status = ?\",\n" +
+                            "    \"active\"\n" +
+                            ");\n" +
+                            "System.out.println(results);\n" +
+                            "// Output:\n" +
+                            "// +----+-----------+-------------------+\n" +
+                            "// | id | name      | email             |\n" +
+                            "// +----+-----------+-------------------+\n" +
+                            "// | 1  | John Doe  | john@example.com  |\n" +
+                            "// | 2  | Jane Smith| jane@example.com  |\n" +
+                            "// +----+-----------+-------------------+\n" +
+                            "\n" +
+                            "// Log results to file\n" +
+                            "String queryResults = db.getQueryResultsAsString(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"SELECT * FROM orders WHERE created_at >= CURDATE()\"\n" +
+                            ");\n" +
+                            "Files.write(Paths.get(\"daily_orders.txt\"), queryResults.getBytes());\n" +
+                            "\n" +
+                            "// Assert contains specific value\n" +
+                            "String usersTable = db.getQueryResultsAsString(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"SELECT name FROM users\"\n" +
+                            ");\n" +
+                            "if (usersTable.contains(\"John Doe\")) {\n" +
+                            "    System.out.println(\"✓ User found in results\");\n" +
+                            "}\n" +
+                            "\n" +
+                            "// Debug query results\n" +
+                            "String debugOutput = db.getQueryResultsAsString(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"SELECT COUNT(*) as total, AVG(price) as avg_price FROM products\"\n" +
+                            ");\n" +
+                            "System.out.println(\"Debug info:\\n\" + debugOutput);\n" +
+                            "\n" +
+                            "// Compare expected vs actual\n" +
+                            "String expected = \"John Doe\\nJane Smith\";\n" +
+                            "String actual = db.getQueryResultsAsString(\n" +
+                            "    \"mysql-dev\",\n" +
+                            "    \"SELECT name FROM users ORDER BY name\"\n" +
+                            ");\n" +
+                            "if (actual.contains(expected)) {\n" +
+                            "    System.out.println(\"✓ Results match expected\");\n" +
+                            "}",
+            note = "- Format dạng ASCII table với borders và alignment\n" +
+                    "- Columns được auto-size dựa trên content width\n" +
+                    "- NULL values hiển thị là 'NULL'\n" +
+                    "- Maximum 1000 rows để tránh String quá lớn\n" +
+                    "- Hữu ích cho logging, debugging, và assertion\n" +
+                    "- Có thể write vào file để archive test results"
+    )
+    public String getQueryResultsAsString(String profileName, String query, Object... params) {
+        return executeWithLogging(
+                "getQueryResultsAsString",
+                profileName,
+                query,
+                params,
+                () -> {
+                    List<Map<String, Object>> results = executeQueryInternal(profileName, query, params);
+
+                    if (results.isEmpty()) {
+                        return "(No results)";
+                    }
+
+                    List<Map<String, Object>> limitedResults = results.size() > 1000
+                            ? results.subList(0, 1000)
+                            : results;
+
+                    return formatResultsAsTable(limitedResults);
+                }
+        );
+    }
+
+    private String formatResultsAsTable(List<Map<String, Object>> results) {
+        if (results.isEmpty()) {
+            return "(No results)";
+        }
+
+        StringBuilder sb = new StringBuilder();
+
+        List<String> columns = new ArrayList<>(results.get(0).keySet());
+
+        Map<String, Integer> columnWidths = new HashMap<>();
+        for (String column : columns) {
+            int maxWidth = column.length();
+            for (Map<String, Object> row : results) {
+                Object value = row.get(column);
+                String strValue = value != null ? value.toString() : "NULL";
+                maxWidth = Math.max(maxWidth, strValue.length());
+            }
+            columnWidths.put(column, maxWidth);
+        }
+
+        StringBuilder separator = new StringBuilder("+");
+        for (String column : columns) {
+            int width = columnWidths.get(column);
+            separator.append("-".repeat(width + 2)).append("+");
+        }
+        String separatorLine = separator.toString();
+
+        sb.append(separatorLine).append("\n");
+
+        sb.append("|");
+        for (String column : columns) {
+            int width = columnWidths.get(column);
+            sb.append(" ").append(padRight(column, width)).append(" |");
+        }
+        sb.append("\n");
+
+        sb.append(separatorLine).append("\n");
+
+        for (Map<String, Object> row : results) {
+            sb.append("|");
+            for (String column : columns) {
+                Object value = row.get(column);
+                String strValue = value != null ? value.toString() : "NULL";
+                int width = columnWidths.get(column);
+                sb.append(" ").append(padRight(strValue, width)).append(" |");
+            }
+            sb.append("\n");
+        }
+
+        sb.append(separatorLine).append("\n");
+        sb.append(String.format("(%d row%s)\n", results.size(), results.size() == 1 ? "" : "s"));
+        return sb.toString();
+    }
+
+
+    private String padRight(String str, int length) {
+        if (str.length() >= length) {
+            return str;
+        }
+        return str + " ".repeat(length - str.length());
+    }
+
+    @Step("Execute update query in database profile {0}: {1}")
     @NetatKeyword(
             name = "executeUpdate",
             description = "Thực thi câu lệnh INSERT, UPDATE, DELETE và trả về số lượng rows bị ảnh hưởng",
@@ -202,6 +627,7 @@ public class DatabaseKeyword extends BaseKeyword {
                     "- Nếu 1 operation fail, các operation khác vẫn có thể thành công (tùy database)\n" +
                     "- Trả về mảng với length = số lượng batch operations"
     )
+    @Step("Execute batch profile {0} with query: {1}")
     public int[] executeBatch(String profileName, String query, List<Object[]> batchParams) {
         return executeWithLogging(
                 "executeBatch",
@@ -255,6 +681,7 @@ public class DatabaseKeyword extends BaseKeyword {
                     "- Empty statements (chỉ có whitespace) sẽ bị bỏ qua\n" +
                     "- Throw DatabaseException nếu có bất kỳ statement nào fail"
     )
+    @Step("Execute script in database {0} with script {1}")
     public void executeScript(String profileName, String script) {
         executeWithLogging(
                 "executeScript",
@@ -325,6 +752,7 @@ public class DatabaseKeyword extends BaseKeyword {
                     "- Thích hợp cho verification sau khi create/update data\n" +
                     "- Query nên được design để return đúng records cần verify"
     )
+    @Step("Verify record exists in database profile {0} with query {1}")
     public void verifyRecordExists(String profileName, String query, Object... params) {
         executeWithLogging(
                 "verifyRecordExists",
@@ -393,6 +821,7 @@ public class DatabaseKeyword extends BaseKeyword {
                     "- Thích hợp cho verification sau khi delete hoặc cleanup\n" +
                     "- Hữu ích để đảm bảo data đã được remove hoàn toàn"
     )
+    @Step("Verify record not exists in database {0} with query {1}")
     public void verifyRecordNotExists(String profileName, String query, Object... params) {
         executeWithLogging(
                 "verifyRecordNotExists",
@@ -460,6 +889,7 @@ public class DatabaseKeyword extends BaseKeyword {
                     "- Có thể dùng expectedCount = 0 để verify empty result\n" +
                     "- Hữu ích cho batch operation verification"
     )
+    @Step("Verify database {0} with query {1}, expect {2} records")
     public void verifyRowCount(String profileName, String query, int expectedCount, Object... params) {
         executeWithLogging(
                 "verifyRowCount",

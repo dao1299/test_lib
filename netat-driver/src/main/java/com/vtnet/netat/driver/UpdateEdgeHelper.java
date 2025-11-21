@@ -30,7 +30,7 @@ public class UpdateEdgeHelper {
             }
         } catch (IOException e) {
             log.error("Could not retrieve Microsoft Edge version.", e);
-            throw new RuntimeException(e);
+            return null;
         }
         return null;
     }
@@ -162,6 +162,9 @@ public class UpdateEdgeHelper {
             } else {
                 log.info("EdgeDriver version {} already exists!", edgeVersion);
             }
+        }else{
+            log.info("Cannot get edge version! Error updateAutomaticallyEdgeDriver");
+            return null;
         }
         return edgeVersion;
     }

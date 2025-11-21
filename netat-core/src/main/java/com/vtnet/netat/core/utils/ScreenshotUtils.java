@@ -91,22 +91,23 @@ public class ScreenshotUtils {
         }
     }
 
-    public static void highlightAndTakeScreenshot(WebDriver driver, WebElement element, String stepName) {
+    public static String highlightAndTakeScreenshot(WebDriver driver, WebElement element, String stepName) {
         if (Boolean.TRUE.equals(IN_PROGRESS.get())) {
             logger.warn("Screenshot in progress, skipping highlight screenshot.");
-            return;
+            return null;
         }
         IN_PROGRESS.set(true);
 
         String originalStyle = "";
+        String screenshotPath = null;
         try {
             if (driver == null || element == null) {
                 logger.warn("Driver or Element is null. Cannot highlight and take screenshot.");
-                return;
+                return null;
             }
             if (!(driver instanceof TakesScreenshot) || !(driver instanceof JavascriptExecutor)) {
                 logger.warn("Driver does not support TakesScreenshot or JavascriptExecutor.");
-                return;
+                return null;
             }
 
             originalStyle = highlight(driver, element);
@@ -125,6 +126,7 @@ public class ScreenshotUtils {
             try {
                 Path dest = Path.of(SCREENSHOT_DIR, finalName);
                 FileUtils.writeByteArrayToFile(dest.toFile(), png);
+                screenshotPath = dest.toAbsolutePath().toString();
                 logger.info("Highlight screenshot saved: {}", dest.toAbsolutePath());
             } catch (Exception e) {
                 logger.warn("Save highlight screenshot file failed: {}", e.getMessage());
@@ -135,6 +137,64 @@ public class ScreenshotUtils {
         } finally {
             unHighlight(driver, element, originalStyle);
             IN_PROGRESS.set(false);
+        }
+        return screenshotPath;
+    }
+
+    private static String highlightWithLabel(WebDriver driver, WebElement element, String label) {
+        if (driver == null || element == null) return "";
+
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+        try {
+            // Save original style
+            String originalStyle = (String) js.executeScript(
+                    "return arguments[0].getAttribute('style');",
+                    element
+            );
+
+            // Apply enhanced highlight
+            String highlightScript =
+                    "var element = arguments[0];" +
+                            "var label = arguments[1];" +
+                            "var originalStyle = element.getAttribute('style') || '';" +
+
+                            // Highlight element
+                            "element.style.cssText = originalStyle + '; " +
+                            "border: 3px solid red !important; " +
+                            "box-shadow: 0 0 10px 3px red !important; " +
+                            "background-color: rgba(255, 0, 0, 0.1) !important; " +
+                            "position: relative !important; " +
+                            "z-index: 999999 !important;';" +
+
+                            // Add label overlay
+                            "if (label) {" +
+                            "  var labelDiv = document.createElement('div');" +
+                            "  labelDiv.textContent = label;" +
+                            "  labelDiv.style.cssText = '" +
+                            "    position: absolute; " +
+                            "    top: -25px; " +
+                            "    left: 0; " +
+                            "    background: red; " +
+                            "    color: white; " +
+                            "    padding: 5px 10px; " +
+                            "    font-size: 12px; " +
+                            "    font-weight: bold; " +
+                            "    z-index: 9999999; " +
+                            "    border-radius: 3px; " +
+                            "    white-space: nowrap;';" +
+                            "  element.appendChild(labelDiv);" +
+                            "}";
+
+            js.executeScript(highlightScript, element, label);
+
+            // Small delay để highlight render
+            Thread.sleep(200);
+
+            return (originalStyle == null) ? "" : originalStyle;
+
+        } catch (Exception e) {
+            logger.warn("Failed to highlight element with label: {}", e.getMessage());
+            return "";
         }
     }
 

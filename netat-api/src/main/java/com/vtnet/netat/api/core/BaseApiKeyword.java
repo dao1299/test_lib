@@ -284,7 +284,7 @@ public abstract class BaseApiKeyword extends BaseKeyword {
 
         if (ctx.isLogRequests()) {
             logger.info("═══════════════════════════════════════════════════");
-            logger.info("📤 {} {}", method, endpoint);
+            logger.info("{} {}", method, endpoint);
 
             if (ctx.getBaseUri() != null) {
                 logger.info("Base URI: {}", ctx.getBaseUri());
@@ -320,7 +320,7 @@ public abstract class BaseApiKeyword extends BaseKeyword {
 
         if (ctx.isLogRequests()) {
             logger.info("───────────────────────────────────────────────────");
-            logger.info("📥 Response Status: {} {} ({}ms)",
+            logger.info("Response Status: {} {} ({}ms)",
                     response.getStatusCode(),
                     response.getStatusLine(),
                     response.getTime());

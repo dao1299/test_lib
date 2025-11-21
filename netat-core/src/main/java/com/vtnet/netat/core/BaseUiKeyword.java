@@ -17,6 +17,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.Callable;
 
 /**
  * Base chung cho keyword UI (Web/Mobile).
@@ -29,10 +30,32 @@ public abstract class BaseUiKeyword extends BaseKeyword {
     private static final Duration SECONDARY_TIMEOUT = Duration.ofSeconds(5);
     protected static final Duration POLLING_INTERVAL = Duration.ofMillis(100);
     private static final Logger log = LoggerFactory.getLogger(BaseUiKeyword.class);
+    private static final ThreadLocal<com.vtnet.netat.core.ui.ObjectUI> CURRENT_ELEMENT =
+            new ThreadLocal<>();
 
     protected WebElement findElement(ObjectUI uiObject) {
         // Gọi đến phương thức findElement mới với thời gian chờ mặc định (PRIMARY_TIMEOUT)
         return findElement(uiObject, PRIMARY_TIMEOUT);
+    }
+
+    @Override
+    protected <T> T execute(Callable<T> logic, Object... params) {
+        // Lưu element vào context nếu param đầu là ObjectUI
+        if (params != null && params.length > 0 &&
+                params[0] instanceof com.vtnet.netat.core.ui.ObjectUI) {
+            CURRENT_ELEMENT.set((com.vtnet.netat.core.ui.ObjectUI) params[0]);
+        }
+
+        try {
+            return super.execute(logic, params);
+        } finally {
+            CURRENT_ELEMENT.remove();
+        }
+    }
+
+    // ✨ NEW: Helper để BaseKeyword có thể lấy current element
+    public static com.vtnet.netat.core.ui.ObjectUI getCurrentElement() {
+        return CURRENT_ELEMENT.get();
     }
 
 
@@ -132,35 +155,65 @@ public abstract class BaseUiKeyword extends BaseKeyword {
 
     protected String getText(ObjectUI uiObject) {
         return execute(() -> {
-            WebElement element = findElement(uiObject);
-            new WebDriverWait(DriverManager.getDriver(), DEFAULT_TIMEOUT).until(ExpectedConditions.visibilityOf(element));
+            if (uiObject == null) {
+                logger.warn("getText called with null uiObject");
+                return "";
+            }
+            WebDriver driver = DriverManager.getDriver();
+            boolean isMobile = driver instanceof io.appium.java_client.AppiumDriver;
+            int attempts = 3;
+            while (attempts-- > 0) {
+                try {
+                    WebElement element = new WebDriverWait(driver, DEFAULT_TIMEOUT)
+                            .ignoring(StaleElementReferenceException.class)
+                            .until(d -> {
+                                try {
+                                    WebElement el = findElement(uiObject);
+                                    return (el != null && el.isDisplayed()) ? el : null;
+                                } catch (StaleElementReferenceException e) {
+                                    return null;
+                                }
+                            });
 
-            String text = element.getText();
-            boolean isMobile = DriverManager.getDriver() instanceof io.appium.java_client.AppiumDriver;
-
-            if (!isMobile) {
-                String tagName = element.getTagName().toLowerCase();
-                if ("input".equals(tagName) || "textarea".equals(tagName) || "select".equals(tagName)) {
-                    String valueAttr = element.getAttribute("value");
-                    if (valueAttr != null && !valueAttr.isEmpty()) {
-                        text = valueAttr;
+                    if (element == null) {
+                        throw new StaleElementReferenceException(
+                                "Cannot locate visible element for: " + uiObject.getName());
                     }
-                }
+                    String text = element.getText();
+                    if (!isMobile) {
+                        String tagName = element.getTagName().toLowerCase();
 
-                if (text == null || text.trim().isEmpty()) {
-                    try {
-                        JavascriptExecutor js = (JavascriptExecutor) DriverManager.getDriver();
-                        text = (String) js.executeScript("return arguments[0].textContent || arguments[0].innerText;", element);
-                    } catch (Exception e) {
-                        logger.warn("Unable to retrieve text via JavaScript. Returning empty string.");
-                        text = "";
+                        if ("input".equals(tagName) || "textarea".equals(tagName) || "select".equals(tagName)) {
+                            String valueAttr = element.getAttribute("value");
+                            if (valueAttr != null && !valueAttr.isEmpty()) {
+                                text = valueAttr;
+                            }
+                        }
+
+                        if (text == null || text.trim().isEmpty()) {
+                            try {
+                                JavascriptExecutor js = (JavascriptExecutor) driver;
+                                text = (String) js.executeScript(
+                                        "return arguments[0].textContent || arguments[0].innerText;", element);
+                            } catch (Exception e) {
+                                logger.warn("Unable to retrieve text via JavaScript for {}. Returning empty string.",
+                                        uiObject.getName(), e);
+                                text = "";
+                            }
+                        }
                     }
+                    return (text != null) ? text : "";
+                } catch (StaleElementReferenceException e) {
+                    logger.warn("StaleElementReferenceException when getting text for {}. Retrying... ({} attempts left)",
+                            uiObject.getName(), attempts);
                 }
             }
 
-            return text != null ? text : "";
+            throw new StaleElementReferenceException(
+                    "Failed to get text for '" + uiObject.getName() + "' after multiple retries due to stale element.");
         }, uiObject != null ? uiObject.getName() : "null");
     }
+
 
     protected void waitForElementVisible(ObjectUI uiObject, int timeoutInSeconds) {
         execute(() -> {

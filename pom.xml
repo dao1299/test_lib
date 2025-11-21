@@ -220,6 +220,11 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.9.0</version>
+            </plugin>
         </plugins>
     </build>
 
@@ -236,30 +241,4 @@
             <url>file://${user.home}/.m2/repository-netat</url>
         </snapshotRepository>
     </distributionManagement>
-
-    <!-- Licenses -->
-    <licenses>
-        <license>
-            <name>MIT License</name>
-            <url>https://opensource.org/licenses/MIT</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
-
-    <!-- Developers -->
-    <developers>
-        <developer>
-            <id>vtnet</id>
-            <name>VTNet Team</name>
-            <email>team@vtnet.com</email>
-            <organization>VTNet</organization>
-        </developer>
-    </developers>
-
-    <!-- SCM -->
-    <scm>
-        <connection>scm:git:git://github.com/vtnet/netat-libraries.git</connection>
-        <developerConnection>scm:git:ssh://github.com/vtnet/netat-libraries.git</developerConnection>
-        <url>https://github.com/vtnet/netat-libraries/tree/main</url>
-    </scm>
 </project>

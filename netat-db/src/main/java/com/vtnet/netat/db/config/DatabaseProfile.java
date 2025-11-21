@@ -1,66 +1,94 @@
 package com.vtnet.netat.db.config;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-@JsonIgnoreProperties(ignoreUnknown = true)
+/**
+ * Database profile configuration.
+ * Can be loaded from JSON file or created programmatically.
+ */
 public class DatabaseProfile {
-    private String profileName;
-    private String jdbcUrl;
-    private String username;
-    private String password;
-    private int poolSize = 5; // Mặc định
 
-    // Getters and Setters...
+    private final String name;
+    private final String jdbcUrl;
+    private final String username;
+    private final String password;
+    private final String driverClassName;
+    private final int poolSize;
+    private final long connectionTimeout;
 
-    public DatabaseProfile(String profileName, String jdbcUrl, String username, String password, int poolSize) {
-        this.profileName = profileName;
-        this.jdbcUrl = jdbcUrl;
-        this.username = username;
-        this.password = password;
-        this.poolSize = poolSize;
+    private DatabaseProfile(Builder builder) {
+        this.name = builder.name;
+        this.jdbcUrl = builder.jdbcUrl;
+        this.username = builder.username;
+        this.password = builder.password;
+        this.driverClassName = builder.driverClassName;
+        this.poolSize = builder.poolSize;
+        this.connectionTimeout = builder.connectionTimeout;
     }
 
-    public DatabaseProfile() {
+    // Getters
+    public String getName() { return name; }
+    public String getJdbcUrl() { return jdbcUrl; }
+    public String getUsername() { return username; }
+    public String getPassword() { return password; }
+    public String getDriverClassName() { return driverClassName; }
+    public int getPoolSize() { return poolSize; }
+    public long getConnectionTimeout() { return connectionTimeout; }
+
+    public static Builder builder() {
+        return new Builder();
     }
 
-    public String getProfileName() {
-        return profileName;
-    }
+    public static class Builder {
+        private String name;
+        private String jdbcUrl;
+        private String username;
+        private String password;
+        private String driverClassName;
+        private int poolSize = 10;
+        private long connectionTimeout = 30000;
 
-    public void setProfileName(String profileName) {
-        this.profileName = profileName;
-    }
+        public Builder name(String name) {
+            this.name = name;
+            return this;
+        }
 
-    public String getJdbcUrl() {
-        return jdbcUrl;
-    }
+        public Builder jdbcUrl(String jdbcUrl) {
+            this.jdbcUrl = jdbcUrl;
+            return this;
+        }
 
-    public void setJdbcUrl(String jdbcUrl) {
-        this.jdbcUrl = jdbcUrl;
-    }
+        public Builder username(String username) {
+            this.username = username;
+            return this;
+        }
 
-    public String getUsername() {
-        return username;
-    }
+        public Builder password(String password) {
+            this.password = password;
+            return this;
+        }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+        public Builder driverClassName(String driverClassName) {
+            this.driverClassName = driverClassName;
+            return this;
+        }
 
-    public String getPassword() {
-        return password;
-    }
+        public Builder poolSize(int poolSize) {
+            this.poolSize = poolSize;
+            return this;
+        }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+        public Builder connectionTimeout(long connectionTimeout) {
+            this.connectionTimeout = connectionTimeout;
+            return this;
+        }
 
-    public int getPoolSize() {
-        return poolSize;
-    }
-
-    public void setPoolSize(int poolSize) {
-        this.poolSize = poolSize;
+        public DatabaseProfile build() {
+            if (name == null || jdbcUrl == null || username == null) {
+                throw new IllegalStateException(
+                        "name, jdbcUrl, and username are required"
+                );
+            }
+            return new DatabaseProfile(this);
+        }
     }
 
 

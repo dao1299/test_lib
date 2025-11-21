@@ -1,4 +1,3 @@
-// com/vtnet/netat/core/BaseKeyword.java
 package com.vtnet.netat.core;
 
 import com.vtnet.netat.core.annotations.NetatKeyword;
@@ -7,11 +6,15 @@ import com.vtnet.netat.core.context.ExecutionContext;
 import com.vtnet.netat.core.exceptions.StepFailException;
 import com.vtnet.netat.core.logging.NetatLogger;
 import com.vtnet.netat.core.utils.ScreenshotUtils;
+import com.vtnet.netat.core.utils.HTMLSnapshotUtils;
 import io.qameta.allure.Allure;
 import io.qameta.allure.model.Parameter;
 import io.qameta.allure.model.Status;
 import io.qameta.allure.model.StatusDetails;
 import io.qameta.allure.model.StepResult;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.testng.asserts.SoftAssert;
 
 import java.lang.reflect.Method;
@@ -21,6 +24,8 @@ import java.util.stream.Collectors;
 
 public abstract class BaseKeyword {
     protected final NetatLogger logger = NetatLogger.getInstance(this.getClass());
+
+    private static final boolean HIGHLIGHT_ON_FAILURE = true;
 
     protected <T> T execute(Callable<T> logic, Object... params) {
         Method kw = findCallingKeywordMethod();
@@ -34,7 +39,6 @@ public abstract class BaseKeyword {
         logger.info("KEYWORD START: {} | Parameters: [{}]", name, paramsStr);
 
         List<Parameter> allureParams = buildAllureParams(meta, params);
-
         String displayName = buildDisplayName(meta, name, allureParams, params);
 
         String uuid = UUID.randomUUID().toString();
@@ -46,7 +50,6 @@ public abstract class BaseKeyword {
         long start = System.currentTimeMillis();
         try {
             SoftFailContext.reset();
-
             T result = logic.call();
 
             boolean softFailed = SoftFailContext.consumeHasFail();
@@ -58,7 +61,9 @@ public abstract class BaseKeyword {
                     s.setStatus(Status.FAILED);
                     s.setStatusDetails(new StatusDetails().setMessage(finalMsg));
                 });
-                try { ScreenshotUtils.takeScreenshot(name + "_softfail"); } catch (Throwable ignore) {}
+
+                captureEvidenceOnFailure(name + "_softfail");
+
                 logger.error("KEYWORD SOFT-FAILED: {} | Duration: {}ms | Messages:\n{}",
                         name, (System.currentTimeMillis() - start), finalMsg);
             } else {
@@ -79,8 +84,9 @@ public abstract class BaseKeyword {
                     s.setStatus(Status.FAILED);
                     s.setStatusDetails(new StatusDetails().setMessage(msg));
                 });
-                try { ScreenshotUtils.takeScreenshot(name + "_failure"); } catch (Throwable ignore) {}
-                // Rethrow as AssertionError để TestNG hiểu là FAIL (hard)
+
+                captureEvidenceOnFailure(name + "_failure",params);
+
                 throw (t instanceof AssertionError) ? (AssertionError) t : new AssertionError(root.getMessage(), root);
             }
 
@@ -91,11 +97,138 @@ public abstract class BaseKeyword {
 
             String errorMessage = "Keyword '" + name + "' failed with params: [" + paramsStr + "]";
             StepFailException ex = new StepFailException(errorMessage, t, name);
-            try { ex.setScreenshotPath(ScreenshotUtils.takeScreenshot(name + "_broken")); } catch (Throwable ignore) {}
+
+            try {
+                String screenshotPath = captureEvidenceOnFailure(name + "_broken",params);
+                ex.setScreenshotPath(screenshotPath);
+                HTMLSnapshotUtils.captureHTMLSnapshot(name + "_broken");
+            } catch (Throwable ignore) {}
+
             throw ex;
 
         } finally {
             Allure.getLifecycle().stopStep(uuid);
+        }
+    }
+
+    private String captureEvidenceOnFailure(String baseName, Object... params) {
+        try {
+            String screenshotPath = null;
+
+            // 🎨 NEW: Highlight element nếu có
+            if (HIGHLIGHT_ON_FAILURE) {
+                WebElement failedElement = extractElementFromParams(params);
+                WebDriver driver = getDriverInstance();
+
+                if (failedElement != null && driver != null) {
+                    logger.info("📸 Capturing screenshot with highlighted element");
+                    screenshotPath = ScreenshotUtils.highlightAndTakeScreenshot(
+                            driver,
+                            failedElement,
+                            baseName
+                    );
+                } else {
+                    // Fallback: normal screenshot
+                    screenshotPath = ScreenshotUtils.takeScreenshot(baseName);
+                }
+            } else {
+                screenshotPath = ScreenshotUtils.takeScreenshot(baseName);
+            }
+
+            // Capture HTML snapshot
+            HTMLSnapshotUtils.captureHTMLSnapshot(baseName);
+
+            return screenshotPath;
+
+        } catch (Throwable ignore) {
+            logger.error("Cannot capture evidence: {}", ignore.getMessage());
+            return null;
+        }
+    }
+
+    // ✨ NEW: Extract WebElement từ keyword parameters
+    private WebElement extractElementFromParams(Object... params) {
+        if (params == null || params.length == 0) {
+            return null;
+        }
+
+        try {
+            com.vtnet.netat.core.ui.ObjectUI contextElement =
+                    BaseUiKeyword.getCurrentElement();
+            if (contextElement != null) {
+                WebElement element = findElementSafely(contextElement);
+                if (element != null) {
+                    return element;
+                }
+            }
+        } catch (Exception e) {
+            // Ignore - fallback to params
+        }
+
+        for (Object param : params) {
+            // Tìm ObjectUI trong params
+            if (param instanceof com.vtnet.netat.core.ui.ObjectUI) {
+                try {
+                    com.vtnet.netat.core.ui.ObjectUI uiObject =
+                            (com.vtnet.netat.core.ui.ObjectUI) param;
+                    return findElementSafely(uiObject);
+                } catch (Exception e) {
+                    logger.debug("Could not get element from ObjectUI", e);
+                }
+            }
+
+            // Nếu param trực tiếp là WebElement
+            if (param instanceof WebElement) {
+                return (WebElement) param;
+            }
+        }
+
+        return null;
+    }
+
+    // ✨ NEW: Find element safely (không throw exception)
+    private WebElement findElementSafely(com.vtnet.netat.core.ui.ObjectUI uiObject) {
+        try {
+            WebDriver driver = getDriverInstance();
+            if (driver == null || uiObject == null) {
+                return null;
+            }
+
+            List<com.vtnet.netat.core.ui.Locator> locators = uiObject.getActiveLocators();
+            if (locators == null || locators.isEmpty()) {
+                return null;
+            }
+
+            By by = locators.get(0).convertToBy();
+
+            // Tắt implicit wait để search nhanh
+            driver.manage().timeouts().implicitlyWait(java.time.Duration.ofSeconds(0));
+
+            List<WebElement> elements = driver.findElements(by);
+
+            return elements.isEmpty() ? null : elements.get(0);
+
+        } catch (Exception e) {
+            logger.debug("Could not find element safely", e);
+            return null;
+        }
+    }
+
+    // ✨ NEW: Get driver instance
+    private WebDriver getDriverInstance() {
+        try {
+            // Try ExecutionContext
+            WebDriver driver = ExecutionContext.getInstance().getWebDriver();
+            if (driver != null) {
+                return driver;
+            }
+
+            // Try SessionManager
+            return com.vtnet.netat.driver.SessionManager.getInstance().getCurrentDriver();
+
+        } catch (Exception e) {
+            logger.debug("Could not get driver instance", e);
+            return null;
         }
     }
 
@@ -111,7 +244,6 @@ public abstract class BaseKeyword {
                                    List<Parameter> allureParams,
                                    Object[] rawArgs,
                                    String fallbackName) {
-
         String out = template;
 
         if (allureParams != null) {
@@ -148,7 +280,7 @@ public abstract class BaseKeyword {
         List<String> names = new ArrayList<>(declared.length);
         for (String line : declared) {
             String n = line;
-            int colon = n.indexOf(':');                 // "actualValue: Object - ..." -> lấy phần trước ':'
+            int colon = n.indexOf(':');
             if (colon > 0) n = n.substring(0, colon).trim();
             n = (n.isEmpty() ? null : n);
             names.add(n);

@@ -545,7 +545,7 @@ public class DriverKeyword extends BaseKeyword {
 //    }
 
     @NetatKeyword(
-            name = "startBrowserSession",
+            name = "startSession",
             description = "Khởi tạo nhanh một phiên làm việc trên trình duyệt web bằng cách cung cấp thông tin trực tiếp.",
             category = "Driver",
             subCategory = "Session",
@@ -554,7 +554,7 @@ public class DriverKeyword extends BaseKeyword {
                     "browserName: String - Tên trình duyệt cần khởi động (ví dụ: 'chrome', 'firefox', 'edge')"
             },
             example = "// Bắt đầu nhanh một phiên trên Firefox cho User B\n" +
-                    "driver.startBrowserSession(\"user_B_ff\", \"firefox\");",
+                    "driver.startSession(\"user_B_ff\", \"firefox\");",
             note = "Hữu ích cho các kịch bản test nhanh hoặc khi không muốn tạo file profile. Sử dụng 'switchSession' để điều khiển phiên này."
     )
     @Step("Start Browser Session: {0} ({1})")
@@ -573,7 +573,7 @@ public class DriverKeyword extends BaseKeyword {
     }
 
     @NetatKeyword(
-            name = "startMobileSession",
+            name = "startSession",
             description = "Khởi tạo nhanh một phiên làm việc trên thiết bị di động bằng cách cung cấp các thông tin cơ bản.",
             category = "Driver",
             subCategory = "Session",
@@ -586,7 +586,7 @@ public class DriverKeyword extends BaseKeyword {
                     "automationName: String - Tên của driver sử dụng, với Android thì UiAutomator2, iOS thì XCUITest"
             },
             example = "// Bắt đầu phiên trên thiết bị Android của User A\n" +
-                    "driver.startMobileSession(\"user_A_android\", \"Android\", \"emulator-5554\", \"/path/to/app.apk\", \"http://127.0.0.1:4723/wd/hub\");",
+                    "driver.startSession(\"user_A_android\", \"Android\", \"emulator-5554\", \"/path/to/app.apk\", \"http://127.0.0.1:4723/wd/hub\");",
             note = "Đây là cách đơn giản nhất để khởi động một thiết bị di động mà không cần tạo file profile phức tạp."
     )
     @Step("Start Mobile Session: {0} on {1} device {2}")
@@ -606,7 +606,7 @@ public class DriverKeyword extends BaseKeyword {
     }
 
     @NetatKeyword(
-            name = "startMobileSession",
+            name = "startSession",
             description = "Khởi tạo nhanh một phiên làm việc trên thiết bị di động bằng cách cung cấp các thông tin cơ bản.",
             category = "Driver",
             subCategory = "Session",
@@ -619,7 +619,7 @@ public class DriverKeyword extends BaseKeyword {
                     "automationName: String - Tên của driver sử dụng, với Android thì UiAutomator2, iOS thì XCUITest"
             },
             example = "// Bắt đầu phiên trên thiết bị Android của User A\n" +
-                    "driver.startMobileSession(\"user_A_android\", \"Android\", \"emulator-5554\", \"/path/to/app.apk\", \"http://127.0.0.1:4723/wd/hub\");",
+                    "driver.startSession(\"user_A_android\", \"Android\", \"emulator-5554\", \"/path/to/app.apk\", \"http://127.0.0.1:4723/wd/hub\");",
             note = "Đây là cách đơn giản nhất để khởi động một thiết bị di động mà không cần tạo file profile phức tạp."
     )
     @Step("Start Mobile Session: {0} on {1} device {2}")
