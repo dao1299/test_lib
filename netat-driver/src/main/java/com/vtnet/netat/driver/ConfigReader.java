@@ -1,74 +1,141 @@
 package com.vtnet.netat.driver;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Properties;
+import java.util.*;
 
 public final class ConfigReader {
-    private static final Logger log = LoggerFactory.getLogger(ConfigReader.class);
+
+    private static final String CONFIG_DIR = "config/";
+    private static final String DEFAULT_CONFIG_FILE = "default.properties";
+    private static final String ENV_CONFIG_PREFIX = "config.";
+    private static final String ENV_CONFIG_SUFFIX = ".properties";
+
     private static final Properties properties = new Properties();
-    private static boolean isLoaded = false;
+    private static volatile boolean isLoaded = false;
+    private static volatile boolean isLoading = false;
+    private static final Object LOCK = new Object();
+    private static String currentEnvironment;
 
     private ConfigReader() {}
 
-    public static synchronized void loadProperties() {
-        if (!isLoaded) {
-            try (InputStream defaultConfigStream = getResourceAsStream("config/default.properties")) {
-                if (defaultConfigStream == null) {
+    public static void loadProperties() {
+        if (isLoaded) return;
 
-                    throw new IOException("'config/default.properties' not found on the classpath.");
-                }
-                properties.load(defaultConfigStream);
-                log.info("Loaded default configuration (default.properties).");
-            } catch (IOException e) {
-                throw new RuntimeException("Unable to read default configuration file.", e);
-            }
+        synchronized (LOCK) {
+            if (isLoaded) return;
+            if (isLoading) return;  // Prevent recursive call
 
-            String profile = System.getProperty("profile");
-            if (profile != null && !profile.trim().isEmpty()) {
-                String profileFileName = "config/" + profile.trim() + ".properties";
-                try (InputStream profileConfigStream = getResourceAsStream(profileFileName)) {
-                    if (profileConfigStream != null) {
-                        Properties profileProps = new Properties();
-                        profileProps.load(profileConfigStream);
-                        properties.putAll(profileProps);
-                        log.info("Loaded and overrode configuration from profile: {}", profile);
-                    } else {
-                        log.warn("Profile '{}' specified but file {} was not found.", profile, profileFileName);
-                    }
-                } catch (IOException e) {
-                    throw new RuntimeException("Unable to read configuration file for profile: " + profile, e);
+            isLoading = true;
+            try {
+                System.out.println("[ConfigReader] Loading configuration...");
+
+                // Load default.properties
+                boolean loaded = loadFile(CONFIG_DIR + DEFAULT_CONFIG_FILE);
+                if (!loaded) {
+                    loadFile(DEFAULT_CONFIG_FILE);
                 }
+
+                // Load environment config if specified
+                String env = System.getProperty("env");
+                if (env != null && !env.trim().isEmpty()) {
+                    currentEnvironment = env.trim();
+                    loadFile(CONFIG_DIR + ENV_CONFIG_PREFIX + currentEnvironment + ENV_CONFIG_SUFFIX);
+                }
+
+                System.out.println("[ConfigReader] Loaded " + properties.size() + " properties");
+                isLoaded = true;
+
+            } finally {
+                isLoading = false;
             }
-            isLoaded = true;
         }
     }
 
-    private static InputStream getResourceAsStream(String resourceName) {
-        return Thread.currentThread().getContextClassLoader().getResourceAsStream(resourceName);
+    private static boolean loadFile(String path) {
+        try (InputStream stream = Thread.currentThread().getContextClassLoader().getResourceAsStream(path)) {
+            if (stream == null) return false;
+
+            Properties temp = new Properties();
+            temp.load(stream);
+            properties.putAll(temp);
+            System.out.println("[ConfigReader] Loaded from: " + path);
+            return true;
+        } catch (IOException e) {
+            System.err.println("[ConfigReader] Error loading: " + path + " - " + e.getMessage());
+            return false;
+        }
     }
 
     public static String getProperty(String key) {
-        if (!isLoaded) {
-            loadProperties();
-        }
+        if (!isLoaded && !isLoading) loadProperties();
+
+        // System property first
+        String value = System.getProperty(key);
+        if (value != null) return value;
+
         return properties.getProperty(key);
     }
 
-    public static String getProperty(String key,String defaultValue) {
-        if (!isLoaded) {
-            loadProperties();
-        }
-        return properties.getProperty(key) != null ? properties.getProperty(key) : defaultValue;
+    public static String getProperty(String key, String defaultValue) {
+        String value = getProperty(key);
+        return value != null ? value : defaultValue;
     }
 
     public static Properties getProperties() {
-        if (!isLoaded) {
-            loadProperties();
+        if (!isLoaded && !isLoading) loadProperties();
+
+        Properties copy = new Properties();
+        copy.putAll(properties);
+        return copy;
+    }
+
+    public static boolean getBoolean(String key, boolean defaultValue) {
+        String value = getProperty(key);
+        return value != null ? Boolean.parseBoolean(value.trim()) : defaultValue;
+    }
+
+    public static int getInt(String key, int defaultValue) {
+        String value = getProperty(key);
+        if (value == null) return defaultValue;
+        try {
+            return Integer.parseInt(value.trim());
+        } catch (NumberFormatException e) {
+            return defaultValue;
         }
-        return properties;
+    }
+
+    public static long getLong(String key, long defaultValue) {
+        String value = getProperty(key);
+        if (value == null) return defaultValue;
+        try {
+            return Long.parseLong(value.trim());
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
+    }
+
+    public static String getEnvironment() {
+        if (!isLoaded && !isLoading) loadProperties();
+        return currentEnvironment;
+    }
+
+    public static boolean hasProperty(String key) {
+        return getProperty(key) != null;
+    }
+
+    public static synchronized void reload() {
+        properties.clear();
+        isLoaded = false;
+        isLoading = false;
+        currentEnvironment = null;
+        loadProperties();
+    }
+
+    public static synchronized void clear() {
+        properties.clear();
+        isLoaded = false;
+        isLoading = false;
+        currentEnvironment = null;
     }
 }

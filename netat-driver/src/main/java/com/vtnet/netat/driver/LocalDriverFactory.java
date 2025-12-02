@@ -63,11 +63,11 @@ public class LocalDriverFactory implements IDriverFactory {
                 : new ChromeOptions().merge(baseCaps);
 
         String pls = Optional.ofNullable(ConfigReader.getProperty("webdriver.chrome.pageLoadStrategy"))
-                .orElse("EAGER");
+                .orElse("NORMAL");
         try {
             options.setPageLoadStrategy(PageLoadStrategy.valueOf(pls.toUpperCase()));
         } catch (Exception ignored) {
-            options.setPageLoadStrategy(PageLoadStrategy.EAGER);
+            options.setPageLoadStrategy(PageLoadStrategy.NORMAL);
         }
 
         boolean headless = Boolean.parseBoolean(

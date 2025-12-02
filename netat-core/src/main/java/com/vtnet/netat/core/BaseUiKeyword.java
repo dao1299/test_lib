@@ -6,6 +6,7 @@ import com.vtnet.netat.core.ui.ObjectUI;
 import com.vtnet.netat.core.utils.ScreenshotUtils;
 import com.vtnet.netat.driver.DriverManager;
 import org.openqa.selenium.*;
+import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
@@ -18,6 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Callable;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * Base chung cho keyword UI (Web/Mobile).
@@ -40,12 +43,10 @@ public abstract class BaseUiKeyword extends BaseKeyword {
 
     @Override
     protected <T> T execute(Callable<T> logic, Object... params) {
-        // Lưu element vào context nếu param đầu là ObjectUI
         if (params != null && params.length > 0 &&
-                params[0] instanceof com.vtnet.netat.core.ui.ObjectUI) {
-            CURRENT_ELEMENT.set((com.vtnet.netat.core.ui.ObjectUI) params[0]);
+                params[0] instanceof ObjectUI) {
+            CURRENT_ELEMENT.set((ObjectUI) params[0]);
         }
-
         try {
             return super.execute(logic, params);
         } finally {
@@ -53,8 +54,36 @@ public abstract class BaseUiKeyword extends BaseKeyword {
         }
     }
 
-    // ✨ NEW: Helper để BaseKeyword có thể lấy current element
-    public static com.vtnet.netat.core.ui.ObjectUI getCurrentElement() {
+    protected void performActionWithRetry(ObjectUI uiObject,
+                                          Function<WebElement, ExpectedCondition<WebElement>> waitCondition,
+                                          Consumer<WebElement> action) {
+        WebDriver driver = DriverManager.getDriver();
+        int attempts = 3;
+
+        while (attempts > 0) {
+            try {
+                attempts--;
+                WebElement element = findElement(uiObject);
+
+                new WebDriverWait(driver, PRIMARY_TIMEOUT)
+                        .ignoring(StaleElementReferenceException.class)
+                        .until(waitCondition.apply(element));
+
+                action.accept(element);
+                return;
+            } catch (StaleElementReferenceException e) {
+                if (attempts == 0) {
+                    logger.error("Failed to perform action on '{}' after retries due to StaleElementReferenceException.", uiObject.getName());
+                    throw e;
+                }
+                logger.warn("Stale reference for element '{}'. Retrying action... (Remaining attempts: {})", uiObject.getName(), attempts);
+
+                try { Thread.sleep(500); } catch (InterruptedException ie) { Thread.currentThread().interrupt(); }
+            }
+        }
+    }
+
+    public static ObjectUI getCurrentElement() {
         return CURRENT_ELEMENT.get();
     }
 
@@ -75,15 +104,12 @@ public abstract class BaseUiKeyword extends BaseKeyword {
                 By by = locator.convertToBy();
                 logger.info("Searching for element '{}' using locator: {} (Timeout: {}s)",
                         uiObject.getName(), locator, timeout.getSeconds());
-
                 WebElement element = wait.until(ExpectedConditions.presenceOfElementLocated(by));
-
                 if (element != null) {
                     logger.info("Found element '{}' with locator: {}", uiObject.getName(), locator);
                     return element;
                 }
             } catch (Exception e) {
-
                 logger.debug("Element '{}' not found with locator {}. Trying next.", uiObject.getName(), locator);
             }
         }
@@ -126,31 +152,81 @@ public abstract class BaseUiKeyword extends BaseKeyword {
 
     protected void click(ObjectUI uiObject) {
         execute(() -> {
-            WebElement element = findElement(uiObject);
             WebDriver driver = DriverManager.getDriver();
-            new WebDriverWait(driver, PRIMARY_TIMEOUT)
-                    .until(ExpectedConditions.elementToBeClickable(element))
-                    .click();
-            return null;
+            List<Locator> locators = uiObject.getActiveLocators();
+
+            for (Locator locator : locators) {
+                try {
+                    By by = locator.convertToBy();
+
+                    WebElement element = new WebDriverWait(driver, PRIMARY_TIMEOUT)
+                            .pollingEvery(POLLING_INTERVAL)
+                            .ignoring(StaleElementReferenceException.class)
+                            .until(ExpectedConditions.elementToBeClickable(by));
+
+                    try {
+                        element.click();
+                        logger.info("Successfully clicked '{}' with locator: {}",
+                                uiObject.getName(), locator);
+                        return null;
+
+                    } catch (ElementClickInterceptedException e) {
+                        logger.warn("Click intercepted for '{}', trying JavaScript click",
+                                uiObject.getName());
+
+                        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", element);
+                        logger.info("Successfully clicked '{}' via JavaScript", uiObject.getName());
+                        return null;
+                    }
+
+                } catch (Exception e) {
+                    logger.debug("Failed to click '{}' with locator {}: {}",
+                            uiObject.getName(), locator, e.getMessage());
+                }
+            }
+            throw new RuntimeException("Cannot click element '" + uiObject.getName() +
+                    "' using any defined locators");
         }, uiObject != null ? uiObject.getName() : "null");
     }
 
     protected void clear(ObjectUI uiObject) {
         execute(() -> {
-            findElement(uiObject).clear();
+            performActionWithRetry(
+                    uiObject,
+                    ExpectedConditions::visibilityOf,
+                    WebElement::clear
+            );
             return null;
-        }, uiObject != null ? uiObject.getName() : "null");
+        }, uiObject);
     }
 
     protected void sendKeys(ObjectUI uiObject, String text) {
         execute(() -> {
-            WebElement element = findElement(uiObject);
             WebDriver driver = DriverManager.getDriver();
-            new WebDriverWait(driver, PRIMARY_TIMEOUT).until(ExpectedConditions.visibilityOf(element));
-            element.clear();
-            element.sendKeys(text);
-            return null;
-        }, uiObject != null ? uiObject.getName() : "null", text);
+            List<Locator> locators = uiObject.getActiveLocators();
+
+            for (Locator locator : locators) {
+                try {
+                    By by = locator.convertToBy();
+
+                    WebElement element = new WebDriverWait(driver, PRIMARY_TIMEOUT)
+                            .pollingEvery(POLLING_INTERVAL)
+                            .ignoring(StaleElementReferenceException.class)
+                            .until(ExpectedConditions.visibilityOfElementLocated(by));
+
+                    element.clear();
+                    element.sendKeys(text);
+
+                    logger.info("Successfully sent keys to '{}'", uiObject.getName());
+                    return null;
+
+                } catch (Exception e) {
+                    logger.debug("Failed with locator {}, trying next", locator);
+                }
+            }
+
+            throw new RuntimeException("Cannot send keys to '" + uiObject.getName() + "'");
+        }, uiObject != null ? uiObject.getName() : "null");
     }
 
     protected String getText(ObjectUI uiObject) {

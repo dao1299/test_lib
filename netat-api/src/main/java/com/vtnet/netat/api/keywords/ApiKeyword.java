@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vtnet.netat.api.core.ApiContext;
 import com.vtnet.netat.api.core.ApiResponse;
 import com.vtnet.netat.api.core.BaseApiKeyword;
+import com.vtnet.netat.api.curl.CurlExecutor;
+import com.vtnet.netat.api.curl.CurlParser;
 import com.vtnet.netat.core.annotations.NetatKeyword;
 import io.qameta.allure.Step;
 
@@ -30,7 +32,7 @@ public class ApiKeyword extends BaseApiKeyword {
     public void setApiBaseUrl(String baseUrl) {
         execute(() -> {
             context.setBaseUri(baseUrl);
-            logger.info(" API Base URL set to: {}", baseUrl);
+            logger.info("API Base URL set to: {}", baseUrl);
             return null;
         }, baseUrl);
     }
@@ -48,7 +50,7 @@ public class ApiKeyword extends BaseApiKeyword {
     public void setRequestTimeout(int timeoutSeconds) {
         execute(() -> {
             context.setTimeout(timeoutSeconds);
-            logger.info(" Timeout set to: {}s", timeoutSeconds);
+            logger.info("Timeout set to: {}s", timeoutSeconds);
             return null;
         }, timeoutSeconds);
     }
@@ -66,7 +68,7 @@ public class ApiKeyword extends BaseApiKeyword {
     public void enableRequestLogging(boolean enabled) {
         execute(() -> {
             context.setLogRequests(enabled);
-            logger.info(" Request logging: {}", enabled ? "enabled" : "disabled");
+            logger.info("Request logging: {}", enabled ? "enabled" : "disabled");
             return null;
         }, enabled);
     }
@@ -83,7 +85,7 @@ public class ApiKeyword extends BaseApiKeyword {
     public void clearAllRequestSettings() {
         execute(() -> {
             context.clearAllRequestSettings();
-            logger.info(" All request settings cleared");
+            logger.info("All request settings cleared");
             return null;
         });
     }
@@ -100,16 +102,122 @@ public class ApiKeyword extends BaseApiKeyword {
     public void resetApiContext() {
         execute(() -> {
             context.reset();
-            logger.info(" API context reset");
+            logger.info("API context reset");
             return null;
         });
     }
 
-    // ========================================================================
-    //  SECTION 2: AUTHENTICATION (7 methods)
-    // Từ RestAuthKeyword.java
-    // ========================================================================
+    @NetatKeyword(
+            name = "disableSslVerification",
+            description = "Tắt SSL certificate verification. CHỈ DÙNG CHO MÔI TRƯỜNG TEST!",
+            category = "API",
+            subCategory = "Configuration",
+            example = "api.disableSslVerification();",
+            explainer = "Disable SSL verification (TEST ONLY)",
+            note = "WARNING: Không sử dụng trong production!"
+    )
+    @Step("Disable SSL verification (TEST ONLY)")
+    public void disableSslVerification() {
+        execute(() -> {
+            context.setSslVerificationEnabled(false);
+            logger.warn("SSL verification DISABLED - Only use in test environment!");
+            return null;
+        });
+    }
 
+    @NetatKeyword(
+            name = "enableSslVerification",
+            description = "Bật lại SSL certificate verification (mặc định đã bật)",
+            category = "API",
+            subCategory = "Configuration",
+            example = "api.enableSslVerification();",
+            explainer = "Enable SSL verification"
+    )
+    @Step("Enable SSL verification")
+    public void enableSslVerification() {
+        execute(() -> {
+            context.setSslVerificationEnabled(true);
+            logger.info("✓ SSL verification enabled");
+            return null;
+        });
+    }
+
+    @NetatKeyword(
+            name = "executeCurl",
+            description = "Thực thi một cURL command trực tiếp. Hỗ trợ các options: " +
+                    "-X (method), -H (header), -d/--data (body), -u (basic auth), " +
+                    "-k/--insecure (skip SSL), -b/--cookie (cookies), -F/--form (form data).",
+            category = "API",
+            subCategory = "cURL",
+            parameters = {"curlCommand: String - cURL command đầy đủ"},
+            returnValue = "ApiResponse - Response object",
+            example = "String curl = \"curl -X POST 'https://api.example.com/users' \" +\n" +
+                    "              \"-H 'Content-Type: application/json' \" +\n" +
+                    "              \"-H 'Authorization: Bearer token123' \" +\n" +
+                    "              \"-d '{\\\"name\\\": \\\"John\\\"}' \";\n" +
+                    "ApiResponse response = api.executeCurl(curl);",
+            explainer = "Execute cURL command",
+            note = "Copy cURL từ browser DevTools hoặc Postman và paste trực tiếp. " +
+                    "Hỗ trợ multiline với backslash (\\)."
+    )
+    @Step("Execute cURL command")
+    public ApiResponse executeCurl(String curlCommand) {
+        return execute(() -> {
+            logger.info("Parsing and executing cURL command...");
+            CurlParser.ParsedCurl parsed = CurlParser.parse(curlCommand);
+            logger.info("Parsed: {} {}", parsed.getMethod(), parsed.getUrl());
+            ApiResponse response = CurlExecutor.execute(parsed, context);
+            logger.info("cURL executed - Status: {}", response.getStatusCode());
+            return response;
+        }, truncateForLog(curlCommand));
+    }
+
+    @NetatKeyword(
+            name = "executeCurlFromFile",
+            description = "Thực thi cURL command từ file. Hữu ích khi cURL command quá dài hoặc cần reuse.",
+            category = "API",
+            subCategory = "cURL",
+            parameters = {"filePath: String - Đường dẫn đến file chứa cURL command"},
+            returnValue = "ApiResponse - Response object",
+            example = "// File: src/test/resources/curl/create_user.sh\n" +
+                    "// curl -X POST 'https://api.example.com/users' -H 'Content-Type: application/json' -d '{...}'\n\n" +
+                    "ApiResponse response = api.executeCurlFromFile(\"src/test/resources/curl/create_user.sh\");",
+            explainer = "Execute cURL from file: {0}"
+    )
+    @Step("Execute cURL from file: {0}")
+    public ApiResponse executeCurlFromFile(String filePath) {
+        return execute(() -> {
+            logger.info("Reading cURL command from file: {}", filePath);
+            String curlCommand = new String(Files.readAllBytes(Paths.get(filePath)));
+            CurlParser.ParsedCurl parsed = CurlParser.parse(curlCommand);
+            logger.info("Parsed from file: {} {}", parsed.getMethod(), parsed.getUrl());
+            ApiResponse response = CurlExecutor.execute(parsed, context);
+            logger.info("cURL from file executed - Status: {}", response.getStatusCode());
+            return response;
+        }, filePath);
+    }
+
+    @NetatKeyword(
+            name = "parseCurl",
+            description = "Parse cURL command để xem các thành phần (debug/verify). " +
+                    "Không thực thi request, chỉ trả về thông tin đã parse.",
+            category = "API",
+            subCategory = "cURL",
+            parameters = {"curlCommand: String - cURL command cần parse"},
+            returnValue = "String - Thông tin các thành phần đã parse (method, url, headers, body...)",
+            example = "String info = api.parseCurl(curlCommand);\n" +
+                    "System.out.println(info);",
+            explainer = "Parse cURL command (debug)"
+    )
+    @Step("Parse cURL command (debug)")
+    public String parseCurl(String curlCommand) {
+        return execute(() -> {
+            CurlParser.ParsedCurl parsed = CurlParser.parse(curlCommand);
+            String info = parsed.toString();
+            logger.info("Parsed cURL:\n{}", info);
+            return info;
+        }, truncateForLog(curlCommand));
+    }
     @NetatKeyword(
             name = "setBearerToken",
             description = "Thiết lập Bearer token (JWT)",
@@ -123,9 +231,9 @@ public class ApiKeyword extends BaseApiKeyword {
     public void setBearerToken(String token) {
         execute(() -> {
             context.setBearerToken(token);
-            logger.info(" Bearer token set");
+            logger.info("Bearer token set");
             return null;
-        }, "***"); // Hide token in logs
+        }, "***");
     }
 
     @NetatKeyword(
@@ -144,7 +252,7 @@ public class ApiKeyword extends BaseApiKeyword {
     public void setBasicAuth(String username, String password) {
         execute(() -> {
             context.setBasicAuth(username, password);
-            logger.info(" Basic auth set for user: {}", username);
+            logger.info("Basic auth set for user: {}", username);
             return null;
         }, username, "***");
     }
@@ -167,7 +275,7 @@ public class ApiKeyword extends BaseApiKeyword {
         execute(() -> {
             ApiContext.ApiKeyLocation loc = ApiContext.ApiKeyLocation.valueOf(location.toUpperCase());
             context.setApiKey(keyName, keyValue, loc);
-            logger.info(" API Key '{}' set in {}", keyName, location);
+            logger.info("API Key '{}' set in {}", keyName, location);
             return null;
         }, keyName, "***", location);
     }
@@ -184,11 +292,11 @@ public class ApiKeyword extends BaseApiKeyword {
     public void removeAuthentication() {
         execute(() -> {
             context.removeAuth();
-            logger.info(" Authentication removed");
+            logger.info("Authentication removed");
             return null;
         });
     }
-    
+
     @NetatKeyword(
             name = "addHeader",
             description = "Thêm HTTP header vào request",
@@ -205,7 +313,7 @@ public class ApiKeyword extends BaseApiKeyword {
     public void addHeader(String headerName, String headerValue) {
         execute(() -> {
             context.addHeader(headerName, headerValue);
-            logger.info(" Header added: {} = {}", headerName, headerValue);
+            logger.info("Header added: {} = {}", headerName, headerValue);
             return null;
         }, headerName, headerValue);
     }
@@ -225,7 +333,7 @@ public class ApiKeyword extends BaseApiKeyword {
             String mimeType = convertToMimeType(contentType);
             context.setContentType(mimeType);
             context.addHeader("Content-Type", mimeType);
-            logger.info(" Content-Type set to: {}", mimeType);
+            logger.info("Content-Type set to: {}", mimeType);
             return null;
         }, contentType);
     }
@@ -244,7 +352,7 @@ public class ApiKeyword extends BaseApiKeyword {
         execute(() -> {
             String mimeType = convertToMimeType(acceptType);
             context.addHeader("Accept", mimeType);
-            logger.info(" Accept header set to: {}", mimeType);
+            logger.info("Accept header set to: {}", mimeType);
             return null;
         }, acceptType);
     }
@@ -262,7 +370,7 @@ public class ApiKeyword extends BaseApiKeyword {
     public void removeHeader(String headerName) {
         execute(() -> {
             context.removeHeader(headerName);
-            logger.info(" Header removed: {}", headerName);
+            logger.info("Header removed: {}", headerName);
             return null;
         }, headerName);
     }
@@ -279,11 +387,11 @@ public class ApiKeyword extends BaseApiKeyword {
     public void clearAllHeaders() {
         execute(() -> {
             context.clearHeaders();
-            logger.info(" All headers cleared");
+            logger.info("All headers cleared");
             return null;
         });
     }
-    
+
     @NetatKeyword(
             name = "addQueryParam",
             description = "Thêm query parameter",
@@ -300,7 +408,7 @@ public class ApiKeyword extends BaseApiKeyword {
     public void addQueryParam(String paramName, Object paramValue) {
         execute(() -> {
             context.addQueryParam(paramName, paramValue);
-            logger.info(" Query param added: {} = {}", paramName, paramValue);
+            logger.info("Query param added: {} = {}", paramName, paramValue);
             return null;
         }, paramName, paramValue);
     }
@@ -321,7 +429,7 @@ public class ApiKeyword extends BaseApiKeyword {
     public void addPathParam(String paramName, Object paramValue) {
         execute(() -> {
             context.addPathParam(paramName, paramValue);
-            logger.info(" Path param added: {} = {}", paramName, paramValue);
+            logger.info("Path param added: {} = {}", paramName, paramValue);
             return null;
         }, paramName, paramValue);
     }
@@ -338,7 +446,7 @@ public class ApiKeyword extends BaseApiKeyword {
     public void clearQueryParams() {
         execute(() -> {
             context.clearQueryParams();
-            logger.info(" All query params cleared");
+            logger.info("All query params cleared");
             return null;
         });
     }
@@ -357,7 +465,7 @@ public class ApiKeyword extends BaseApiKeyword {
     public void setRequestBody(String bodyContent) {
         execute(() -> {
             context.setRequestBody(bodyContent);
-            logger.info(" Request body set ({} bytes)", bodyContent.length());
+            logger.info("Request body set ({} bytes)", bodyContent.length());
             return null;
         }, bodyContent);
     }
@@ -376,7 +484,7 @@ public class ApiKeyword extends BaseApiKeyword {
         execute(() -> {
             String content = new String(Files.readAllBytes(Paths.get(filePath)));
             context.setRequestBody(content);
-            logger.info(" Request body set from file: {}", filePath);
+            logger.info("Request body set from file: {}", filePath);
             return null;
         }, filePath);
     }
@@ -393,11 +501,10 @@ public class ApiKeyword extends BaseApiKeyword {
     public void clearRequestBody() {
         execute(() -> {
             context.clearRequestBody();
-            logger.info(" Request body cleared");
+            logger.info("Request body cleared");
             return null;
         });
     }
-
 
     @NetatKeyword(
             name = "sendGetRequest",
@@ -413,7 +520,7 @@ public class ApiKeyword extends BaseApiKeyword {
     public ApiResponse sendGetRequest(String endpoint) {
         return execute(() -> {
             ApiResponse response = executeGet(endpoint);
-            logger.info(" GET {} - Status: {}", endpoint, response.getStatusCode());
+            logger.info("GET {} - Status: {}", endpoint, response.getStatusCode());
             return response;
         }, endpoint);
     }
@@ -432,7 +539,7 @@ public class ApiKeyword extends BaseApiKeyword {
     public ApiResponse sendPostRequest(String endpoint) {
         return execute(() -> {
             ApiResponse response = executePost(endpoint);
-            logger.info(" POST {} - Status: {}", endpoint, response.getStatusCode());
+            logger.info("POST {} - Status: {}", endpoint, response.getStatusCode());
             return response;
         }, endpoint);
     }
@@ -451,7 +558,7 @@ public class ApiKeyword extends BaseApiKeyword {
     public ApiResponse sendPutRequest(String endpoint) {
         return execute(() -> {
             ApiResponse response = executePut(endpoint);
-            logger.info(" PUT {} - Status: {}", endpoint, response.getStatusCode());
+            logger.info("PUT {} - Status: {}", endpoint, response.getStatusCode());
             return response;
         }, endpoint);
     }
@@ -470,7 +577,7 @@ public class ApiKeyword extends BaseApiKeyword {
     public ApiResponse sendDeleteRequest(String endpoint) {
         return execute(() -> {
             ApiResponse response = executeDelete(endpoint);
-            logger.info(" DELETE {} - Status: {}", endpoint, response.getStatusCode());
+            logger.info("DELETE {} - Status: {}", endpoint, response.getStatusCode());
             return response;
         }, endpoint);
     }
@@ -489,11 +596,11 @@ public class ApiKeyword extends BaseApiKeyword {
     public ApiResponse sendPatchRequest(String endpoint) {
         return execute(() -> {
             ApiResponse response = executePatch(endpoint);
-            logger.info(" PATCH {} - Status: {}", endpoint, response.getStatusCode());
+            logger.info("PATCH {} - Status: {}", endpoint, response.getStatusCode());
             return response;
         }, endpoint);
     }
-    
+
     @NetatKeyword(
             name = "sendPostWithJson",
             description = "Gửi POST với JSON body (shortcut - 1 step)",
@@ -514,7 +621,7 @@ public class ApiKeyword extends BaseApiKeyword {
             context.setContentType("application/json");
             try {
                 ApiResponse response = executePost(endpoint);
-                logger.info(" POST {} with JSON - Status: {}", endpoint, response.getStatusCode());
+                logger.info("POST {} with JSON - Status: {}", endpoint, response.getStatusCode());
                 return response;
             } finally {
                 context.clearRequestBody();
@@ -568,7 +675,7 @@ public class ApiKeyword extends BaseApiKeyword {
                 Map<String, Object> params = objectMapper.readValue(paramsJson, Map.class);
                 context.addQueryParams(params);
                 ApiResponse response = executeGet(endpoint);
-                logger.info(" GET {} with params - Status: {}", endpoint, response.getStatusCode());
+                logger.info("GET {} with params - Status: {}", endpoint, response.getStatusCode());
                 return response;
             } catch (Exception e) {
                 throw new RuntimeException("Invalid JSON params: " + paramsJson, e);
@@ -577,12 +684,6 @@ public class ApiKeyword extends BaseApiKeyword {
             }
         }, endpoint, paramsJson);
     }
-
-
-    // ========================================================================
-    //  SECTION 7: RESPONSE EXTRACTION (20 methods)
-    // Từ RestResponseKeyword.java
-    // ========================================================================
 
     @NetatKeyword(
             name = "getStatusCode",
@@ -658,7 +759,7 @@ public class ApiKeyword extends BaseApiKeyword {
     public String extractJsonValue(ApiResponse response, String jsonPath) {
         return execute(() -> {
             String value = response.getJsonPath(jsonPath);
-            logger.info(" Extracted '{}': {}", jsonPath, value);
+            logger.info("Extracted '{}': {}", jsonPath, value);
             return value;
         }, response, jsonPath);
     }
@@ -683,7 +784,7 @@ public class ApiKeyword extends BaseApiKeyword {
             if (value == null) {
                 throw new RuntimeException("Cannot extract int from path: " + jsonPath);
             }
-            logger.info(" Extracted int '{}': {}", jsonPath, value);
+            logger.info("Extracted int '{}': {}", jsonPath, value);
             return value;
         }, response, jsonPath);
     }
@@ -708,7 +809,7 @@ public class ApiKeyword extends BaseApiKeyword {
             if (value == null) {
                 throw new RuntimeException("Cannot extract double from path: " + jsonPath);
             }
-            logger.info(" Extracted double '{}': {}", jsonPath, value);
+            logger.info("Extracted double '{}': {}", jsonPath, value);
             return value;
         }, response, jsonPath);
     }
@@ -733,7 +834,7 @@ public class ApiKeyword extends BaseApiKeyword {
             if (value == null) {
                 throw new RuntimeException("Cannot extract boolean from path: " + jsonPath);
             }
-            logger.info(" Extracted boolean '{}': {}", jsonPath, value);
+            logger.info("Extracted boolean '{}': {}", jsonPath, value);
             return value;
         }, response, jsonPath);
     }
@@ -756,7 +857,7 @@ public class ApiKeyword extends BaseApiKeyword {
         return execute(() -> {
             List<Object> list = response.getJsonPathAsList(jsonPath);
             int size = list != null ? list.size() : 0;
-            logger.info(" Array '{}' size: {}", jsonPath, size);
+            logger.info("Array '{}' size: {}", jsonPath, size);
             return size;
         }, response, jsonPath);
     }
@@ -778,17 +879,12 @@ public class ApiKeyword extends BaseApiKeyword {
     public String getHeader(ApiResponse response, String headerName) {
         return execute(() -> {
             String value = response.getHeader(headerName);
-            logger.info(" Header '{}': {}", headerName, value);
+            logger.info("Header '{}': {}", headerName, value);
             return value;
         }, response, headerName);
     }
 
-    // TODO: Copy thêm extractJsonArray, checkJsonPathExists, etc.
-
-    // ========================================================================
-    //  UTILITY METHODS (Private helpers)
-    // ========================================================================
-    
+    @Override
     protected String convertToMimeType(String shortForm) {
         switch (shortForm.toUpperCase()) {
             case "JSON":
@@ -804,7 +900,13 @@ public class ApiKeyword extends BaseApiKeyword {
             case "MULTIPART":
                 return "multipart/form-data";
             default:
-                return shortForm; // Already a MIME type
+                return shortForm;
         }
+    }
+
+    private String truncateForLog(String str) {
+        if (str == null) return "null";
+        if (str.length() <= 100) return str;
+        return str.substring(0, 100) + "... (truncated)";
     }
 }

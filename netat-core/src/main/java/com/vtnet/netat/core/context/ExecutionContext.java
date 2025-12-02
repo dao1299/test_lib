@@ -1,100 +1,88 @@
 package com.vtnet.netat.core.context;
 
 import com.vtnet.netat.core.reporting.StepResult;
-import com.vtnet.netat.core.assertion.AllureSoftAssert; // ★ NEW
+import com.vtnet.netat.core.assertion.AllureSoftAssert;
+import com.vtnet.netat.driver.SessionManager;
 import org.openqa.selenium.WebDriver;
 import io.appium.java_client.AppiumDriver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.asserts.SoftAssert;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Singleton class để manage execution context
- * Lưu trữ thông tin về current test execution, drivers, settings, etc.
+ * Thread-safe Execution Context cho NETAT framework.
+ *
+ * <p>Mỗi thread có instance riêng (ThreadLocal pattern) để hỗ trợ parallel testing.</p>
+ *
+ * <p><b>Driver Management:</b> WebDriver được delegate cho {@link SessionManager}
+ * để đảm bảo single source of truth.</p>
  */
 public class ExecutionContext {
 
-    private static final ThreadLocal<ExecutionContext> INSTANCE = new ThreadLocal<ExecutionContext>() {
-        @Override
-        protected ExecutionContext initialValue() {
-            return new ExecutionContext();
-        }
-    };
+    private static final Logger log = LoggerFactory.getLogger(ExecutionContext.class);
 
-    // Driver instances
-    private WebDriver webDriver;
-    private AppiumDriver mobileDriver;
-
-    // Test information
-    private String currentTestCase;
-    private String currentTestSuite;
-    private String currentKeyword;
-
-    // Execution settings
-    private int defaultTimeout = 30;
-    private TimeUnit timeoutUnit = TimeUnit.SECONDS;
-    private boolean screenshotEnabled = true;
-    private boolean videoRecordingEnabled = false;
-
-    // Test data and variables
-    private final Map<String, Object> testData = new HashMap<>();
-    private final Map<String, Object> globalVariables = new HashMap<>();
-
-    // Execution results
-    private final List<StepResult> stepResults = new ArrayList<>();
-
-    // Environment configuration
-    private String environment = "default";
-    private String baseUrl;
-    private final Map<String, String> environmentConfig = new HashMap<>();
-
-    // ★ SoftAssert được lưu trong context (per-thread instance)
-    private SoftAssert softAssert;
-
-    // ★ Cờ này không còn cần thiết để quyết định soft/hard ở level framework.
-    //   Giữ lại cho tương thích nếu nơi khác đang đọc nó.
-    private boolean isSoftAssert = false; // Mặc định là hard assert
+    private static final ThreadLocal<ExecutionContext> INSTANCE = ThreadLocal.withInitial(() -> {
+        log.debug("Creating new ExecutionContext for thread: {}",
+                Thread.currentThread().getName());
+        return new ExecutionContext();
+    });
 
     private ExecutionContext() {
-        // Private constructor for singleton
+        // Private constructor
     }
 
     public static ExecutionContext getInstance() {
         return INSTANCE.get();
     }
 
-    public static void reset() {
-        INSTANCE.remove();
-    }
-
-    // Driver management
     public WebDriver getWebDriver() {
-        return webDriver;
-    }
+        WebDriver driver = SessionManager.getInstance().getCurrentDriver();
 
-    public void setWebDriver(WebDriver webDriver) {
-        this.webDriver = webDriver;
+        if (driver == null) {
+            log.warn("No WebDriver found for thread [{}]. " +
+                            "Ensure DriverManager.initDriver() was called.",
+                    Thread.currentThread().getName());
+        }
+
+        return driver;
     }
 
     public AppiumDriver getMobileDriver() {
-        return mobileDriver;
+        WebDriver driver = SessionManager.getInstance().getCurrentDriver();
+
+        if (driver == null) {
+            log.warn("No driver found for getMobileDriver()");
+            return null;
+        }
+
+        if (driver instanceof AppiumDriver) {
+            return (AppiumDriver) driver;
+        }
+
+        log.debug("Current driver is not AppiumDriver. Type: {}",
+                driver.getClass().getSimpleName());
+        return null;
     }
 
-    public void setMobileDriver(AppiumDriver mobileDriver) {
-        this.mobileDriver = mobileDriver;
-    }
+    private String currentTestCase;
+    private String currentTestSuite;
+    private String currentKeyword;
 
-    // Test information
     public String getCurrentTestCase() {
         return currentTestCase;
     }
 
     public void setCurrentTestCase(String currentTestCase) {
         this.currentTestCase = currentTestCase;
+        log.trace("Current test case: {}", currentTestCase);
     }
 
     public String getCurrentTestSuite() {
@@ -113,7 +101,13 @@ public class ExecutionContext {
         this.currentKeyword = currentKeyword;
     }
 
-    // Timeout management
+    public String getCurrentPlatform() {
+        return com.vtnet.netat.driver.DriverManager.getCurrentPlatform();
+    }
+
+    private int defaultTimeout = 30;
+    private TimeUnit timeoutUnit = TimeUnit.SECONDS;
+
     public int getDefaultTimeout() {
         return defaultTimeout;
     }
@@ -121,13 +115,20 @@ public class ExecutionContext {
     public void setTimeout(int timeout, TimeUnit unit) {
         this.defaultTimeout = timeout;
         this.timeoutUnit = unit;
+        log.debug("Timeout set: {} {}", timeout, unit);
     }
 
     public TimeUnit getTimeoutUnit() {
         return timeoutUnit;
     }
 
-    // Screenshot settings
+    public long getTimeoutInMillis() {
+        return timeoutUnit.toMillis(defaultTimeout);
+    }
+
+    private boolean screenshotEnabled = true;
+    private boolean videoRecordingEnabled = false;
+
     public boolean isScreenshotEnabled() {
         return screenshotEnabled;
     }
@@ -144,39 +145,91 @@ public class ExecutionContext {
         this.videoRecordingEnabled = videoRecordingEnabled;
     }
 
-    // Test data management
+    private final Map<String, Object> testData = new ConcurrentHashMap<>();
+
     public Object getTestData(String key) {
         return testData.get(key);
     }
 
+    @SuppressWarnings("unchecked")
+    public <T> T getTestData(String key, Class<T> type) {
+        Object value = testData.get(key);
+        if (value == null) {
+            return null;
+        }
+        if (type.isInstance(value)) {
+            return (T) value;
+        }
+        log.warn("TestData '{}' is not of type {}. Actual: {}",
+                key, type.getSimpleName(), value.getClass().getSimpleName());
+        return null;
+    }
+
+
+    @SuppressWarnings("unchecked")
+    public <T> T getTestDataOrDefault(String key, T defaultValue) {
+        Object value = testData.get(key);
+        return value != null ? (T) value : defaultValue;
+    }
+
     public void setTestData(String key, Object value) {
-        testData.put(key, value);
+        if (key == null) {
+            log.warn("Cannot set testData with null key");
+            return;
+        }
+        if (value == null) {
+            testData.remove(key);
+        } else {
+            testData.put(key, value);
+        }
+        log.trace("TestData set: {} = {}", key, value);
     }
 
     public void setTestData(Map<String, Object> data) {
-        testData.putAll(data);
+        if (data != null) {
+            testData.putAll(data);
+        }
     }
 
     public Map<String, Object> getAllTestData() {
-        return new HashMap<>(testData);
+        return new ConcurrentHashMap<>(testData);
     }
 
-    // Global variables
+    public boolean hasTestData(String key) {
+        return testData.containsKey(key);
+    }
+
+    public void removeTestData(String key) {
+        testData.remove(key);
+    }
+
+
+    private final Map<String, Object> globalVariables = new ConcurrentHashMap<>();
+
     public Object getGlobalVariable(String key) {
         return globalVariables.get(key);
     }
 
     public void setGlobalVariable(String key, Object value) {
-        globalVariables.put(key, value);
+        if (key == null) return;
+        if (value == null) {
+            globalVariables.remove(key);
+        } else {
+            globalVariables.put(key, value);
+        }
     }
 
     public Map<String, Object> getAllGlobalVariables() {
-        return new HashMap<>(globalVariables);
+        return new ConcurrentHashMap<>(globalVariables);
     }
 
-    // Step results
+
+    private final List<StepResult> stepResults = new CopyOnWriteArrayList<>();
+
     public void addStepResult(StepResult stepResult) {
-        stepResults.add(stepResult);
+        if (stepResult != null) {
+            stepResults.add(stepResult);
+        }
     }
 
     public List<StepResult> getStepResults() {
@@ -187,13 +240,31 @@ public class ExecutionContext {
         stepResults.clear();
     }
 
-    // Environment configuration
+    public StepResult getLastStepResult() {
+        if (stepResults.isEmpty()) {
+            return null;
+        }
+        return stepResults.get(stepResults.size() - 1);
+    }
+
+    public long countFailedSteps() {
+        return stepResults.stream()
+                .filter(step -> step != null && "FAILED".equalsIgnoreCase(step.getStatus().toString()))
+                .count();
+    }
+
+    private volatile String environment = "default";
+    private volatile String baseUrl;
+
+    private final Map<String, String> environmentConfig = new ConcurrentHashMap<>();
+
     public String getEnvironment() {
         return environment;
     }
 
     public void setEnvironment(String environment) {
         this.environment = environment;
+        log.debug("Environment set: {}", environment);
     }
 
     public String getBaseUrl() {
@@ -202,85 +273,57 @@ public class ExecutionContext {
 
     public void setBaseUrl(String baseUrl) {
         this.baseUrl = baseUrl;
+        log.debug("Base URL set: {}", baseUrl);
     }
 
     public String getEnvironmentConfig(String key) {
         return environmentConfig.get(key);
     }
 
+    public String getEnvironmentConfig(String key, String defaultValue) {
+        return environmentConfig.getOrDefault(key, defaultValue);
+    }
+
     public void setEnvironmentConfig(String key, String value) {
-        environmentConfig.put(key, value);
+        if (key == null) return;
+        if (value == null) {
+            environmentConfig.remove(key);
+        } else {
+            environmentConfig.put(key, value);
+        }
     }
 
     public void setEnvironmentConfig(Map<String, String> config) {
-        environmentConfig.putAll(config);
+        if (config != null) {
+            environmentConfig.putAll(config);
+        }
     }
 
-    /**
-     * Clean up resources
-     */
-    public void cleanup() {
-        if (webDriver != null) {
-            try {
-                webDriver.quit();
-            } catch (Exception e) {
-                // Ignore cleanup errors
-            }
-            webDriver = null;
-        }
+    private SoftAssert softAssert;
 
-        if (mobileDriver != null) {
-            try {
-                mobileDriver.quit();
-            } catch (Exception e) {
-                // Ignore cleanup errors
-            }
-            mobileDriver = null;
-        }
-        // ★ reset các phần liên quan đến soft assert & dữ liệu
-        softAssert = null;
-        isSoftAssert = false;
-        stepResults.clear();
-        testData.clear();
-        // Keep global variables for next test if đó là chủ đích
-    }
+    @Deprecated
+    private boolean isSoftAssert = false;
 
-    // =========================
-    // ★ SOFT ASSERT MANAGEMENT
-    // =========================
-
-    /**
-     * Luôn trả về một instance AllureSoftAssert (lazy init).
-     * Instance này sẽ tự log PASS/FAIL step vào Allure, không ném exception tại chỗ.
-     */
     public SoftAssert getSoftAssert() {
         if (softAssert == null) {
-            softAssert = new AllureSoftAssert(); // ★ ensure Allure-logged soft asserts
+            softAssert = new AllureSoftAssert();
+            log.trace("Created new AllureSoftAssert");
         }
         return softAssert;
     }
 
-    /**
-     * Gán SoftAssert thủ công (ví dụ test đặc biệt). Không khuyến khích.
-     * Nên dùng getSoftAssert() để đảm bảo AllureSoftAssert.
-     */
     public void setSoftAssert(SoftAssert softAssert) {
         this.softAssert = softAssert;
     }
 
-    /**
-     * Reset soft assert về null (để lần sau lazy-init lại).
-     */
-    public void resetSoftAssert() { // ★ NEW
+    public void resetSoftAssert() {
         this.softAssert = null;
     }
 
-    /**
-     * Gọi assertAll() nếu có và reset. Dùng khi muốn fail cả test nếu có soft-fail.
-     */
-    public void assertAllSoftAndReset() { // ★ NEW (tuỳ chọn)
+    public void assertAllSoftAndReset() {
         if (softAssert != null) {
             try {
+                log.debug("Executing assertAll() for soft assertions");
                 softAssert.assertAll();
             } finally {
                 softAssert = null;
@@ -288,27 +331,86 @@ public class ExecutionContext {
         }
     }
 
-    // ============== Compatibility flags ==============
 
-    public boolean isSoftAssertFlag() { // ★ rename accessor để đỡ nhầm tên
+    public boolean isSoftAssertFlag() {
         return isSoftAssert;
     }
 
-    /**
-     * @deprecated Không nên dùng cờ này để điều khiển logic soft/hard.
-     * Soft/Hard nên do keywords quyết định; SoftAssert sẽ luôn là AllureSoftAssert.
-     */
     @Deprecated
-    public void setSoftAssertFlag(boolean softAssertFlag) { // ★ deprecated setter
+    public void setSoftAssertFlag(boolean softAssertFlag) {
         isSoftAssert = softAssertFlag;
     }
 
-    // --- Giữ lại tên cũ cho tương thích (nếu đang gọi ở nơi khác) ---
-    /** @deprecated dùng {@link #isSoftAssertFlag()} */
     @Deprecated
-    public boolean isSoftAssert() { return isSoftAssertFlag(); }
+    public boolean isSoftAssert() {
+        return isSoftAssertFlag();
+    }
 
-    /** @deprecated dùng {@link #setSoftAssertFlag(boolean)} */
     @Deprecated
-    public void setSoftAssert(boolean softAssert) { setSoftAssertFlag(softAssert); }
+    public void setSoftAssert(boolean softAssert) {
+        setSoftAssertFlag(softAssert);
+    }
+
+    public void cleanup() {
+        log.debug("Cleaning up ExecutionContext for thread: {}",
+                Thread.currentThread().getName());
+
+        try {
+            SessionManager.getInstance().stopAllSessions();
+        } catch (Exception e) {
+            log.warn("Error stopping sessions: {}", e.getMessage());
+        }
+
+        softAssert = null;
+        isSoftAssert = false;
+
+        stepResults.clear();
+        testData.clear();
+        globalVariables.clear();
+        environmentConfig.clear();
+
+        // Reset test info
+        currentTestCase = null;
+        currentTestSuite = null;
+        currentKeyword = null;
+
+        log.debug("ExecutionContext cleanup completed");
+    }
+
+    public static void reset() {
+        log.debug("Resetting ExecutionContext for thread: {}",
+                Thread.currentThread().getName());
+        try {
+            getInstance().cleanup();
+        } catch (Exception e) {
+            log.warn("Error during cleanup: {}", e.getMessage());
+        } finally {
+            INSTANCE.remove();
+        }
+    }
+
+    public String getDebugInfo() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("ExecutionContext Debug Info:\n");
+        sb.append("  Thread: ").append(Thread.currentThread().getName()).append("\n");
+        sb.append("  TestSuite: ").append(currentTestSuite).append("\n");
+        sb.append("  TestCase: ").append(currentTestCase).append("\n");
+        sb.append("  Platform: ").append(getCurrentPlatform()).append("\n");
+        sb.append("  Environment: ").append(environment).append("\n");
+        sb.append("  BaseUrl: ").append(baseUrl).append("\n");
+        sb.append("  HasDriver: ").append(getWebDriver() != null).append("\n");
+        sb.append("  TestData keys: ").append(testData.keySet()).append("\n");
+        sb.append("  StepResults count: ").append(stepResults.size()).append("\n");
+        sb.append("  FailedSteps: ").append(countFailedSteps()).append("\n");
+        return sb.toString();
+    }
+
+    @Override
+    public String toString() {
+        return String.format("ExecutionContext[thread=%s, test=%s, platform=%s, hasDriver=%s]",
+                Thread.currentThread().getName(),
+                currentTestCase,
+                getCurrentPlatform(),
+                getWebDriver() != null);
+    }
 }

@@ -5,19 +5,14 @@ import com.vtnet.netat.core.logging.NetatLogger;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
+import io.restassured.config.SSLConfig;
+import io.restassured.config.RestAssuredConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.Map;
 
-/**
- * Base API Keyword - Class cha cho tất cả API keywords
- * Cung cấp các helper methods để execute HTTP requests
- *
- * @author NETAT Framework
- * @version 2.0
- */
 public abstract class BaseApiKeyword extends BaseKeyword {
 
     protected static final NetatLogger logger = NetatLogger.getInstance(BaseApiKeyword.class);
@@ -266,11 +261,29 @@ public abstract class BaseApiKeyword extends BaseKeyword {
     /**
      * Build RequestSpecification từ context hiện tại
      */
+//    private RequestSpecification buildRequestSpec() {
+//        RequestSpecification spec = RestAssured.given();
+//
+//        // Apply context settings
+//        ApiContext ctx = getContext();
+//        ctx.applyToRequestSpec(spec);
+//
+//        return spec;
+//    }
+
     private RequestSpecification buildRequestSpec() {
         RequestSpecification spec = RestAssured.given();
 
-        // Apply context settings
         ApiContext ctx = getContext();
+
+        if (!ctx.isSslVerificationEnabled()) {
+            spec.config(RestAssuredConfig.config()
+                    .sslConfig(SSLConfig.sslConfig()
+                            .relaxedHTTPSValidation()
+                            .allowAllHostnames()));
+            logger.info("SSL verification DISABLED - use only for testing!");
+        }
+
         ctx.applyToRequestSpec(spec);
 
         return spec;

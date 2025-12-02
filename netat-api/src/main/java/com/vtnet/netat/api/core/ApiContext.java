@@ -22,6 +22,7 @@ public class ApiContext {
     private String baseUri;
     private int timeout = 30; // seconds (default)
     private boolean logRequests = false;
+    private boolean sslVerificationEnabled = true;
 
     // Request components
     private Map<String, String> headers;
@@ -678,5 +679,13 @@ public class ApiContext {
         sb.append("}");
 
         return sb.toString();
+    }
+
+    public void setSslVerificationEnabled(boolean enabled) {
+        this.sslVerificationEnabled = enabled;
+    }
+
+    public boolean isSslVerificationEnabled() {
+        return sslVerificationEnabled;
     }
 }

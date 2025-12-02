@@ -10,22 +10,20 @@ import com.vtnet.netat.driver.DriverManager;
 import com.vtnet.netat.driver.SessionManager;
 import com.vtnet.netat.web.ai.AiModelFactory;
 import dev.langchain4j.model.chat.ChatModel;
+import io.qameta.allure.Allure;
 import io.qameta.allure.Step;
+import io.qameta.allure.model.Status;
+import io.qameta.allure.model.StepResult;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.*;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.remote.CommandExecutor;
-import org.openqa.selenium.remote.HttpCommandExecutor;
-import org.openqa.selenium.remote.RemoteWebDriver;
-import org.openqa.selenium.remote.service.DriverCommandExecutor;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
 
-import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
@@ -34,11 +32,13 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import com.vtnet.netat.core.secret.SensitiveDataProtection;
 
 public class WebKeyword extends BaseUiKeyword {
 
     private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(15);
     private static final Duration SECONDARY_TIMEOUT = Duration.ofSeconds(5);
+    private final SensitiveDataProtection protection = SensitiveDataProtection.getInstance();
 //    private final IAiSelfHealingService aiSelfHealingService;
 
     public WebKeyword() {
@@ -200,12 +200,12 @@ public class WebKeyword extends BaseUiKeyword {
                     "và đối tượng ObjectUI phải có ít nhất một locator được định nghĩa. " +
                     "Có thể throw WebDriverException nếu có lỗi khi tương tác với trình duyệt, " +
                     "InvalidSelectorException nếu locator không hợp lệ, " +
-                    "hoặc NullPointerException nếu uiObject is null hoặc không có locator nào được kích hoạt."
+                    "hoặc NullPointerException nếu uiObject is null hoặc không có locator nào được kích hoạt.",
+            explainer = "Find elements: {uiObject}"
     )
-    @Step("Find elements: {0.name}")
+//    @Step("Find elements: {0.name}")
     public List<WebElement> findElements(ObjectUI uiObject) {
         return execute(() -> {
-            // Sử dụng locator đầu tiên được kích hoạt để tìm kiếm
             By by = uiObject.getActiveLocators().get(0).convertToBy();
             return DriverManager.getDriver().findElements(by);
         }, uiObject);
@@ -213,26 +213,40 @@ public class WebKeyword extends BaseUiKeyword {
 
     @NetatKeyword(
             name = "openUrl",
-            description = "Điều hướng trình duyệt đến một địa chỉ web (URL) cụ thể.",
-            category = "Web",
-            subCategory = "Browser",
+            description = "Mở URL và đợi page load hoàn toàn. Test sẽ FAIL nếu timeout.",
+            category = "Browser",
             parameters = {
-                    "url: String - Địa chỉ trang web đầy đủ cần mở (ví dụ: 'https://www.google.com')"
+                    "url: String - URL cần mở",
+                    "timeoutSeconds: int (optional) - Timeout, mặc định 30s"
             },
-            returnValue = "void - Không trả về giá trị",
-            example = "// Mở trang chủ Google\n" +
-                    "webKeyword.openUrl(\"https://www.google.com\");\n\n" +
-                    "// Mở trang đăng nhập\n" +
-                    "webKeyword.openUrl(\"https://example.com/login\");",
-            note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
-                    "URL phải is một địa chỉ hợp lệ và có thể truy cập được, và kết nối mạng phải hoạt động. " +
-                    "Có thể throw WebDriverException nếu có lỗi khi tương tác với trình duyệt, " +
-                    "InvalidArgumentException nếu URL không hợp lệ, " +
-                    "hoặc TimeoutException nếu trang không tải thành công trong thời gian chờ mặc định."
+            example = "web.openUrl(\"https://example.com\");\nweb.openUrl(\"https://example.com\", 60);",
+            explainer = "Open URL: {url}"
     )
-    @Step("Open URL: {0}")
-    public void openUrl(String url) {
-        DriverManager.getDriver().get(url);
+//    @Step("Open URL: {0}")
+    public void openUrl(String url, int... timeoutSeconds) {
+        execute(() -> {
+            WebDriver driver = DriverManager.getDriver();
+            int timeout = (timeoutSeconds.length > 0) ? timeoutSeconds[0] : 30;
+
+            Duration originalTimeout = driver.manage().timeouts().getPageLoadTimeout();
+
+            try {
+                driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(timeout));
+                driver.get(url);
+                logger.info("Page loaded successfully: {}", url);
+
+            } catch (TimeoutException e) {
+                try {
+                    ((JavascriptExecutor) driver).executeScript("window.stop();");
+                } catch (Exception ignored) {
+
+                }
+                logger.warn("Stopped loading page!");
+            } finally {
+                driver.manage().timeouts().pageLoadTimeout(originalTimeout);
+            }
+            return null;
+        }, url);
     }
 
     @NetatKeyword(
@@ -253,7 +267,8 @@ public class WebKeyword extends BaseUiKeyword {
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
                     "và phải có ít nhất một trang đã được truy cập trước đó trong lịch sử of phiên hiện tại. " +
                     "Có thể throw WebDriverException nếu có lỗi khi tương tác với trình duyệt, " +
-                    "hoặc NoSuchSessionException nếu phiên WebDriver không còn hợp lệ."
+                    "hoặc NoSuchSessionException nếu phiên WebDriver không còn hợp lệ.",
+            explainer = "Go back to previous page"
     )
     @Step("Go back to previous page")
     public void goBack() {
@@ -284,7 +299,8 @@ public class WebKeyword extends BaseUiKeyword {
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, " +
                     "và phải đã sử dụng goBack() hoặc có trang tiếp theo trong lịch sử điều hướng. " +
                     "Có thể throw WebDriverException nếu có lỗi khi tương tác với trình duyệt, " +
-                    "hoặc NoSuchSessionException nếu phiên WebDriver không còn hợp lệ."
+                    "hoặc NoSuchSessionException nếu phiên WebDriver không còn hợp lệ.",
+            explainer = "Go forward to next page"
     )
     @Step("Go forward to next page")
     public void goForward() {
@@ -440,10 +456,12 @@ public class WebKeyword extends BaseUiKeyword {
                     "ElementNotInteractableException nếu element không thể tương tác, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
                     "TimeoutException nếu element không xuất hiện trong thời gian chờ, " +
-                    "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
+                    "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
+            explainer = "Enter text into {uiObject}"
     )
-    @Step("Enter text '{1}' into element: {0.name}")
     public void sendKeys(ObjectUI uiObject, String text) {
+        String displayText = protection.maskIfSensitive(uiObject, text);
+        logger.info("Entering text '{}' into element: {}", displayText, uiObject.getName());
         super.sendKeys(uiObject, text);
     }
 
@@ -507,10 +525,15 @@ public class WebKeyword extends BaseUiKeyword {
     @Step("Ensure element {0.name} is selected")
     public void check(ObjectUI uiObject) {
         execute(() -> {
-            WebElement element = findElement(uiObject);
-            if (!"true".equalsIgnoreCase(element.getDomAttribute("checked"))) {
-                element.click();
-            }
+            performActionWithRetry(
+                    uiObject,
+                    ExpectedConditions::elementToBeClickable,
+                    element -> {
+                        if (!"true".equalsIgnoreCase(element.getAttribute("checked"))) {
+                            element.click();
+                        }
+                    }
+            );
             return null;
         }, uiObject);
     }
@@ -541,10 +564,15 @@ public class WebKeyword extends BaseUiKeyword {
     @Step("Uncheck checkbox: {0.name}")
     public void uncheck(ObjectUI uiObject) {
         execute(() -> {
-            WebElement element = findElement(uiObject);
-            if ("true".equalsIgnoreCase(element.getDomAttribute("checked"))) {
-                element.click();
-            }
+            performActionWithRetry(
+                    uiObject,
+                    ExpectedConditions::elementToBeClickable,
+                    element -> {
+                        if ("true".equalsIgnoreCase(element.getAttribute("checked"))) {
+                            element.click();
+                        }
+                    }
+            );
             return null;
         }, uiObject);
     }
@@ -583,9 +611,13 @@ public class WebKeyword extends BaseUiKeyword {
     @Step("Right-click element: {0.name}")
     public void contextClick(ObjectUI uiObject) {
         execute(() -> {
-            WebElement element = findElement(uiObject);
-            Actions actions = new Actions(DriverManager.getDriver());
-            actions.contextClick(element).perform();
+            performActionWithRetry(
+                    uiObject,
+                    ExpectedConditions::visibilityOf,
+                    element -> {
+                        new Actions(DriverManager.getDriver()).contextClick(element).perform();
+                    }
+            );
             return null;
         }, uiObject);
     }
@@ -617,8 +649,13 @@ public class WebKeyword extends BaseUiKeyword {
     @Step("Double-click element: {0.name}")
     public void doubleClick(ObjectUI uiObject) {
         execute(() -> {
-            WebElement element = findElement(uiObject);
-            new Actions(DriverManager.getDriver()).doubleClick(element).perform();
+            performActionWithRetry(
+                    uiObject,
+                    ExpectedConditions::elementToBeClickable,
+                    element -> {
+                        new Actions(DriverManager.getDriver()).doubleClick(element).perform();
+                    }
+            );
             return null;
         }, uiObject);
     }
@@ -650,8 +687,13 @@ public class WebKeyword extends BaseUiKeyword {
     @Step("Hover over element: {0.name}")
     public void hover(ObjectUI uiObject) {
         execute(() -> {
-            WebElement element = findElement(uiObject);
-            new Actions(DriverManager.getDriver()).moveToElement(element).perform();
+            performActionWithRetry(
+                    uiObject,
+                    ExpectedConditions::visibilityOf,
+                    element -> {
+                        new Actions(DriverManager.getDriver()).moveToElement(element).perform();
+                    }
+            );
             return null;
         }, uiObject);
     }
@@ -1127,7 +1169,8 @@ public class WebKeyword extends BaseUiKeyword {
                     "Có thể throw WebDriverException nếu có lỗi khi tương tác với trình duyệt, " +
                     "NoSuchSessionException nếu phiên WebDriver không còn hợp lệ, " +
                     "UnsupportedOperationException nếu trình duyệt không hỗ trợ thao tác phím được yêu cầu, " +
-                    "hoặc IllegalArgumentException nếu tham số keys không hợp lệ."
+                    "hoặc IllegalArgumentException nếu tham số keys không hợp lệ.",
+            explainer = "Send key combination {keys}"
     )
     @Step("Send key combination: {0}")
     public void pressKeys(CharSequence... keys) {
@@ -1641,7 +1684,8 @@ public class WebKeyword extends BaseUiKeyword {
                     "Có thể throw NoSuchElementException nếu element không tồn tại, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
                     "TimeoutException nếu element không xuất hiện trong thời gian chờ, " +
-                    "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
+                    "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
+            explainer = "Get text from element {uiObject}"
     )
     @Step("Get text from element: {0.name}")
     public String getText(ObjectUI uiObject) {
@@ -1669,7 +1713,8 @@ public class WebKeyword extends BaseUiKeyword {
                     "Có thể throw NoSuchElementException nếu element không tồn tại, " +
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
                     "TimeoutException nếu element không xuất hiện trong thời gian chờ, " +
-                    "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
+                    "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
+            explainer = "Get attribute "
     )
     @Step("Get attribute '{1}' of element {0.name}")
     public String getAttribute(ObjectUI uiObject, String attributeName) {
@@ -4234,6 +4279,150 @@ public class WebKeyword extends BaseUiKeyword {
         }, apiPath, expectedParams, timeoutSeconds);
     }
 
+    @NetatKeyword(
+            name = "isApiCalledWithStatus",
+            description = "Kiểm tra xem API có được gọi hay không và trả về status code.",
+            category = "Web",
+            subCategory = "Network",
+            parameters = {
+                    "apiPath: String - Path của API cần monitor",
+                    "expectedParams: Map<String, String> - Query params",
+                    "timeoutSeconds: int - Thời gian chờ tối đa"
+            },
+            returnValue = "Map<String, Object> - {found: boolean, statusCode: Integer}",
+            example = "Map<String, Object> result = web.isApiCalledWithStatus(\"/api/user\", params, 15);\n" +
+                    "boolean found = (boolean) result.get(\"found\");\n" +
+                    "Integer status = (Integer) result.get(\"statusCode\");"
+    )
+    @Step("Check if API called with status: {0}")
+    public Map<String, Object> isApiCalledWithStatus(String apiPath,
+                                                     Map<String, String> expectedParams,
+                                                     int timeoutSeconds) {
+        return execute(() -> {
+            JavascriptExecutor js = (JavascriptExecutor) DriverManager.getDriver();
+
+            String paramChecks = buildParamCheckScriptWithStatus(expectedParams);
+
+            String script = String.format(
+                    "window.__apiMonitor = window.__apiMonitor || { calls: [], found: false, statusCode: null };" +
+
+                            "if (!window.__apiMonitor.fetchHooked) {" +
+                            "  const originalFetch = window.fetch;" +
+                            "  window.fetch = async function(...args) {" +
+                            "    const url = args[0];" +
+                            "    const response = await originalFetch.apply(this, args);" +
+                            "    if (url.includes('%s')) {" +
+                            "      console.log('[API Monitor] Detected:', url, 'Status:', response.status);" +
+                            "      window.__apiMonitor.calls.push({url: url, status: response.status, timestamp: Date.now()});" +
+                            "      %s" +
+                            "    }" +
+                            "    return response;" +
+                            "  };" +
+                            "  window.__apiMonitor.fetchHooked = true;" +
+                            "}" +
+                            "if (!window.__apiMonitor.xhrHooked) {" +
+                            "  const originalOpen = XMLHttpRequest.prototype.open;" +
+                            "  const originalSend = XMLHttpRequest.prototype.send;" +
+                            "  XMLHttpRequest.prototype.open = function(method, url, ...rest) {" +
+                            "    this.__interceptedUrl = url;" +
+                            "    return originalOpen.apply(this, [method, url, ...rest]);" +
+                            "  };" +
+                            "  XMLHttpRequest.prototype.send = function(...args) {" +
+                            "    this.addEventListener('load', function() {" +
+                            "      const url = this.__interceptedUrl;" +
+                            "      if (url && url.includes('%s')) {" +
+                            "        const status = this.status;" +
+                            "        console.log('[API Monitor] Detected (XHR):', url, 'Status:', status);" +
+                            "        window.__apiMonitor.calls.push({url: url, status: status, timestamp: Date.now()});" +
+                            "        %s" +
+                            "      }" +
+                            "    });" +
+                            "    return originalSend.apply(this, args);" +
+                            "  };" +
+                            "  window.__apiMonitor.xhrHooked = true;" +
+                            "}",
+                    apiPath, paramChecks, apiPath, paramChecks
+            );
+
+            js.executeScript(script);
+            logger.info("Injected API monitoring script for path: '{}'", apiPath);
+
+            long startTime = System.currentTimeMillis();
+            long timeout = timeoutSeconds * 1000L;
+            boolean found = false;
+            Integer statusCode = null;
+
+            while (!found && (System.currentTimeMillis() - startTime) < timeout) {
+                try {
+                    Thread.sleep(500);
+
+                    Boolean result = (Boolean) js.executeScript("return window.__apiMonitor.found;");
+
+                    if (Boolean.TRUE.equals(result)) {
+                        found = true;
+
+                        Object statusObj = js.executeScript("return window.__apiMonitor.statusCode;");
+                        if (statusObj != null) {
+                            statusCode = ((Number) statusObj).intValue();
+                        }
+
+                        String matchedUrl = (String) js.executeScript(
+                                "return window.__apiMonitor.calls[window.__apiMonitor.calls.length - 1]?.url || 'N/A';"
+                        );
+                        logger.info("API '{}' detected: {} (Status: {})", apiPath, matchedUrl, statusCode);
+                    }
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+            js.executeScript("delete window.__apiMonitor;");
+            Map<String, Object> resultMap = new HashMap<>();
+            resultMap.put("found", found);
+            resultMap.put("statusCode", statusCode);
+            return resultMap;
+
+        }, apiPath, expectedParams, timeoutSeconds);
+    }
+
+    private String buildParamCheckScriptWithStatus(Map<String, String> expectedParams) {
+        if (expectedParams == null || expectedParams.isEmpty()) {
+            return "window.__apiMonitor.found = true; window.__apiMonitor.statusCode = response.status;";
+        }
+
+        StringBuilder script = new StringBuilder();
+        script.append("if (");
+
+        boolean first = true;
+        for (Map.Entry<String, String> entry : expectedParams.entrySet()) {
+            String paramName = entry.getKey();
+            String expectedValue = entry.getValue();
+
+            if (!first) {
+                script.append(" && ");
+            }
+            first = false;
+
+            if ("*".equals(expectedValue)) {
+                script.append("true");
+            } else if ("?".equals(expectedValue)) {
+                script.append(String.format(
+                        "(url.includes('%s=') && url.match(/%s=([^&]+)/)?.[1])",
+                        paramName, paramName
+                ));
+            } else {
+                script.append(String.format(
+                        "url.includes('%s=%s')",
+                        paramName, expectedValue
+                ));
+            }
+        }
+
+        script.append(") { window.__apiMonitor.found = true; window.__apiMonitor.statusCode = response.status; }");
+
+        return script.toString();
+    }
+
     private String buildParamCheckScript(Map<String, String> expectedParams) {
         if (expectedParams == null || expectedParams.isEmpty()) {
             return "window.__apiMonitor.found = true;";
@@ -4307,158 +4496,6 @@ public class WebKeyword extends BaseUiKeyword {
         }, apiPath, expectedParams, timeoutSeconds);
     }
 
-    @NetatKeyword(
-            name = "verifyMultipleApisCalledParallel",
-            description = "Verify nhiều API được gọi đồng thời (parallel monitoring). Hiệu quả hơn khi có nhiều API cần kiểm tra.",
-            category = "Web",
-            subCategory = "Network",
-            parameters = {
-                    "apiConfigs: List<Map<String, Object>> - Danh sách config của các API",
-                    "maxTimeoutSeconds: int - Thời gian chờ tối đa cho tất cả API"
-            },
-            example = "web.verifyMultipleApisCalledParallel(apiConfigs, 30);"
-    )
-    @Step("Verify multiple APIs called (parallel)")
-    public void verifyMultipleApisCalledParallel(List<Map<String, Object>> apiConfigs, int maxTimeoutSeconds) {
-        execute(() -> {
-            JavascriptExecutor js = (JavascriptExecutor) DriverManager.getDriver();
-
-            StringBuilder monitorScript = new StringBuilder();
-            monitorScript.append("window.__apiMonitors = window.__apiMonitors || {};\n");
-
-            for (int i = 0; i < apiConfigs.size(); i++) {
-                Map<String, Object> config = apiConfigs.get(i);
-                String apiPath = (String) config.get("apiPath");
-                String monitorKey = "api_" + i;
-
-                monitorScript.append(String.format(
-                        "window.__apiMonitors['%s'] = { path: '%s', found: false, calls: [] };\n",
-                        monitorKey, apiPath
-                ));
-            }
-
-            monitorScript.append(
-                    "if (!window.__multiApiHooked) {\n" +
-                            "  const originalFetch = window.fetch;\n" +
-                            "  window.fetch = function(...args) {\n" +
-                            "    const url = args[0];\n"
-            );
-
-            for (int i = 0; i < apiConfigs.size(); i++) {
-                String apiPath = (String) apiConfigs.get(i).get("apiPath");
-                String monitorKey = "api_" + i;
-                @SuppressWarnings("unchecked")
-                Map<String, String> expectedParams = (Map<String, String>) apiConfigs.get(i).get("expectedParams");
-
-                String paramChecks = buildParamCheckScriptInline(expectedParams, monitorKey);
-
-                monitorScript.append(String.format(
-                        "    if (url.includes('%s')) {\n" +
-                                "      console.log('[Multi-API Monitor] Detected [%s]:', url);\n" +
-                                "      window.__apiMonitors['%s'].calls.push({url: url, timestamp: Date.now()});\n" +
-                                "      %s\n" +
-                                "    }\n",
-                        apiPath, monitorKey, monitorKey, paramChecks
-                ));
-            }
-
-            monitorScript.append(
-                    "    return originalFetch.apply(this, args);\n" +
-                            "  };\n"
-            );
-
-            monitorScript.append(
-                    "  const originalOpen = XMLHttpRequest.prototype.open;\n" +
-                            "  XMLHttpRequest.prototype.open = function(method, url, ...rest) {\n"
-            );
-
-            for (int i = 0; i < apiConfigs.size(); i++) {
-                String apiPath = (String) apiConfigs.get(i).get("apiPath");
-                String monitorKey = "api_" + i;
-                @SuppressWarnings("unchecked")
-                Map<String, String> expectedParams = (Map<String, String>) apiConfigs.get(i).get("expectedParams");
-
-                String paramChecks = buildParamCheckScriptInline(expectedParams, monitorKey);
-
-                monitorScript.append(String.format(
-                        "    if (url.includes('%s')) {\n" +
-                                "      console.log('[Multi-API Monitor] Detected (XHR) [%s]:', url);\n" +
-                                "      window.__apiMonitors['%s'].calls.push({url: url, timestamp: Date.now()});\n" +
-                                "      %s\n" +
-                                "    }\n",
-                        apiPath, monitorKey, monitorKey, paramChecks
-                ));
-            }
-
-            monitorScript.append(
-                    "    return originalOpen.apply(this, [method, url, ...rest]);\n" +
-                            "  };\n" +
-                            "  window.__multiApiHooked = true;\n" +
-                            "}\n"
-            );
-
-            js.executeScript(monitorScript.toString());
-            logger.info("Injected parallel monitoring for {} APIs", apiConfigs.size());
-
-            long startTime = System.currentTimeMillis();
-            long timeout = maxTimeoutSeconds * 1000L;
-            Map<String, Boolean> results = new HashMap<>();
-
-            while ((System.currentTimeMillis() - startTime) < timeout) {
-                try {
-                    Thread.sleep(500);
-                    for (int i = 0; i < apiConfigs.size(); i++) {
-                        String monitorKey = "api_" + i;
-
-                        if (!results.getOrDefault(monitorKey, false)) {
-                            Boolean found = (Boolean) js.executeScript(
-                                    String.format("return window.__apiMonitors['%s']?.found || false;", monitorKey)
-                            );
-
-                            if (Boolean.TRUE.equals(found)) {
-                                results.put(monitorKey, true);
-                                String apiPath = (String) apiConfigs.get(i).get("apiPath");
-                                logger.info("✓ API '{}' detected", apiPath);
-                            }
-                        }
-                    }
-
-                    if (results.size() == apiConfigs.size() && results.values().stream().allMatch(v -> v)) {
-                        logger.info("All {} APIs detected successfully", apiConfigs.size());
-                        break;
-                    }
-
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    break;
-                }
-            }
-
-            js.executeScript("delete window.__apiMonitors; delete window.__multiApiHooked;");
-
-            List<String> notFound = new ArrayList<>();
-            for (int i = 0; i < apiConfigs.size(); i++) {
-                String monitorKey = "api_" + i;
-                if (!results.getOrDefault(monitorKey, false)) {
-                    String apiPath = (String) apiConfigs.get(i).get("apiPath");
-                    @SuppressWarnings("unchecked")
-                    Map<String, String> expectedParams = (Map<String, String>) apiConfigs.get(i).get("expectedParams");
-                    String paramsStr = expectedParams != null ? expectedParams.toString() : "any";
-                    notFound.add(String.format("API '%s' with params %s", apiPath, paramsStr));
-                }
-            }
-
-            if (!notFound.isEmpty()) {
-                throw new AssertionError(
-                        String.format("Failed to detect %d API(s) in %d seconds:\n%s",
-                                notFound.size(), maxTimeoutSeconds, String.join("\n", notFound))
-                );
-            }
-
-            return null;
-        }, apiConfigs, maxTimeoutSeconds);
-    }
-
     private String buildParamCheckScriptInline(Map<String, String> expectedParams, String monitorKey) {
         if (expectedParams == null || expectedParams.isEmpty()) {
             return String.format("window.__apiMonitors['%s'].found = true;", monitorKey);
@@ -4486,4 +4523,557 @@ public class WebKeyword extends BaseUiKeyword {
         return script.toString();
     }
 
+    @NetatKeyword(
+            name = "verifyMultipleApisCalledParallel",
+            description = "Verify nhiều API được gọi đồng thời và trả về danh sách status code của từng API.",
+            category = "Web",
+            subCategory = "Network",
+            parameters = {
+                    "apiConfigs: List<Map<String, Object>> - Danh sách config của các API",
+                    "maxTimeoutSeconds: int - Thời gian chờ tối đa cho tất cả API"
+            },
+            returnValue = "List<Integer> - Danh sách status code của các API (theo thứ tự config). Null nếu API không được gọi.",
+            example = "List<Map<String, Object>> configs = Arrays.asList(\n" +
+                    "  ApiConfig.create(\"/api/user\").toMap(),\n" +
+                    "  ApiConfig.create(\"/api/data\").toMap()\n" +
+                    ");\n" +
+                    "List<Integer> statusCodes = web.verifyMultipleApisCalledParallel(configs, 30);\n" +
+                    "// statusCodes.get(0) = status của /api/user\n" +
+                    "// statusCodes.get(1) = status của /api/data"
+    )
+    @Step("Verify multiple APIs called (parallel)")
+    public List<Integer> verifyMultipleApisCalledParallel(List<Map<String, Object>> apiConfigs,
+                                                          int maxTimeoutSeconds) {
+        return execute(() -> {
+            JavascriptExecutor js = (JavascriptExecutor) DriverManager.getDriver();
+
+            StringBuilder monitorScript = new StringBuilder();
+            monitorScript.append("window.__apiMonitors = window.__apiMonitors || {};\n");
+
+            for (int i = 0; i < apiConfigs.size(); i++) {
+                Map<String, Object> config = apiConfigs.get(i);
+                String apiPath = (String) config.get("apiPath");
+                String monitorKey = "api_" + i;
+
+                monitorScript.append(String.format(
+                        "window.__apiMonitors['%s'] = { " +
+                                "  path: '%s', " +
+                                "  found: false, " +
+                                "  statusCode: null, " +
+                                "  calls: [] " +
+                                "};\n",
+                        monitorKey, apiPath
+                ));
+            }
+
+            monitorScript.append(
+                    "if (!window.__multiApiHooked) {\n" +
+                            "  const originalFetch = window.fetch;\n" +
+                            "  window.fetch = async function(...args) {\n" +
+                            "    const url = args[0];\n" +
+                            "    const response = await originalFetch.apply(this, args);\n"
+            );
+
+            for (int i = 0; i < apiConfigs.size(); i++) {
+                String apiPath = (String) apiConfigs.get(i).get("apiPath");
+                String monitorKey = "api_" + i;
+                @SuppressWarnings("unchecked")
+                Map<String, String> expectedParams = (Map<String, String>) apiConfigs.get(i).get("expectedParams");
+
+                String paramChecks = buildParamCheckScriptInlineWithStatus(expectedParams, monitorKey, "response.status");
+
+                monitorScript.append(String.format(
+                        "    if (url.includes('%s')) {\n" +
+                                "      console.log('[Multi-API Monitor] Detected [%s]:', url, 'Status:', response.status);\n" +
+                                "      window.__apiMonitors['%s'].calls.push({" +
+                                "        url: url, " +
+                                "        status: response.status, " +
+                                "        timestamp: Date.now()" +
+                                "      });\n" +
+                                "      %s\n" +
+                                "    }\n",
+                        apiPath, monitorKey, monitorKey, paramChecks
+                ));
+            }
+
+            monitorScript.append(
+                    "    return response;\n" +
+                            "  };\n"
+            );
+
+            monitorScript.append(
+                    "  const originalOpen = XMLHttpRequest.prototype.open;\n" +
+                            "  const originalSend = XMLHttpRequest.prototype.send;\n" +
+                            "  XMLHttpRequest.prototype.open = function(method, url, ...rest) {\n" +
+                            "    this.__interceptedUrl = url;\n" +
+                            "    return originalOpen.apply(this, [method, url, ...rest]);\n" +
+                            "  };\n" +
+                            "  XMLHttpRequest.prototype.send = function(...args) {\n" +
+                            "    this.addEventListener('load', function() {\n" +
+                            "      const url = this.__interceptedUrl;\n"
+            );
+
+            for (int i = 0; i < apiConfigs.size(); i++) {
+                String apiPath = (String) apiConfigs.get(i).get("apiPath");
+                String monitorKey = "api_" + i;
+                @SuppressWarnings("unchecked")
+                Map<String, String> expectedParams = (Map<String, String>) apiConfigs.get(i).get("expectedParams");
+
+                String paramChecks = buildParamCheckScriptInlineWithStatus(expectedParams, monitorKey, "this.status");
+
+                monitorScript.append(String.format(
+                        "      if (url && url.includes('%s')) {\n" +
+                                "        const status = this.status;\n" +
+                                "        console.log('[Multi-API Monitor] Detected (XHR) [%s]:', url, 'Status:', status);\n" +
+                                "        window.__apiMonitors['%s'].calls.push({" +
+                                "          url: url, " +
+                                "          status: status, " +
+                                "          timestamp: Date.now()" +
+                                "        });\n" +
+                                "        %s\n" +
+                                "      }\n",
+                        apiPath, monitorKey, monitorKey, paramChecks
+                ));
+            }
+
+            monitorScript.append(
+                    "    });\n" +
+                            "    return originalSend.apply(this, args);\n" +
+                            "  };\n" +
+                            "  window.__multiApiHooked = true;\n" +
+                            "}\n"
+            );
+
+            js.executeScript(monitorScript.toString());
+            logger.info("Injected parallel monitoring for {} APIs", apiConfigs.size());
+
+            long startTime = System.currentTimeMillis();
+            long timeout = maxTimeoutSeconds * 1000L;
+            Map<String, Map<String, Object>> results = new HashMap<>();
+
+            while ((System.currentTimeMillis() - startTime) < timeout) {
+                try {
+                    Thread.sleep(500);
+
+                    for (int i = 0; i < apiConfigs.size(); i++) {
+                        String monitorKey = "api_" + i;
+
+                        if (!results.containsKey(monitorKey)) {
+                            Boolean found = (Boolean) js.executeScript(
+                                    String.format("return window.__apiMonitors['%s']?.found || false;", monitorKey)
+                            );
+
+                            if (Boolean.TRUE.equals(found)) {
+                                Map<String, Object> apiResult = new HashMap<>();
+                                apiResult.put("found", true);
+
+                                // Get status code
+                                Object statusObj = js.executeScript(
+                                        String.format("return window.__apiMonitors['%s']?.statusCode;", monitorKey)
+                                );
+                                Integer statusCode = statusObj != null ? ((Number) statusObj).intValue() : null;
+                                apiResult.put("statusCode", statusCode);
+
+                                results.put(monitorKey, apiResult);
+
+                                String apiPath = (String) apiConfigs.get(i).get("apiPath");
+                                logger.info("API '{}' detected with status {}", apiPath, statusCode);
+                            }
+                        }
+                    }
+
+                    if (results.size() == apiConfigs.size()) {
+                        logger.info("All {} APIs detected successfully", apiConfigs.size());
+                        break;
+                    }
+
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+
+            js.executeScript("delete window.__apiMonitors; delete window.__multiApiHooked;");
+
+            List<Integer> statusCodes = new ArrayList<>();
+            List<String> errors = new ArrayList<>();
+
+            for (int i = 0; i < apiConfigs.size(); i++) {
+                String monitorKey = "api_" + i;
+                String apiPath = (String) apiConfigs.get(i).get("apiPath");
+                @SuppressWarnings("unchecked")
+                Map<String, String> expectedParams = (Map<String, String>) apiConfigs.get(i).get("expectedParams");
+
+                if (!results.containsKey(monitorKey)) {
+                    String paramsStr = expectedParams != null ? expectedParams.toString() : "any";
+                    errors.add(String.format("API '%s' with params %s NOT detected", apiPath, paramsStr));
+                    statusCodes.add(null);
+                } else {
+                    Integer statusCode = (Integer) results.get(monitorKey).get("statusCode");
+                    statusCodes.add(statusCode);
+                }
+            }
+
+            if (!errors.isEmpty()) {
+                throw new AssertionError(
+                        String.format("Failed to detect %d API(s) in %d seconds:\n%s",
+                                errors.size(), maxTimeoutSeconds, String.join("\n", errors))
+                );
+            }
+
+            logger.info("All {} APIs verified successfully", apiConfigs.size());
+            logger.info("Status codes: {}", statusCodes);
+
+            return statusCodes;
+
+        }, apiConfigs, maxTimeoutSeconds);
+    }
+
+    private String buildParamCheckScriptInlineWithStatus(Map<String, String> expectedParams,
+                                                         String monitorKey,
+                                                         String statusVar) {
+        StringBuilder script = new StringBuilder();
+
+        if (expectedParams == null || expectedParams.isEmpty()) {
+            script.append(String.format(
+                    "window.__apiMonitors['%s'].found = true;" +
+                            "window.__apiMonitors['%s'].statusCode = %s;",
+                    monitorKey, monitorKey, statusVar
+            ));
+            return script.toString();
+        }
+
+        script.append("if (");
+
+        boolean first = true;
+        for (Map.Entry<String, String> entry : expectedParams.entrySet()) {
+            String paramName = entry.getKey();
+            String expectedValue = entry.getValue();
+
+            if (!first) script.append(" && ");
+            first = false;
+
+            if ("*".equals(expectedValue)) {
+                script.append("true");
+            } else if ("?".equals(expectedValue)) {
+                script.append(String.format(
+                        "(url.includes('%s=') && url.match(/%s=([^&]+)/)?.[1])",
+                        paramName, paramName
+                ));
+            } else {
+                script.append(String.format("url.includes('%s=%s')", paramName, expectedValue));
+            }
+        }
+
+        script.append(") {")
+                .append(String.format("window.__apiMonitors['%s'].found = true;", monitorKey))
+                .append(String.format("window.__apiMonitors['%s'].statusCode = %s;", monitorKey, statusVar))
+                .append("}");
+
+        return script.toString();
+    }
+
+    @NetatKeyword(
+            name = "sendKeysSensitive",
+            description = "Nhập text vào element và LUÔN ẩn giá trị trong log/report. " +
+                    "Sử dụng khi field không chứa keyword nhạy cảm nhưng cần bảo vệ data.",
+            category = "Web",
+            subCategory = "Sensitive",
+            parameters = {
+                    "uiObject: ObjectUI - Element cần nhập dữ liệu",
+                    "text: String - Giá trị cần nhập (sẽ được ẩn trong log)"
+            },
+            returnValue = "void",
+            example = "// Nhập OTP vào field custom\n" +
+                    "webKeyword.sendKeysSensitive(otpInputField, \"123456\");\n" +
+                    "// Log hiển thị: Entering sensitive text '1*****6' into element: otpInputField"
+    )
+    public void sendKeysSensitive(ObjectUI uiObject, String text) {
+        // Đăng ký giá trị vào cache để mask ở các log khác
+        protection.registerSensitiveValue(text);
+
+        String maskedText = protection.mask(text);
+        String stepName = String.format("Enter sensitive text '%s' into element: %s",
+                maskedText, uiObject != null ? uiObject.getName() : "null");
+
+        // Allure step với giá trị đã mask
+        startAllureStep(stepName);
+        try {
+            logger.info(stepName);
+            super.sendKeys(uiObject, text);
+            passAllureStep();
+        } catch (Exception e) {
+            failAllureStep(e);
+            throw e;
+        }
+    }
+
+    @NetatKeyword(
+            name = "getTextSensitive",
+            description = "Lấy text từ element và ẩn giá trị trong log/report. " +
+                    "Giá trị thật vẫn được trả về để test sử dụng.",
+            category = "Web",
+            subCategory = "Sensitive",
+            parameters = {
+                    "uiObject: ObjectUI - Element cần lấy text"
+            },
+            returnValue = "String - Giá trị thật của element (không mask)",
+            example = "// Lấy mã OTP hiển thị\n" +
+                    "String otp = webKeyword.getTextSensitive(otpDisplayField);\n" +
+                    "// Log hiển thị: Got sensitive text '1*****6' from element: otpDisplayField\n" +
+                    "// Biến otp chứa giá trị thật: \"123456\""
+    )
+    public String getTextSensitive(ObjectUI uiObject) {
+        String actualText = super.getText(uiObject);
+
+        // Đăng ký vào cache
+        protection.registerSensitiveValue(actualText);
+
+        String maskedText = protection.mask(actualText);
+        String stepName = String.format("Get sensitive text '%s' from element: %s",
+                maskedText, uiObject != null ? uiObject.getName() : "null");
+
+        startAllureStep(stepName);
+        logger.info(stepName);
+        passAllureStep();
+
+        return actualText; // Trả về giá trị thật
+    }
+
+    // ==================== VERIFY TEXT ====================
+
+    @NetatKeyword(
+            name = "verifyTextSensitiveHard",
+            description = "Verify text của element với giá trị mong đợi, ẩn cả hai trong log/report. " +
+                    "DỪNG test nếu không khớp.",
+            category = "Web",
+            subCategory = "Sensitive",
+            parameters = {
+                    "uiObject: ObjectUI - Element cần verify",
+                    "expectedText: String - Giá trị mong đợi (sẽ được ẩn)",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh"
+            },
+            returnValue = "void",
+            example = "// Verify OTP hiển thị đúng\n" +
+                    "webKeyword.verifyTextSensitiveHard(otpField, \"123456\");\n" +
+                    "// Log: Verify sensitive text of 'otpField' equals '1*****6'"
+    )
+    public void verifyTextSensitiveHard(ObjectUI uiObject, String expectedText, String... customMessage) {
+        protection.registerSensitiveValue(expectedText);
+
+        String maskedExpected = protection.mask(expectedText);
+        String stepName = String.format("Verify (Hard) sensitive text of '%s' equals '%s'",
+                uiObject != null ? uiObject.getName() : "null", maskedExpected);
+
+        startAllureStep(stepName);
+        try {
+            logger.info(stepName);
+            performTextAssertion(uiObject, expectedText, false, customMessage);
+            passAllureStep();
+        } catch (AssertionError e) {
+            // Mask error message trước khi throw
+            String maskedError = protection.maskAllKnownValues(e.getMessage());
+            failAllureStep(new AssertionError(maskedError, e.getCause()));
+            throw new AssertionError(maskedError, e.getCause());
+        }
+    }
+
+    @NetatKeyword(
+            name = "verifyTextSensitiveSoft",
+            description = "Verify text của element với giá trị mong đợi, ẩn cả hai trong log/report. " +
+                    "Ghi nhận lỗi và TIẾP TỤC test nếu không khớp.",
+            category = "Web",
+            subCategory = "Sensitive",
+            parameters = {
+                    "uiObject: ObjectUI - Element cần verify",
+                    "expectedText: String - Giá trị mong đợi (sẽ được ẩn)",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh"
+            },
+            returnValue = "void",
+            example = "// Verify nhiều field nhạy cảm\n" +
+                    "webKeyword.verifyTextSensitiveSoft(field1, \"secret1\");\n" +
+                    "webKeyword.verifyTextSensitiveSoft(field2, \"secret2\");\n" +
+                    "// Test tiếp tục ngay cả khi verify fail"
+    )
+    public void verifyTextSensitiveSoft(ObjectUI uiObject, String expectedText, String... customMessage) {
+        protection.registerSensitiveValue(expectedText);
+
+        String maskedExpected = protection.mask(expectedText);
+        String stepName = String.format("Verify (Soft) sensitive text of '%s' equals '%s'",
+                uiObject != null ? uiObject.getName() : "null", maskedExpected);
+
+        startAllureStep(stepName);
+        try {
+            logger.info(stepName);
+            performTextAssertion(uiObject, expectedText, true, customMessage);
+            passAllureStep();
+        } catch (Exception e) {
+            failAllureStep(e);
+        }
+    }
+
+    // ==================== VERIFY TEXT CONTAINS ====================
+
+    @NetatKeyword(
+            name = "verifyTextContainsSensitiveHard",
+            description = "Verify text của element có chứa chuỗi con mong đợi, ẩn giá trị trong log/report. " +
+                    "DỪNG test nếu không chứa.",
+            category = "Web",
+            subCategory = "Sensitive",
+            parameters = {
+                    "uiObject: ObjectUI - Element cần verify",
+                    "partialText: String - Chuỗi con mong đợi (sẽ được ẩn)",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh"
+            },
+            returnValue = "void"
+    )
+    public void verifyTextContainsSensitiveHard(ObjectUI uiObject, String partialText, String... customMessage) {
+        protection.registerSensitiveValue(partialText);
+
+        String maskedPartial = protection.mask(partialText);
+        String stepName = String.format("Verify (Hard) sensitive text of '%s' contains '%s'",
+                uiObject != null ? uiObject.getName() : "null", maskedPartial);
+
+        startAllureStep(stepName);
+        try {
+            logger.info(stepName);
+            performTextContainsAssertion(uiObject, partialText, false, customMessage);
+            passAllureStep();
+        } catch (AssertionError e) {
+            String maskedError = protection.maskAllKnownValues(e.getMessage());
+            failAllureStep(new AssertionError(maskedError, e.getCause()));
+            throw new AssertionError(maskedError, e.getCause());
+        }
+    }
+
+    @NetatKeyword(
+            name = "verifyTextContainsSensitiveSoft",
+            description = "Verify text của element có chứa chuỗi con mong đợi, ẩn giá trị trong log/report. " +
+                    "Ghi nhận lỗi và TIẾP TỤC test nếu không chứa.",
+            category = "Web",
+            subCategory = "Sensitive",
+            parameters = {
+                    "uiObject: ObjectUI - Element cần verify",
+                    "partialText: String - Chuỗi con mong đợi (sẽ được ẩn)",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh"
+            },
+            returnValue = "void"
+    )
+    public void verifyTextContainsSensitiveSoft(ObjectUI uiObject, String partialText, String... customMessage) {
+        protection.registerSensitiveValue(partialText);
+
+        String maskedPartial = protection.mask(partialText);
+        String stepName = String.format("Verify (Soft) sensitive text of '%s' contains '%s'",
+                uiObject != null ? uiObject.getName() : "null", maskedPartial);
+
+        startAllureStep(stepName);
+        try {
+            logger.info(stepName);
+            performTextContainsAssertion(uiObject, partialText, true, customMessage);
+            passAllureStep();
+        } catch (Exception e) {
+            failAllureStep(e);
+        }
+    }
+
+    // ==================== VERIFY ATTRIBUTE ====================
+
+    @NetatKeyword(
+            name = "verifyAttributeSensitiveHard",
+            description = "Verify giá trị attribute của element, ẩn giá trị trong log/report. " +
+                    "DỪNG test nếu không khớp.",
+            category = "Web",
+            subCategory = "Sensitive",
+            parameters = {
+                    "uiObject: ObjectUI - Element cần verify",
+                    "attributeName: String - Tên attribute",
+                    "expectedValue: String - Giá trị mong đợi (sẽ được ẩn)",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh"
+            },
+            returnValue = "void"
+    )
+    public void verifyAttributeSensitiveHard(ObjectUI uiObject, String attributeName,
+                                             String expectedValue, String... customMessage) {
+        protection.registerSensitiveValue(expectedValue);
+
+        String maskedExpected = protection.mask(expectedValue);
+        String stepName = String.format("Verify (Hard) sensitive attribute '%s' of '%s' equals '%s'",
+                attributeName, uiObject != null ? uiObject.getName() : "null", maskedExpected);
+
+        startAllureStep(stepName);
+        try {
+            logger.info(stepName);
+            performAttributeAssertion(uiObject, attributeName, expectedValue, false, customMessage);
+            passAllureStep();
+        } catch (AssertionError e) {
+            String maskedError = protection.maskAllKnownValues(e.getMessage());
+            failAllureStep(new AssertionError(maskedError, e.getCause()));
+            throw new AssertionError(maskedError, e.getCause());
+        }
+    }
+
+    @NetatKeyword(
+            name = "verifyAttributeSensitiveSoft",
+            description = "Verify giá trị attribute của element, ẩn giá trị trong log/report. " +
+                    "Ghi nhận lỗi và TIẾP TỤC test nếu không khớp.",
+            category = "Web",
+            subCategory = "Sensitive",
+            parameters = {
+                    "uiObject: ObjectUI - Element cần verify",
+                    "attributeName: String - Tên attribute",
+                    "expectedValue: String - Giá trị mong đợi (sẽ được ẩn)",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh"
+            },
+            returnValue = "void"
+    )
+    public void verifyAttributeSensitiveSoft(ObjectUI uiObject, String attributeName,
+                                             String expectedValue, String... customMessage) {
+        protection.registerSensitiveValue(expectedValue);
+
+        String maskedExpected = protection.mask(expectedValue);
+        String stepName = String.format("Verify (Soft) sensitive attribute '%s' of '%s' equals '%s'",
+                attributeName, uiObject != null ? uiObject.getName() : "null", maskedExpected);
+
+        startAllureStep(stepName);
+        try {
+            logger.info(stepName);
+            performAttributeAssertion(uiObject, attributeName, expectedValue, true, customMessage);
+            passAllureStep();
+        } catch (Exception e) {
+            failAllureStep(e);
+        }
+    }
+
+    // ==================== ALLURE HELPER ====================
+
+    private String currentStepUuid;
+
+    private void startAllureStep(String stepName) {
+        currentStepUuid = UUID.randomUUID().toString();
+        Allure.getLifecycle().startStep(currentStepUuid, new StepResult()
+                .setName(stepName)
+                .setParameters(Collections.emptyList())); // Không hiện parameters
+    }
+
+    private void passAllureStep() {
+        if (currentStepUuid != null) {
+            Allure.getLifecycle().updateStep(currentStepUuid, step -> step.setStatus(Status.PASSED));
+            Allure.getLifecycle().stopStep(currentStepUuid);
+            currentStepUuid = null;
+        }
+    }
+
+    private void failAllureStep(Throwable error) {
+        if (currentStepUuid != null) {
+            Allure.getLifecycle().updateStep(currentStepUuid, step -> {
+                step.setStatus(Status.FAILED);
+                // Mask error message trong Allure
+                String maskedMessage = protection.maskAllKnownValues(error.getMessage());
+                step.setStatusDetails(new io.qameta.allure.model.StatusDetails()
+                        .setMessage(maskedMessage));
+            });
+            Allure.getLifecycle().stopStep(currentStepUuid);
+            currentStepUuid = null;
+        }
+    }
 }
