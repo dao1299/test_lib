@@ -8,12 +8,35 @@ import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.safari.SafariOptions;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+
+/**
+ * Factory for creating Capabilities for different platforms.
+ * Improvements:
+ * - Added default mobile capabilities (noReset, autoGrantPermissions)
+ * - App path validation
+ * - Support override capabilities via Map
+ */
 public class CapabilityFactory {
+
+    private static final Logger log = LoggerFactory.getLogger(CapabilityFactory.class);
+
+    // Default mobile capabilities - applied to all mobile sessions
+    private static final Map<String, Object> DEFAULT_MOBILE_CAPABILITIES = new HashMap<>();
+
+    static {
+        DEFAULT_MOBILE_CAPABILITIES.put("appium:noReset", true);
+        DEFAULT_MOBILE_CAPABILITIES.put("appium:autoGrantPermissions", true);
+        DEFAULT_MOBILE_CAPABILITIES.put("appium:newCommandTimeout", 300);
+        DEFAULT_MOBILE_CAPABILITIES.put("df:recordVideo", true);
+        DEFAULT_MOBILE_CAPABILITIES.put("df:liveVideo", true);
+    }
 
     public static MutableCapabilities getCapabilities(String platform) {
         Properties properties = ConfigReader.getProperties();
@@ -37,6 +60,12 @@ public class CapabilityFactory {
 
     private static MutableCapabilities buildCapabilities(MutableCapabilities capabilities, String platform, Properties properties) {
         Map<String, Object> firefoxPrefs = new HashMap<>();
+        Map<String, Object> chromePrefs = new HashMap<>();
+        Map<String, Object> edgePrefs = new HashMap<>();
+
+        if (isMobilePlatform(platform)) {
+            applyDefaultMobileCapabilities(capabilities);
+        }
 
         String optionPrefix = platform + ".option.";
         for (String key : properties.stringPropertyNames()) {
@@ -49,6 +78,9 @@ public class CapabilityFactory {
                         ((ChromeOptions) capabilities).setBinary(value);
                     } else if (optionType.equalsIgnoreCase("args")) {
                         ((ChromeOptions) capabilities).addArguments(value.split(";"));
+                    } else if (optionType.startsWith("prefs.")) {
+                        String prefKey = optionType.substring("prefs.".length());
+                        chromePrefs.put(prefKey, convertPrefValue(value));
                     }
                 } else if (capabilities instanceof FirefoxOptions) {
                     if (optionType.equalsIgnoreCase("binary")) {
@@ -64,17 +96,38 @@ public class CapabilityFactory {
                         ((EdgeOptions) capabilities).setBinary(value);
                     } else if (optionType.equalsIgnoreCase("args")) {
                         ((EdgeOptions) capabilities).addArguments(value.split(";"));
+                    } else if (optionType.startsWith("prefs.")) {
+                        String prefKey = optionType.substring("prefs.".length());
+                        edgePrefs.put(prefKey, convertPrefValue(value));
                     }
                 }
             }
         }
 
+        // Apply Chrome prefs
+        if (capabilities instanceof ChromeOptions && !chromePrefs.isEmpty()) {
+            ((ChromeOptions) capabilities).setExperimentalOption("prefs", chromePrefs);
+        }
+
+        // Apply Firefox prefs
         if (capabilities instanceof FirefoxOptions && !firefoxPrefs.isEmpty()) {
             FirefoxProfile profile = new FirefoxProfile();
             for (Map.Entry<String, Object> entry : firefoxPrefs.entrySet()) {
-                profile.setPreference(entry.getKey(), entry.getValue());
+                Object val = entry.getValue();
+                if (val instanceof Boolean) {
+                    profile.setPreference(entry.getKey(), (Boolean) val);
+                } else if (val instanceof Integer) {
+                    profile.setPreference(entry.getKey(), (Integer) val);
+                } else {
+                    profile.setPreference(entry.getKey(), String.valueOf(val));
+                }
             }
             ((FirefoxOptions) capabilities).setProfile(profile);
+        }
+
+        // Apply Edge prefs
+        if (capabilities instanceof EdgeOptions && !edgePrefs.isEmpty()) {
+            ((EdgeOptions) capabilities).setExperimentalOption("prefs", edgePrefs);
         }
 
         boolean hasAppPackage = false;
@@ -98,12 +151,47 @@ public class CapabilityFactory {
         String appName = ConfigReader.getProperty("app.name");
         if (appName != null && !appName.isEmpty() && !hasAppPackage) {
             String appPath = System.getProperty("user.dir") + "/src/test/resources/apps/" + appName;
+
+            // Validate app path
+            validateAppPath(appPath, appName);
+
             capabilities.setCapability("appium:app", appPath);
         }
 
-        System.out.println("CAP: "+capabilities);
+        System.out.println("CAP: " + capabilities);
 
         return capabilities;
+    }
+
+    /**
+     * Apply default capabilities for mobile
+     */
+    private static void applyDefaultMobileCapabilities(MutableCapabilities capabilities) {
+        for (Map.Entry<String, Object> entry : DEFAULT_MOBILE_CAPABILITIES.entrySet()) {
+            // Only set if not already defined
+            if (capabilities.getCapability(entry.getKey()) == null) {
+                capabilities.setCapability(entry.getKey(), entry.getValue());
+            }
+        }
+    }
+
+    /**
+     * Validate that app path exists
+     */
+    private static void validateAppPath(String appPath, String appName) {
+        File appFile = new File(appPath);
+        if (!appFile.exists()) {
+            log.warn("WARNING: Application file not found: {}", appPath);
+            log.warn("  Please check:");
+            log.warn("  1. Does file '{}' exist in src/test/resources/apps/ directory?", appName);
+            log.warn("  2. Is the file name in config 'app.name' correct?");
+            // Don't throw exception here for backward compatibility
+            // Appium will report more detailed error if file doesn't exist
+        }
+    }
+
+    private static boolean isMobilePlatform(String platform) {
+        return "android".equalsIgnoreCase(platform) || "ios".equalsIgnoreCase(platform);
     }
 
     /**
@@ -123,6 +211,9 @@ public class CapabilityFactory {
         }
     }
 
+    /**
+     * Create capabilities with override from Map
+     */
     public static MutableCapabilities getCapabilities(String platform, Map<String, Object> overrideCapabilities) {
         MutableCapabilities capabilities = getCapabilities(platform);
 
@@ -138,5 +229,82 @@ public class CapabilityFactory {
             }
         }
         return capabilities;
+    }
+
+    /**
+     * Create mobile capabilities for startSession methods.
+     * This method ensures consistent capabilities across different session initialization methods.
+     *
+     * @param platformName Android or iOS
+     * @param udid Device UDID
+     * @param automationName UiAutomator2 or XCUITest
+     * @return Configured MutableCapabilities
+     */
+    public static MutableCapabilities buildMobileCapabilities(
+            String platformName,
+            String udid,
+            String automationName) {
+
+        MutableCapabilities caps = new MutableCapabilities();
+
+        // Platform
+        caps.setCapability("platformName", platformName);
+
+        // Device
+        if (udid != null && !udid.isBlank()) {
+            caps.setCapability("appium:udid", udid);
+        }
+
+        // Automation
+        if (automationName != null && !automationName.isBlank()) {
+            caps.setCapability("appium:automationName", automationName);
+        } else {
+            // Default automation name based on platform
+            if ("android".equalsIgnoreCase(platformName)) {
+                caps.setCapability("appium:automationName", "UiAutomator2");
+            } else if ("ios".equalsIgnoreCase(platformName)) {
+                caps.setCapability("appium:automationName", "XCUITest");
+            }
+        }
+
+        // Apply default mobile capabilities
+        applyDefaultMobileCapabilities(caps);
+
+        return caps;
+    }
+
+    /**
+     * Add app path to capabilities
+     */
+    public static void setAppPath(MutableCapabilities caps, String appPath) {
+        if (appPath != null && !appPath.isBlank()) {
+            // Validate app path
+            File appFile = new File(appPath);
+            if (!appFile.exists()) {
+                log.warn("WARNING: Application file not found: {}", appPath);
+            }
+            caps.setCapability("appium:app", appPath);
+        }
+    }
+
+    /**
+     * Add app package and activity to capabilities (Android)
+     */
+    public static void setAppPackage(MutableCapabilities caps, String appPackage, String appActivity) {
+        if (appPackage != null && !appPackage.isBlank()) {
+            caps.setCapability("appium:appPackage", appPackage);
+        }
+        if (appActivity != null && !appActivity.isBlank()) {
+            caps.setCapability("appium:appActivity", appActivity);
+        }
+    }
+
+    /**
+     * Add bundle ID to capabilities (iOS)
+     */
+    public static void setBundleId(MutableCapabilities caps, String bundleId) {
+        if (bundleId != null && !bundleId.isBlank()) {
+            caps.setCapability("appium:bundleId", bundleId);
+        }
     }
 }

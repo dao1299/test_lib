@@ -1,5 +1,6 @@
 package com.vtnet.netat.driver;
 
+
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.slf4j.Logger;
@@ -13,6 +14,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
 
+/**
+ * Manages multiple WebDriver sessions with thread-safety.
+ * Improvements:
+ * - Session health check before operations
+ * - Automatic cleanup of dead sessions
+ * - Better error messages
+ */
 public final class SessionManager {
 
     private static final Logger log = LoggerFactory.getLogger(SessionManager.class);
@@ -60,12 +68,70 @@ public final class SessionManager {
         if (!currentThreadMap.containsKey(sessionName)) {
             log.error("[Thread-{}] Session '{}' not found. Available: {}",
                     Thread.currentThread().getId(), sessionName, currentThreadMap.keySet());
-            throw new IllegalArgumentException("Không tìm thấy phiên làm việc: " + sessionName);
+            throw new IllegalArgumentException("Session not found: " + sessionName);
         }
 
         currentSessionName.set(sessionName);
         log.debug("[Thread-{}] Switched to session '{}'",
                 Thread.currentThread().getId(), sessionName);
+    }
+
+    // ==================== SESSION HEALTH CHECK ====================
+
+    /**
+     * Check if a session is still alive (has valid session ID)
+     * @param sessionName Name of the session to check
+     * @return true if session is alive, false otherwise
+     */
+    public boolean isSessionAlive(String sessionName) {
+        WebDriver driver = sessionMap.get().get(sessionName);
+        if (driver == null) {
+            return false;
+        }
+
+        if (driver instanceof RemoteWebDriver) {
+            RemoteWebDriver remoteDriver = (RemoteWebDriver) driver;
+            return remoteDriver.getSessionId() != null;
+        }
+
+        // For non-remote drivers, assume alive if not null
+        return true;
+    }
+
+    /**
+     * Remove a dead/terminated session from the manager
+     * @param sessionName Name of the session to remove
+     */
+    public void removeDeadSession(String sessionName) {
+        Map<String, WebDriver> currentThreadMap = sessionMap.get();
+        WebDriver removed = currentThreadMap.remove(sessionName);
+
+        if (removed != null) {
+            log.info("[Thread-{}] Removed dead session '{}' from manager",
+                    Thread.currentThread().getId(), sessionName);
+
+            // If this was the current session, clear it
+            String current = currentSessionName.get();
+            if (sessionName.equals(current)) {
+                currentSessionName.remove();
+            }
+        }
+    }
+
+    /**
+     * Get all session names for current thread
+     * @return List of session names
+     */
+    public List<String> getSessionNames() {
+        return new ArrayList<>(sessionMap.get().keySet());
+    }
+
+    /**
+     * Get all sessions for current thread (used by SessionKeepAlive)
+     * @return Map of session name to WebDriver
+     */
+    public Map<String, WebDriver> getAllSessions() {
+        return new ConcurrentHashMap<>(sessionMap.get());
     }
 
     // ==================== GET SESSION ====================
@@ -314,7 +380,7 @@ public final class SessionManager {
         Map<String, WebDriver> currentThreadMap = sessionMap.get();
 
         if (sessionName != null && !currentThreadMap.containsKey(sessionName)) {
-            throw new IllegalStateException("Session chưa tồn tại: " + sessionName);
+            throw new IllegalStateException("Session does not exist: " + sessionName);
         }
         currentSessionName.set(sessionName);
     }

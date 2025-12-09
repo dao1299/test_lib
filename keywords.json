@@ -1,4 +1,68 @@
 [ {
+  "name" : "connectDatabase",
+  "description" : "Tạo kết nối database động mà không cần file cấu hình profile - hữu ích cho ad-hoc testing và quick connections",
+  "category" : "Database",
+  "subCategory" : "Connection Management",
+  "example" : "DatabaseKeyword db = new DatabaseKeyword();\n\n// Kết nối MariaDB local\ndb.connectDatabase(\n    \"dbLocal\",\n    \"mariadb\",\n    \"localhost\",\n    3306,\n    \"quanlysinhvien\",\n    \"root\",\n    \"123qwe!@#\"\n);\nSystem.out.println(\"✓ Connected to MariaDB\");\n\n// Sau đó có thể dùng profileName 'dbLocal' cho các operations\nList<Map<String, Object>> students = db.executeQuery(\n    \"dbLocal\",\n    \"SELECT * FROM sinhvien\"\n);\n\n// Kết nối PostgreSQL\ndb.connectDatabase(\n    \"postgres-dev\",\n    \"postgresql\",\n    \"192.168.1.100\",\n    5432,\n    \"myapp\",\n    \"admin\",\n    \"secretpass\"\n);\n\n// Kết nối MySQL production\ndb.connectDatabase(\n    \"mysql-prod\",\n    \"mysql\",\n    \"prod-db.example.com\",\n    3306,\n    \"production_db\",\n    \"prod_user\",\n    \"prod_password\"\n);\n\n// Kết nối H2 in-memory cho testing\ndb.connectDatabase(\n    \"h2-test\",\n    \"h2\",\n    \"mem\",\n    0,\n    \"testdb\",\n    \"sa\",\n    \"\"\n);\n\n// Verify connection\nif (db.checkConnection(\"dbLocal\")) {\n    System.out.println(\"✓ Connection successful\");\n    \n    // Get connection pool stats\n    Map<String, Object> stats = db.getConnectionPoolStats(\"dbLocal\");\n    System.out.println(\"Pool size: \" + stats.get(\"poolSize\"));\n}",
+  "returnValue" : "void - Không trả về giá trị (throw DatabaseException nếu không thể kết nối)",
+  "note" : "- Profile được tạo động sẽ tồn tại trong suốt test session\n- Sử dụng HikariCP với default configuration (pool size=10, timeout=30s)\n- Thích hợp cho ad-hoc testing, không cần tạo file config\n- Có thể override profile đã tồn tại bằng cách gọi lại với cùng profileName\n- Nên dùng profile config file cho production/long-term tests\n- Password được lưu trong memory (không mã hóa), cẩn thận với sensitive data\n- Supported database types: mysql, mariadb, postgresql, oracle, sqlserver, h2, sqlite",
+  "className" : "com.vtnet.netat.db.keywords.DatabaseKeyword",
+  "methodName" : "connectDatabase",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "profileName",
+    "description" : "Tên profile để lưu connection (dùng cho các operations sau)"
+  }, {
+    "type" : "String",
+    "name" : "databaseType",
+    "description" : "Loại database: mysql, mariadb, postgresql, oracle, sqlserver, h2"
+  }, {
+    "type" : "String",
+    "name" : "host",
+    "description" : "Database host (e.g., localhost, 192.168.1.100)"
+  }, {
+    "type" : "int",
+    "name" : "port",
+    "description" : "Database port (e.g., 3306 for MySQL/MariaDB, 5432 for PostgreSQL)"
+  }, {
+    "type" : "String",
+    "name" : "database",
+    "description" : "Tên database/schema"
+  }, {
+    "type" : "String",
+    "name" : "username",
+    "description" : "Database username"
+  }, {
+    "type" : "String",
+    "name" : "password",
+    "description" : "Database password"
+  } ]
+}, {
+  "name" : "dragAndDropWithPause",
+  "description" : "Thực hiện drag & drop với pause giữa các bước. Hiệu quả hơn cho các trang web phức tạp.",
+  "category" : "Web",
+  "subCategory" : "Interaction",
+  "example" : "// Drag & drop với pause 500ms giữa các bước\nwebKeyword.dragAndDropWithPause(taskItem, dropZone, 500);",
+  "returnValue" : "void",
+  "note" : "Phương pháp này chia nhỏ thao tác: clickAndHold -> pause -> moveToElement -> pause -> release. Hiệu quả với các framework như React, Angular.",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "dragAndDropWithPause",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "sourceObject",
+    "description" : "element nguồn"
+  }, {
+    "type" : "ObjectUI",
+    "name" : "targetObject",
+    "description" : "element đích"
+  }, {
+    "type" : "int",
+    "name" : "pauseMillis",
+    "description" : "Thời gian pause giữa các bước (milliseconds)"
+  } ]
+}, {
   "name" : "assertAttributeContains",
   "description" : "Khẳng định rằng giá trị của một thuộc tính có chứa một chuỗi con. Khác với assertAttributeEquals, phương thức này chỉ kiểm tra sự xuất hiện của chuỗi con trong giá trị thuộc tính, không yêu cầu khớp hoàn toàn. Hữu ích khi giá trị thuộc tính có thể thay đổi nhưng vẫn chứa các phần quan trọng cần kiểm tra.",
   "category" : "Mobile",
@@ -239,6 +303,30 @@
     "description" : "Văn bản cần nhập vào phần tử"
   } ]
 }, {
+  "name" : "verifyTextContainsSensitiveSoft",
+  "description" : "Verify text của element có chứa chuỗi con mong đợi, ẩn giá trị trong log/report. Ghi nhận lỗi và TIẾP TỤC test nếu không chứa.",
+  "category" : "Web",
+  "subCategory" : "Sensitive",
+  "example" : "",
+  "returnValue" : "void",
+  "note" : "",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "verifyTextContainsSensitiveSoft",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "Element cần verify"
+  }, {
+    "type" : "String",
+    "name" : "partialText",
+    "description" : "Chuỗi con mong đợi (sẽ được ẩn)"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh"
+  } ]
+}, {
   "name" : "uncheck",
   "description" : "Verify và đảm bảo một checkbox đang ở trạng thái không được chọn. Nếu element đang được chọn, keyword sẽ thực hiện click để bỏ chọn nó.",
   "category" : "Web",
@@ -359,6 +447,34 @@
     "description" : "Đường dẫn tuyệt đối đến file ứng dụng."
   } ]
 }, {
+  "name" : "verifyAttributeSensitiveSoft",
+  "description" : "Verify giá trị attribute của element, ẩn giá trị trong log/report. Ghi nhận lỗi và TIẾP TỤC test nếu không khớp.",
+  "category" : "Web",
+  "subCategory" : "Sensitive",
+  "example" : "",
+  "returnValue" : "void",
+  "note" : "",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "verifyAttributeSensitiveSoft",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "Element cần verify"
+  }, {
+    "type" : "String",
+    "name" : "attributeName",
+    "description" : "Tên attribute"
+  }, {
+    "type" : "String",
+    "name" : "expectedValue",
+    "description" : "Giá trị mong đợi (sẽ được ẩn)"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh"
+  } ]
+}, {
   "name" : "commitTransaction",
   "description" : "Commit transaction hiện tại, lưu tất cả thay đổi vào database",
   "category" : "Database",
@@ -427,6 +543,30 @@
     "description" : "Đường dẫn file"
   } ]
 }, {
+  "name" : "verifyTextSensitiveHard",
+  "description" : "Verify text của element với giá trị mong đợi, ẩn cả hai trong log/report. DỪNG test nếu không khớp.",
+  "category" : "Web",
+  "subCategory" : "Sensitive",
+  "example" : "// Verify OTP hiển thị đúng\nwebKeyword.verifyTextSensitiveHard(otpField, \"123456\");\n// Log: Verify sensitive text of 'otpField' equals '1*****6'",
+  "returnValue" : "void",
+  "note" : "",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "verifyTextSensitiveHard",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "Element cần verify"
+  }, {
+    "type" : "String",
+    "name" : "expectedText",
+    "description" : "Giá trị mong đợi (sẽ được ẩn)"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh"
+  } ]
+}, {
   "name" : "installApp",
   "description" : "Cài đặt ứng dụng từ một đường dẫn file .apk (Android) hoặc .ipa (iOS) vào thiết bị đang kết nối. Đường dẫn phải trỏ đến một file hợp lệ và có thể truy cập từ máy thực thi test. Trên iOS, file .ipa phải được ký đúng cách để có thể cài đặt. Trên Android, thiết bị phải cho phép cài đặt từ nguồn không xác định.",
   "category" : "Mobile",
@@ -459,6 +599,18 @@
     "description" : "Đối tượng giao diện đại diện cho thẻ iframe cần chuyển vào"
   } ]
 }, {
+  "name" : "pressBack",
+  "description" : "Mô phỏng hành động nhấn nút 'Back' vật lý của thiết bị. Hữu ích để điều hướng ngược lại màn hình trước đó, đóng dialog, hoặc hủy thao tác hiện tại. Trên iOS, hành động này tương đương với việc nhấn nút quay lại ở góc trên bên trái của nhiều ứng dụng.",
+  "category" : "Mobile",
+  "subCategory" : "Interaction",
+  "example" : "// Quay lại màn hình trước\nmobileKeyword.pressBack();\n\n// Đóng dialog\nmobileKeyword.pressBack();",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. Có thể throw WebDriverException nếu không thể thực hiện hành động Back.",
+  "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
+  "methodName" : "pressBack",
+  "returnType" : "void",
+  "parameters" : [ ]
+}, {
   "name" : "executeQuery",
   "description" : "Thực thi câu lệnh SELECT và trả về kết quả dưới dạng List các Map (mỗi Map đại diện cho 1 row)",
   "category" : "Database",
@@ -482,18 +634,6 @@
     "name" : "params",
     "description" : "Các tham số để thay thế cho ? trong query (tùy chọn)"
   } ]
-}, {
-  "name" : "pressBack",
-  "description" : "Mô phỏng hành động nhấn nút 'Back' vật lý của thiết bị. Hữu ích để điều hướng ngược lại màn hình trước đó, đóng dialog, hoặc hủy thao tác hiện tại. Trên iOS, hành động này tương đương với việc nhấn nút quay lại ở góc trên bên trái của nhiều ứng dụng.",
-  "category" : "Mobile",
-  "subCategory" : "Interaction",
-  "example" : "// Quay lại màn hình trước\nmobileKeyword.pressBack();\n\n// Đóng dialog\nmobileKeyword.pressBack();",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. Có thể throw WebDriverException nếu không thể thực hiện hành động Back.",
-  "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
-  "methodName" : "pressBack",
-  "returnType" : "void",
-  "parameters" : [ ]
 }, {
   "name" : "assertFalse",
   "description" : "Khẳng định rằng một điều kiện có giá trị false. Nếu điều kiện là true, test case sẽ dừng lại và báo lỗi.",
@@ -779,6 +919,26 @@
     "description" : "Thời gian chờ tối đa tính bằng giây"
   } ]
 }, {
+  "name" : "verifyTitleHard",
+  "description" : "Verify tiêu đề (title) của trang web hiện tại. Nếu tiêu đề không khớp chính xác, kịch bản sẽ DỪNG LẠI.",
+  "category" : "Web",
+  "subCategory" : "Assertion",
+  "example" : "// Verify tiêu đề trang chủ\nwebKeyword.navigateToUrl(\"https://example.com\");\nwebKeyword.waitForPageLoaded(10);\nwebKeyword.verifyTitleHard(\"Trang chủ - Website ABC\");\n\n// Verify tiêu đề sau khi đăng nhập với custom message\nwebKeyword.sendKeys(usernameInputObject, \"testuser\");\nwebKeyword.sendKeys(passwordInputObject, \"password123\");\nwebKeyword.click(loginButtonObject);\nwebKeyword.waitForPageLoaded(15);\nwebKeyword.verifyTitleHard(\"Dashboard - Website ABC\", \"Tiêu đề trang dashboard không chính xác\");\n\n// Verify tiêu đề trang sản phẩm\nwebKeyword.verifyTitleHard(\"Chi tiết sản phẩm - iPhone 15\", \"Tiêu đề trang sản phẩm bị sai\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, và trang web đã hoàn thành quá trình tải. Có thể throw AssertionError nếu tiêu đề trang không khớp với tiêu đề mong đợi, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "verifyTitleHard",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "expectedTitle",
+    "description" : "Tiêu đề trang mong đợi"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
   "name" : "verifyColumnValue",
   "description" : "Verify giá trị của một column cụ thể trong first row của query result",
   "category" : "Database",
@@ -811,26 +971,6 @@
     "description" : "Giá trị mong đợi của column"
   } ]
 }, {
-  "name" : "verifyTitleHard",
-  "description" : "Verify tiêu đề (title) của trang web hiện tại. Nếu tiêu đề không khớp chính xác, kịch bản sẽ DỪNG LẠI.",
-  "category" : "Web",
-  "subCategory" : "Assertion",
-  "example" : "// Verify tiêu đề trang chủ\nwebKeyword.navigateToUrl(\"https://example.com\");\nwebKeyword.waitForPageLoaded(10);\nwebKeyword.verifyTitleHard(\"Trang chủ - Website ABC\");\n\n// Verify tiêu đề sau khi đăng nhập với custom message\nwebKeyword.sendKeys(usernameInputObject, \"testuser\");\nwebKeyword.sendKeys(passwordInputObject, \"password123\");\nwebKeyword.click(loginButtonObject);\nwebKeyword.waitForPageLoaded(15);\nwebKeyword.verifyTitleHard(\"Dashboard - Website ABC\", \"Tiêu đề trang dashboard không chính xác\");\n\n// Verify tiêu đề trang sản phẩm\nwebKeyword.verifyTitleHard(\"Chi tiết sản phẩm - iPhone 15\", \"Tiêu đề trang sản phẩm bị sai\");",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, và trang web đã hoàn thành quá trình tải. Có thể throw AssertionError nếu tiêu đề trang không khớp với tiêu đề mong đợi, hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
-  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
-  "methodName" : "verifyTitleHard",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "String",
-    "name" : "expectedTitle",
-    "description" : "Tiêu đề trang mong đợi"
-  }, {
-    "type" : "String[]",
-    "name" : "customMessage",
-    "description" : "Thông báo tùy chỉnh khi assertion thất bại"
-  } ]
-}, {
   "name" : "assertElementNotPresent",
   "description" : "Khẳng định rằng một phần tử KHÔNG tồn tại trong cấu trúc màn hình sau một khoảng thời gian chờ. Hữu ích để xác minh rằng một phần tử đã bị xóa hoặc chưa được tạo. Phương thức sẽ đợi trong khoảng thời gian chỉ định và kiểm tra xem phần tử có xuất hiện không, nếu phần tử xuất hiện trong thời gian đó, một AssertionError sẽ được ném ra.",
   "category" : "Mobile",
@@ -853,6 +993,34 @@
     "type" : "String[]",
     "name" : "customMessage",
     "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
+  "name" : "dragAndDropWithOffset",
+  "description" : "Kéo element từ vị trí hiện tại sang vị trí mới với offset cụ thể. Khác với dragAndDropByOffset, method này kéo element đến vị trí tuyệt đối của target element cộng với offset.",
+  "category" : "Web",
+  "subCategory" : "Interaction",
+  "example" : "// Kéo vào vị trí 10px bên phải và 5px phía dưới target\nwebKeyword.dragAndDropWithOffset(sourceItem, targetZone, 10, 5);",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "dragAndDropWithOffset",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "sourceObject",
+    "description" : "element nguồn"
+  }, {
+    "type" : "ObjectUI",
+    "name" : "targetObject",
+    "description" : "element đích (vị trí tham chiếu)"
+  }, {
+    "type" : "int",
+    "name" : "xOffset",
+    "description" : "Độ lệch X so với target (pixels)"
+  }, {
+    "type" : "int",
+    "name" : "yOffset",
+    "description" : "Độ lệch Y so với target (pixels)"
   } ]
 }, {
   "name" : "getText",
@@ -1087,6 +1255,18 @@
     "description" : ""
   } ]
 }, {
+  "name" : "startBrowser",
+  "description" : "Khởi tạo và mở một phiên trình duyệt WEB mới. Nếu không có tham số, sẽ sử dụng trình duyệt mặc định trong file cấu hình.",
+  "category" : "Session",
+  "subCategory" : "Lifecycle",
+  "example" : "driverKeyword.startBrowser();",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.core.keywords.DriverKeyword",
+  "methodName" : "startBrowser",
+  "returnType" : "void",
+  "parameters" : [ ]
+}, {
   "name" : "verifyElementVisibleSoft",
   "description" : "Verify một element có đang hiển thị trên giao diện hay không. Nếu Verify thất bại, kịch bản sẽ ghi nhận lỗi nhưng vẫn TIẾP TỤC chạy các bước tiếp theo.",
   "category" : "Web",
@@ -1110,18 +1290,6 @@
     "name" : "customMessage",
     "description" : "Thông báo tùy chỉnh khi assertion thất bại"
   } ]
-}, {
-  "name" : "startBrowser",
-  "description" : "Khởi tạo và mở một phiên trình duyệt WEB mới. Nếu không có tham số, sẽ sử dụng trình duyệt mặc định trong file cấu hình.",
-  "category" : "Session",
-  "subCategory" : "Lifecycle",
-  "example" : "driverKeyword.startBrowser();",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "",
-  "className" : "com.vtnet.netat.core.keywords.DriverKeyword",
-  "methodName" : "startBrowser",
-  "returnType" : "void",
-  "parameters" : [ ]
 }, {
   "name" : "sendGetRequest",
   "description" : "Gửi GET request",
@@ -1247,6 +1415,26 @@
     "description" : "Tên của thuộc tính cần lấy (ví dụ: 'content-desc', 'resource-id', 'checked')."
   } ]
 }, {
+  "name" : "sendKeysSensitive",
+  "description" : "Nhập text vào element và LUÔN ẩn giá trị trong log/report. Sử dụng khi field không chứa keyword nhạy cảm nhưng cần bảo vệ data.",
+  "category" : "Web",
+  "subCategory" : "Sensitive",
+  "example" : "// Nhập OTP vào field custom\nwebKeyword.sendKeysSensitive(otpInputField, \"123456\");\n// Log hiển thị: Entering sensitive text '1*****6' into element: otpInputField",
+  "returnValue" : "void",
+  "note" : "",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "sendKeysSensitive",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "Element cần nhập dữ liệu"
+  }, {
+    "type" : "String",
+    "name" : "text",
+    "description" : "Giá trị cần nhập (sẽ được ẩn trong log)"
+  } ]
+}, {
   "name" : "takeScreenshot",
   "description" : "Chụp ảnh màn hình của thiết bị và lưu vào thư mục screenshots với tên file được chỉ định. Hữu ích khi cần ghi lại trạng thái màn hình tại các điểm quan trọng trong quá trình test, đặc biệt là khi gặp lỗi hoặc cần xác minh giao diện. Ảnh chụp màn hình sẽ được lưu với định dạng .png và tự động đính kèm vào báo cáo Allure nếu được cấu hình.",
   "category" : "Mobile",
@@ -1302,6 +1490,54 @@
   "methodName" : "stopAllSessions",
   "returnType" : "void",
   "parameters" : [ ]
+}, {
+  "name" : "verifyTextSensitiveSoft",
+  "description" : "Verify text của element với giá trị mong đợi, ẩn cả hai trong log/report. Ghi nhận lỗi và TIẾP TỤC test nếu không khớp.",
+  "category" : "Web",
+  "subCategory" : "Sensitive",
+  "example" : "// Verify nhiều field nhạy cảm\nwebKeyword.verifyTextSensitiveSoft(field1, \"secret1\");\nwebKeyword.verifyTextSensitiveSoft(field2, \"secret2\");\n// Test tiếp tục ngay cả khi verify fail",
+  "returnValue" : "void",
+  "note" : "",
+  "className" : "com.vtnet.netat.web.keywords.WebKeywordSensitive",
+  "methodName" : "verifyTextSensitiveSoft",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "Element cần verify"
+  }, {
+    "type" : "String",
+    "name" : "expectedText",
+    "description" : "Giá trị mong đợi (sẽ được ẩn)"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh"
+  } ]
+}, {
+  "name" : "verifyTextSensitiveSoft",
+  "description" : "Verify text của element với giá trị mong đợi, ẩn cả hai trong log/report. Ghi nhận lỗi và TIẾP TỤC test nếu không khớp.",
+  "category" : "Web",
+  "subCategory" : "Sensitive",
+  "example" : "// Verify nhiều field nhạy cảm\nwebKeyword.verifyTextSensitiveSoft(field1, \"secret1\");\nwebKeyword.verifyTextSensitiveSoft(field2, \"secret2\");\n// Test tiếp tục ngay cả khi verify fail",
+  "returnValue" : "void",
+  "note" : "",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "verifyTextSensitiveSoft",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "Element cần verify"
+  }, {
+    "type" : "String",
+    "name" : "expectedText",
+    "description" : "Giá trị mong đợi (sẽ được ẩn)"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh"
+  } ]
 }, {
   "name" : "jsonPathEquals",
   "description" : "Kiểm tra giá trị JSON path bằng với expected value",
@@ -1403,6 +1639,30 @@
     "description" : "Thời gian chờ tối đa"
   } ]
 }, {
+  "name" : "verifyTextContainsSensitiveHard",
+  "description" : "Verify text của element có chứa chuỗi con mong đợi, ẩn giá trị trong log/report. DỪNG test nếu không chứa.",
+  "category" : "Web",
+  "subCategory" : "Sensitive",
+  "example" : "",
+  "returnValue" : "void",
+  "note" : "",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "verifyTextContainsSensitiveHard",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "Element cần verify"
+  }, {
+    "type" : "String",
+    "name" : "partialText",
+    "description" : "Chuỗi con mong đợi (sẽ được ẩn)"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh"
+  } ]
+}, {
   "name" : "getCurrentUrl",
   "description" : "Lấy và trả về URL đầy đủ of trang web hiện tại mà trình duyệt đang hiển thị.",
   "category" : "Web",
@@ -1437,6 +1697,22 @@
     "type" : "String[]",
     "name" : "customMessage",
     "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
+  "name" : "getTextSensitive",
+  "description" : "Lấy text từ element và ẩn giá trị trong log/report. Giá trị thật vẫn được trả về để test sử dụng.",
+  "category" : "Web",
+  "subCategory" : "Sensitive",
+  "example" : "// Lấy mã OTP hiển thị\nString otp = webKeyword.getTextSensitive(otpDisplayField);\n// Log hiển thị: Got sensitive text '1*****6' from element: otpDisplayField\n// Biến otp chứa giá trị thật: \"123456\"",
+  "returnValue" : "String - Giá trị thật của element (không mask)",
+  "note" : "",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "getTextSensitive",
+  "returnType" : "String",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "Element cần lấy text"
   } ]
 }, {
   "name" : "arrayContains",
@@ -1521,6 +1797,30 @@
     "type" : "String[]",
     "name" : "message",
     "description" : "Thông báo khi fail"
+  } ]
+}, {
+  "name" : "dragAndDropAdvanced",
+  "description" : "Phương pháp drag & drop nâng cao với nhiều tùy chọn. Tự động thử nhiều cách nếu cách trước không thành công.",
+  "category" : "Web",
+  "subCategory" : "Interaction",
+  "example" : "// Tự động chọn phương pháp tốt nhất\nwebKeyword.dragAndDropAdvanced(sourceItem, targetZone, \"auto\");\n\n// Buộc dùng JavaScript\nwebKeyword.dragAndDropAdvanced(sourceItem, targetZone, \"javascript\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Strategy 'auto' sẽ thử các phương pháp theo thứ tự: Actions -> JavaScript -> HTML5",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "dragAndDropAdvanced",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "sourceObject",
+    "description" : "element nguồn"
+  }, {
+    "type" : "ObjectUI",
+    "name" : "targetObject",
+    "description" : "element đích"
+  }, {
+    "type" : "String",
+    "name" : "strategy",
+    "description" : "Chiến lược: 'auto', 'actions', 'javascript', 'html5'"
   } ]
 }, {
   "name" : "swipeUp",
@@ -1723,6 +2023,34 @@
     "description" : "Parameters cho query (tùy chọn)"
   } ]
 }, {
+  "name" : "verifyAttributeSensitiveSoft",
+  "description" : "Verify giá trị attribute của element, ẩn giá trị trong log/report. Ghi nhận lỗi và TIẾP TỤC test nếu không khớp.",
+  "category" : "Web",
+  "subCategory" : "Sensitive",
+  "example" : "",
+  "returnValue" : "void",
+  "note" : "",
+  "className" : "com.vtnet.netat.web.keywords.WebKeywordSensitive",
+  "methodName" : "verifyAttributeSensitiveSoft",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "Element cần verify"
+  }, {
+    "type" : "String",
+    "name" : "attributeName",
+    "description" : "Tên attribute"
+  }, {
+    "type" : "String",
+    "name" : "expectedValue",
+    "description" : "Giá trị mong đợi (sẽ được ẩn)"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh"
+  } ]
+}, {
   "name" : "isElementPresent",
   "description" : "Verify xem một element có tồn tại trong DOM hay không trong một khoảng thời gian chờ nhất định. Trả về true nếu tìm thấy, false nếu không tìm thấy và không ném ra exception.",
   "category" : "Web",
@@ -1775,22 +2103,6 @@
     "description" : "AppPackage (Android) hoặc BundleID (iOS) của ứng dụng cần gỡ cài đặt"
   } ]
 }, {
-  "name" : "openUrl",
-  "description" : "Điều hướng trình duyệt đến một địa chỉ web (URL) cụ thể.",
-  "category" : "Web",
-  "subCategory" : "Browser",
-  "example" : "// Mở trang chủ Google\nwebKeyword.openUrl(\"https://www.google.com\");\n\n// Mở trang đăng nhập\nwebKeyword.openUrl(\"https://example.com/login\");",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, URL phải is một địa chỉ hợp lệ và có thể truy cập được, và kết nối mạng phải hoạt động. Có thể throw WebDriverException nếu có lỗi khi tương tác với trình duyệt, InvalidArgumentException nếu URL không hợp lệ, hoặc TimeoutException nếu trang không tải thành công trong thời gian chờ mặc định.",
-  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
-  "methodName" : "openUrl",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "String",
-    "name" : "url",
-    "description" : "Địa chỉ trang web đầy đủ cần mở (ví dụ: 'https://www.google.com')"
-  } ]
-}, {
   "name" : "assertNotNull",
   "description" : "Kiểm tra giá trị KHÔNG NULL",
   "category" : "API",
@@ -1806,6 +2118,18 @@
     "name" : "object",
     "description" : ""
   } ]
+}, {
+  "name" : "hideKeyboard",
+  "description" : "Ẩn bàn phím ảo nếu nó đang hiển thị trên màn hình. Hữu ích khi cần giải phóng không gian màn hình sau khi nhập liệu hoặc trước khi thực hiện các thao tác khác. Nếu bàn phím không hiển thị, phương thức này có thể gây ra lỗi trên một số thiết bị.",
+  "category" : "Mobile",
+  "subCategory" : "Interaction",
+  "example" : "// Ẩn bàn phím sau khi nhập văn bản\nmobileKeyword.sendText(searchInput, \"điện thoại\");\nmobileKeyword.hideKeyboard();",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. Có thể throw WebDriverException nếu không thể ẩn bàn phím hoặc bàn phím không hiển thị.",
+  "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
+  "methodName" : "hideKeyboard",
+  "returnType" : "void",
+  "parameters" : [ ]
 }, {
   "name" : "executeScript",
   "description" : "Thực thi một SQL script chứa nhiều statements (phân cách bằng dấu ;)",
@@ -1826,18 +2150,6 @@
     "name" : "script",
     "description" : "SQL script với nhiều statements, phân cách bằng dấu ;"
   } ]
-}, {
-  "name" : "hideKeyboard",
-  "description" : "Ẩn bàn phím ảo nếu nó đang hiển thị trên màn hình. Hữu ích khi cần giải phóng không gian màn hình sau khi nhập liệu hoặc trước khi thực hiện các thao tác khác. Nếu bàn phím không hiển thị, phương thức này có thể gây ra lỗi trên một số thiết bị.",
-  "category" : "Mobile",
-  "subCategory" : "Interaction",
-  "example" : "// Ẩn bàn phím sau khi nhập văn bản\nmobileKeyword.sendText(searchInput, \"điện thoại\");\nmobileKeyword.hideKeyboard();",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. Có thể throw WebDriverException nếu không thể ẩn bàn phím hoặc bàn phím không hiển thị.",
-  "className" : "com.vtnet.netat.mobile.keywords.MobileKeyword",
-  "methodName" : "hideKeyboard",
-  "returnType" : "void",
-  "parameters" : [ ]
 }, {
   "name" : "getColumnValues",
   "description" : "Lấy tất cả giá trị của một column cụ thể dưới dạng List",
@@ -2019,22 +2331,6 @@
     "description" : "Đối tượng cần lấy tọa độ X"
   } ]
 }, {
-  "name" : "setAcceptHeader",
-  "description" : "Thiết lập Accept header",
-  "category" : "API",
-  "subCategory" : "Headers",
-  "example" : "api.setAcceptHeader(\"JSON\");",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "",
-  "className" : "com.vtnet.netat.api.keywords.ApiKeyword",
-  "methodName" : "setAcceptHeader",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "String",
-    "name" : "acceptType",
-    "description" : "JSON, XML, TEXT, hoặc full MIME type"
-  } ]
-}, {
   "name" : "generateRandomString",
   "description" : "Tạo ra một chuỗi ký tự ngẫu nhiên với độ dài và loại ký tự được chỉ định.",
   "category" : "Utility",
@@ -2053,6 +2349,22 @@
     "type" : "String",
     "name" : "type",
     "description" : "Loại ký tự: 'ALPHABETIC' (chỉ chữ), 'NUMERIC' (chỉ số), hoặc 'ALPHANUMERIC' (cả chữ và số)."
+  } ]
+}, {
+  "name" : "setAcceptHeader",
+  "description" : "Thiết lập Accept header",
+  "category" : "API",
+  "subCategory" : "Headers",
+  "example" : "api.setAcceptHeader(\"JSON\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiKeyword",
+  "methodName" : "setAcceptHeader",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "acceptType",
+    "description" : "JSON, XML, TEXT, hoặc full MIME type"
   } ]
 }, {
   "name" : "assertElementDisabled",
@@ -2157,6 +2469,30 @@
     "type" : "String[]",
     "name" : "customMessage",
     "description" : "Thông báo tùy chỉnh khi assertion thất bại"
+  } ]
+}, {
+  "name" : "verifyTextContainsSensitiveHard",
+  "description" : "Verify text của element có chứa chuỗi con mong đợi, ẩn giá trị trong log/report. DỪNG test nếu không chứa.",
+  "category" : "Web",
+  "subCategory" : "Sensitive",
+  "example" : "",
+  "returnValue" : "void",
+  "note" : "",
+  "className" : "com.vtnet.netat.web.keywords.WebKeywordSensitive",
+  "methodName" : "verifyTextContainsSensitiveHard",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "Element cần verify"
+  }, {
+    "type" : "String",
+    "name" : "partialText",
+    "description" : "Chuỗi con mong đợi (sẽ được ẩn)"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh"
   } ]
 }, {
   "name" : "verifyRecordNotExists",
@@ -2595,6 +2931,30 @@
     "description" : "Thời gian chờ"
   } ]
 }, {
+  "name" : "getQueryResultsAsString",
+  "description" : "Lấy kết quả query dưới dạng String formatted table - hữu ích cho logging và debugging",
+  "category" : "Database",
+  "subCategory" : "Data Retrieval",
+  "example" : "DatabaseKeyword db = new DatabaseKeyword();\n\n// Lấy results dạng table string\nString results = db.getQueryResultsAsString(\n    \"mysql-dev\",\n    \"SELECT id, name, email FROM users WHERE status = ?\",\n    \"active\"\n);\nSystem.out.println(results);\n// Output:\n// +----+-----------+-------------------+\n// | id | name      | email             |\n// +----+-----------+-------------------+\n// | 1  | John Doe  | john@example.com  |\n// | 2  | Jane Smith| jane@example.com  |\n// +----+-----------+-------------------+\n\n// Log results to file\nString queryResults = db.getQueryResultsAsString(\n    \"mysql-dev\",\n    \"SELECT * FROM orders WHERE created_at >= CURDATE()\"\n);\nFiles.write(Paths.get(\"daily_orders.txt\"), queryResults.getBytes());\n\n// Assert contains specific value\nString usersTable = db.getQueryResultsAsString(\n    \"mysql-dev\",\n    \"SELECT name FROM users\"\n);\nif (usersTable.contains(\"John Doe\")) {\n    System.out.println(\"✓ User found in results\");\n}\n\n// Debug query results\nString debugOutput = db.getQueryResultsAsString(\n    \"mysql-dev\",\n    \"SELECT COUNT(*) as total, AVG(price) as avg_price FROM products\"\n);\nSystem.out.println(\"Debug info:\\n\" + debugOutput);\n\n// Compare expected vs actual\nString expected = \"John Doe\\nJane Smith\";\nString actual = db.getQueryResultsAsString(\n    \"mysql-dev\",\n    \"SELECT name FROM users ORDER BY name\"\n);\nif (actual.contains(expected)) {\n    System.out.println(\"✓ Results match expected\");\n}",
+  "returnValue" : "String - Query results formatted dạng table (ASCII table hoặc JSON string)",
+  "note" : "- Format dạng ASCII table với borders và alignment\n- Columns được auto-size dựa trên content width\n- NULL values hiển thị là 'NULL'\n- Maximum 1000 rows để tránh String quá lớn\n- Hữu ích cho logging, debugging, và assertion\n- Có thể write vào file để archive test results",
+  "className" : "com.vtnet.netat.db.keywords.DatabaseKeyword",
+  "methodName" : "getQueryResultsAsString",
+  "returnType" : "String",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "profileName",
+    "description" : "Tên database profile đã cấu hình"
+  }, {
+    "type" : "String",
+    "name" : "query",
+    "description" : "Câu lệnh SELECT"
+  }, {
+    "type" : "Object[]",
+    "name" : "params",
+    "description" : "Parameters cho query (tùy chọn)"
+  } ]
+}, {
   "name" : "denySystemDialog",
   "description" : "Tự động tìm và nhấn vào các nút hệ thống có văn bản phủ định như 'Deny', 'Cancel', 'Don't allow'. Hữu ích để từ chối các yêu cầu cấp quyền hoặc đóng các thông báo hệ thống không mong muốn. Phương thức sẽ tìm kiếm các nút phổ biến và nhấn vào nút đầu tiên tìm thấy. Nếu không tìm thấy nút nào, một cảnh báo sẽ được ghi vào log.",
   "category" : "Mobile",
@@ -2729,6 +3089,26 @@
     "type" : "Map",
     "name" : "commandArgs",
     "description" : "Các tham số của lệnh dưới dạng key-value"
+  } ]
+}, {
+  "name" : "openUrl",
+  "description" : "Mở URL và đợi page load hoàn toàn. Test sẽ FAIL nếu timeout.",
+  "category" : "Browser",
+  "subCategory" : "",
+  "example" : "web.openUrl(\"https://example.com\");\nweb.openUrl(\"https://example.com\", 60);",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "openUrl",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "url",
+    "description" : "URL cần mở"
+  }, {
+    "type" : "int[]",
+    "name" : "timeoutSeconds",
+    "description" : "Timeout, mặc định 30s"
   } ]
 }, {
   "name" : "sendDeleteRequest",
@@ -3223,28 +3603,56 @@
     "description" : "Tên phím trong AndroidKey enum (ví dụ: 'HOME', 'BACK', 'VOLUME_UP')"
   } ]
 }, {
+  "name" : "verifyAttributeSensitiveHard",
+  "description" : "Verify giá trị attribute của element, ẩn giá trị trong log/report. DỪNG test nếu không khớp.",
+  "category" : "Web",
+  "subCategory" : "Sensitive",
+  "example" : "",
+  "returnValue" : "void",
+  "note" : "",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "verifyAttributeSensitiveHard",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "Element cần verify"
+  }, {
+    "type" : "String",
+    "name" : "attributeName",
+    "description" : "Tên attribute"
+  }, {
+    "type" : "String",
+    "name" : "expectedValue",
+    "description" : "Giá trị mong đợi (sẽ được ẩn)"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh"
+  } ]
+}, {
   "name" : "dragAndDropByOffset",
-  "description" : "Kéo một element theo một khoảng cách (độ lệch x, y) so với vị trí hiện tại of nó. Rất hữu ích cho các thanh trượt (slider).",
+  "description" : "Kéo element theo offset x,y. Hữu ích khi element đích không có locator rõ ràng.",
   "category" : "Web",
   "subCategory" : "Interaction",
-  "example" : "// Kéo thanh trượt giá sang phải 100px\nwebKeyword.dragAndDropByOffset(priceSliderHandle, 100, 0);\n\n// Kéo thanh trượt âm lượng xuống 50px\nwebKeyword.dragAndDropByOffset(volumeSliderObject, 0, -50);",
+  "example" : "// Kéo element sang phải 200px, xuống 100px\nwebKeyword.dragAndDropByOffset(draggableItem, 200, 100);",
   "returnValue" : "void - Không trả về giá trị",
-  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, element cần kéo phải tồn tại trong DOM, phải hiển thị và có thể tương tác được, trang web phải hỗ trợ thao tác kéo và thả, và trình duyệt phải hỗ trợ thao tác kéo và thả (một số trình duyệt di động có thể không hỗ trợ đầy đủ). Có thể throw ElementNotVisibleException nếu element không hiển thị trên trang, ElementNotInteractableException nếu element không thể tương tác, StaleElementReferenceException nếu element không còn gắn với DOM, TimeoutException nếu element không xuất hiện trong thời gian chờ, WebDriverException nếu có lỗi khi tương tác với trình duyệt, hoặc MoveTargetOutOfBoundsException nếu vị trí đích nằm ngoài viewport hiện tại.",
+  "note" : "",
   "className" : "com.vtnet.netat.web.keywords.WebKeyword",
   "methodName" : "dragAndDropByOffset",
   "returnType" : "void",
   "parameters" : [ {
     "type" : "ObjectUI",
-    "name" : "uiObject",
-    "description" : "element cần kéo"
+    "name" : "sourceObject",
+    "description" : "element nguồn"
   }, {
     "type" : "int",
     "name" : "xOffset",
-    "description" : "Độ lệch theo trục ngang (pixel)"
+    "description" : "Độ lệch theo trục X"
   }, {
     "type" : "int",
     "name" : "yOffset",
-    "description" : "Độ lệch theo trục dọc (pixel)"
+    "description" : "Độ lệch theo trục Y"
   } ]
 }, {
   "name" : "assertGreaterThanOrEqual",
@@ -3439,6 +3847,26 @@
     "description" : "Giá trị thuộc tính 'value' of option cần chọn"
   } ]
 }, {
+  "name" : "sendKeysSensitive",
+  "description" : "Nhập text vào element và LUÔN ẩn giá trị trong log/report. Sử dụng khi field không chứa keyword nhạy cảm nhưng cần bảo vệ data.",
+  "category" : "Web",
+  "subCategory" : "Sensitive",
+  "example" : "// Nhập OTP vào field custom\nwebKeyword.sendKeysSensitive(otpInputField, \"123456\");\n// Log hiển thị: Entering sensitive text '1*****6' into element: otpInputField",
+  "returnValue" : "void",
+  "note" : "",
+  "className" : "com.vtnet.netat.web.keywords.WebKeywordSensitive",
+  "methodName" : "sendKeysSensitive",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "Element cần nhập dữ liệu"
+  }, {
+    "type" : "String",
+    "name" : "text",
+    "description" : "Giá trị cần nhập (sẽ được ẩn trong log)"
+  } ]
+}, {
   "name" : "verifyRowCount",
   "description" : "Verify số lượng rows trả về từ query bằng đúng expected count",
   "category" : "Database",
@@ -3503,30 +3931,6 @@
     "description" : ""
   } ]
 }, {
-  "name" : "compareQueryResults",
-  "description" : "So sánh kết quả của 2 queries - kiểm tra cả số lượng rows và content",
-  "category" : "Database",
-  "subCategory" : "Utility",
-  "example" : "DatabaseKeyword db = new DatabaseKeyword();\n\n// So sánh data giữa 2 tables\nboolean isSame = db.compareQueryResults(\n    \"mysql-dev\",\n    \"SELECT * FROM users ORDER BY id\",\n    \"SELECT * FROM users_backup ORDER BY id\"\n);\nif (isSame) {\n    System.out.println(\"✓ Tables are identical\");\n} else {\n    System.out.println(\"✗ Tables differ\");\n}\n\n// Verify data migration\nboolean migrated = db.compareQueryResults(\n    \"mysql-dev\",\n    \"SELECT id, name, email FROM old_schema.users\",\n    \"SELECT id, name, email FROM new_schema.users\"\n);\nSystem.out.println(\"Migration successful: \" + migrated);\n\n// Compare aggregations\nboolean countsMatch = db.compareQueryResults(\n    \"mysql-dev\",\n    \"SELECT status, COUNT(*) as cnt FROM orders GROUP BY status\",\n    \"SELECT status, COUNT(*) as cnt FROM orders_archive GROUP BY status\"\n);\n\n// Assert results match\nif (!db.compareQueryResults(\n    \"mysql-dev\",\n    \"SELECT * FROM expected_results\",\n    \"SELECT * FROM actual_results\"\n)) {\n    throw new AssertionError(\"Query results do not match!\");\n}",
-  "returnValue" : "boolean - true nếu kết quả giống nhau, false nếu khác",
-  "note" : "- So sánh cả row count và content của từng row\n- Trả về false nếu số lượng rows khác nhau\n- Trả về false nếu bất kỳ row nào khác nhau\n- Queries nên có ORDER BY để đảm bảo consistent ordering\n- Hữu ích cho data migration verification và regression testing",
-  "className" : "com.vtnet.netat.db.keywords.DatabaseKeyword",
-  "methodName" : "compareQueryResults",
-  "returnType" : "boolean",
-  "parameters" : [ {
-    "type" : "String",
-    "name" : "profileName",
-    "description" : "Tên database profile đã cấu hình"
-  }, {
-    "type" : "String",
-    "name" : "query1",
-    "description" : "Query thứ nhất"
-  }, {
-    "type" : "String",
-    "name" : "query2",
-    "description" : "Query thứ hai"
-  } ]
-}, {
   "name" : "assertEquals",
   "description" : "Kiểm tra 2 giá trị BẰNG NHAU",
   "category" : "API",
@@ -3558,6 +3962,30 @@
   "methodName" : "openNotifications",
   "returnType" : "void",
   "parameters" : [ ]
+}, {
+  "name" : "compareQueryResults",
+  "description" : "So sánh kết quả của 2 queries - kiểm tra cả số lượng rows và content",
+  "category" : "Database",
+  "subCategory" : "Utility",
+  "example" : "DatabaseKeyword db = new DatabaseKeyword();\n\n// So sánh data giữa 2 tables\nboolean isSame = db.compareQueryResults(\n    \"mysql-dev\",\n    \"SELECT * FROM users ORDER BY id\",\n    \"SELECT * FROM users_backup ORDER BY id\"\n);\nif (isSame) {\n    System.out.println(\"✓ Tables are identical\");\n} else {\n    System.out.println(\"✗ Tables differ\");\n}\n\n// Verify data migration\nboolean migrated = db.compareQueryResults(\n    \"mysql-dev\",\n    \"SELECT id, name, email FROM old_schema.users\",\n    \"SELECT id, name, email FROM new_schema.users\"\n);\nSystem.out.println(\"Migration successful: \" + migrated);\n\n// Compare aggregations\nboolean countsMatch = db.compareQueryResults(\n    \"mysql-dev\",\n    \"SELECT status, COUNT(*) as cnt FROM orders GROUP BY status\",\n    \"SELECT status, COUNT(*) as cnt FROM orders_archive GROUP BY status\"\n);\n\n// Assert results match\nif (!db.compareQueryResults(\n    \"mysql-dev\",\n    \"SELECT * FROM expected_results\",\n    \"SELECT * FROM actual_results\"\n)) {\n    throw new AssertionError(\"Query results do not match!\");\n}",
+  "returnValue" : "boolean - true nếu kết quả giống nhau, false nếu khác",
+  "note" : "- So sánh cả row count và content của từng row\n- Trả về false nếu số lượng rows khác nhau\n- Trả về false nếu bất kỳ row nào khác nhau\n- Queries nên có ORDER BY để đảm bảo consistent ordering\n- Hữu ích cho data migration verification và regression testing",
+  "className" : "com.vtnet.netat.db.keywords.DatabaseKeyword",
+  "methodName" : "compareQueryResults",
+  "returnType" : "boolean",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "profileName",
+    "description" : "Tên database profile đã cấu hình"
+  }, {
+    "type" : "String",
+    "name" : "query1",
+    "description" : "Query thứ nhất"
+  }, {
+    "type" : "String",
+    "name" : "query2",
+    "description" : "Query thứ hai"
+  } ]
 }, {
   "name" : "extractJsonValue",
   "description" : "Trích xuất giá trị từ JSON response (JSON Path)",
@@ -3605,6 +4033,26 @@
     "type" : "int",
     "name" : "timeoutInSeconds",
     "description" : "Thời gian chờ tối đa tính bằng giây"
+  } ]
+}, {
+  "name" : "dragAndDropHTML5",
+  "description" : "Thực hiện drag & drop cho HTML5 draggable elements bằng JavaScript. Sử dụng khi các phương pháp khác không hoạt động với HTML5 drag & drop.",
+  "category" : "Web",
+  "subCategory" : "Interaction",
+  "example" : "// Drag & drop cho HTML5 elements\nwebKeyword.dragAndDropHTML5(fileElement, uploadZone);",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Phương pháp này sử dụng JavaScript để simulate HTML5 drag & drop events. Hiệu quả với các trang web sử dụng HTML5 Drag and Drop API.",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "dragAndDropHTML5",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "sourceObject",
+    "description" : "element nguồn (phải có draggable=true)"
+  }, {
+    "type" : "ObjectUI",
+    "name" : "targetObject",
+    "description" : "element đích (phải có drop zone)"
   } ]
 }, {
   "name" : "waitForElementClickable",
@@ -3759,6 +4207,30 @@
     "description" : "Path đến array"
   } ]
 }, {
+  "name" : "verifyTextContainsSensitiveSoft",
+  "description" : "Verify text của element có chứa chuỗi con mong đợi, ẩn giá trị trong log/report. Ghi nhận lỗi và TIẾP TỤC test nếu không chứa.",
+  "category" : "Web",
+  "subCategory" : "Sensitive",
+  "example" : "",
+  "returnValue" : "void",
+  "note" : "",
+  "className" : "com.vtnet.netat.web.keywords.WebKeywordSensitive",
+  "methodName" : "verifyTextContainsSensitiveSoft",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "Element cần verify"
+  }, {
+    "type" : "String",
+    "name" : "partialText",
+    "description" : "Chuỗi con mong đợi (sẽ được ẩn)"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh"
+  } ]
+}, {
   "name" : "sendPutWithJson",
   "description" : "Gửi PUT với JSON body (shortcut)",
   "category" : "API",
@@ -3800,12 +4272,12 @@
   } ]
 }, {
   "name" : "dragAndDrop",
-  "description" : "Thực hiện thao tác kéo một element (nguồn) và thả nó vào vị trí of một element khác (đích).",
+  "description" : "Thực hiện thao tác kéo và thả cơ bản. Nếu không hoạt động, thử dragAndDropWithPause hoặc dragAndDropHTML5.",
   "category" : "Web",
   "subCategory" : "Interaction",
-  "example" : "// Kéo và thả một mục vào giỏ hàng\nwebKeyword.dragAndDrop(productItemObject, cartDropZoneObject);\n\n// Kéo và thả để sắp xếp lại danh sách\nwebKeyword.dragAndDrop(taskItemObject, topOfListObject);",
+  "example" : "webKeyword.dragAndDrop(productItemObject, cartDropZoneObject);",
   "returnValue" : "void - Không trả về giá trị",
-  "note" : "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động, cả hai element nguồn và đích phải tồn tại trong DOM, phải hiển thị và có thể tương tác được, trang web phải hỗ trợ thao tác kéo và thả, và trình duyệt phải hỗ trợ thao tác kéo và thả (một số trình duyệt di động có thể không hỗ trợ đầy đủ). Có thể throw ElementNotVisibleException nếu một trong hai element không hiển thị trên trang, ElementNotInteractableException nếu một trong hai element không thể tương tác, StaleElementReferenceException nếu một trong hai element không còn gắn với DOM, TimeoutException nếu một trong hai element không xuất hiện trong thời gian chờ, WebDriverException nếu có lỗi khi tương tác với trình duyệt, hoặc MoveTargetOutOfBoundsException nếu element đích nằm ngoài viewport hiện tại.",
+  "note" : "Phương pháp cơ bản sử dụng Actions.dragAndDrop(). Nếu không hoạt động, dùng dragAndDropWithPause hoặc dragAndDropHTML5.",
   "className" : "com.vtnet.netat.web.keywords.WebKeyword",
   "methodName" : "dragAndDrop",
   "returnType" : "void",
@@ -3819,11 +4291,11 @@
     "description" : "element đích, nơi element nguồn sẽ được thả vào"
   } ]
 }, {
-  "name" : "startMobileSession",
+  "name" : "startSession",
   "description" : "Khởi tạo nhanh một phiên làm việc trên thiết bị di động bằng cách cung cấp các thông tin cơ bản.",
   "category" : "Driver",
   "subCategory" : "Session",
-  "example" : "// Bắt đầu phiên trên thiết bị Android của User A\ndriver.startMobileSession(\"user_A_android\", \"Android\", \"emulator-5554\", \"/path/to/app.apk\", \"http://127.0.0.1:4723/wd/hub\");",
+  "example" : "// Bắt đầu phiên trên thiết bị Android của User A\ndriver.startSession(\"user_A_android\", \"Android\", \"emulator-5554\", \"/path/to/app.apk\", \"http://127.0.0.1:4723/wd/hub\");",
   "returnValue" : "void - Không trả về giá trị",
   "note" : "Đây là cách đơn giản nhất để khởi động một thiết bị di động mà không cần tạo file profile phức tạp.",
   "className" : "com.vtnet.netat.core.keywords.DriverKeyword",
@@ -3895,11 +4367,11 @@
     "description" : "Số lượng phần tử mong đợi"
   } ]
 }, {
-  "name" : "startMobileSession",
+  "name" : "startSession",
   "description" : "Khởi tạo nhanh một phiên làm việc trên thiết bị di động bằng cách cung cấp các thông tin cơ bản.",
   "category" : "Driver",
   "subCategory" : "Session",
-  "example" : "// Bắt đầu phiên trên thiết bị Android của User A\ndriver.startMobileSession(\"user_A_android\", \"Android\", \"emulator-5554\", \"/path/to/app.apk\", \"http://127.0.0.1:4723/wd/hub\");",
+  "example" : "// Bắt đầu phiên trên thiết bị Android của User A\ndriver.startSession(\"user_A_android\", \"Android\", \"emulator-5554\", \"/path/to/app.apk\", \"http://127.0.0.1:4723/wd/hub\");",
   "returnValue" : "void - Không trả về giá trị",
   "note" : "Đây là cách đơn giản nhất để khởi động một thiết bị di động mà không cần tạo file profile phức tạp.",
   "className" : "com.vtnet.netat.core.keywords.DriverKeyword",
@@ -4299,6 +4771,22 @@
     "description" : "Giá trị parameter"
   } ]
 }, {
+  "name" : "executeCurlFromFile",
+  "description" : "Thực thi cURL command từ file. Hữu ích khi cURL command quá dài hoặc cần reuse.",
+  "category" : "API",
+  "subCategory" : "cURL",
+  "example" : "// File: src/test/resources/curl/create_user.sh\n// curl -X POST 'https://api.example.com/users' -H 'Content-Type: application/json' -d '{...}'\n\nApiResponse response = api.executeCurlFromFile(\"src/test/resources/curl/create_user.sh\");",
+  "returnValue" : "ApiResponse - Response object",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiKeyword",
+  "methodName" : "executeCurlFromFile",
+  "returnType" : "ApiResponse",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "filePath",
+    "description" : "Đường dẫn đến file chứa cURL command"
+  } ]
+}, {
   "name" : "waitForElementAttributeToBe",
   "description" : "Chờ đợi attribute của element có giá trị chính xác như mong đợi trong khoảng thời gian chỉ định. Rất hữu ích cho validation các thay đổi attribute động như status, state, data-attributes, class names, hoặc các thuộc tính được cập nhật qua JavaScript.",
   "category" : "Web",
@@ -4349,6 +4837,34 @@
     "type" : "int",
     "name" : "durationInSeconds",
     "description" : "Thời gian giữ (tính bằng giây)"
+  } ]
+}, {
+  "name" : "verifyAttributeSensitiveHard",
+  "description" : "Verify giá trị attribute của element, ẩn giá trị trong log/report. DỪNG test nếu không khớp.",
+  "category" : "Web",
+  "subCategory" : "Sensitive",
+  "example" : "",
+  "returnValue" : "void",
+  "note" : "",
+  "className" : "com.vtnet.netat.web.keywords.WebKeywordSensitive",
+  "methodName" : "verifyAttributeSensitiveHard",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "Element cần verify"
+  }, {
+    "type" : "String",
+    "name" : "attributeName",
+    "description" : "Tên attribute"
+  }, {
+    "type" : "String",
+    "name" : "expectedValue",
+    "description" : "Giá trị mong đợi (sẽ được ẩn)"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh"
   } ]
 }, {
   "name" : "getElementHeight",
@@ -4493,6 +5009,22 @@
     "type" : "String",
     "name" : "textToFind",
     "description" : "Văn bản cần xác minh sự tồn tại trên màn hình."
+  } ]
+}, {
+  "name" : "disconnectDatabase",
+  "description" : "Ngắt kết nối và cleanup connection pool của một database profile",
+  "category" : "Database",
+  "subCategory" : "Connection Management",
+  "example" : "DatabaseKeyword db = new DatabaseKeyword();\n\n// Tạo connection\ndb.connectDatabase(\n    \"temp-db\",\n    \"mariadb\",\n    \"localhost\",\n    3306,\n    \"test_db\",\n    \"root\",\n    \"password\"\n);\n\n// Sử dụng connection\ndb.executeQuery(\"temp-db\", \"SELECT * FROM users\");\n\n// Cleanup sau khi xong\ndb.disconnectDatabase(\"temp-db\");\nSystem.out.println(\"✓ Database disconnected and pool cleaned up\");\n\n// Disconnect multiple profiles\nString[] profiles = {\"dev-db\", \"test-db\", \"staging-db\"};\nfor (String profile : profiles) {\n    try {\n        db.disconnectDatabase(profile);\n        System.out.println(\"Disconnected: \" + profile);\n    } catch (Exception e) {\n        System.err.println(\"Failed to disconnect \" + profile + \": \" + e.getMessage());\n    }\n}\n\n// Trong test teardown\n@AfterTest\npublic void cleanup() {\n    db.disconnectDatabase(\"temp-db\");\n}",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "- Đóng tất cả connections trong pool\n- Giải phóng resources (memory, threads)\n- Profile sẽ bị remove khỏi ConnectionManager\n- Throw exception nếu profile không tồn tại\n- Nên gọi trong @AfterTest hoặc finally block để đảm bảo cleanup\n- Safe to call multiple times (idempotent)",
+  "className" : "com.vtnet.netat.db.keywords.DatabaseKeyword",
+  "methodName" : "disconnectDatabase",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "profileName",
+    "description" : "Tên database profile cần disconnect"
   } ]
 }, {
   "name" : "verifyTitleSoft",
@@ -4831,6 +5363,18 @@
     "description" : "Phần tử cần lấy chiều rộng"
   } ]
 }, {
+  "name" : "disableSslVerification",
+  "description" : "Tắt SSL certificate verification. CHỈ DÙNG CHO MÔI TRƯỜNG TEST!",
+  "category" : "API",
+  "subCategory" : "Configuration",
+  "example" : "api.disableSslVerification();",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "WARNING: Không sử dụng trong production!",
+  "className" : "com.vtnet.netat.api.keywords.ApiKeyword",
+  "methodName" : "disableSslVerification",
+  "returnType" : "void",
+  "parameters" : [ ]
+}, {
   "name" : "softAssertFalse",
   "description" : "Kiểm tra một điều kiện là false. Nếu là true, ghi nhận lỗi và TIẾP TỤC chạy.",
   "category" : "Assertion",
@@ -4897,6 +5441,30 @@
     "type" : "String",
     "name" : "allowedCodes",
     "description" : "Danh sách codes cách nhau bởi dấu phẩy (VD: 200,201,204)"
+  } ]
+}, {
+  "name" : "verifyTextSensitiveHard",
+  "description" : "Verify text của element với giá trị mong đợi, ẩn cả hai trong log/report. DỪNG test nếu không khớp.",
+  "category" : "Web",
+  "subCategory" : "Sensitive",
+  "example" : "// Verify OTP hiển thị đúng\nwebKeyword.verifyTextSensitiveHard(otpField, \"123456\");\n// Log: Verify sensitive text of 'otpField' equals '1*****6'",
+  "returnValue" : "void",
+  "note" : "",
+  "className" : "com.vtnet.netat.web.keywords.WebKeywordSensitive",
+  "methodName" : "verifyTextSensitiveHard",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "Element cần verify"
+  }, {
+    "type" : "String",
+    "name" : "expectedText",
+    "description" : "Giá trị mong đợi (sẽ được ẩn)"
+  }, {
+    "type" : "String[]",
+    "name" : "customMessage",
+    "description" : "Thông báo tùy chỉnh"
   } ]
 }, {
   "name" : "takeElementScreenshot",
@@ -4969,6 +5537,46 @@
     "type" : "ObjectUI",
     "name" : "uiObject",
     "description" : "Phần tử cần chạm vào"
+  } ]
+}, {
+  "name" : "isApiCalledWithStatus",
+  "description" : "Kiểm tra xem API có được gọi hay không và trả về status code.",
+  "category" : "Web",
+  "subCategory" : "Network",
+  "example" : "Map<String, Object> result = web.isApiCalledWithStatus(\"/api/user\", params, 15);\nboolean found = (boolean) result.get(\"found\");\nInteger status = (Integer) result.get(\"statusCode\");",
+  "returnValue" : "Map<String, Object> - {found: boolean, statusCode: Integer}",
+  "note" : "",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "isApiCalledWithStatus",
+  "returnType" : "Map",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "apiPath",
+    "description" : "Path của API cần monitor"
+  }, {
+    "type" : "Map",
+    "name" : "expectedParams",
+    "description" : "Query params"
+  }, {
+    "type" : "int",
+    "name" : "timeoutSeconds",
+    "description" : "Thời gian chờ tối đa"
+  } ]
+}, {
+  "name" : "parseCurl",
+  "description" : "Parse cURL command để xem các thành phần (debug/verify). Không thực thi request, chỉ trả về thông tin đã parse.",
+  "category" : "API",
+  "subCategory" : "cURL",
+  "example" : "String info = api.parseCurl(curlCommand);\nSystem.out.println(info);",
+  "returnValue" : "String - Thông tin các thành phần đã parse (method, url, headers, body...)",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiKeyword",
+  "methodName" : "parseCurl",
+  "returnType" : "String",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "curlCommand",
+    "description" : "cURL command cần parse"
   } ]
 }, {
   "name" : "assertEnabled",
@@ -5162,6 +5770,18 @@
     "name" : "timeoutInSeconds",
     "description" : "Thời gian tối đa (giây) để chờ phần tử có thể tương tác"
   } ]
+}, {
+  "name" : "enableSslVerification",
+  "description" : "Bật lại SSL certificate verification (mặc định đã bật)",
+  "category" : "API",
+  "subCategory" : "Configuration",
+  "example" : "api.enableSslVerification();",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "",
+  "className" : "com.vtnet.netat.api.keywords.ApiKeyword",
+  "methodName" : "enableSslVerification",
+  "returnType" : "void",
+  "parameters" : [ ]
 }, {
   "name" : "executeBatch",
   "description" : "Thực thi batch operations - insert/update nhiều records cùng lúc cho hiệu suất tốt hơn",
@@ -5571,6 +6191,22 @@
     "description" : ""
   } ]
 }, {
+  "name" : "executeCurl",
+  "description" : "Thực thi một cURL command trực tiếp. Hỗ trợ các options: -X (method), -H (header), -d/--data (body), -u (basic auth), -k/--insecure (skip SSL), -b/--cookie (cookies), -F/--form (form data).",
+  "category" : "API",
+  "subCategory" : "cURL",
+  "example" : "String curl = \"curl -X POST 'https://api.example.com/users' \" +\n              \"-H 'Content-Type: application/json' \" +\n              \"-H 'Authorization: Bearer token123' \" +\n              \"-d '{\\\"name\\\": \\\"John\\\"}' \";\nApiResponse response = api.executeCurl(curl);",
+  "returnValue" : "ApiResponse - Response object",
+  "note" : "Copy cURL từ browser DevTools hoặc Postman và paste trực tiếp. Hỗ trợ multiline với backslash (\\).",
+  "className" : "com.vtnet.netat.api.keywords.ApiKeyword",
+  "methodName" : "executeCurl",
+  "returnType" : "ApiResponse",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "curlCommand",
+    "description" : "cURL command đầy đủ"
+  } ]
+}, {
   "name" : "assertAttributeEquals",
   "description" : "Khẳng định rằng một thuộc tính của phần tử có giá trị chính xác như mong đợi. Hữu ích khi cần kiểm tra các thuộc tính đặc biệt như content-desc, resource-id, text, checked, v.v. Phương thức này so sánh chính xác giá trị thuộc tính, phân biệt chữ hoa/thường và khoảng trắng.",
   "category" : "Mobile",
@@ -5819,6 +6455,46 @@
     "description" : ""
   } ]
 }, {
+  "name" : "startSession",
+  "description" : "Khởi tạo nhanh một phiên làm việc trên trình duyệt web bằng cách cung cấp thông tin trực tiếp.",
+  "category" : "Driver",
+  "subCategory" : "Session",
+  "example" : "// Bắt đầu nhanh một phiên trên Firefox cho User B\ndriver.startSession(\"user_B_ff\", \"firefox\");",
+  "returnValue" : "void - Không trả về giá trị",
+  "note" : "Hữu ích cho các kịch bản test nhanh hoặc khi không muốn tạo file profile. Sử dụng 'switchSession' để điều khiển phiên này.",
+  "className" : "com.vtnet.netat.core.keywords.DriverKeyword",
+  "methodName" : "startSession",
+  "returnType" : "void",
+  "parameters" : [ {
+    "type" : "String",
+    "name" : "sessionName",
+    "description" : "Tên định danh duy nhất cho phiên làm việc này (ví dụ: 'user_A')"
+  }, {
+    "type" : "String",
+    "name" : "browserName",
+    "description" : "Tên trình duyệt cần khởi động (ví dụ: 'chrome', 'firefox', 'edge')"
+  } ]
+}, {
+  "name" : "verifyMultipleApisCalledParallel",
+  "description" : "Verify nhiều API được gọi đồng thời và trả về danh sách status code của từng API.",
+  "category" : "Web",
+  "subCategory" : "Network",
+  "example" : "List<Map<String, Object>> configs = Arrays.asList(\n  ApiConfig.create(\"/api/user\").toMap(),\n  ApiConfig.create(\"/api/data\").toMap()\n);\nList<Integer> statusCodes = web.verifyMultipleApisCalledParallel(configs, 30);\n// statusCodes.get(0) = status của /api/user\n// statusCodes.get(1) = status của /api/data",
+  "returnValue" : "List<Integer> - Danh sách status code của các API (theo thứ tự config). Null nếu API không được gọi.",
+  "note" : "",
+  "className" : "com.vtnet.netat.web.keywords.WebKeyword",
+  "methodName" : "verifyMultipleApisCalledParallel",
+  "returnType" : "List",
+  "parameters" : [ {
+    "type" : "List",
+    "name" : "apiConfigs",
+    "description" : "Danh sách config của các API"
+  }, {
+    "type" : "int",
+    "name" : "maxTimeoutSeconds",
+    "description" : "Thời gian chờ tối đa cho tất cả API"
+  } ]
+}, {
   "name" : "rollbackTransaction",
   "description" : "Rollback transaction hiện tại, hủy bỏ tất cả thay đổi",
   "category" : "Database",
@@ -5837,26 +6513,6 @@
     "type" : "String[]",
     "name" : "reason",
     "description" : "Lý do rollback (tùy chọn, dùng cho logging)"
-  } ]
-}, {
-  "name" : "startBrowserSession",
-  "description" : "Khởi tạo nhanh một phiên làm việc trên trình duyệt web bằng cách cung cấp thông tin trực tiếp.",
-  "category" : "Driver",
-  "subCategory" : "Session",
-  "example" : "// Bắt đầu nhanh một phiên trên Firefox cho User B\ndriver.startBrowserSession(\"user_B_ff\", \"firefox\");",
-  "returnValue" : "void - Không trả về giá trị",
-  "note" : "Hữu ích cho các kịch bản test nhanh hoặc khi không muốn tạo file profile. Sử dụng 'switchSession' để điều khiển phiên này.",
-  "className" : "com.vtnet.netat.core.keywords.DriverKeyword",
-  "methodName" : "startSession",
-  "returnType" : "void",
-  "parameters" : [ {
-    "type" : "String",
-    "name" : "sessionName",
-    "description" : "Tên định danh duy nhất cho phiên làm việc này (ví dụ: 'user_A')"
-  }, {
-    "type" : "String",
-    "name" : "browserName",
-    "description" : "Tên trình duyệt cần khởi động (ví dụ: 'chrome', 'firefox', 'edge')"
   } ]
 }, {
   "name" : "waitForElementTextNotContains",
@@ -5901,6 +6557,22 @@
     "type" : "String[]",
     "name" : "isolationLevel",
     "description" : "Isolation level (tùy chọn): READ_UNCOMMITTED, READ_COMMITTED, REPEATABLE_READ, SERIALIZABLE. Default: READ_COMMITTED"
+  } ]
+}, {
+  "name" : "getTextSensitive",
+  "description" : "Lấy text từ element và ẩn giá trị trong log/report. Giá trị thật vẫn được trả về để test sử dụng.",
+  "category" : "Web",
+  "subCategory" : "Sensitive",
+  "example" : "// Lấy mã OTP hiển thị\nString otp = webKeyword.getTextSensitive(otpDisplayField);\n// Log hiển thị: Got sensitive text '1*****6' from element: otpDisplayField\n// Biến otp chứa giá trị thật: \"123456\"",
+  "returnValue" : "String - Giá trị thật của element (không mask)",
+  "note" : "",
+  "className" : "com.vtnet.netat.web.keywords.WebKeywordSensitive",
+  "methodName" : "getTextSensitive",
+  "returnType" : "String",
+  "parameters" : [ {
+    "type" : "ObjectUI",
+    "name" : "uiObject",
+    "description" : "Element cần lấy text"
   } ]
 }, {
   "name" : "sendPostWithJson",
