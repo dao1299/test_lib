@@ -11,6 +11,9 @@ import org.openqa.selenium.safari.SafariOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -80,7 +83,13 @@ public class CapabilityFactory {
                         ((ChromeOptions) capabilities).addArguments(value.split(";"));
                     } else if (optionType.startsWith("prefs.")) {
                         String prefKey = optionType.substring("prefs.".length());
-                        chromePrefs.put(prefKey, convertPrefValue(value));
+                        Object prefValue = convertPrefValue(value);
+
+                        if (isPathPref(prefKey)) {
+                            prefValue = toAbsolutePath(String.valueOf(prefValue));
+                        }
+
+                        chromePrefs.put(prefKey, prefValue);
                     }
                 } else if (capabilities instanceof FirefoxOptions) {
                     if (optionType.equalsIgnoreCase("binary")) {
@@ -89,7 +98,13 @@ public class CapabilityFactory {
                         ((FirefoxOptions) capabilities).addArguments(value.split(";"));
                     } else if (optionType.startsWith("prefs.")) {
                         String prefKey = optionType.substring("prefs.".length());
-                        firefoxPrefs.put(prefKey, convertPrefValue(value));
+                        Object prefValue = convertPrefValue(value);
+
+                        if (isPathPref(prefKey)) {
+                            prefValue = toAbsolutePath(String.valueOf(prefValue));
+                        }
+
+                        firefoxPrefs.put(prefKey, prefValue);
                     }
                 } else if (capabilities instanceof EdgeOptions) {
                     if (optionType.equalsIgnoreCase("binary")) {
@@ -98,7 +113,13 @@ public class CapabilityFactory {
                         ((EdgeOptions) capabilities).addArguments(value.split(";"));
                     } else if (optionType.startsWith("prefs.")) {
                         String prefKey = optionType.substring("prefs.".length());
-                        edgePrefs.put(prefKey, convertPrefValue(value));
+                        Object prefValue = convertPrefValue(value);
+
+                        if (isPathPref(prefKey)) {
+                            prefValue = toAbsolutePath(String.valueOf(prefValue));
+                        }
+
+                        edgePrefs.put(prefKey, prefValue);
                     }
                 }
             }
@@ -151,16 +172,43 @@ public class CapabilityFactory {
         String appName = ConfigReader.getProperty("app.name");
         if (appName != null && !appName.isEmpty() && !hasAppPackage) {
             String appPath = System.getProperty("user.dir") + "/src/test/resources/apps/" + appName;
-
-            // Validate app path
             validateAppPath(appPath, appName);
-
             capabilities.setCapability("appium:app", appPath);
         }
 
         System.out.println("CAP: " + capabilities);
 
         return capabilities;
+    }
+
+
+    private static boolean isPathPref(String prefKey) {
+        String lowerKey = prefKey.toLowerCase();
+        return lowerKey.contains("directory")
+                || lowerKey.contains("dir")
+                || lowerKey.contains("path")
+                || lowerKey.contains("folder");
+    }
+
+    private static String toAbsolutePath(String value) {
+        try {
+            Path path = Paths.get(value);
+
+            if (path.isAbsolute()) {
+
+                Files.createDirectories(path);
+                return path.toString();
+            } else {
+
+                String userDir = System.getProperty("user.dir");
+                Path absolutePath = Paths.get(userDir, value).toAbsolutePath();
+                Files.createDirectories(absolutePath);
+                return absolutePath.toString();
+            }
+        } catch (Exception e) {
+            System.err.println("Cannot resolve path: " + value + " - " + e.getMessage());
+            return value;
+        }
     }
 
     /**
