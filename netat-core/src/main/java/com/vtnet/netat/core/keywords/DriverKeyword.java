@@ -1,5 +1,7 @@
 package com.vtnet.netat.core.keywords;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vtnet.netat.core.BaseKeyword;
 import com.vtnet.netat.core.annotations.NetatKeyword;
 import com.vtnet.netat.driver.*;
@@ -464,6 +466,186 @@ public class DriverKeyword extends BaseKeyword {
             throw new IllegalArgumentException(
                     "Invalid Appium server URL: '" + appiumServerUrl + "'. " +
                             "URL must be in format 'http://host:port/' (e.g., http://127.0.0.1:4723/)");
+        }
+    }
+
+    @NetatKeyword(
+            name = "startMobileSession",
+            description = "Khởi tạo phiên kiểm thử trên thiết bị di động (Android/iOS).\n" +
+                    "Hỗ trợ cả Local Appium và Device Farm.\n\n" +
+                    "capsJson hỗ trợ:\n" +
+                    "- Appium capabilities: appium:noReset, appium:app, ...\n" +
+                    "- Appium settings: appium:settings:{waitForIdleTimeout:0,...}\n" +
+                    "- Device Farm: df:app, df:tags, df:recordVideo, ...",
+            category = "Driver",
+            subCategory = "Session",
+            parameters = {
+                    "sessionName: String - Tên định danh duy nhất cho phiên",
+                    "platform: String - 'android' hoặc 'ios'",
+                    "udid: String - UDID thiết bị (để trống/'auto' để Device Farm tự chọn, hoặc ${ENV_VAR})",
+                    "appiumUrl: String - URL của Appium Server hoặc Device Farm",
+                    "capsJson: String - JSON capabilities (có thể chứa appium:settings và df:*)"
+            },
+            returnValue = "void",
+            example = "// === Local Appium với app path ===\n" +
+                    "startMobileSession | session1 | android | emulator-5554 | http://127.0.0.1:4723/ | {\"appium:app\":\"/path/app.apk\"} |\n\n" +
+                    "// === Với Appium Settings (tối ưu performance) ===\n" +
+                    "startMobileSession | session1 | android | emulator-5554 | http://127.0.0.1:4723/ | " +
+                    "{\"appium:app\":\"/path/app.apk\",\"appium:settings\":{\"waitForIdleTimeout\":0,\"waitForSelectorTimeout\":1000}} |\n\n" +
+                    "// === Device Farm ===\n" +
+                    "startMobileSession | df_session | android | auto | https://df.company.com/wd/hub | " +
+                    "{\"df:app\":\"app-123\",\"df:tags\":[\"smoke\"],\"df:recordVideo\":true} |",
+            note = "UDID có thể: 'auto' (Device Farm tự chọn), ${ENV_VAR} (đọc từ biến môi trường), hoặc giá trị cụ thể.\n" +
+                    "appium:settings dùng để tối ưu tốc độ test (waitForIdleTimeout, waitForSelectorTimeout, ...)."
+    )
+    @Step("Start Mobile Session: {0} on {1}")
+    public void startMobileSession(String sessionName, String platform, String udid,
+                                   String appiumUrl, String capsJson) {
+        execute(() -> {
+            // Validation
+            validateSessionName(sessionName);
+            validateMobilePlatform(platform, "startMobileSession");
+            validateAppiumUrl(appiumUrl);
+
+            // Resolve UDID (hỗ trợ auto, ${ENV_VAR}, hoặc giá trị cụ thể)
+            String resolvedUdid = resolveUdid(udid);
+
+            // Build capabilities với xử lý appium:settings
+            MutableCapabilities caps = buildMobileCapabilities(platform, resolvedUdid, capsJson);
+
+            logger.info("Starting mobile session '{}' | Platform: {} | UDID: {} | URL: {}",
+                    sessionName, platform, resolvedUdid != null ? resolvedUdid : "AUTO", appiumUrl);
+
+            // Create driver
+            MobileDriverFactory factory = new MobileDriverFactory();
+            WebDriver driver = factory.createDriver(platform, caps, appiumUrl);
+
+            // Register session
+            SessionManager.getInstance().addSession(sessionName, driver);
+            logger.info("Mobile session '{}' created successfully", sessionName);
+
+            return null;
+        }, sessionName, platform, udid, appiumUrl, capsJson);
+    }
+
+    @NetatKeyword(
+            name = "startMobileSession",
+            description = "Khởi tạo phiên mobile với cấu hình mặc định (không có capabilities bổ sung).",
+            category = "Driver",
+            subCategory = "Session",
+            parameters = {
+                    "sessionName: String - Tên định danh cho phiên",
+                    "platform: String - 'android' hoặc 'ios'",
+                    "udid: String - UDID của thiết bị",
+                    "appiumUrl: String - URL của Appium Server"
+            },
+            example = "startMobileSession | session1 | android | emulator-5554 | http://127.0.0.1:4723/ |"
+    )
+    @Step("Start Mobile Session: {0} on {1} device {2}")
+    public void startMobileSession(String sessionName, String platform, String udid, String appiumUrl) {
+        startMobileSession(sessionName, platform, udid, appiumUrl, "{}");
+    }
+
+    private MutableCapabilities buildMobileCapabilities(String platform, String udid, String capsJson) {
+        String automationName = "android".equalsIgnoreCase(platform) ? "UiAutomator2" : "XCUITest";
+
+        MutableCapabilities caps = new MutableCapabilities();
+        caps.setCapability("platformName", platform);
+        caps.setCapability("appium:automationName", automationName);
+
+        if (udid != null && !udid.isEmpty()) {
+            caps.setCapability("appium:udid", udid);
+        }
+
+        caps.setCapability("appium:noReset", true);
+        caps.setCapability("appium:autoGrantPermissions", true);
+        caps.setCapability("appium:newCommandTimeout", 300);
+
+        if (capsJson != null && !capsJson.trim().isEmpty() && !capsJson.trim().equals("{}")) {
+            Map<String, Object> customCaps = parseCapabilitiesJson(capsJson);
+            Map<String, Object> settingsMap = new HashMap<>();
+
+            for (Map.Entry<String, Object> entry : customCaps.entrySet()) {
+                String key = entry.getKey();
+                Object value = entry.getValue();
+
+
+                if (key.startsWith("appium:settings[") && key.endsWith("]")) {
+                    String settingName = key.substring("appium:settings[".length(), key.length() - 1);
+                    settingsMap.put(settingName, value);
+                    logger.debug("Add setting: {} = {}", settingName, value);
+                }
+
+                else if ("appium:settings".equals(key) && value instanceof Map) {
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> settingsFromJson = (Map<String, Object>) value;
+                    settingsMap.putAll(settingsFromJson);
+                    logger.debug("Merge settings map: {}", settingsFromJson);
+                }
+
+                else {
+                    caps.setCapability(key, value);
+                    logger.debug("Set capability: {} = {}", key, value);
+                }
+            }
+
+            if (!settingsMap.isEmpty()) {
+                caps.setCapability("appium:settings", settingsMap);
+                logger.info("Applied appium:settings: {}", settingsMap);
+            }
+        }
+
+        return caps;
+    }
+
+    private String resolveUdid(String udid) {
+        if (udid == null || udid.trim().isEmpty()) {
+            return null;
+        }
+
+        String trimmed = udid.trim();
+
+        if ("auto".equalsIgnoreCase(trimmed)) {
+            logger.info("UDID set to 'auto' - Device Farm will allocate available device");
+            return null;
+        }
+
+        if (trimmed.startsWith("${") && trimmed.endsWith("}")) {
+            String varName = trimmed.substring(2, trimmed.length() - 1);
+
+            String value = System.getProperty(varName);
+
+            if (value == null || value.isEmpty()) {
+                value = System.getenv(varName);
+            }
+
+            if (value == null || value.isEmpty()) {
+                logger.warn("Environment variable '{}' not found. UDID will be null (auto-allocate)", varName);
+                return null;
+            }
+
+            logger.info("Resolved UDID from environment: {} = {}", varName, value);
+            return value;
+        }
+
+        return trimmed;
+    }
+
+    private Map<String, Object> parseCapabilitiesJson(String capsJson) {
+        if (capsJson == null || capsJson.trim().isEmpty()) {
+            return new HashMap<>();
+        }
+
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.readValue(capsJson, new TypeReference<Map<String, Object>>() {});
+        } catch (Exception e) {
+            logger.error("Failed to parse capabilities JSON: {}", capsJson, e);
+            throw new IllegalArgumentException(
+                    "Invalid capabilities JSON format: " + e.getMessage() + "\n" +
+                            "Expected format: {\"appium:noReset\":true,\"appium:settings\":{\"waitForIdleTimeout\":0}}\n" +
+                            "Received: " + capsJson
+            );
         }
     }
 }

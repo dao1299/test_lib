@@ -21,6 +21,8 @@ import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import com.vtnet.netat.core.secret.SecretDecryptor;
+import com.vtnet.netat.core.secret.MasterKeyProvider;
 
 /**
  * Base chung cho keyword UI (Web/Mobile).
@@ -37,7 +39,6 @@ public abstract class BaseUiKeyword extends BaseKeyword {
             new ThreadLocal<>();
 
     protected WebElement findElement(ObjectUI uiObject) {
-        // Gọi đến phương thức findElement mới với thời gian chờ mặc định (PRIMARY_TIMEOUT)
         return findElement(uiObject, PRIMARY_TIMEOUT);
     }
 
@@ -227,6 +228,56 @@ public abstract class BaseUiKeyword extends BaseKeyword {
 
             throw new RuntimeException("Cannot send keys to '" + uiObject.getName() + "'");
         }, uiObject != null ? uiObject.getName() : "null");
+    }
+
+    protected void sendKeysSensitive(ObjectUI uiObject, String encryptedText) {
+        execute(() -> {
+            // 1. Lấy master key
+            String masterKey = MasterKeyProvider.getMasterKey();
+
+            // 2. Decrypt
+            String plainText = SecretDecryptor.decrypt(encryptedText, masterKey);
+
+            // 3. Mask cho logging
+            String maskedText = maskSensitiveValue(plainText);
+
+            // 4. Thực hiện sendKeys
+            WebDriver driver = DriverManager.getDriver();
+            List<Locator> locators = uiObject.getActiveLocators();
+
+            for (Locator locator : locators) {
+                try {
+                    By by = locator.convertToBy();
+
+                    WebElement element = new WebDriverWait(driver, PRIMARY_TIMEOUT)
+                            .pollingEvery(POLLING_INTERVAL)
+                            .ignoring(StaleElementReferenceException.class)
+                            .until(ExpectedConditions.visibilityOfElementLocated(by));
+
+                    element.clear();
+                    element.sendKeys(plainText);
+
+                    logger.info("Successfully sent sensitive keys '{}' to '{}'",
+                            maskedText, uiObject.getName());
+                    return null;
+
+                } catch (Exception e) {
+                    logger.debug("Failed with locator {}, trying next", locator);
+                }
+            }
+
+            throw new RuntimeException("Cannot send keys to '" + uiObject.getName() + "'");
+        }, uiObject != null ? uiObject.getName() : "null");
+    }
+
+    /**
+     * Mask giá trị: "Secret123" → "S*****3"
+     */
+    private String maskSensitiveValue(String value) {
+        if (value == null || value.isEmpty()) return "";
+        if (value.length() == 1) return "*";
+        if (value.length() == 2) return value.charAt(0) + "*";
+        return value.charAt(0) + "*****" + value.charAt(value.length() - 1);
     }
 
     protected String getText(ObjectUI uiObject) {

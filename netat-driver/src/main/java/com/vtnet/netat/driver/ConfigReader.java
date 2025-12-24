@@ -15,7 +15,7 @@ public final class ConfigReader {
     private static volatile boolean isLoaded = false;
     private static volatile boolean isLoading = false;
     private static final Object LOCK = new Object();
-    private static String currentEnvironment;
+    private static volatile String currentEnvironment;
 
     private ConfigReader() {}
 
@@ -67,20 +67,32 @@ public final class ConfigReader {
         }
     }
 
-    public static String getProperty(String key) {
-        if (!isLoaded && !isLoading) loadProperties();
+    public static String getProperty(String key, String defaultValue) {
+        String value = getProperty(key);
+        return value != null ? value : defaultValue;
+    }
 
-        // System property first
+    public static String getProperty(String key) {
+
+        if (!isLoaded) {
+            loadProperties();
+        }
+
+        while (isLoading) {
+            try {
+                Thread.sleep(5);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return null;
+            }
+        }
+
         String value = System.getProperty(key);
         if (value != null) return value;
 
         return properties.getProperty(key);
     }
 
-    public static String getProperty(String key, String defaultValue) {
-        String value = getProperty(key);
-        return value != null ? value : defaultValue;
-    }
 
     public static Properties getProperties() {
         if (!isLoaded && !isLoading) loadProperties();
