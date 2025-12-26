@@ -5,15 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vtnet.netat.core.BaseKeyword;
 import com.vtnet.netat.core.annotations.NetatKeyword;
 import com.vtnet.netat.driver.*;
-import io.appium.java_client.AppiumDriver;
-import io.appium.java_client.android.AndroidDriver;
-import io.appium.java_client.ios.IOSDriver;
 import io.qameta.allure.Step;
 import org.openqa.selenium.MutableCapabilities;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.remote.DesiredCapabilities;
 
-import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -21,7 +16,7 @@ import java.util.Map;
 
 /**
  * Keywords for managing Driver and Session.
- *
+ * <p>
  * Improvements:
  * - Unified usage of MobileDriverFactory for all mobile sessions
  * - Input validation with clear error messages
@@ -229,11 +224,9 @@ public class DriverKeyword extends BaseKeyword {
             validateAppPath(appPath);
             validateAppiumUrl(appiumServerUrl);
 
-            // Sử dụng CapabilityFactory để tạo capabilities nhất quán
             MutableCapabilities caps = CapabilityFactory.buildMobileCapabilities(platformName, udid, automationName);
             CapabilityFactory.setAppPath(caps, appPath);
 
-            // Sử dụng MobileDriverFactory với health check và retry
             MobileDriverFactory factory = new MobileDriverFactory();
             WebDriver driver = factory.createDriver(platformName, caps, appiumServerUrl);
 
@@ -302,8 +295,6 @@ public class DriverKeyword extends BaseKeyword {
     public void switchSession(String sessionName) {
         execute(() -> {
             validateSessionName(sessionName);
-
-            // Check if session exists
             WebDriver driver = SessionManager.getInstance().getSession(sessionName);
             if (driver == null) {
                 throw new IllegalStateException(
@@ -311,7 +302,6 @@ public class DriverKeyword extends BaseKeyword {
                                 "Make sure you have created it with startSession() first.");
             }
 
-            // Verify session is still active by checking session ID
             if (driver instanceof org.openqa.selenium.remote.RemoteWebDriver) {
                 org.openqa.selenium.remote.RemoteWebDriver remoteDriver =
                         (org.openqa.selenium.remote.RemoteWebDriver) driver;
@@ -324,7 +314,6 @@ public class DriverKeyword extends BaseKeyword {
                                     "Please create a new session.");
                 }
             }
-
             SessionManager.getInstance().switchSession(sessionName);
             return null;
         }, sessionName);
@@ -574,16 +563,12 @@ public class DriverKeyword extends BaseKeyword {
                     String settingName = key.substring("appium:settings[".length(), key.length() - 1);
                     settingsMap.put(settingName, value);
                     logger.debug("Add setting: {} = {}", settingName, value);
-                }
-
-                else if ("appium:settings".equals(key) && value instanceof Map) {
+                } else if ("appium:settings".equals(key) && value instanceof Map) {
                     @SuppressWarnings("unchecked")
                     Map<String, Object> settingsFromJson = (Map<String, Object>) value;
                     settingsMap.putAll(settingsFromJson);
                     logger.debug("Merge settings map: {}", settingsFromJson);
-                }
-
-                else {
+                } else {
                     caps.setCapability(key, value);
                     logger.debug("Set capability: {} = {}", key, value);
                 }
@@ -638,7 +623,8 @@ public class DriverKeyword extends BaseKeyword {
 
         try {
             ObjectMapper mapper = new ObjectMapper();
-            return mapper.readValue(capsJson, new TypeReference<Map<String, Object>>() {});
+            return mapper.readValue(capsJson, new TypeReference<Map<String, Object>>() {
+            });
         } catch (Exception e) {
             logger.error("Failed to parse capabilities JSON: {}", capsJson, e);
             throw new IllegalArgumentException(
@@ -647,5 +633,12 @@ public class DriverKeyword extends BaseKeyword {
                             "Received: " + capsJson
             );
         }
+    }
+
+    public void closeSession(String sessionName) {
+        execute(() -> {
+            SessionManager.getInstance().stopSession(sessionName);
+            return null;
+        }, sessionName);
     }
 }
