@@ -2,6 +2,8 @@ package com.vtnet.netat.api.core;
 
 import com.vtnet.netat.core.BaseKeyword;
 import com.vtnet.netat.core.logging.NetatLogger;
+import com.vtnet.netat.core.secret.SecretDecryptor;
+import com.vtnet.netat.core.secret.SensitiveDataProtection;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
@@ -16,53 +18,29 @@ import java.util.Map;
 public abstract class BaseApiKeyword extends BaseKeyword {
 
     protected static final NetatLogger logger = NetatLogger.getInstance(BaseApiKeyword.class);
+    protected static final SensitiveDataProtection protection = SensitiveDataProtection.getInstance();
 
-    // ========================================================================
-    // CONTEXT (Thread-safe)
-    // ========================================================================
-
-    /**
-     * Thread-local context cho mỗi test thread
-     * Đảm bảo thread-safe khi chạy parallel tests
-     */
     protected static ThreadLocal<ApiContext> contextThreadLocal = ThreadLocal.withInitial(ApiContext::new);
 
-    /**
-     * Get current thread's API context
-     */
     protected ApiContext getContext() {
         return contextThreadLocal.get();
     }
 
-    /**
-     * Shorthand property để access context trong subclasses
-     */
-    protected ApiContext context = getContext();
-
-    /**
-     * Reset context cho thread hiện tại
-     */
     protected void resetContext() {
         contextThreadLocal.get().reset();
     }
 
-    /**
-     * Remove context của thread hiện tại (cleanup)
-     */
+
     protected void removeContext() {
         contextThreadLocal.remove();
     }
 
-    // ========================================================================
-    // CORE HTTP REQUEST METHODS
-    // ========================================================================
 
-    /**
-     * Execute GET request
-     *
-     * @param endpoint Endpoint URL (relative hoặc absolute)
-     * @return ApiResponse object
-     */
+    public static void cleanupThreadLocal() {
+        contextThreadLocal.remove();
+    }
+
+
     protected ApiResponse executeGet(String endpoint) {
         RequestSpecification spec = buildRequestSpec();
 
@@ -75,12 +53,7 @@ public abstract class BaseApiKeyword extends BaseKeyword {
         return new ApiResponse(response);
     }
 
-    /**
-     * Execute POST request
-     *
-     * @param endpoint Endpoint URL
-     * @return ApiResponse object
-     */
+
     protected ApiResponse executePost(String endpoint) {
         RequestSpecification spec = buildRequestSpec();
 
@@ -93,12 +66,7 @@ public abstract class BaseApiKeyword extends BaseKeyword {
         return new ApiResponse(response);
     }
 
-    /**
-     * Execute PUT request
-     *
-     * @param endpoint Endpoint URL
-     * @return ApiResponse object
-     */
+
     protected ApiResponse executePut(String endpoint) {
         RequestSpecification spec = buildRequestSpec();
 
@@ -111,12 +79,7 @@ public abstract class BaseApiKeyword extends BaseKeyword {
         return new ApiResponse(response);
     }
 
-    /**
-     * Execute PATCH request
-     *
-     * @param endpoint Endpoint URL
-     * @return ApiResponse object
-     */
+
     protected ApiResponse executePatch(String endpoint) {
         RequestSpecification spec = buildRequestSpec();
 
@@ -129,12 +92,7 @@ public abstract class BaseApiKeyword extends BaseKeyword {
         return new ApiResponse(response);
     }
 
-    /**
-     * Execute DELETE request
-     *
-     * @param endpoint Endpoint URL
-     * @return ApiResponse object
-     */
+
     protected ApiResponse executeDelete(String endpoint) {
         RequestSpecification spec = buildRequestSpec();
 
@@ -147,12 +105,7 @@ public abstract class BaseApiKeyword extends BaseKeyword {
         return new ApiResponse(response);
     }
 
-    /**
-     * Execute HEAD request
-     *
-     * @param endpoint Endpoint URL
-     * @return ApiResponse object
-     */
+
     protected ApiResponse executeHead(String endpoint) {
         RequestSpecification spec = buildRequestSpec();
 
@@ -165,12 +118,7 @@ public abstract class BaseApiKeyword extends BaseKeyword {
         return new ApiResponse(response);
     }
 
-    /**
-     * Execute OPTIONS request
-     *
-     * @param endpoint Endpoint URL
-     * @return ApiResponse object
-     */
+
     protected ApiResponse executeOptions(String endpoint) {
         RequestSpecification spec = buildRequestSpec();
 
@@ -183,18 +131,6 @@ public abstract class BaseApiKeyword extends BaseKeyword {
         return new ApiResponse(response);
     }
 
-    // ========================================================================
-    // MULTIPART/FILE UPLOAD METHODS
-    // ========================================================================
-
-    /**
-     * Execute multipart request (file upload)
-     *
-     * @param endpoint Endpoint URL
-     * @param filePath Path to file
-     * @param fileFieldName Field name trong form (thường là "file")
-     * @return ApiResponse object
-     */
     protected ApiResponse executeMultipartUpload(String endpoint, String filePath, String fileFieldName) {
         RequestSpecification spec = buildRequestSpec();
 
@@ -215,15 +151,7 @@ public abstract class BaseApiKeyword extends BaseKeyword {
         return new ApiResponse(response);
     }
 
-    /**
-     * Execute multipart request với metadata
-     *
-     * @param endpoint Endpoint URL
-     * @param filePath Path to file
-     * @param fileFieldName Field name cho file
-     * @param metadata Additional form fields (key-value pairs)
-     * @return ApiResponse object
-     */
+
     protected ApiResponse executeMultipartUploadWithMetadata(String endpoint, String filePath,
                                                              String fileFieldName, Map<String, String> metadata) {
         RequestSpecification spec = buildRequestSpec();
@@ -233,10 +161,8 @@ public abstract class BaseApiKeyword extends BaseKeyword {
             throw new RuntimeException("File not found: " + filePath);
         }
 
-        // Add file
         spec.multiPart(fileFieldName, file);
 
-        // Add metadata fields
         if (metadata != null && !metadata.isEmpty()) {
             for (Map.Entry<String, String> entry : metadata.entrySet()) {
                 spec.multiPart(entry.getKey(), entry.getValue());
@@ -253,23 +179,6 @@ public abstract class BaseApiKeyword extends BaseKeyword {
 
         return new ApiResponse(response);
     }
-
-    // ========================================================================
-    // HELPER METHODS
-    // ========================================================================
-
-    /**
-     * Build RequestSpecification từ context hiện tại
-     */
-//    private RequestSpecification buildRequestSpec() {
-//        RequestSpecification spec = RestAssured.given();
-//
-//        // Apply context settings
-//        ApiContext ctx = getContext();
-//        ctx.applyToRequestSpec(spec);
-//
-//        return spec;
-//    }
 
     private RequestSpecification buildRequestSpec() {
         RequestSpecification spec = RestAssured.given();
@@ -289,9 +198,7 @@ public abstract class BaseApiKeyword extends BaseKeyword {
         return spec;
     }
 
-    /**
-     * Log request information (nếu logging enabled)
-     */
+
     private void logRequest(String method, String endpoint) {
         ApiContext ctx = getContext();
 
@@ -325,9 +232,6 @@ public abstract class BaseApiKeyword extends BaseKeyword {
         }
     }
 
-    /**
-     * Log response information (nếu logging enabled)
-     */
     private void logResponse(Response response) {
         ApiContext ctx = getContext();
 
@@ -354,16 +258,6 @@ public abstract class BaseApiKeyword extends BaseKeyword {
         }
     }
 
-    // ========================================================================
-    // UTILITY METHODS
-    // ========================================================================
-
-    /**
-     * Convert content type shorthand to full MIME type
-     *
-     * @param shortForm Shorthand (JSON, XML, FORM, TEXT, HTML)
-     * @return Full MIME type
-     */
     protected String convertToMimeType(String shortForm) {
         if (shortForm == null || shortForm.isEmpty()) {
             return null;
@@ -386,23 +280,16 @@ public abstract class BaseApiKeyword extends BaseKeyword {
             case "BINARY":
                 return "application/octet-stream";
             default:
-                // Already a MIME type or custom type
                 return shortForm;
         }
     }
 
-    /**
-     * Validate endpoint URL
-     */
     protected void validateEndpoint(String endpoint) {
         if (endpoint == null || endpoint.isEmpty()) {
             throw new IllegalArgumentException("Endpoint cannot be null or empty");
         }
     }
 
-    /**
-     * Validate file path
-     */
     protected void validateFilePath(String filePath) {
         if (filePath == null || filePath.isEmpty()) {
             throw new IllegalArgumentException("File path cannot be null or empty");
@@ -418,9 +305,6 @@ public abstract class BaseApiKeyword extends BaseKeyword {
         }
     }
 
-    /**
-     * Build full URL from base URI and endpoint
-     */
     protected String buildFullUrl(String endpoint) {
         ApiContext ctx = getContext();
         String baseUri = ctx.getBaseUri();
@@ -429,7 +313,6 @@ public abstract class BaseApiKeyword extends BaseKeyword {
             return endpoint;
         }
 
-        // Remove trailing slash from base URI
         if (baseUri.endsWith("/")) {
             baseUri = baseUri.substring(0, baseUri.length() - 1);
         }
@@ -442,9 +325,6 @@ public abstract class BaseApiKeyword extends BaseKeyword {
         return baseUri + endpoint;
     }
 
-    /**
-     * Pretty print JSON string
-     */
     protected String prettyPrintJson(String json) {
         if (json == null || json.isEmpty()) {
             return json;
@@ -456,42 +336,30 @@ public abstract class BaseApiKeyword extends BaseKeyword {
             Object jsonObject = mapper.readValue(json, Object.class);
             return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonObject);
         } catch (Exception e) {
-            // If not valid JSON, return as-is
             return json;
         }
     }
 
-    /**
-     * Check if response is JSON
-     */
     protected boolean isJsonResponse(Response response) {
         String contentType = response.getContentType();
         return contentType != null && contentType.toLowerCase().contains("json");
     }
 
-    /**
-     * Check if response is XML
-     */
     protected boolean isXmlResponse(Response response) {
         String contentType = response.getContentType();
         return contentType != null && contentType.toLowerCase().contains("xml");
     }
 
-    /**
-     * Extract filename from Content-Disposition header
-     */
+
     protected String extractFilenameFromContentDisposition(String contentDisposition) {
         if (contentDisposition == null || contentDisposition.isEmpty()) {
             return null;
         }
-
-        // Pattern: filename="something.pdf" hoặc filename=something.pdf
         String[] parts = contentDisposition.split(";");
         for (String part : parts) {
             part = part.trim();
             if (part.startsWith("filename=")) {
                 String filename = part.substring("filename=".length());
-                // Remove quotes if present
                 filename = filename.replaceAll("\"", "");
                 return filename;
             }
@@ -500,14 +368,6 @@ public abstract class BaseApiKeyword extends BaseKeyword {
         return null;
     }
 
-    /**
-     * Wait for a condition (polling)
-     *
-     * @param condition Lambda condition to check
-     * @param timeoutSeconds Maximum wait time
-     * @param pollIntervalMs Interval between checks
-     * @return true if condition met, false if timeout
-     */
     protected boolean waitForCondition(java.util.function.Supplier<Boolean> condition,
                                        int timeoutSeconds, int pollIntervalMs) {
         long startTime = System.currentTimeMillis();
@@ -529,40 +389,19 @@ public abstract class BaseApiKeyword extends BaseKeyword {
         return false;
     }
 
-    // ========================================================================
-    // CLEANUP METHODS
-    // ========================================================================
-
-    /**
-     * Cleanup method - được gọi sau mỗi test (nếu cần)
-     * Override method này trong subclass nếu cần custom cleanup
-     */
     protected void cleanup() {
-        // Default: clear request settings nhưng giữ config
+        // ✅ FIX: Luôn gọi getContext()
         getContext().clearAllRequestSettings();
     }
 
-    /**
-     * Hook method - được gọi trước mỗi request
-     * Override để thêm custom logic (VD: refresh token)
-     */
+
     protected void beforeRequest() {
-        // Default: do nothing
-        // Subclasses có thể override
+
     }
 
-    /**
-     * Hook method - được gọi sau mỗi request
-     * Override để thêm custom logic (VD: logging, metrics)
-     */
     protected void afterRequest(ApiResponse response) {
-        // Default: do nothing
-        // Subclasses có thể override
-    }
 
-    // ========================================================================
-    // DEPRECATED METHODS (For backward compatibility)
-    // ========================================================================
+    }
 
     /**
      * @deprecated Use getContext() instead

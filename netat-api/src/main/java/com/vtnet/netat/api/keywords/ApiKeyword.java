@@ -7,7 +7,8 @@ import com.vtnet.netat.api.core.BaseApiKeyword;
 import com.vtnet.netat.api.curl.CurlExecutor;
 import com.vtnet.netat.api.curl.CurlParser;
 import com.vtnet.netat.core.annotations.NetatKeyword;
-import io.qameta.allure.Step;
+import com.vtnet.netat.core.secret.SecretDecryptor;
+import com.vtnet.netat.core.secret.SensitiveDataProtection;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -26,12 +27,11 @@ public class ApiKeyword extends BaseApiKeyword {
             subCategory = "Configuration",
             parameters = {"baseUrl: String - URL gốc (VD: https://api.example.com)"},
             example = "api.setApiBaseUrl(\"https://api.example.com\");",
-            explainer = "Set API Base URL: {0}"
+            explainer = "Set API Base URL: {baseUrl}"
     )
-    @Step("Set API Base URL: {0}")
     public void setApiBaseUrl(String baseUrl) {
         execute(() -> {
-            context.setBaseUri(baseUrl);
+            getContext().setBaseUri(baseUrl);  // : context → getContext()
             logger.info("API Base URL set to: {}", baseUrl);
             return null;
         }, baseUrl);
@@ -44,12 +44,11 @@ public class ApiKeyword extends BaseApiKeyword {
             subCategory = "Configuration",
             parameters = {"timeoutSeconds: int - Số giây chờ tối đa"},
             example = "api.setRequestTimeout(30);",
-            explainer = "Set timeout: {0}s"
+            explainer = "Set timeout: {timeoutSeconds}s"
     )
-    @Step("Set timeout: {0}s")
     public void setRequestTimeout(int timeoutSeconds) {
         execute(() -> {
-            context.setTimeout(timeoutSeconds);
+            getContext().setTimeout(timeoutSeconds);  // 
             logger.info("Timeout set to: {}s", timeoutSeconds);
             return null;
         }, timeoutSeconds);
@@ -62,12 +61,11 @@ public class ApiKeyword extends BaseApiKeyword {
             subCategory = "Configuration",
             parameters = {"enabled: boolean - true = bật, false = tắt"},
             example = "api.enableRequestLogging(true);",
-            explainer = "Enable logging: {0}"
+            explainer = "Enable logging: {enabled}"
     )
-    @Step("Enable logging: {0}")
     public void enableRequestLogging(boolean enabled) {
         execute(() -> {
-            context.setLogRequests(enabled);
+            getContext().setLogRequests(enabled);  // 
             logger.info("Request logging: {}", enabled ? "enabled" : "disabled");
             return null;
         }, enabled);
@@ -81,10 +79,9 @@ public class ApiKeyword extends BaseApiKeyword {
             example = "api.clearAllRequestSettings();",
             explainer = "Clear all request settings"
     )
-    @Step("Clear all request settings")
     public void clearAllRequestSettings() {
         execute(() -> {
-            context.clearAllRequestSettings();
+            getContext().clearAllRequestSettings();  // 
             logger.info("All request settings cleared");
             return null;
         });
@@ -98,10 +95,9 @@ public class ApiKeyword extends BaseApiKeyword {
             example = "api.resetApiContext();",
             explainer = "Reset API context"
     )
-    @Step("Reset API context")
     public void resetApiContext() {
         execute(() -> {
-            context.reset();
+            getContext().reset();  // 
             logger.info("API context reset");
             return null;
         });
@@ -116,10 +112,9 @@ public class ApiKeyword extends BaseApiKeyword {
             explainer = "Disable SSL verification (TEST ONLY)",
             note = "WARNING: Không sử dụng trong production!"
     )
-    @Step("Disable SSL verification (TEST ONLY)")
     public void disableSslVerification() {
         execute(() -> {
-            context.setSslVerificationEnabled(false);
+            getContext().setSslVerificationEnabled(false);  // 
             logger.warn("SSL verification DISABLED - Only use in test environment!");
             return null;
         });
@@ -133,10 +128,9 @@ public class ApiKeyword extends BaseApiKeyword {
             example = "api.enableSslVerification();",
             explainer = "Enable SSL verification"
     )
-    @Step("Enable SSL verification")
     public void enableSslVerification() {
         execute(() -> {
-            context.setSslVerificationEnabled(true);
+            getContext().setSslVerificationEnabled(true);  // 
             logger.info("✓ SSL verification enabled");
             return null;
         });
@@ -160,13 +154,12 @@ public class ApiKeyword extends BaseApiKeyword {
             note = "Copy cURL từ browser DevTools hoặc Postman và paste trực tiếp. " +
                     "Hỗ trợ multiline với backslash (\\)."
     )
-    @Step("Execute cURL command")
     public ApiResponse executeCurl(String curlCommand) {
         return execute(() -> {
             logger.info("Parsing and executing cURL command...");
             CurlParser.ParsedCurl parsed = CurlParser.parse(curlCommand);
             logger.info("Parsed: {} {}", parsed.getMethod(), parsed.getUrl());
-            ApiResponse response = CurlExecutor.execute(parsed, context);
+            ApiResponse response = CurlExecutor.execute(parsed, getContext());  // 
             logger.info("cURL executed - Status: {}", response.getStatusCode());
             return response;
         }, truncateForLog(curlCommand));
@@ -182,16 +175,15 @@ public class ApiKeyword extends BaseApiKeyword {
             example = "// File: src/test/resources/curl/create_user.sh\n" +
                     "// curl -X POST 'https://api.example.com/users' -H 'Content-Type: application/json' -d '{...}'\n\n" +
                     "ApiResponse response = api.executeCurlFromFile(\"src/test/resources/curl/create_user.sh\");",
-            explainer = "Execute cURL from file: {0}"
+            explainer = "Execute cURL from file: {filePath}"
     )
-    @Step("Execute cURL from file: {0}")
     public ApiResponse executeCurlFromFile(String filePath) {
         return execute(() -> {
             logger.info("Reading cURL command from file: {}", filePath);
             String curlCommand = new String(Files.readAllBytes(Paths.get(filePath)));
             CurlParser.ParsedCurl parsed = CurlParser.parse(curlCommand);
             logger.info("Parsed from file: {} {}", parsed.getMethod(), parsed.getUrl());
-            ApiResponse response = CurlExecutor.execute(parsed, context);
+            ApiResponse response = CurlExecutor.execute(parsed, getContext());  // 
             logger.info("cURL from file executed - Status: {}", response.getStatusCode());
             return response;
         }, filePath);
@@ -209,7 +201,6 @@ public class ApiKeyword extends BaseApiKeyword {
                     "System.out.println(info);",
             explainer = "Parse cURL command (debug)"
     )
-    @Step("Parse cURL command (debug)")
     public String parseCurl(String curlCommand) {
         return execute(() -> {
             CurlParser.ParsedCurl parsed = CurlParser.parse(curlCommand);
@@ -218,6 +209,7 @@ public class ApiKeyword extends BaseApiKeyword {
             return info;
         }, truncateForLog(curlCommand));
     }
+
     @NetatKeyword(
             name = "setBearerToken",
             description = "Thiết lập Bearer token (JWT)",
@@ -227,10 +219,9 @@ public class ApiKeyword extends BaseApiKeyword {
             example = "api.setBearerToken(\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\");",
             explainer = "Set Bearer Token"
     )
-    @Step("Set Bearer Token")
     public void setBearerToken(String token) {
         execute(() -> {
-            context.setBearerToken(token);
+            getContext().setBearerToken(token);  // 
             logger.info("Bearer token set");
             return null;
         }, "***");
@@ -246,12 +237,11 @@ public class ApiKeyword extends BaseApiKeyword {
                     "password: String - Password"
             },
             example = "api.setBasicAuth(\"admin\", \"password123\");",
-            explainer = "Set Basic Auth: {0}"
+            explainer = "Set Basic Auth: {username}"
     )
-    @Step("Set Basic Auth: {0}")
     public void setBasicAuth(String username, String password) {
         execute(() -> {
-            context.setBasicAuth(username, password);
+            getContext().setBasicAuth(username, password);  // 
             logger.info("Basic auth set for user: {}", username);
             return null;
         }, username, "***");
@@ -268,13 +258,12 @@ public class ApiKeyword extends BaseApiKeyword {
                     "location: String - HEADER hoặc QUERY"
             },
             example = "api.setApiKey(\"X-API-Key\", \"abc123xyz\", \"HEADER\");",
-            explainer = "Set API Key: {0} in {2}"
+            explainer = "Set API Key: {keyName} in {location}"
     )
-    @Step("Set API Key: {0} in {2}")
     public void setApiKey(String keyName, String keyValue, String location) {
         execute(() -> {
             ApiContext.ApiKeyLocation loc = ApiContext.ApiKeyLocation.valueOf(location.toUpperCase());
-            context.setApiKey(keyName, keyValue, loc);
+            getContext().setApiKey(keyName, keyValue, loc);  // 
             logger.info("API Key '{}' set in {}", keyName, location);
             return null;
         }, keyName, "***", location);
@@ -288,10 +277,9 @@ public class ApiKeyword extends BaseApiKeyword {
             example = "api.removeAuthentication();",
             explainer = "Remove authentication"
     )
-    @Step("Remove authentication")
     public void removeAuthentication() {
         execute(() -> {
-            context.removeAuth();
+            getContext().removeAuth();  // 
             logger.info("Authentication removed");
             return null;
         });
@@ -307,12 +295,11 @@ public class ApiKeyword extends BaseApiKeyword {
                     "headerValue: String - Giá trị header"
             },
             example = "api.addHeader(\"X-Request-ID\", \"12345\");",
-            explainer = "Add header: {0} = {1}"
+            explainer = "Add header: {headerName} = {headerValue}"
     )
-    @Step("Add header: {0} = {1}")
     public void addHeader(String headerName, String headerValue) {
         execute(() -> {
-            context.addHeader(headerName, headerValue);
+            getContext().addHeader(headerName, headerValue); 
             logger.info("Header added: {} = {}", headerName, headerValue);
             return null;
         }, headerName, headerValue);
@@ -325,14 +312,13 @@ public class ApiKeyword extends BaseApiKeyword {
             subCategory = "Headers",
             parameters = {"contentType: String - JSON, XML, FORM, TEXT, hoặc full MIME type"},
             example = "api.setContentType(\"JSON\");",
-            explainer = "Set Content-Type: {0}"
+            explainer = "Set Content-Type: {contentType}"
     )
-    @Step("Set Content-Type: {0}")
     public void setContentType(String contentType) {
         execute(() -> {
             String mimeType = convertToMimeType(contentType);
-            context.setContentType(mimeType);
-            context.addHeader("Content-Type", mimeType);
+            getContext().setContentType(mimeType);
+            getContext().addHeader("Content-Type", mimeType);
             logger.info("Content-Type set to: {}", mimeType);
             return null;
         }, contentType);
@@ -345,13 +331,12 @@ public class ApiKeyword extends BaseApiKeyword {
             subCategory = "Headers",
             parameters = {"acceptType: String - JSON, XML, TEXT, hoặc full MIME type"},
             example = "api.setAcceptHeader(\"JSON\");",
-            explainer = "Set Accept: {0}"
+            explainer = "Set Accept: {acceptType}"
     )
-    @Step("Set Accept: {0}")
     public void setAcceptHeader(String acceptType) {
         execute(() -> {
             String mimeType = convertToMimeType(acceptType);
-            context.addHeader("Accept", mimeType);
+            getContext().addHeader("Accept", mimeType);  // 
             logger.info("Accept header set to: {}", mimeType);
             return null;
         }, acceptType);
@@ -364,12 +349,11 @@ public class ApiKeyword extends BaseApiKeyword {
             subCategory = "Headers",
             parameters = {"headerName: String"},
             example = "api.removeHeader(\"X-Custom-Header\");",
-            explainer = "Remove header: {0}"
+            explainer = "Remove header: {headerName}"
     )
-    @Step("Remove header: {0}")
     public void removeHeader(String headerName) {
         execute(() -> {
-            context.removeHeader(headerName);
+            getContext().removeHeader(headerName);  // 
             logger.info("Header removed: {}", headerName);
             return null;
         }, headerName);
@@ -383,10 +367,9 @@ public class ApiKeyword extends BaseApiKeyword {
             example = "api.clearAllHeaders();",
             explainer = "Clear all headers"
     )
-    @Step("Clear all headers")
     public void clearAllHeaders() {
         execute(() -> {
-            context.clearHeaders();
+            getContext().clearHeaders();  // 
             logger.info("All headers cleared");
             return null;
         });
@@ -402,12 +385,11 @@ public class ApiKeyword extends BaseApiKeyword {
                     "paramValue: Object - Giá trị parameter"
             },
             example = "api.addQueryParam(\"page\", 1);",
-            explainer = "Add query param: {0} = {1}"
+            explainer = "Add query param: {paramName} = {paramValue}"
     )
-    @Step("Add query param: {0} = {1}")
     public void addQueryParam(String paramName, Object paramValue) {
         execute(() -> {
-            context.addQueryParam(paramName, paramValue);
+            getContext().addQueryParam(paramName, paramValue);  // 
             logger.info("Query param added: {} = {}", paramName, paramValue);
             return null;
         }, paramName, paramValue);
@@ -423,12 +405,11 @@ public class ApiKeyword extends BaseApiKeyword {
                     "paramValue: Object - Giá trị parameter"
             },
             example = "api.addPathParam(\"userId\", 123);",
-            explainer = "Add path param: {0} = {1}"
+            explainer = "Add path param: {paramName} = {paramValue}"
     )
-    @Step("Add path param: {0} = {1}")
     public void addPathParam(String paramName, Object paramValue) {
         execute(() -> {
-            context.addPathParam(paramName, paramValue);
+            getContext().addPathParam(paramName, paramValue);  // 
             logger.info("Path param added: {} = {}", paramName, paramValue);
             return null;
         }, paramName, paramValue);
@@ -442,10 +423,9 @@ public class ApiKeyword extends BaseApiKeyword {
             example = "api.clearQueryParams();",
             explainer = "Clear all query params"
     )
-    @Step("Clear all query params")
     public void clearQueryParams() {
         execute(() -> {
-            context.clearQueryParams();
+            getContext().clearQueryParams();  // 
             logger.info("All query params cleared");
             return null;
         });
@@ -461,10 +441,9 @@ public class ApiKeyword extends BaseApiKeyword {
             example = "api.setRequestBody(\"{\\\"name\\\":\\\"John\\\"}\");",
             explainer = "Set request body"
     )
-    @Step("Set request body")
     public void setRequestBody(String bodyContent) {
         execute(() -> {
-            context.setRequestBody(bodyContent);
+            getContext().setRequestBody(bodyContent);  // 
             logger.info("Request body set ({} bytes)", bodyContent.length());
             return null;
         }, bodyContent);
@@ -477,13 +456,12 @@ public class ApiKeyword extends BaseApiKeyword {
             subCategory = "Body",
             parameters = {"filePath: String - Đường dẫn file"},
             example = "api.setRequestBodyFromFile(\"data/user.json\");",
-            explainer = "Set body from file: {0}"
+            explainer = "Set body from file: {filePath}"
     )
-    @Step("Set body from file: {0}")
     public void setRequestBodyFromFile(String filePath) {
         execute(() -> {
             String content = new String(Files.readAllBytes(Paths.get(filePath)));
-            context.setRequestBody(content);
+            getContext().setRequestBody(content);  // 
             logger.info("Request body set from file: {}", filePath);
             return null;
         }, filePath);
@@ -497,10 +475,9 @@ public class ApiKeyword extends BaseApiKeyword {
             example = "api.clearRequestBody();",
             explainer = "Clear request body"
     )
-    @Step("Clear request body")
     public void clearRequestBody() {
         execute(() -> {
-            context.clearRequestBody();
+            getContext().clearRequestBody();  // 
             logger.info("Request body cleared");
             return null;
         });
@@ -514,9 +491,8 @@ public class ApiKeyword extends BaseApiKeyword {
             parameters = {"endpoint: String - Endpoint URL"},
             returnValue = "ApiResponse - Response object",
             example = "ApiResponse response = api.sendGetRequest(\"/users/1\");",
-            explainer = "GET {0}"
+            explainer = "GET {endpoint}"
     )
-    @Step("GET {0}")
     public ApiResponse sendGetRequest(String endpoint) {
         return execute(() -> {
             ApiResponse response = executeGet(endpoint);
@@ -533,9 +509,8 @@ public class ApiKeyword extends BaseApiKeyword {
             parameters = {"endpoint: String - Endpoint URL"},
             returnValue = "ApiResponse - Response object",
             example = "ApiResponse response = api.sendPostRequest(\"/users\");",
-            explainer = "POST {0}"
+            explainer = "POST {endpoint}"
     )
-    @Step("POST {0}")
     public ApiResponse sendPostRequest(String endpoint) {
         return execute(() -> {
             ApiResponse response = executePost(endpoint);
@@ -552,9 +527,8 @@ public class ApiKeyword extends BaseApiKeyword {
             parameters = {"endpoint: String - Endpoint URL"},
             returnValue = "ApiResponse - Response object",
             example = "ApiResponse response = api.sendPutRequest(\"/users/1\");",
-            explainer = "PUT {0}"
+            explainer = "PUT {endpoint}"
     )
-    @Step("PUT {0}")
     public ApiResponse sendPutRequest(String endpoint) {
         return execute(() -> {
             ApiResponse response = executePut(endpoint);
@@ -571,9 +545,8 @@ public class ApiKeyword extends BaseApiKeyword {
             parameters = {"endpoint: String - Endpoint URL"},
             returnValue = "ApiResponse - Response object",
             example = "ApiResponse response = api.sendDeleteRequest(\"/users/1\");",
-            explainer = "DELETE {0}"
+            explainer = "DELETE {endpoint}"
     )
-    @Step("DELETE {0}")
     public ApiResponse sendDeleteRequest(String endpoint) {
         return execute(() -> {
             ApiResponse response = executeDelete(endpoint);
@@ -590,9 +563,8 @@ public class ApiKeyword extends BaseApiKeyword {
             parameters = {"endpoint: String - Endpoint URL"},
             returnValue = "ApiResponse - Response object",
             example = "ApiResponse response = api.sendPatchRequest(\"/users/1\");",
-            explainer = "PATCH {0}"
+            explainer = "PATCH {endpoint}"
     )
-    @Step("PATCH {0}")
     public ApiResponse sendPatchRequest(String endpoint) {
         return execute(() -> {
             ApiResponse response = executePatch(endpoint);
@@ -612,19 +584,19 @@ public class ApiKeyword extends BaseApiKeyword {
             },
             returnValue = "ApiResponse",
             example = "ApiResponse response = api.sendPostWithJson(\"/users\", \"{\\\"name\\\":\\\"John\\\"}\");",
-            explainer = "POST {0} with JSON"
+            explainer = "POST {endpoint} with JSON"
     )
-    @Step("POST {0} with JSON")
     public ApiResponse sendPostWithJson(String endpoint, String jsonBody) {
         return execute(() -> {
-            context.setRequestBody(jsonBody);
-            context.setContentType("application/json");
+            ApiContext ctx = getContext();  // : Lấy context một lần, dùng local variable
+            ctx.setRequestBody(jsonBody);
+            ctx.setContentType("application/json");
             try {
                 ApiResponse response = executePost(endpoint);
                 logger.info("POST {} with JSON - Status: {}", endpoint, response.getStatusCode());
                 return response;
             } finally {
-                context.clearRequestBody();
+                ctx.clearRequestBody();
             }
         }, endpoint, jsonBody);
     }
@@ -640,17 +612,17 @@ public class ApiKeyword extends BaseApiKeyword {
             },
             returnValue = "ApiResponse",
             example = "ApiResponse response = api.sendPutWithJson(\"/users/1\", \"{\\\"name\\\":\\\"Jane\\\"}\");",
-            explainer = "PUT {0} with JSON"
+            explainer = "PUT {endpoint} with JSON"
     )
-    @Step("PUT {0} with JSON")
     public ApiResponse sendPutWithJson(String endpoint, String jsonBody) {
         return execute(() -> {
-            context.setRequestBody(jsonBody);
-            context.setContentType("application/json");
+            ApiContext ctx = getContext();  // 
+            ctx.setRequestBody(jsonBody);
+            ctx.setContentType("application/json");
             try {
                 return executePut(endpoint);
             } finally {
-                context.clearRequestBody();
+                ctx.clearRequestBody();
             }
         }, endpoint, jsonBody);
     }
@@ -666,21 +638,21 @@ public class ApiKeyword extends BaseApiKeyword {
             },
             returnValue = "ApiResponse",
             example = "ApiResponse response = api.sendGetWithParams(\"/users\", \"{\\\"page\\\":1,\\\"limit\\\":10}\");",
-            explainer = "GET {0} with params"
+            explainer = "GET {endpoint} with params"
     )
-    @Step("GET {0} with params")
     public ApiResponse sendGetWithParams(String endpoint, String paramsJson) {
         return execute(() -> {
+            ApiContext ctx = getContext();  // 
             try {
                 Map<String, Object> params = objectMapper.readValue(paramsJson, Map.class);
-                context.addQueryParams(params);
+                ctx.addQueryParams(params);
                 ApiResponse response = executeGet(endpoint);
                 logger.info("GET {} with params - Status: {}", endpoint, response.getStatusCode());
                 return response;
             } catch (Exception e) {
                 throw new RuntimeException("Invalid JSON params: " + paramsJson, e);
             } finally {
-                context.clearQueryParams();
+                ctx.clearQueryParams();
             }
         }, endpoint, paramsJson);
     }
@@ -695,7 +667,6 @@ public class ApiKeyword extends BaseApiKeyword {
             example = "int code = api.getStatusCode(response);",
             explainer = "Get status code"
     )
-    @Step("Get status code")
     public int getStatusCode(ApiResponse response) {
         return execute(() -> {
             int code = response.getStatusCode();
@@ -714,7 +685,6 @@ public class ApiKeyword extends BaseApiKeyword {
             example = "long time = api.getResponseTime(response);",
             explainer = "Get response time"
     )
-    @Step("Get response time")
     public long getResponseTime(ApiResponse response) {
         return execute(() -> {
             long time = response.getResponseTime();
@@ -733,7 +703,6 @@ public class ApiKeyword extends BaseApiKeyword {
             example = "String body = api.getBody(response);",
             explainer = "Get response body"
     )
-    @Step("Get response body")
     public String getBody(ApiResponse response) {
         return execute(() -> {
             String body = response.getBody();
@@ -753,9 +722,8 @@ public class ApiKeyword extends BaseApiKeyword {
             },
             returnValue = "String - Extracted value",
             example = "String name = api.extractJsonValue(response, \"$.name\");",
-            explainer = "Extract JSON: {1}"
+            explainer = "Extract JSON: {jsonPath}"
     )
-    @Step("Extract JSON: {1}")
     public String extractJsonValue(ApiResponse response, String jsonPath) {
         return execute(() -> {
             String value = response.getJsonPath(jsonPath);
@@ -775,9 +743,8 @@ public class ApiKeyword extends BaseApiKeyword {
             },
             returnValue = "int",
             example = "int userId = api.extractJsonInt(response, \"$.id\");",
-            explainer = "Extract int from {1}"
+            explainer = "Extract int from {jsonPath}"
     )
-    @Step("Extract int from {1}")
     public int extractJsonInt(ApiResponse response, String jsonPath) {
         return execute(() -> {
             Integer value = response.getJsonPathAsInt(jsonPath);
@@ -800,9 +767,8 @@ public class ApiKeyword extends BaseApiKeyword {
             },
             returnValue = "double",
             example = "double price = api.extractJsonDouble(response, \"$.price\");",
-            explainer = "Extract double from {1}"
+            explainer = "Extract double from {jsonPath}"
     )
-    @Step("Extract double from {1}")
     public double extractJsonDouble(ApiResponse response, String jsonPath) {
         return execute(() -> {
             Double value = response.getJsonPathAsDouble(jsonPath);
@@ -825,9 +791,8 @@ public class ApiKeyword extends BaseApiKeyword {
             },
             returnValue = "boolean",
             example = "boolean isActive = api.extractJsonBoolean(response, \"$.active\");",
-            explainer = "Extract boolean from {1}"
+            explainer = "Extract boolean from {jsonPath}"
     )
-    @Step("Extract boolean from {1}")
     public boolean extractJsonBoolean(ApiResponse response, String jsonPath) {
         return execute(() -> {
             Boolean value = response.getJsonPathAsBoolean(jsonPath);
@@ -850,9 +815,8 @@ public class ApiKeyword extends BaseApiKeyword {
             },
             returnValue = "int - Array size",
             example = "int count = api.getArraySize(response, \"$.users\");",
-            explainer = "Get array size: {1}"
+            explainer = "Get array size: {jsonPath}"
     )
-    @Step("Get array size: {1}")
     public int getArraySize(ApiResponse response, String jsonPath) {
         return execute(() -> {
             List<Object> list = response.getJsonPathAsList(jsonPath);
@@ -873,15 +837,230 @@ public class ApiKeyword extends BaseApiKeyword {
             },
             returnValue = "String - Header value",
             example = "String contentType = api.getHeader(response, \"Content-Type\");",
-            explainer = "Get header: {1}"
+            explainer = "Get header: {headerName}"
     )
-    @Step("Get header: {1}")
     public String getHeader(ApiResponse response, String headerName) {
         return execute(() -> {
             String value = response.getHeader(headerName);
             logger.info("Header '{}': {}", headerName, value);
             return value;
         }, response, headerName);
+    }
+
+    @NetatKeyword(
+            name = "setHeaderSensitive",
+            description = "Thiết lập HTTP header với giá trị đã mã hóa. Giá trị sẽ được giải mã và che dấu trong log/report.",
+            category = "API",
+            subCategory = "Security",
+            parameters = {
+                    "headerName: String - Tên header (VD: Authorization, X-API-Key)",
+                    "encryptedValue: String - Giá trị đã mã hóa"
+            },
+            example = "api.setHeaderSensitive(\"Authorization\", encryptedToken);",
+            explainer = "Set secure header: {headerName}"
+    )
+    public void setHeaderSensitive(String headerName, String encryptedValue) {
+        execute(() -> {
+            String plainValue = SecretDecryptor.decrypt(encryptedValue);
+            protection.registerSensitiveValue(plainValue);
+            getContext().addHeader(headerName, plainValue);
+            logger.info("Secure header set: {} = *****", headerName);
+            return null;
+        }, headerName, "*****");
+    }
+
+    @NetatKeyword(
+            name = "setBearerTokenSensitive",
+            description = "Thiết lập Bearer token đã mã hóa. Token sẽ được giải mã và che dấu trong log.",
+            category = "API",
+            subCategory = "Security",
+            parameters = {"encryptedToken: String - Bearer token đã mã hóa"},
+            example = "api.setBearerTokenSensitive(encryptedToken);",
+            explainer = "Set secure Bearer Token"
+    )
+    public void setBearerTokenSensitive(String encryptedToken) {
+        execute(() -> {
+            String plainToken = SecretDecryptor.decrypt(encryptedToken);
+            protection.registerSensitiveValue(plainToken);
+            getContext().setBearerToken(plainToken);
+            logger.info("Secure Bearer token set: *****");
+            return null;
+        }, "*****");
+    }
+
+    @NetatKeyword(
+            name = "setBasicAuthSensitive",
+            description = "Thiết lập Basic Authentication với password đã mã hóa",
+            category = "API",
+            subCategory = "Security",
+            parameters = {
+                    "username: String - Username (plain text)",
+                    "encryptedPassword: String - Password đã mã hóa"
+            },
+            example = "api.setBasicAuthSensitive(\"admin\", encryptedPassword);",
+            explainer = "Set secure Basic Auth: {username}"
+    )
+    public void setBasicAuthSensitive(String username, String encryptedPassword) {
+        execute(() -> {
+            String plainPassword = SecretDecryptor.decrypt(encryptedPassword);
+            protection.registerSensitiveValue(plainPassword);
+            getContext().setBasicAuth(username, plainPassword);
+            logger.info("Secure Basic auth set for user: {}", username);
+            return null;
+        }, username, "*****");
+    }
+
+    @NetatKeyword(
+            name = "setApiKeySensitive",
+            description = "Thiết lập API Key đã mã hóa (trong header hoặc query)",
+            category = "API",
+            subCategory = "Security",
+            parameters = {
+                    "keyName: String - Tên key (VD: X-API-Key, api_key)",
+                    "encryptedKeyValue: String - Giá trị key đã mã hóa",
+                    "location: String - HEADER hoặc QUERY"
+            },
+            example = "api.setApiKeySensitive(\"X-API-Key\", encryptedApiKey, \"HEADER\");",
+            explainer = "Set secure API Key: {keyName} in {location}"
+    )
+    public void setApiKeySensitive(String keyName, String encryptedKeyValue, String location) {
+        execute(() -> {
+            String plainKeyValue = SecretDecryptor.decrypt(encryptedKeyValue);
+            protection.registerSensitiveValue(plainKeyValue);
+            ApiContext.ApiKeyLocation loc = ApiContext.ApiKeyLocation.valueOf(location.toUpperCase());
+            getContext().setApiKey(keyName, plainKeyValue, loc);
+            logger.info("Secure API Key '{}' set in {}", keyName, location);
+            return null;
+        }, keyName, "*****", location);
+    }
+
+    @NetatKeyword(
+            name = "addQueryParamSensitive",
+            description = "Thêm query parameter nhạy cảm đã mã hóa (VD: access_token, api_key trong URL)",
+            category = "API",
+            subCategory = "Security",
+            parameters = {
+                    "paramName: String - Tên parameter",
+                    "encryptedValue: String - Giá trị đã mã hóa"
+            },
+            example = "api.addQueryParamSensitive(\"access_token\", encryptedToken);",
+            explainer = "Add secure query param: {paramName}"
+    )
+    public void addQueryParamSensitive(String paramName, String encryptedValue) {
+        execute(() -> {
+            String plainValue = SecretDecryptor.decrypt(encryptedValue);
+            protection.registerSensitiveValue(plainValue);
+            getContext().addQueryParam(paramName, plainValue);
+            logger.info("Secure query param added: {} = *****", paramName);
+            return null;
+        }, paramName, "*****");
+    }
+
+    @NetatKeyword(
+            name = "setRequestBodySensitive",
+            description = "Thiết lập request body có chứa dữ liệu nhạy cảm đã mã hóa. " +
+                    "Body sẽ được giải mã và các giá trị nhạy cảm được che dấu trong log.",
+            category = "API",
+            subCategory = "Security",
+            parameters = {"encryptedBody: String - Body đã mã hóa (JSON, XML, text...)"},
+            example = "api.setRequestBodySensitive(encryptedJsonBody);",
+            explainer = "Set secure request body"
+    )
+    public void setRequestBodySensitive(String encryptedBody) {
+        execute(() -> {
+            String plainBody = SecretDecryptor.decrypt(encryptedBody);
+            protection.registerSensitiveValue(plainBody);
+            getContext().setRequestBody(plainBody);
+            logger.info("Secure request body set ({} bytes)", plainBody.length());
+            return null;
+        }, "*****");
+    }
+
+    @NetatKeyword(
+            name = "sendPostWithJsonSensitive",
+            description = "Gửi POST với JSON body nhạy cảm đã mã hóa. " +
+                    "JSON sẽ được giải mã và các giá trị nhạy cảm được che dấu trong log.",
+            category = "API",
+            subCategory = "Security",
+            parameters = {
+                    "endpoint: String - Endpoint URL",
+                    "encryptedJsonBody: String - JSON body đã mã hóa"
+            },
+            returnValue = "ApiResponse - Response object",
+            example = "ApiResponse response = api.sendPostWithJsonSensitive(\"/auth/login\", encryptedLoginJson);",
+            explainer = "POST {endpoint} with secure JSON"
+    )
+    public ApiResponse sendPostWithJsonSensitive(String endpoint, String encryptedJsonBody) {
+        return execute(() -> {
+            String plainJson = SecretDecryptor.decrypt(encryptedJsonBody);
+            protection.registerSensitiveValue(plainJson);
+
+            ApiContext ctx = getContext();
+            ctx.setRequestBody(plainJson);
+            ctx.setContentType("application/json");
+            try {
+                ApiResponse response = executePost(endpoint);
+                logger.info("POST {} with secure JSON - Status: {}", endpoint, response.getStatusCode());
+                return response;
+            } finally {
+                ctx.clearRequestBody();
+            }
+        }, endpoint, "*****");
+    }
+
+    @NetatKeyword(
+            name = "sendPutWithJsonSensitive",
+            description = "Gửi PUT với JSON body nhạy cảm đã mã hóa",
+            category = "API",
+            subCategory = "Security",
+            parameters = {
+                    "endpoint: String - Endpoint URL",
+                    "encryptedJsonBody: String - JSON body đã mã hóa"
+            },
+            returnValue = "ApiResponse",
+            example = "ApiResponse response = api.sendPutWithJsonSensitive(\"/users/1\", encryptedUserJson);",
+            explainer = "PUT {endpoint} with secure JSON"
+    )
+    public ApiResponse sendPutWithJsonSensitive(String endpoint, String encryptedJsonBody) {
+        return execute(() -> {
+            String plainJson = SecretDecryptor.decrypt(encryptedJsonBody);
+            protection.registerSensitiveValue(plainJson);
+
+            ApiContext ctx = getContext();
+            ctx.setRequestBody(plainJson);
+            ctx.setContentType("application/json");
+            try {
+                ApiResponse response = executePut(endpoint);
+                logger.info("PUT {} with secure JSON - Status: {}", endpoint, response.getStatusCode());
+                return response;
+            } finally {
+                ctx.clearRequestBody();
+            }
+        }, endpoint, "*****");
+    }
+
+    @NetatKeyword(
+            name = "extractJsonValueSensitive",
+            description = "Trích xuất giá trị nhạy cảm từ JSON response và che dấu trong log. " +
+                    "Giá trị thật vẫn được trả về cho test sử dụng.",
+            category = "API",
+            subCategory = "Security",
+            parameters = {
+                    "response: ApiResponse",
+                    "jsonPath: String - JSON Path expression (VD: $.data.token)"
+            },
+            returnValue = "String - Giá trị thật (không mask)",
+            example = "String token = api.extractJsonValueSensitive(response, \"$.access_token\");",
+            explainer = "Extract secure value from: {jsonPath}"
+    )
+    public String extractJsonValueSensitive(ApiResponse response, String jsonPath) {
+        return execute(() -> {
+            String value = response.getJsonPath(jsonPath);
+            protection.registerSensitiveValue(value);
+            String masked = protection.mask(value);
+            logger.info("Extracted secure value from '{}': {}", jsonPath, masked);
+            return value;
+        }, response, jsonPath);
     }
 
     @Override

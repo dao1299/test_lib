@@ -984,7 +984,9 @@ public class DatabaseKeyword extends BaseKeyword {
                     }
 
                     Object actualValue = results.get(0).get(columnName);
-                    if (!Objects.equals(actualValue, expectedValue)) {
+                    String contentActualValue = actualValue.toString();
+                    String contentExpectedValue = expectedValue.toString();
+                    if (contentExpectedValue.equals(contentActualValue)) {
                         throw new AssertionError(
                                 String.format("Expected column '%s' to be '%s' but was '%s'",
                                         columnName, expectedValue, actualValue)

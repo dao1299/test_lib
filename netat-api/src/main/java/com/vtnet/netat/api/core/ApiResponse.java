@@ -229,7 +229,6 @@ public class ApiResponse {
         }
     }
 
-    // === INTERNAL ===
 
     public Response getRestAssuredResponse() {
         return restAssuredResponse;
