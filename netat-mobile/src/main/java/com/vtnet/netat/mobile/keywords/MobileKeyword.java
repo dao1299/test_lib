@@ -11,7 +11,6 @@ import io.appium.java_client.android.nativekey.AndroidKey;
 import io.appium.java_client.android.nativekey.KeyEvent;
 import io.appium.java_client.clipboard.HasClipboard;
 import io.appium.java_client.ios.IOSDriver;
-import io.qameta.allure.Step;
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Pause;
 import org.openqa.selenium.interactions.PointerInput;
@@ -27,6 +26,7 @@ import java.time.Duration;
 import java.util.*;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
+import com.vtnet.netat.core.secret.SecretDecryptor;
 
 
 /**
@@ -82,7 +82,6 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Có thể throw WebDriverException nếu không thể cài đặt ứng dụng, " +
                     "hoặc FileNotFoundException nếu không tìm thấy file ứng dụng."
     )
-    @Step("Install app from: {0}")
     public void installApp(String appPath) {
         execute(() -> {
             ((InteractsWithApps) DriverManager.getDriver()).installApp(appPath);
@@ -114,7 +113,6 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Có thể throw WebDriverException nếu không thể gỡ cài đặt ứng dụng, " +
                     "hoặc IllegalArgumentException nếu appId không hợp lệ."
     )
-    @Step("Uninstall app: {0}")
     public void uninstallApp(String appId) {
         execute(() -> {
             ((InteractsWithApps) DriverManager.getDriver()).removeApp(appId);
@@ -147,7 +145,6 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Có thể throw WebDriverException nếu không thể kích hoạt ứng dụng, " +
                     "hoặc NoSuchAppException nếu ứng dụng không được cài đặt trên thiết bị."
     )
-    @Step("Activate app: {0}")
     public void activateApp(String appId) {
         execute(() -> {
             ((InteractsWithApps) DriverManager.getDriver()).activateApp(appId);
@@ -181,7 +178,6 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Có thể throw WebDriverException nếu không thể dừng ứng dụng, " +
                     "hoặc IllegalArgumentException nếu appId không hợp lệ."
     )
-    @Step("Terminate app: {0}")
     public void terminateApp(String appId) {
         execute(() -> {
             ((InteractsWithApps) DriverManager.getDriver()).terminateApp(appId);
@@ -210,7 +206,6 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Ứng dụng đã được khởi động trước đó. " +
                     "Có thể throw WebDriverException nếu không thể reset ứng dụng."
     )
-    @Step("Reset app")
     public void resetApp() {
         execute(() -> {
             // Note: resetApp is not part of InteractsWithApps,
@@ -246,7 +241,6 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Ứng dụng đang chạy ở foreground. " +
                     "Có thể throw WebDriverException nếu không thể đưa ứng dụng về background."
     )
-    @Step("Background app for {0} seconds")
     public void backgroundApp(int seconds) {
         execute(() -> {
             ((InteractsWithApps) DriverManager.getDriver()).runAppInBackground(Duration.ofSeconds(seconds));
@@ -279,7 +273,6 @@ public class MobileKeyword extends BaseUiKeyword {
                     "NoSuchElementException nếu không tìm thấy phần tử, " +
                     "hoặc ElementNotInteractableException nếu phần tử không thể tương tác."
     )
-    @Step("Tap element: {0.name}")
     public void tap(ObjectUI uiObject) {
         // Reuse parent class click logic, Appium will automatically interpret as 'tap'
         super.click(uiObject);
@@ -307,9 +300,52 @@ public class MobileKeyword extends BaseUiKeyword {
                     "NoSuchElementException nếu không tìm thấy phần tử, " +
                     "hoặc ElementNotInteractableException nếu phần tử không thể tương tác hoặc không phải trường nhập liệu."
     )
-    @Step("Send text '{1}' to element: {0.name}")
     public void sendText(ObjectUI uiObject, String text) {
         super.sendKeys(uiObject, text);
+    }
+
+    @NetatKeyword(
+            name = "sendTextSensitive",
+            description = "Nhập dữ liệu nhạy cảm đã được mã hóa vào một ô input. " +
+                    "Tự động giải mã giá trị với master key từ ENV/.env trước khi nhập. " +
+                    "Giá trị thật sẽ được mask trong log/report để bảo mật (ví dụ: 'S*****3'). " +
+                    "Chỉ hoạt động với các phần tử có thuộc tính 'editable' là true.",
+            category = "Mobile",
+            subCategory = "Interaction",
+            parameters = {
+                    "uiObject: ObjectUI - Đối tượng đầu vào có thể chỉnh sửa (như TextField, EditText)",
+                    "encryptedText: String - Văn bản ĐÃ MÃ HÓA cần nhập vào phần tử"
+            },
+            returnValue = "void - Không trả về giá trị",
+            example = "// Nhập mật khẩu đã mã hóa\n" +
+                    "mobileKeyword.sendTextSensitive(passwordInput, \"U2FsdGVkX1+abc123...\");\n\n" +
+                    "// Nhập API token đã mã hóa\n" +
+                    "mobileKeyword.sendTextSensitive(tokenInput, config.get(\"api_token\"));\n\n" +
+                    "// Log sẽ hiển thị: \"Enter sensitive text '*****' into element: passwordInput\"",
+            note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
+                    "Master key phải được cấu hình qua: ENV NETAT_MASTER_KEY, System Property netat.master.key, " +
+                    "hoặc file .env/.netat-master-key. Giá trị đầu vào phải là chuỗi đã được mã hóa bằng tool NETAT Secret. " +
+                    "Có thể throw SecretDecryptionException nếu giải mã thất bại, " +
+                    "MasterKeyNotFoundException nếu không tìm thấy master key, " +
+                    "hoặc ElementNotInteractableException nếu phần tử không thể tương tác."
+    )
+    public void sendTextSensitive(ObjectUI uiObject, String encryptedText) {
+        execute(() -> {
+            String plainText = SecretDecryptor.decrypt(encryptedText);
+
+            String maskedText = maskSensitiveValue(plainText);
+            logger.info("Sending sensitive text '{}' to element '{}'", maskedText, uiObject.getName());
+
+            super.sendKeys(uiObject, plainText);
+
+            return null;
+        }, uiObject, maskSensitiveValue("***"));
+    }
+
+
+    private String maskSensitiveValue(String value) {
+        if (value == null || value.isEmpty()) return "";
+        return "*****";
     }
 
     @NetatKeyword(
@@ -334,7 +370,6 @@ public class MobileKeyword extends BaseUiKeyword {
                     "NoSuchElementException nếu không tìm thấy phần tử, " +
                     "hoặc ElementNotInteractableException nếu phần tử không thể tương tác hoặc không phải trường nhập liệu."
     )
-    @Step("Clear text in element: {0.name}")
     public void clear(ObjectUI uiObject) {
         super.clear(uiObject);
     }
@@ -361,7 +396,6 @@ public class MobileKeyword extends BaseUiKeyword {
                     "NoSuchElementException nếu không tìm thấy phần tử, " +
                     "hoặc ElementNotInteractableException nếu phần tử không thể tương tác."
     )
-    @Step("Long press element {0.name} for {1} seconds")
     public void longPress(ObjectUI uiObject, int durationInSeconds) {
         execute(() -> {
             WebElement element = findElement(uiObject);
@@ -394,7 +428,6 @@ public class MobileKeyword extends BaseUiKeyword {
             note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
                     "Có thể throw WebDriverException nếu không thể ẩn bàn phím hoặc bàn phím không hiển thị."
     )
-    @Step("Hide keyboard")
     public void hideKeyboard() {
         execute(() -> {
             ((HidesKeyboard) DriverManager.getDriver()).hideKeyboard();
@@ -418,7 +451,6 @@ public class MobileKeyword extends BaseUiKeyword {
             note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
                     "Có thể throw WebDriverException nếu không thể thực hiện hành động Back."
     )
-    @Step("Press Back button")
     public void pressBack() {
         execute(() -> {
             DriverManager.getDriver().navigate().back();
@@ -452,7 +484,6 @@ public class MobileKeyword extends BaseUiKeyword {
                     "StaleElementReferenceException nếu phần tử không còn gắn với DOM, " +
                     "hoặc NoSuchElementException nếu không tìm thấy phần tử trong DOM."
     )
-    @Step("Wait for element {0.name} to be visible within {1} seconds")
     public void waitForVisible(ObjectUI uiObject, int timeoutInSeconds) {
         super.waitForElementVisible(uiObject, timeoutInSeconds);
     }
@@ -479,7 +510,6 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Có thể throw TimeoutException nếu phần tử vẫn hiển thị sau khi hết thời gian chờ, " +
                     "hoặc StaleElementReferenceException nếu phần tử không còn gắn với DOM."
     )
-    @Step("Wait for element {0.name} to disappear within {1} seconds")
     public void waitForNotVisible(ObjectUI uiObject, int timeoutInSeconds) {
         super.waitForElementNotVisible(uiObject, timeoutInSeconds);
     }
@@ -506,7 +536,6 @@ public class MobileKeyword extends BaseUiKeyword {
                     "StaleElementReferenceException nếu phần tử không còn gắn với DOM, " +
                     "hoặc NoSuchElementException nếu không tìm thấy phần tử trong DOM."
     )
-    @Step("Wait for element {0.name} to be clickable within {1} seconds")
     public void waitForClickable(ObjectUI uiObject, int timeoutInSeconds) {
         super.waitForElementClickable(uiObject, timeoutInSeconds);
     }
@@ -539,7 +568,6 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Có thể throw AssertionError nếu phần tử không tồn tại trong DOM, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình điều khiển."
     )
-    @Step("Check (Hard) element existence: {0.name}")
     public void assertElementPresent(ObjectUI uiObject, String... customMessage) {
         execute(() -> {
             try {
@@ -579,7 +607,6 @@ public class MobileKeyword extends BaseUiKeyword {
                     "WebDriverException nếu có lỗi khi tương tác với trình điều khiển, " +
                     "hoặc StaleElementReferenceException nếu phần tử không còn gắn với DOM."
     )
-    @Step("Check (Hard) element {0.name} is visible")
     public void assertElementVisible(ObjectUI uiObject, String... customMessage) {
         execute(() -> {
             try {
@@ -623,7 +650,6 @@ public class MobileKeyword extends BaseUiKeyword {
                     "NoSuchElementException nếu không tìm thấy phần tử, " +
                     "hoặc StaleElementReferenceException nếu phần tử không còn gắn với DOM."
     )
-    @Step("Check (Hard) text of {0.name} equals '{1}'")
     public void assertTextEquals(ObjectUI uiObject, String expectedText, String... customMessage) {
         execute(() -> {
             try {
@@ -668,7 +694,6 @@ public class MobileKeyword extends BaseUiKeyword {
                     "NoSuchElementException nếu không tìm thấy phần tử, " +
                     "hoặc WebDriverException nếu không thể truy cập thuộc tính 'checked'."
     )
-    @Step("Check (Hard) element {0.name} is checked/enabled")
     public void assertChecked(ObjectUI uiObject, String... customMessage) {
         execute(() -> {
             WebElement element = findElement(uiObject);
@@ -710,7 +735,6 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Có thể throw WebDriverException nếu không thể thực hiện hành động vuốt, " +
                     "hoặc IllegalArgumentException nếu tọa độ nằm ngoài kích thước màn hình."
     )
-    @Step("Swipe from ({0},{1}) to ({2},{3})")
     public void swipe(int startX, int startY, int endX, int endY, int durationInMs) {
         execute(() -> {
             PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
@@ -741,7 +765,6 @@ public class MobileKeyword extends BaseUiKeyword {
             note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
                     "Có thể throw WebDriverException nếu không thể thực hiện hành động vuốt."
     )
-    @Step("Swipe up")
     public void swipeUp(Integer... durationInMs) {
         int duration = (durationInMs != null && durationInMs.length > 0 && durationInMs[0] != null)
                 ? durationInMs[0]
@@ -773,7 +796,6 @@ public class MobileKeyword extends BaseUiKeyword {
             note = "Áp dụng cho nền tảng Mobile. Thiết bị di động đã được kết nối và cấu hình đúng với Appium. " +
                     "Có thể throw WebDriverException nếu không thể thực hiện hành động vuốt."
     )
-    @Step("Swipe down")
     public void swipeDown(Integer... durationInMs) {
         execute(() -> {
             Dimension size = DriverManager.getDriver().manage().window().getSize();
@@ -808,7 +830,6 @@ public class MobileKeyword extends BaseUiKeyword {
                     "WebDriverException nếu có lỗi khi tương tác với trình điều khiển, " +
                     "hoặc IllegalStateException nếu không thể xác định nền tảng hoặc không hỗ trợ."
     )
-    @Step("Scroll to text: {0}")
     public WebElement scrollToText(String textToFind) {
         return execute(() -> {
             AppiumDriver driver = getAppiumDriver();
@@ -908,7 +929,6 @@ public class MobileKeyword extends BaseUiKeyword {
                 parameters = {"String: textToFind - Văn bản cần tìm trong các thuộc tính của phần tử."},
                 example = "mobileKeyword.tapElementWithText(\"Thanh toán\");"
         )
-        @Step("Tap on element with text: {0}")
         public void tapElementWithText(String textToFind) {
             execute(() -> {
                 WebElement element = scrollToText(textToFind); // Assumes scrollToText is defined in the class
@@ -926,7 +946,6 @@ public class MobileKeyword extends BaseUiKeyword {
                 returnValue = "String: Văn bản của phần tử. Trả về chuỗi rỗng nếu không có thuộc tính nào chứa văn bản.",
                 example = "String welcomeText = mobileKeyword.getText(welcomeMessageObject);"
         )
-        @Step("Get text from element: {0.name}")
         public String getText(ObjectUI uiObject) {
             return super.getText(uiObject);
         }
@@ -939,7 +958,6 @@ public class MobileKeyword extends BaseUiKeyword {
                 parameters = {"String: textToFind - Văn bản cần xác minh sự tồn tại trên màn hình."},
                 example = "mobileKeyword.verifyElementVisibleWithText(\"Đăng nhập thành công\");"
         )
-        @Step("Verify element with text is visible: {0}")
         public void verifyElementVisibleWithText(String textToFind) {
             execute(() -> {
                 scrollToText(textToFind); // The act of finding the element serves as verification
@@ -970,7 +988,6 @@ public class MobileKeyword extends BaseUiKeyword {
                         "WebDriverException nếu có lỗi khi thực hiện thao tác kéo thả, " +
                         "hoặc ElementNotInteractableException nếu không thể tương tác với phần tử nguồn hoặc đích."
         )
-        @Step("Drag and drop {0.name} to {1.name}")
         public void dragAndDrop(ObjectUI source, ObjectUI destination) {
             execute(() -> {
                 WebElement sourceElement = findElement(source);
@@ -1000,7 +1017,6 @@ public class MobileKeyword extends BaseUiKeyword {
 //            parameters = {"String: contextName - Tên của context cần chuyển đến (ví dụ: 'WEBVIEW_com.myapp')."},
 //            example = "mobileKeyword.switchToContext(\"WEBVIEW_1\");"
 //    )
-//    @Step("Switch to context: {0}")
 //    public void switchToContext(String contextName) {
 //        execute(() -> {
 //            ((ContextAware) DriverManager.getDriver()).context(contextName);
@@ -1016,7 +1032,6 @@ public class MobileKeyword extends BaseUiKeyword {
 //            parameters = {},
 //            example = "mobileKeyword.switchToNativeContext();"
 //    )
-//    @Step("Switch to native context (NATIVE_APP)")
 //    public void switchToNativeContext() {
 //        execute(() -> {
 //            ((ContextAware) DriverManager.getDriver()).context("NATIVE_APP");
@@ -1047,7 +1062,6 @@ public class MobileKeyword extends BaseUiKeyword {
                         "Có thể throw WebDriverException nếu có lỗi khi tương tác với trình điều khiển, " +
                         "hoặc NoSuchElementException nếu không tìm thấy nút nào khớp với danh sách văn bản đã cho."
         )
-        @Step("Accept system dialog")
         public void acceptSystemDialog() {
             execute(() -> {
                 List<String> buttonTexts = Arrays.asList("Allow", "OK", "Accept", "While using the app");
@@ -1076,7 +1090,6 @@ public class MobileKeyword extends BaseUiKeyword {
                         "Có thể throw WebDriverException nếu có lỗi khi tương tác với trình điều khiển, " +
                         "hoặc NoSuchElementException nếu không tìm thấy nút nào khớp với danh sách văn bản đã cho."
         )
-        @Step("Deny system dialog")
         public void denySystemDialog() {
             execute(() -> {
                 List<String> buttonTexts = Arrays.asList("Deny", "Cancel", "Don't allow");
@@ -1135,7 +1148,6 @@ public class MobileKeyword extends BaseUiKeyword {
                         "Có thể throw WebDriverException nếu có lỗi khi thực hiện hành động chạm, " +
                         "hoặc IllegalArgumentException nếu tọa độ nằm ngoài kích thước màn hình."
         )
-        @Step("Tap at coordinates ({0}, {1})")
         public void tapByCoordinates(int x, int y) {
             execute(() -> {
                 PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
@@ -1173,7 +1185,6 @@ public class MobileKeyword extends BaseUiKeyword {
                         "Có thể throw WebDriverException nếu có lỗi khi thực hiện hành động chạm và giữ, " +
                         "hoặc IllegalArgumentException nếu tọa độ nằm ngoài kích thước màn hình hoặc thời gian giữ không hợp lệ."
         )
-        @Step("Long press at coordinates ({0}, {1}) for {2} seconds")
         public void longPressByCoordinates(int x, int y, int durationInSeconds) {
             execute(() -> {
                 PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
@@ -1200,7 +1211,6 @@ public class MobileKeyword extends BaseUiKeyword {
 //            },
 //            example = "mobileKeyword.setGeoLocation(21.028511, 105.804817); // Tọa độ Hà Nội"
 //    )
-//    @Step("Set GPS location: Latitude={0}, Longitude={1}")
 //    public void setGeoLocation(double latitude, double longitude) {
 //        execute(() -> {
 //            Location location = new Location(latitude, longitude, 0); // altitude có thể để là 0
@@ -1232,7 +1242,6 @@ public class MobileKeyword extends BaseUiKeyword {
 //                    "UnsupportedOperationException nếu được gọi trên thiết bị iOS, " +
 //                    "hoặc SecurityException nếu không có đủ quyền để thay đổi chế độ máy bay."
 //    )
-//    @Step("Toggle airplane mode")
 //    public void toggleAirplaneMode() {
 //        execute(() -> {
 //            AppiumDriver driver = (AppiumDriver) DriverManager.getDriver();
@@ -1294,7 +1303,6 @@ public class MobileKeyword extends BaseUiKeyword {
                         "IOException nếu không thể lưu ảnh vào thư mục chỉ định, " +
                         "hoặc IllegalArgumentException nếu tên file không hợp lệ."
         )
-        @Step("Take screenshot with filename: {0}")
         public void takeScreenshot(String fileName) {
             // Tái sử dụng lại tiện ích chung đã có trong netat-core
             execute(() -> {
@@ -1327,7 +1335,6 @@ public class MobileKeyword extends BaseUiKeyword {
                         "IOException nếu không thể đọc file nguồn, IllegalArgumentException nếu đường dẫn không hợp lệ, " +
                         "hoặc SecurityException nếu không có quyền ghi vào đường dẫn đích."
         )
-        @Step("Push file from '{1}' to device at '{0}'")
         public void pushFile(String devicePath, String localFilePath) {
             execute(() -> {
                 try {
@@ -1366,7 +1373,6 @@ public class MobileKeyword extends BaseUiKeyword {
                         "NoSuchFileException nếu file không tồn tại trên thiết bị, SecurityException nếu không có quyền đọc file, " +
                         "hoặc IllegalArgumentException nếu đường dẫn không hợp lệ."
         )
-        @Step("Pull file from device at: {0}")
         public String pullFile(String devicePath) {
             return execute(() -> {
                 byte[] fileBase64 = ((PullsFiles) DriverManager.getDriver()).pullFile(devicePath);
@@ -1399,7 +1405,6 @@ public class MobileKeyword extends BaseUiKeyword {
                         "UnsupportedOperationException nếu thiết bị không hỗ trợ truy cập clipboard, " +
                         "hoặc SecurityException nếu không có quyền truy cập clipboard."
         )
-        @Step("Get clipboard content")
         public String getClipboard() {
             return execute(() -> ((HasClipboard) DriverManager.getDriver()).getClipboardText());
         }
@@ -1429,7 +1434,6 @@ public class MobileKeyword extends BaseUiKeyword {
                         "StaleElementReferenceException nếu phần tử không còn gắn với DOM trong quá trình chờ, " +
                         "hoặc NoSuchElementException nếu không tìm thấy phần tử trong DOM."
         )
-        @Step("Wait for text of {0.name} to be '{1}' within {2} seconds")
         public void waitForText(ObjectUI uiObject, String expectedText, int timeoutInSeconds) {
             execute(() -> {
                 WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds));
@@ -1462,7 +1466,6 @@ public class MobileKeyword extends BaseUiKeyword {
                         "NoSuchElementException nếu không tìm thấy phần tử, " +
                         "hoặc StaleElementReferenceException nếu phần tử không còn gắn với DOM."
         )
-        @Step("Check (Hard) if text of {0.name} contains '{1}'")
         public void assertTextContains(ObjectUI uiObject, String partialText,String... customMessages) {
             super.performTextContainsAssertion(uiObject, partialText, false,customMessages);
         }
@@ -1498,7 +1501,6 @@ public class MobileKeyword extends BaseUiKeyword {
                     "NoSuchElementException nếu không tìm thấy phần tử, StaleElementReferenceException nếu phần tử không còn gắn với DOM, " +
                     "hoặc WebDriverException nếu không thể lấy thuộc tính 'checked' của phần tử."
     )
-    @Step("Check (Hard) if element {0.name} is not checked/enabled")
     public void assertNotChecked(ObjectUI uiObject, String... customMessage) {
         execute(() -> {
             WebElement element = findElement(uiObject);
@@ -1546,7 +1548,6 @@ public class MobileKeyword extends BaseUiKeyword {
                     "NoSuchElementException nếu không tìm thấy phần tử, StaleElementReferenceException nếu phần tử không còn gắn với DOM, " +
                     "hoặc WebDriverException nếu không thể lấy thuộc tính 'enabled' của phần tử."
     )
-    @Step("Check (Hard) if element {0.name} is enabled")
     public void assertEnabled(ObjectUI uiObject, String... customMessage) {
         execute(() -> {
             try {
@@ -1594,7 +1595,6 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Có thể throw AssertionError nếu phần tử xuất hiện trong khoảng thời gian chờ, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình điều khiển."
     )
-    @Step("Check (Hard) if element {0.name} is not present within {1} seconds")
     public void assertElementNotPresent(ObjectUI uiObject, int timeoutInSeconds, String... customMessage) {
         execute(() -> {
             boolean isPresent = isElementPresent(uiObject, timeoutInSeconds);
@@ -1649,7 +1649,6 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Có thể throw WebDriverException nếu có lỗi khi tương tác với trình điều khiển. " +
                     "Method này không ném AssertionError, chỉ trả về boolean để xử lý logic."
     )
-    @Step("Check if element {0.name} exists within {1} seconds")
     public boolean isElementPresent(ObjectUI uiObject, int timeoutInSeconds) {
         // Gọi cỗ máy execute() và bên trong gọi lại logic từ lớp cha
         return execute(() -> super._isElementPresent(uiObject, timeoutInSeconds), uiObject, timeoutInSeconds);
@@ -1687,7 +1686,6 @@ public class MobileKeyword extends BaseUiKeyword {
                     "NoSuchElementException nếu không tìm thấy phần tử, StaleElementReferenceException nếu phần tử không còn gắn với DOM, " +
                     "hoặc WebDriverException nếu không thể lấy thuộc tính 'enabled' của phần tử."
     )
-    @Step("Check (Hard) if element {0.name} is disabled")
     public void assertDisabled(ObjectUI uiObject, String... customMessage) {
         execute(() -> {
             try {
@@ -1737,7 +1735,6 @@ public class MobileKeyword extends BaseUiKeyword {
                     "NoSuchElementException nếu không tìm thấy phần tử, StaleElementReferenceException nếu phần tử không còn gắn với DOM, " +
                     "hoặc WebDriverException nếu không thể lấy thuộc tính của phần tử."
     )
-    @Step("Check (Hard) attribute '{1}' of {0.name} is '{2}'")
     public void assertAttributeEquals(ObjectUI uiObject, String attributeName, String expectedValue, String... customMessage) {
         execute(() -> {
             try {
@@ -1786,7 +1783,6 @@ public class MobileKeyword extends BaseUiKeyword {
                     "NoSuchElementException nếu không tìm thấy phần tử, StaleElementReferenceException nếu phần tử không còn gắn với DOM, " +
                     "WebDriverException nếu không thể lấy thuộc tính của phần tử, hoặc NullPointerException nếu giá trị thuộc tính là null."
     )
-    @Step("Check (Hard) if attribute '{1}' of {0.name} contains '{2}'")
     public void assertAttributeContains(ObjectUI uiObject, String attributeName, String partialValue, String... customMessage) {
         execute(() -> {
             try {
@@ -1838,7 +1834,6 @@ public class MobileKeyword extends BaseUiKeyword {
                     "Có thể throw AssertionError nếu số lượng phần tử tìm thấy không khớp với số lượng mong đợi, " +
                     "WebDriverException nếu có lỗi khi tương tác với trình điều khiển, hoặc InvalidSelectorException nếu locator không hợp lệ."
     )
-    @Step("Check (Hard) if element {0.name} has {1} items")
     public void assertElementCount(ObjectUI uiObject, int expectedCount, String... customMessage) {
         execute(() -> {
             List<WebElement> elements = findElements(uiObject);
@@ -1886,7 +1881,6 @@ public class MobileKeyword extends BaseUiKeyword {
                     "NoSuchElementException nếu không tìm thấy phần tử, StaleElementReferenceException nếu phần tử không còn gắn với DOM, " +
                     "WebDriverException nếu không thể lấy văn bản của phần tử, hoặc NullPointerException nếu văn bản của phần tử là null và expectedText không phải null."
     )
-    @Step("Check (Hard) if text of {0.name} is '{1}' (ignoreCase={2}, trim={3})")
     public void assertTextWithOptions(ObjectUI uiObject, String expectedText, boolean ignoreCase, boolean trimText, String... customMessage) {
         execute(() -> {
             String actualText = getText(uiObject);
@@ -1937,7 +1931,6 @@ public class MobileKeyword extends BaseUiKeyword {
                         "Có thể throw NoSuchElementException nếu không tìm thấy phần tử, " +
                         "StaleElementReferenceException nếu phần tử không còn gắn với DOM, hoặc WebDriverException nếu không thể lấy kích thước của phần tử."
         )
-        @Step("Get height of element: {0.name}")
         public int getElementHeight(ObjectUI uiObject) {
             return execute(() -> findElement(uiObject).getSize().getHeight(), uiObject);
         }
@@ -1964,7 +1957,6 @@ public class MobileKeyword extends BaseUiKeyword {
                         "Có thể throw NoSuchElementException nếu không tìm thấy phần tử, " +
                         "StaleElementReferenceException nếu phần tử không còn gắn với DOM, hoặc WebDriverException nếu không thể lấy kích thước của phần tử."
         )
-        @Step("Get width of element: {0.name}")
         public int getElementWidth(ObjectUI uiObject) {
             return execute(() -> findElement(uiObject).getSize().getWidth(), uiObject);
         }
@@ -1992,7 +1984,6 @@ public class MobileKeyword extends BaseUiKeyword {
                         "WebDriverException nếu không thể thực hiện hành động nhấn phím, " +
                         "hoặc UnsupportedCommandException nếu lệnh không được hỗ trợ trên thiết bị hiện tại."
         )
-        @Step("Press Android system key: {0}")
         public void pressKeyCode(String keyName) {
             execute(() -> {
                 AppiumDriver driver = (AppiumDriver) DriverManager.getDriver();
@@ -2031,7 +2022,6 @@ public class MobileKeyword extends BaseUiKeyword {
                         "UnsupportedOperationException nếu loại driver không được hỗ trợ, " +
                         "hoặc WebDriverException nếu không thể lấy thông tin hướng màn hình."
         )
-        @Step("Check (Hard) if device is in {0} orientation")
         public void verifyOrientation(String expectedOrientation) {
             execute(() -> {
                 ScreenOrientation expected = ScreenOrientation.valueOf(expectedOrientation.toUpperCase());
@@ -2081,7 +2071,6 @@ public class MobileKeyword extends BaseUiKeyword {
                         "WebDriverException nếu không thể lấy vị trí hoặc kích thước của phần tử, " +
                         "hoặc ElementNotInteractableException nếu không thể tương tác với slider."
         )
-        @Step("Set slider {0.name} to {1}")
         public void setSliderValue(ObjectUI uiObject, double value) {
             execute(() -> {
                 if (value < 0.0 || value > 1.0) {
@@ -2134,7 +2123,6 @@ public class MobileKeyword extends BaseUiKeyword {
                         "SessionNotCreatedException nếu phiên Appium không còn hoạt động, " +
                         "hoặc NoSuchContextException nếu lệnh yêu cầu context không tồn tại."
         )
-        @Step("Execute mobile command: {0}")
         public Object executeMobileCommand(String commandName, Map<String, Object> commandArgs) {
             return execute(() -> {
                 return ((AppiumDriver) DriverManager.getDriver()).executeScript(commandName, commandArgs);
@@ -2176,7 +2164,6 @@ public class MobileKeyword extends BaseUiKeyword {
                 example = "String packageName = getCurrentAppPackage();",
                 note = "Keyword này hoạt động trên cả Android và iOS. Trên Android sẽ trả về package name, trên iOS sẽ trả về bundle ID từ capabilities."
         )
-        @Step("Get current app package")
         public String getCurrentAppPackage() {
             return execute(() -> {
                 AppiumDriver driver = (AppiumDriver) DriverManager.getDriver();
@@ -2199,7 +2186,6 @@ public class MobileKeyword extends BaseUiKeyword {
                 example = "String activityName = getCurrentActivity();",
                 note = "Keyword này chỉ hoạt động trên Android. Trên iOS sẽ trả về null và ghi log cảnh báo. Activity name thường có định dạng như 'com.example.MainActivity'."
         )
-        @Step("Get current Activity (Android)")
         public String getCurrentActivity() {
             return execute(() -> {
                 AppiumDriver driver = (AppiumDriver) DriverManager.getDriver();
@@ -2225,7 +2211,6 @@ public class MobileKeyword extends BaseUiKeyword {
                 example = "boolean isInstalled = isAppInstalled(\"com.example.myapp\");",
                 note = "Keyword này hoạt động trên cả Android và iOS. Trên Android sử dụng package name (vd: com.android.chrome), trên iOS sử dụng bundle ID (vd: com.apple.mobilesafari)."
         )
-        @Step("Check if app '{0}' is installed")
         public boolean isAppInstalled(String appId) {
             return execute(() -> {
                 // Ép kiểu driver sang InteractsWithApps để gọi phương thức isAppInstalled
@@ -2242,7 +2227,6 @@ public class MobileKeyword extends BaseUiKeyword {
                 parameters = {"ObjectUI uiObject - Đối tượng UI đại diện cho các phần tử cần tìm kiếm"},
                 example = "List<WebElement> productList = mobileKeyword.findElements(productListItemObject);"
         )
-        @Step("Find list of elements: {0.name}")
         public List<WebElement> findElements(ObjectUI uiObject) {
             return execute(() -> {
                 // Sử dụng locator đầu tiên được kích hoạt để tìm kiếm
@@ -2260,7 +2244,6 @@ public class MobileKeyword extends BaseUiKeyword {
                 parameters = {"ObjectUI uiObject - Đối tượng UI đại diện cho các phần tử cần đếm"},
                 example = "int numberOfItems = mobileKeyword.getElementCount(listItemObject);"
         )
-        @Step("Count the number of elements of: {0.name}")
         public int getElementCount(ObjectUI uiObject) {
             return execute(() -> {
                 // Tái sử dụng keyword findElements để tối ưu code
@@ -2277,7 +2260,6 @@ public class MobileKeyword extends BaseUiKeyword {
                 parameters = {"ObjectUI uiObject - Đối tượng UI đại diện cho các phần tử cần lấy văn bản"},
                 example = "List<String> itemNames = mobileKeyword.getTextFromElements(itemNameObject);"
         )
-        @Step("Get text from list element: {0.name}")
         public List<String> getTextFromElements(ObjectUI uiObject) {
             return execute(() -> {
                 List<WebElement> elements = findElements(uiObject);
@@ -2300,7 +2282,6 @@ public class MobileKeyword extends BaseUiKeyword {
                 },
                 example = "mobileKeyword.tapElementByIndex(menuItems, 2,3,1); // Tap vào các phần tử thứ 3,4,2 trong danh sách"
         )
-        @Step("Tap on the element at position {1} in the list {0.name}")
         public void tapElementByIndex(ObjectUI uiObject, int... index) {
             execute(() -> {
                 List<WebElement> elements = findElements(uiObject);
@@ -2329,7 +2310,6 @@ public class MobileKeyword extends BaseUiKeyword {
             },
             example = "mobileKeyword.tapAllElement(menuItems); // Tap vào mọi phần tử trong danh sách"
     )
-    @Step("Tap all elements in the list {0.nane}")
         public void tapAllElement(ObjectUI objectUI){
             execute(() -> {
                 List<WebElement> elements = findElements(objectUI);
@@ -2349,7 +2329,6 @@ public class MobileKeyword extends BaseUiKeyword {
             parameters = {},
             example = "mobileKeyword.openNotifications();"
     )
-    @Step("Open notification shade")
     public void openNotifications() {
         execute(() -> {
             AppiumDriver driver = (AppiumDriver) DriverManager.getDriver();
@@ -2380,7 +2359,6 @@ public class MobileKeyword extends BaseUiKeyword {
             },
             example = "mobileKeyword.waitForNotification(\"Bạn có tin nhắn mới\", 15);"
     )
-    @Step("Wait for notification containing text '{0}' for {1} seconds")
     public WebElement waitForNotification(String containingText, int timeoutInSeconds) {
         return execute(() -> {
             AppiumDriver driver = (AppiumDriver) DriverManager.getDriver();
@@ -2439,7 +2417,6 @@ public class MobileKeyword extends BaseUiKeyword {
                     "NoSuchElementException nếu thông báo biến mất trước khi đọc được nội dung, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với notification panel."
     )
-    @Step("Assert notification text for notification containing '{0}'")
     public void assertNotificationText(String containingText, String expectedText, int timeoutInSeconds, String... customMessage) {
         execute(() -> {
             WebElement notification = waitForNotification(containingText, timeoutInSeconds);
@@ -2462,7 +2439,6 @@ public class MobileKeyword extends BaseUiKeyword {
             },
             example = "mobileKeyword.tapNotificationByText(\"Bạn có tin nhắn mới\", 15);"
     )
-    @Step("Tap on notification containing text: {0}")
     public void tapNotificationByText(String containingText, int timeoutInSeconds) {
         execute(() -> {
             WebElement notification = waitForNotification(containingText, timeoutInSeconds);
@@ -2483,7 +2459,6 @@ public class MobileKeyword extends BaseUiKeyword {
             returnValue = "String|Giá trị của thuộc tính dưới dạng chuỗi.",
             example = "String description = mobileKeyword.getAttribute(menuButton, \"content-desc\");"
     )
-    @Step("Get attribute '{1}' from element: {0.name}")
     public String getAttribute(ObjectUI uiObject, String attributeName) {
         // Gọi lại phương thức logic đã được định nghĩa ở lớp cha
         return super.getAttribute(uiObject, attributeName);
@@ -2505,7 +2480,6 @@ public class MobileKeyword extends BaseUiKeyword {
             note = "⚠️ LƯU Ý: Keyword này sẽ BLOCK thread trong thời gian khóa. Không nên sử dụng thời gian quá dài (>30s). Một số thiết bị có thể yêu cầu quyền đặc biệt để khóa màn hình.",
             example = "mobileKeyword.lockDevice(); // Khóa 1 giây\nmobileKeyword.lockDevice(5); // Khóa 5 giây"
     )
-    @Step("Lock the device for {0} seconds")
     public void lockDevice(Integer... seconds) {
         execute(() -> {
             AppiumDriver driver = (AppiumDriver) DriverManager.getDriver();
@@ -2536,7 +2510,6 @@ public class MobileKeyword extends BaseUiKeyword {
             note = "⚠️ QUAN TRỌNG: Chỉ mở khóa cơ bản (wake up screen). Không thể bypass mật khẩu, vân tay, hoặc Face ID. Thiết bị thực có thể vẫn yêu cầu xác thực bổ sung.",
             example = "mobileKeyword.unlockDevice();"
     )
-    @Step("Unlock the device")
     public void unlockDevice() {
         execute(() -> {
             AppiumDriver driver = (AppiumDriver) DriverManager.getDriver();
@@ -2560,7 +2533,6 @@ public class MobileKeyword extends BaseUiKeyword {
             note = "LƯU Ý: Chỉ hoạt động trên thiết bị thật hoặc simulator hỗ trợ sensor. Emulator Android thông thường không hỗ trợ. Một số app có thể có độ trễ trong việc phản hồi shake event.",
             example = "mobileKeyword.shakeDevice(); // Mô phỏng lắc thiết bị"
     )
-    @Step("Shake the device")
     public void shakeDevice() {
         execute(() -> {
             AppiumDriver driver = (AppiumDriver) DriverManager.getDriver();
@@ -2588,7 +2560,6 @@ public class MobileKeyword extends BaseUiKeyword {
             note = "DEPRECATED API: AppiumDriver.getDeviceTime() đã bị deprecated. Hiện tại sử dụng executeScript('mobile: getDeviceTime'). Thời gian trả về phụ thuộc vào múi giờ thiết bị, không phải máy chủ test.",
             example = "String currentTime = mobileKeyword.getDeviceTime(\"HH:mm:ss\");\nString fullDate = mobileKeyword.getDeviceTime(\"dd/MM/yyyy HH:mm:ss\");"
     )
-    @Step("Get device time with format: {0}")
     public String getDeviceTime(String format) {
         return execute(() -> {
             try {
@@ -2620,7 +2591,6 @@ public class MobileKeyword extends BaseUiKeyword {
             note = "PLATFORM DEPENDENT: Độ chính xác có thể khác nhau giữa Android và iOS. Android: dựa vào InputMethodManager. iOS: dựa vào keyboard notification. Có thể có false positive với bàn phím bên thứ 3.",
             example = "boolean keyboardVisible = mobileKeyword.isKeyboardShown();\nif (keyboardVisible) {\n    mobileKeyword.hideKeyboard();\n}"
     )
-    @Step("Check if keyboard is shown")
     public boolean isKeyboardShown() {
         return execute(() -> {
             try {

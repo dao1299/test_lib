@@ -4,8 +4,11 @@ import com.vtnet.netat.core.context.ExecutionContext;
 import com.vtnet.netat.core.ui.Locator;
 import com.vtnet.netat.core.ui.ObjectUI;
 import com.vtnet.netat.core.utils.ScreenshotUtils;
+import com.vtnet.netat.driver.ConfigReader;
 import com.vtnet.netat.driver.DriverManager;
+import io.appium.java_client.AppiumDriver;
 import org.openqa.selenium.*;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -24,19 +27,57 @@ import java.util.function.Function;
 import com.vtnet.netat.core.secret.SecretDecryptor;
 import com.vtnet.netat.core.secret.MasterKeyProvider;
 
-/**
- * Base chung cho keyword UI (Web/Mobile).
- * Lưu ý: các method protected/public ở đây nên gọi qua execute(...) ở lớp con/public.
- */
 public abstract class BaseUiKeyword extends BaseKeyword {
 
-    private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(15);
-    private static final Duration PRIMARY_TIMEOUT = Duration.ofSeconds(15);
-    private static final Duration SECONDARY_TIMEOUT = Duration.ofSeconds(5);
+    private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(30);
+    private static final Duration PRIMARY_TIMEOUT = Duration.ofSeconds(30);
+    private static final Duration SECONDARY_TIMEOUT = Duration.ofSeconds(15);
+    private static final int DEFAULT_DOC_READY_TIMEOUT = 5;
+    private static final int DEFAULT_AJAX_TIMEOUT = 5;
     protected static final Duration POLLING_INTERVAL = Duration.ofMillis(100);
     private static final Logger log = LoggerFactory.getLogger(BaseUiKeyword.class);
-    private static final ThreadLocal<com.vtnet.netat.core.ui.ObjectUI> CURRENT_ELEMENT =
+    private static final ThreadLocal<ObjectUI> CURRENT_ELEMENT =
             new ThreadLocal<>();
+
+    private int getAjaxTimeout() {
+        return getConfigInt("smart.wait.ajax.timeout", DEFAULT_AJAX_TIMEOUT);
+    }
+
+    private int getPollingInterval() {
+        return getConfigInt("smart.wait.polling.interval", ((int) POLLING_INTERVAL.toMillis()));
+    }
+
+    private boolean isSmartWaitEnabled() {
+        return getConfigBoolean("smart.wait.enabled", true);
+    }
+
+    private int getConfigInt(String key, int defaultValue) {
+        try {
+            String value = ConfigReader.getProperty(key);
+            return (value != null && !value.isEmpty()) ? Integer.parseInt(value.trim()) : defaultValue;
+        } catch (Exception e) {
+            return defaultValue;
+        }
+    }
+
+    private boolean getConfigBoolean(String key, boolean defaultValue) {
+        try {
+            String value = ConfigReader.getProperty(key);
+            return (value != null && !value.isEmpty()) ? Boolean.parseBoolean(value.trim()) : defaultValue;
+        } catch (Exception e) {
+            return defaultValue;
+        }
+    }
+
+    protected Duration getPrimaryTimeout() {
+        int seconds = getConfigInt("element.timeout.primary",(int) DEFAULT_TIMEOUT.toSeconds());
+        return Duration.ofSeconds(seconds);
+    }
+
+    protected Duration getSecondaryTimeout() {
+        int seconds = getConfigInt("element.timeout.secondary", (int) SECONDARY_TIMEOUT.toSeconds());
+        return Duration.ofSeconds(seconds);
+    }
 
     protected WebElement findElement(ObjectUI uiObject) {
         return findElement(uiObject, PRIMARY_TIMEOUT);
@@ -83,17 +124,79 @@ public abstract class BaseUiKeyword extends BaseKeyword {
             }
         }
     }
+    private int getDocReadyTimeout() {
+        return getConfigInt("smart.wait.document.ready.timeout", DEFAULT_DOC_READY_TIMEOUT);
+    }
+
+    private boolean isWebDriver(WebDriver driver) {
+        return !(driver instanceof AppiumDriver);
+    }
+
+    private void waitForDocumentReady(WebDriver driver) {
+        try {
+            logger.info("Wait for DOM ready ...");
+            new WebDriverWait(driver, Duration.ofSeconds(getDocReadyTimeout()))
+                    .until(d -> ((JavascriptExecutor) d)
+                            .executeScript("return document.readyState").equals("complete"));
+        } catch (Exception ignored) {}
+    }
+
+    private void waitForAjaxComplete(WebDriver driver) {
+        try {
+            logger.info("Wait for Ajax complete ...");
+            new WebDriverWait(driver, Duration.ofSeconds(getAjaxTimeout()))
+                    .until(d -> (Boolean) ((JavascriptExecutor) d)
+                            .executeScript("return (typeof jQuery === 'undefined') || jQuery.active === 0"));
+        } catch (Exception ignored) {}
+    }
 
     public static ObjectUI getCurrentElement() {
         return CURRENT_ELEMENT.get();
     }
 
 
+//    protected WebElement findElement(ObjectUI uiObject, Duration timeout) {
+//        WebDriver driver = DriverManager.getDriver();
+//        if (driver == null) {
+//            throw new IllegalStateException("Driver is null while finding element: " + (uiObject != null ? uiObject.getName() : "null"));
+//        }
+//        List<Locator> locators = uiObject.getActiveLocators();
+//        if (locators == null || locators.isEmpty()) {
+//            throw new IllegalArgumentException("No active locator is defined for object: " + uiObject.getName());
+//        }
+//
+//        for (Locator locator : locators) {
+//            WebDriverWait wait = new WebDriverWait(driver, timeout, POLLING_INTERVAL);
+//            try {
+//                By by = locator.convertToBy();
+//                logger.info("Searching for element '{}' using locator: {} (Timeout: {}s)",
+//                        uiObject.getName(), locator, timeout.getSeconds());
+//                WebElement element = wait.until(ExpectedConditions.presenceOfElementLocated(by));
+//                if (element != null) {
+//                    logger.info("Found element '{}' with locator: {}", uiObject.getName(), locator);
+//                    return element;
+//                }
+//            } catch (Exception e) {
+//                logger.debug("Element '{}' not found with locator {}. Trying next.", uiObject.getName(), locator);
+//            }
+//        }
+//
+//        logger.error("COULD NOT FIND element '{}' using any defined locators within {}s.", uiObject.getName(), timeout.getSeconds());
+//        throw new NoSuchElementException("Cannot find element '" + uiObject.getName() + "' using any of the defined locators within the timeout period.");
+//    }
+
     protected WebElement findElement(ObjectUI uiObject, Duration timeout) {
         WebDriver driver = DriverManager.getDriver();
         if (driver == null) {
-            throw new IllegalStateException("Driver is null while finding element: " + (uiObject != null ? uiObject.getName() : "null"));
+            throw new IllegalStateException("Driver is null while finding element: " +
+                    (uiObject != null ? uiObject.getName() : "null"));
         }
+
+        if (isSmartWaitEnabled() && isWebDriver(driver)) {
+            waitForDocumentReady(driver);
+            waitForAjaxComplete(driver);
+        }
+
         List<Locator> locators = uiObject.getActiveLocators();
         if (locators == null || locators.isEmpty()) {
             throw new IllegalArgumentException("No active locator is defined for object: " + uiObject.getName());
@@ -115,8 +218,10 @@ public abstract class BaseUiKeyword extends BaseKeyword {
             }
         }
 
-        logger.error("COULD NOT FIND element '{}' using any defined locators within {}s.", uiObject.getName(), timeout.getSeconds());
-        throw new NoSuchElementException("Cannot find element '" + uiObject.getName() + "' using any of the defined locators within the timeout period.");
+        logger.error("COULD NOT FIND element '{}' using any defined locators within {}s.",
+                uiObject.getName(), timeout.getSeconds());
+        throw new NoSuchElementException("Cannot find element '" + uiObject.getName() +
+                "' using any of the defined locators within the timeout period.");
     }
 
     public List<WebElement> findElements(ObjectUI uiObject) {
@@ -151,43 +256,252 @@ public abstract class BaseUiKeyword extends BaseKeyword {
     // --- ACTION KEYWORDS (PUBLIC/PROTECTED) ---
     // =================================================================================
 
+//    protected void click(ObjectUI uiObject) {
+//        execute(() -> {
+//            WebDriver driver = DriverManager.getDriver();
+//            JavascriptExecutor js = (JavascriptExecutor) driver;
+//
+//            List<Locator> locators = uiObject.getActiveLocators();
+//            WebElement element = null;
+//            By usedBy = null;
+//
+//            waitForDocumentReady(driver);
+//
+//            for (Locator locator : locators) {
+//                try {
+//                    By by = locator.convertToBy();
+//
+//                    element = new WebDriverWait(driver, getPrimaryTimeout())
+//                            .pollingEvery(Duration.ofMillis(getPollingInterval()))
+//                            .ignoring(StaleElementReferenceException.class)
+//                            .until(ExpectedConditions.presenceOfElementLocated(by));
+//
+//                    usedBy = by;
+//                    break;
+//
+//                } catch (Exception ignore) {}
+//            }
+//
+//            if (element == null) {
+//                throw new NoSuchElementException(
+//                        "Cannot find element '" + uiObject.getName() + "'");
+//            }
+//
+//            try {
+//                js.executeScript("arguments[0].scrollIntoView({block:'center'});", element);
+//                js.executeScript("arguments[0].focus();", element);
+//            } catch (Exception ignore) {}
+//
+//            try {
+//                element.click();
+//                return null;
+//            } catch (Exception firstFail) {
+//                logger.debug("Normal click failed, fallback to JS click: {}", firstFail.getClass().getSimpleName());
+//            }
+//
+//            try {
+//                element = driver.findElement(usedBy);
+//            } catch (Exception ignore) {}
+//
+//            js.executeScript("arguments[0].click();", element);
+//
+//            return null;
+//        }, uiObject.getName());
+//    }
+
+    private static final int MAX_STALE_RETRY = 3;
+    private static final Duration CLICK_READY_TIMEOUT = Duration.ofSeconds(5); // Giảm từ 15s xuống 5s
+
+    // ==================== MAIN CLICK METHOD ====================
     protected void click(ObjectUI uiObject) {
         execute(() -> {
             WebDriver driver = DriverManager.getDriver();
+            JavascriptExecutor js = (JavascriptExecutor) driver;
             List<Locator> locators = uiObject.getActiveLocators();
+            WebElement element = null;
+            By usedBy = null;
 
+            if (isWebDriver(driver)) {
+                waitForDocumentReady(driver);
+                waitForAjaxComplete(driver);
+            }
+
+            // BƯỚC 1: Tìm element trong DOM
             for (Locator locator : locators) {
                 try {
                     By by = locator.convertToBy();
-
-                    WebElement element = new WebDriverWait(driver, PRIMARY_TIMEOUT)
-                            .pollingEvery(POLLING_INTERVAL)
+                    element = new WebDriverWait(driver, getPrimaryTimeout())
+                            .pollingEvery(Duration.ofMillis(getPollingInterval()))
                             .ignoring(StaleElementReferenceException.class)
-                            .until(ExpectedConditions.elementToBeClickable(by));
+                            .until(ExpectedConditions.presenceOfElementLocated(by));
 
-                    try {
-                        element.click();
-                        logger.info("Successfully clicked '{}' with locator: {}",
-                                uiObject.getName(), locator);
-                        return null;
-
-                    } catch (ElementClickInterceptedException e) {
-                        logger.warn("Click intercepted for '{}', trying JavaScript click",
-                                uiObject.getName());
-
-                        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", element);
-                        logger.info("Successfully clicked '{}' via JavaScript", uiObject.getName());
-                        return null;
+                    if (element != null) {
+                        usedBy = by;
+                        logger.debug("Found element '{}' in DOM with locator: {}", uiObject.getName(), locator);
+                        break;
                     }
-
+                } catch (TimeoutException e) {
+                    logger.debug("Element not found with locator {}: timeout", locator);
                 } catch (Exception e) {
-                    logger.debug("Failed to click '{}' with locator {}: {}",
-                            uiObject.getName(), locator, e.getMessage());
+                    logger.debug("Element not found with locator {}: {}", locator, e.getMessage());
                 }
             }
-            throw new RuntimeException("Cannot click element '" + uiObject.getName() +
-                    "' using any defined locators");
+
+            if (element == null || usedBy == null) {
+                throw new NoSuchElementException("Cannot find element '" + uiObject.getName() + "' in DOM");
+            }
+
+            final By finalBy = usedBy;
+            try {
+                element = new WebDriverWait(driver, CLICK_READY_TIMEOUT)
+                        .pollingEvery(Duration.ofMillis(getPollingInterval()))
+                        .ignoring(StaleElementReferenceException.class)
+                        .until(ExpectedConditions.elementToBeClickable(finalBy));
+            } catch (TimeoutException e) {
+                logger.debug("Element '{}' not clickable after {}s, proceeding anyway",
+                        uiObject.getName(), CLICK_READY_TIMEOUT.getSeconds());
+                element = driver.findElement(finalBy);
+            }
+
+            scrollIntoView(js, element);
+
+            performClick(driver, js, element, finalBy, uiObject.getName());
+
+            return null;
         }, uiObject != null ? uiObject.getName() : "null");
+    }
+
+    private void scrollIntoView(JavascriptExecutor js, WebElement element) {
+        try {
+            js.executeScript(
+                    "arguments[0].scrollIntoView({behavior:'instant', block:'center', inline:'nearest'});",
+                    element);
+        } catch (Exception e) {
+            logger.debug("Scroll into view failed: {}", e.getMessage());
+        }
+    }
+
+    private void performClick(WebDriver driver, JavascriptExecutor js,
+                              WebElement element, By by, String elementName) {
+        Exception lastException = null;
+        int staleRetry = 0;
+
+        while (staleRetry < MAX_STALE_RETRY) {
+            // Strategy 1: Normal click (thử ngay, không check trước)
+            try {
+                element.click();
+                logger.info("Clicked '{}' successfully (normal)", elementName);
+                return;
+            } catch (StaleElementReferenceException e) {
+                staleRetry++;
+                element = driver.findElement(by);
+                logger.debug("Element stale, re-finding... (attempt {})", staleRetry);
+                continue;
+            } catch (ElementNotInteractableException e) {
+                lastException = e;
+                logger.debug("Normal click failed: {}", e.getMessage());
+            }
+
+            // Click failed → CHỈ BÂY GIỜ mới check animation (lazy check)
+            if (!waitForAnimationOnce(driver, element, elementName)) {
+                // Animation đang chạy, chờ xong rồi thử lại normal click
+                try {
+                    element = driver.findElement(by);
+                    element.click();
+                    logger.info("Clicked '{}' successfully (after animation)", elementName);
+                    return;
+                } catch (Exception e) {
+                    lastException = e;
+                    logger.debug("Click after animation failed: {}", e.getMessage());
+                }
+            }
+
+            // Strategy 2: Actions click
+            try {
+                new Actions(driver)
+                        .moveToElement(element)
+                        .pause(Duration.ofMillis(50))
+                        .click()
+                        .perform();
+                logger.info("Clicked '{}' successfully (Actions)", elementName);
+                return;
+            } catch (StaleElementReferenceException e) {
+                staleRetry++;
+                element = driver.findElement(by);
+                continue;
+            } catch (Exception e) {
+                lastException = e;
+                logger.debug("Actions click failed: {}", e.getMessage());
+            }
+
+            // Strategy 3: JavaScript click
+            try {
+                element = driver.findElement(by);
+                js.executeScript("arguments[0].click();", element);
+                logger.info("Clicked '{}' successfully (JavaScript)", elementName);
+                return;
+            } catch (StaleElementReferenceException e) {
+                staleRetry++;
+                element = driver.findElement(by);
+                continue;
+            } catch (Exception e) {
+                lastException = e;
+                logger.debug("JavaScript click failed: {}", e.getMessage());
+            }
+
+            break;
+        }
+
+        throw new ElementClickInterceptedException(
+                String.format("Cannot click element '%s' after all attempts. Last error: %s",
+                        elementName, lastException != null ? lastException.getMessage() : "unknown"));
+    }
+
+    // ==================== WAIT FOR ANIMATION (CHỈ GỌI KHI CẦN) ====================
+    private boolean waitForAnimationOnce(WebDriver driver, WebElement element, String elementName) {
+        try {
+            JavascriptExecutor js = (JavascriptExecutor) driver;
+
+            // Check nhanh: có animation không?
+            Boolean hasAnimation = (Boolean) js.executeScript(
+                    "var el = arguments[0];" +
+                            "var style = window.getComputedStyle(el);" +
+                            "var cls = el.className || '';" +
+                            // Quick check animation indicators
+                            "return style.animationPlayState === 'running' || " +
+                            "       parseFloat(style.opacity) < 0.99 || " +
+                            "       /v-enter|v-leave|ng-animate|collapsing|animating/.test(cls);",
+                    element);
+
+            if (hasAnimation == null || !hasAnimation) {
+                return true; // Không có animation
+            }
+
+            // Có animation → chờ tối đa 2 giây
+            logger.debug("Animation detected on '{}', waiting...", elementName);
+
+            new WebDriverWait(driver, Duration.ofSeconds(2))
+                    .pollingEvery(Duration.ofMillis(200)) // Poll chậm hơn: 200ms thay vì 100ms
+                    .until(d -> {
+                        Boolean done = (Boolean) ((JavascriptExecutor) d).executeScript(
+                                "var el = arguments[0];" +
+                                        "var style = window.getComputedStyle(el);" +
+                                        "var cls = el.className || '';" +
+                                        "return style.animationPlayState !== 'running' && " +
+                                        "       parseFloat(style.opacity) >= 0.99 && " +
+                                        "       !/v-enter|v-leave|ng-animate|collapsing|animating/.test(cls);",
+                                element);
+                        return done != null && done;
+                    });
+
+            return true;
+        } catch (TimeoutException e) {
+            logger.debug("Animation wait timeout for '{}'", elementName);
+            return true; // Timeout thì cứ thử click
+        } catch (Exception e) {
+            logger.debug("Animation check error: {}", e.getMessage());
+            return true;
+        }
     }
 
     protected void clear(ObjectUI uiObject) {
@@ -206,23 +520,29 @@ public abstract class BaseUiKeyword extends BaseKeyword {
             WebDriver driver = DriverManager.getDriver();
             List<Locator> locators = uiObject.getActiveLocators();
 
+            if (isSmartWaitEnabled() && isWebDriver(driver)) {
+                waitForDocumentReady(driver);
+                waitForAjaxComplete(driver);
+            }
+
             for (Locator locator : locators) {
                 try {
                     By by = locator.convertToBy();
 
-                    WebElement element = new WebDriverWait(driver, PRIMARY_TIMEOUT)
-                            .pollingEvery(POLLING_INTERVAL)
+                    WebElement element = new WebDriverWait(driver, getPrimaryTimeout())
+                            .pollingEvery(Duration.ofMillis(getPollingInterval()))
                             .ignoring(StaleElementReferenceException.class)
                             .until(ExpectedConditions.visibilityOfElementLocated(by));
 
                     element.clear();
                     element.sendKeys(text);
 
-                    logger.info("Successfully sent keys to '{}'", uiObject.getName());
+                    logger.info("Successfully sent keys to '{}' with locator: {}",
+                            uiObject.getName(), locator);
                     return null;
 
                 } catch (Exception e) {
-                    logger.debug("Failed with locator {}, trying next", locator);
+                    logger.debug("Failed with locator {}: {}", locator, e.getMessage());
                 }
             }
 
@@ -286,12 +606,20 @@ public abstract class BaseUiKeyword extends BaseKeyword {
                 logger.warn("getText called with null uiObject");
                 return "";
             }
+
             WebDriver driver = DriverManager.getDriver();
-            boolean isMobile = driver instanceof io.appium.java_client.AppiumDriver;
+            boolean isWeb = isWebDriver(driver);
+
+            if (isSmartWaitEnabled() && isWeb) {
+                waitForDocumentReady(driver);
+                waitForAjaxComplete(driver);
+            }
+
             int attempts = 3;
             while (attempts-- > 0) {
                 try {
-                    WebElement element = new WebDriverWait(driver, DEFAULT_TIMEOUT)
+                    WebElement element = new WebDriverWait(driver, getPrimaryTimeout())
+                            .pollingEvery(Duration.ofMillis(getPollingInterval()))
                             .ignoring(StaleElementReferenceException.class)
                             .until(d -> {
                                 try {
@@ -306,8 +634,10 @@ public abstract class BaseUiKeyword extends BaseKeyword {
                         throw new StaleElementReferenceException(
                                 "Cannot locate visible element for: " + uiObject.getName());
                     }
+
                     String text = element.getText();
-                    if (!isMobile) {
+
+                    if (isWeb) {
                         String tagName = element.getTagName().toLowerCase();
 
                         if ("input".equals(tagName) || "textarea".equals(tagName) || "select".equals(tagName)) {
@@ -319,25 +649,25 @@ public abstract class BaseUiKeyword extends BaseKeyword {
 
                         if (text == null || text.trim().isEmpty()) {
                             try {
-                                JavascriptExecutor js = (JavascriptExecutor) driver;
-                                text = (String) js.executeScript(
+                                text = (String) ((JavascriptExecutor) driver).executeScript(
                                         "return arguments[0].textContent || arguments[0].innerText;", element);
                             } catch (Exception e) {
-                                logger.warn("Unable to retrieve text via JavaScript for {}. Returning empty string.",
-                                        uiObject.getName(), e);
+                                logger.warn("Unable to retrieve text via JavaScript for {}", uiObject.getName());
                                 text = "";
                             }
                         }
                     }
+
                     return (text != null) ? text : "";
+
                 } catch (StaleElementReferenceException e) {
-                    logger.warn("StaleElementReferenceException when getting text for {}. Retrying... ({} attempts left)",
+                    logger.warn("StaleElementReferenceException for {}. Retrying... ({} attempts left)",
                             uiObject.getName(), attempts);
                 }
             }
 
             throw new StaleElementReferenceException(
-                    "Failed to get text for '" + uiObject.getName() + "' after multiple retries due to stale element.");
+                    "Failed to get text for '" + uiObject.getName() + "' after multiple retries.");
         }, uiObject != null ? uiObject.getName() : "null");
     }
 

@@ -101,7 +101,7 @@ public abstract class BaseKeyword {
             try {
                 String screenshotPath = captureEvidenceOnFailure(name + "_broken",params);
                 ex.setScreenshotPath(screenshotPath);
-                HTMLSnapshotUtils.captureHTMLSnapshot(name + "_broken");
+//                HTMLSnapshotUtils.captureHTMLSnapshot(name + "_broken");
             } catch (Throwable ignore) {}
 
             throw ex;
@@ -115,27 +115,24 @@ public abstract class BaseKeyword {
         try {
             String screenshotPath = null;
 
-            // 🎨 NEW: Highlight element nếu có
             if (HIGHLIGHT_ON_FAILURE) {
                 WebElement failedElement = extractElementFromParams(params);
                 WebDriver driver = getDriverInstance();
 
                 if (failedElement != null && driver != null) {
-                    logger.info("📸 Capturing screenshot with highlighted element");
+                    logger.info("Capturing screenshot with highlighted element");
                     screenshotPath = ScreenshotUtils.highlightAndTakeScreenshot(
                             driver,
                             failedElement,
                             baseName
                     );
                 } else {
-                    // Fallback: normal screenshot
                     screenshotPath = ScreenshotUtils.takeScreenshot(baseName);
                 }
             } else {
                 screenshotPath = ScreenshotUtils.takeScreenshot(baseName);
             }
 
-            // Capture HTML snapshot
             HTMLSnapshotUtils.captureHTMLSnapshot(baseName);
 
             return screenshotPath;
@@ -146,7 +143,6 @@ public abstract class BaseKeyword {
         }
     }
 
-    // ✨ NEW: Extract WebElement từ keyword parameters
     private WebElement extractElementFromParams(Object... params) {
         if (params == null || params.length == 0) {
             return null;
@@ -162,11 +158,11 @@ public abstract class BaseKeyword {
                 }
             }
         } catch (Exception e) {
-            // Ignore - fallback to params
+
         }
 
         for (Object param : params) {
-            // Tìm ObjectUI trong params
+
             if (param instanceof com.vtnet.netat.core.ui.ObjectUI) {
                 try {
                     com.vtnet.netat.core.ui.ObjectUI uiObject =
@@ -177,7 +173,6 @@ public abstract class BaseKeyword {
                 }
             }
 
-            // Nếu param trực tiếp là WebElement
             if (param instanceof WebElement) {
                 return (WebElement) param;
             }
@@ -186,7 +181,6 @@ public abstract class BaseKeyword {
         return null;
     }
 
-    // ✨ NEW: Find element safely (không throw exception)
     private WebElement findElementSafely(com.vtnet.netat.core.ui.ObjectUI uiObject) {
         try {
             WebDriver driver = getDriverInstance();
@@ -201,7 +195,6 @@ public abstract class BaseKeyword {
 
             By by = locators.get(0).convertToBy();
 
-            // Tắt implicit wait để search nhanh
             driver.manage().timeouts().implicitlyWait(java.time.Duration.ofSeconds(0));
 
             List<WebElement> elements = driver.findElements(by);
@@ -214,7 +207,6 @@ public abstract class BaseKeyword {
         }
     }
 
-    // ✨ NEW: Get driver instance
     private WebDriver getDriverInstance() {
         try {
             // Try ExecutionContext

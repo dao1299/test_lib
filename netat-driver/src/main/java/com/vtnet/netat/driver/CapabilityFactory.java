@@ -11,9 +11,11 @@ import org.openqa.selenium.safari.SafariOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.File;
+import java.lang.reflect.Array;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -161,7 +163,7 @@ public class CapabilityFactory {
                     hasAppPackage = true;
                 }
 
-                if (capabilityName.startsWith("appium.")) {
+                if (capabilityName.startsWith("appium.") || capabilityName.startsWith("se.")) {
                     capabilityName = capabilityName.replaceFirst("\\.", ":");
                 }
 

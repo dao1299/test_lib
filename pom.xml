@@ -7,12 +7,11 @@
 
     <groupId>com.vtnet.netat</groupId>
     <artifactId>netat-libraries</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <packaging>pom</packaging>
 
     <name>NETAT Libraries</name>
     <description>Parent project for NETAT automation libraries</description>
-    <url>https://github.com/vtnet/netat-libraries</url>
 
 
     <properties>
@@ -49,6 +48,7 @@
         <module>netat-db</module>
         <module>netat-driver</module>
         <module>netat-tools</module>
+        <module>netat-desktop</module>
     </modules>
 
     <dependencyManagement>

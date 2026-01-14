@@ -502,6 +502,7 @@ public class DriverKeyword extends BaseKeyword {
             // Build capabilities với xử lý appium:settings
             MutableCapabilities caps = buildMobileCapabilities(platform, resolvedUdid, capsJson);
 
+
             logger.info("Starting mobile session '{}' | Platform: {} | UDID: {} | URL: {}",
                     sessionName, platform, resolvedUdid != null ? resolvedUdid : "AUTO", appiumUrl);
 
@@ -548,6 +549,8 @@ public class DriverKeyword extends BaseKeyword {
 
         caps.setCapability("appium:noReset", true);
         caps.setCapability("appium:autoGrantPermissions", true);
+        caps.setCapability("df:recordVideo",true);
+        caps.setCapability("df:liveVideo",true);
         caps.setCapability("appium:newCommandTimeout", 300);
 
         if (capsJson != null && !capsJson.trim().isEmpty() && !capsJson.trim().equals("{}")) {
