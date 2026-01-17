@@ -4882,4 +4882,165 @@ public class MobileKeyword extends BaseUiKeyword {
         }, fingerprintId);
     }
 
+    // =================================================================================
+    // --- UTILITY KEYWORDS - ELEMENT INFO & SCRIPT EXECUTION ---
+    // =================================================================================
+
+    @NetatKeyword(
+            name = "getElementLocation",
+            description = "Lấy vị trí của element trên màn hình (tọa độ x, y). " +
+                    "Trả về Map với keys: x (tọa độ ngang), y (tọa độ dọc). " +
+                    "Hữu ích để verify vị trí element, calculate gestures, hoặc visual testing.",
+            category = "Mobile",
+            subCategory = "Utility",
+            parameters = {
+                    "uiObject: ObjectUI - Element cần lấy vị trí"
+            },
+            returnValue = "Map<String, Integer> - Map với keys 'x' và 'y'",
+            example = "// Get element location\n" +
+                    "Map<String, Integer> location = mobileKeyword.getElementLocation(loginButton);\n" +
+                    "int x = location.get(\"x\");\n" +
+                    "int y = location.get(\"y\");\n" +
+                    "logger.info(\"Button at: ({}, {})\", x, y);\n\n" +
+                    "// Verify element is in viewport\n" +
+                    "Map<String, Integer> loc = mobileKeyword.getElementLocation(banner);\n" +
+                    "Assert.assertTrue(loc.get(\"y\") >= 0, \"Banner should be visible\");\n\n" +
+                    "// Calculate relative position\n" +
+                    "Map<String, Integer> loc1 = mobileKeyword.getElementLocation(element1);\n" +
+                    "Map<String, Integer> loc2 = mobileKeyword.getElementLocation(element2);\n" +
+                    "int distance = Math.abs(loc1.get(\"x\") - loc2.get(\"x\"));",
+            note = "Áp dụng cho nền tảng Mobile. Hoạt động trên cả Android và iOS. " +
+                    "Tọa độ là absolute position trên màn hình. " +
+                    "Origin (0,0) ở góc trên bên trái màn hình. " +
+                    "Element phải visible để có location. " +
+                    "Có thể throw NoSuchElementException nếu element không tồn tại."
+    )
+    public Map<String, Integer> getElementLocation(ObjectUI uiObject) {
+        return execute(() -> {
+            WebElement element = findElement(uiObject);
+            Point location = element.getLocation();
+
+            Map<String, Integer> result = new HashMap<>();
+            result.put("x", location.getX());
+            result.put("y", location.getY());
+
+            return result;
+        }, uiObject);
+    }
+
+    @NetatKeyword(
+            name = "getElementSize",
+            description = "Lấy kích thước của element (width, height). " +
+                    "Trả về Map với keys: width (chiều rộng), height (chiều cao). " +
+                    "Hữu ích để verify layout, responsive design, hoặc calculate touch areas.",
+            category = "Mobile",
+            subCategory = "Utility",
+            parameters = {
+                    "uiObject: ObjectUI - Element cần lấy kích thước"
+            },
+            returnValue = "Map<String, Integer> - Map với keys 'width' và 'height'",
+            example = "// Get element size\n" +
+                    "Map<String, Integer> size = mobileKeyword.getElementSize(loginButton);\n" +
+                    "int width = size.get(\"width\");\n" +
+                    "int height = size.get(\"height\");\n" +
+                    "logger.info(\"Button size: {}x{}\", width, height);\n\n" +
+                    "// Verify minimum touch target size (44x44)\n" +
+                    "Map<String, Integer> btnSize = mobileKeyword.getElementSize(button);\n" +
+                    "Assert.assertTrue(btnSize.get(\"width\") >= 44, \"Width must be at least 44px\");\n" +
+                    "Assert.assertTrue(btnSize.get(\"height\") >= 44, \"Height must be at least 44px\");\n\n" +
+                    "// Verify image aspect ratio\n" +
+                    "Map<String, Integer> imgSize = mobileKeyword.getElementSize(image);\n" +
+                    "double ratio = (double) imgSize.get(\"width\") / imgSize.get(\"height\");\n" +
+                    "Assert.assertEquals(ratio, 16.0/9.0, 0.1, \"Should be 16:9 aspect ratio\");",
+            note = "Áp dụng cho nền tảng Mobile. Hoạt động trên cả Android và iOS. " +
+                    "Kích thước tính bằng pixels (device pixels, không phải CSS pixels). " +
+                    "Element phải visible để có size. " +
+                    "Có thể throw NoSuchElementException nếu element không tồn tại."
+    )
+    public Map<String, Integer> getElementSize(ObjectUI uiObject) {
+        return execute(() -> {
+            WebElement element = findElement(uiObject);
+            Dimension size = element.getSize();
+
+            Map<String, Integer> result = new HashMap<>();
+            result.put("width", size.getWidth());
+            result.put("height", size.getHeight());
+
+            return result;
+        }, uiObject);
+    }
+
+    @NetatKeyword(
+            name = "getPageSource",
+            description = "Lấy XML source code của page hierarchy hiện tại. " +
+                    "Android: Trả về UI Automator XML. iOS: Trả về XCUITest XML. " +
+                    "Hữu ích để debug, logging, verify page structure, hoặc parse element attributes.",
+            category = "Mobile",
+            subCategory = "Utility",
+            parameters = {},
+            returnValue = "String - XML source code của page",
+            example = "// Get and log page source\n" +
+                    "String source = mobileKeyword.getPageSource();\n" +
+                    "logger.info(\"Page source: {}\", source);\n\n" +
+                    "// Verify element exists in page source\n" +
+                    "String pageXml = mobileKeyword.getPageSource();\n" +
+                    "Assert.assertTrue(pageXml.contains(\"Login\"), \"Login text should exist\");\n\n" +
+                    "// Save page source for debugging\n" +
+                    "String source = mobileKeyword.getPageSource();\n" +
+                    "Files.write(Paths.get(\"page_source.xml\"), source.getBytes());\n\n" +
+                    "// Count elements\n" +
+                    "String xml = mobileKeyword.getPageSource();\n" +
+                    "int buttonCount = xml.split(\"<.*Button\").length - 1;\n" +
+                    "logger.info(\"Found {} buttons\", buttonCount);",
+            note = "Áp dụng cho nền tảng Mobile. Hoạt động trên cả Android và iOS. " +
+                    "XML structure khác nhau giữa Android và iOS. " +
+                    "Page source có thể rất lớn, nên cẩn thận khi log. " +
+                    "Mỗi lần gọi sẽ query lại từ device (có thể chậm). " +
+                    "Có thể throw WebDriverException nếu không thể lấy source."
+    )
+    public String getPageSource() {
+        return execute(() -> {
+            return getAppiumDriver().getPageSource();
+        });
+    }
+
+    @NetatKeyword(
+            name = "executeScript",
+            description = "Thực thi JavaScript hoặc mobile script với arguments. " +
+                    "Hỗ trợ cả Appium mobile: commands và custom scripts. " +
+                    "Linh hoạt hơn executeMobileCommand với varargs parameters.",
+            category = "Mobile",
+            subCategory = "Utility",
+            parameters = {
+                    "script: String - Script cần thực thi",
+                    "args: Object... - Arguments cho script (varargs)"
+            },
+            returnValue = "Object - Kết quả trả về từ script",
+            example = "// Execute mobile command\n" +
+                    "mobileKeyword.executeScript(\"mobile: scroll\", Map.of(\"direction\", \"down\"));\n\n" +
+                    "// Execute with multiple arguments\n" +
+                    "Object result = mobileKeyword.executeScript(\"mobile: shell\", \"ls\", \"-la\", \"/sdcard\");\n\n" +
+                    "// Get device info\n" +
+                    "String deviceTime = (String) mobileKeyword.executeScript(\"mobile: getDeviceTime\");\n" +
+                    "logger.info(\"Device time: {}\", deviceTime);\n\n" +
+                    "// Execute custom script\n" +
+                    "Map<String, Object> params = new HashMap<>();\n" +
+                    "params.put(\"x\", 100);\n" +
+                    "params.put(\"y\", 200);\n" +
+                    "mobileKeyword.executeScript(\"mobile: tap\", params);\n\n" +
+                    "// Android: Start activity\n" +
+                    "mobileKeyword.executeScript(\"mobile: startActivity\", \n" +
+                    "    Map.of(\"appPackage\", \"com.example.app\", \"appActivity\", \".MainActivity\"));",
+            note = "Áp dụng cho nền tảng Mobile. Hoạt động trên cả Android và iOS. " +
+                    "Script syntax phụ thuộc vào platform (Android vs iOS). " +
+                    "Mobile commands phải prefix với 'mobile: '. " +
+                    "Có thể throw WebDriverException nếu script không hợp lệ hoặc không được hỗ trợ. " +
+                    "Arguments được pass theo thứ tự hoặc dùng Map cho named parameters."
+    )
+    public Object executeScript(String script, Object... args) {
+        return execute(() -> {
+            return getAppiumDriver().executeScript(script, args);
+        }, script, args);
+    }
+
 }
