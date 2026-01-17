@@ -7,11 +7,13 @@ import com.vtnet.netat.core.utils.ScreenshotUtils;
 import com.vtnet.netat.driver.DriverManager;
 import io.appium.java_client.*;
 import io.appium.java_client.android.AndroidDriver;
+import io.appium.java_client.android.connection.ConnectionState;
 import io.appium.java_client.android.nativekey.AndroidKey;
 import io.appium.java_client.android.nativekey.KeyEvent;
 import io.appium.java_client.clipboard.HasClipboard;
 import io.appium.java_client.ios.IOSDriver;
 import org.openqa.selenium.*;
+import org.openqa.selenium.html5.Location;
 import org.openqa.selenium.interactions.Pause;
 import org.openqa.selenium.interactions.PointerInput;
 import org.openqa.selenium.interactions.Sequence;
@@ -246,6 +248,294 @@ public class MobileKeyword extends BaseUiKeyword {
             ((InteractsWithApps) DriverManager.getDriver()).runAppInBackground(Duration.ofSeconds(seconds));
             return null;
         }, seconds);
+    }
+
+    @NetatKeyword(
+            name = "launchApp",
+            description = "Khởi động ứng dụng từ đầu (fresh launch) như lần đầu tiên mở. " +
+                    "Khác với activateApp, keyword này luôn khởi động ứng dụng ở trạng thái sạch, " +
+                    "xóa state/session cũ và bắt đầu lại từ màn hình đầu tiên. " +
+                    "Hữu ích cho các test case cần kiểm tra flow từ đầu như login, onboarding, hoặc first-time setup. " +
+                    "Tương đương với việc: terminate app (nếu đang chạy) -> activate app.",
+            category = "Mobile",
+            subCategory = "AppLifecycle",
+            parameters = {},
+            returnValue = "void - Không trả về giá trị",
+            example = "// Khởi động app từ đầu để test login flow\n" +
+                    "mobileKeyword.launchApp();\n" +
+                    "mobileKeyword.sendText(usernameField, \"testuser\");\n" +
+                    "mobileKeyword.sendText(passwordField, \"password123\");\n" +
+                    "mobileKeyword.tap(loginButton);\n\n" +
+                    "// Test onboarding screen cho user mới\n" +
+                    "mobileKeyword.launchApp();\n" +
+                    "mobileKeyword.assertElementVisible(welcomeScreen);\n\n" +
+                    "// Reset app về trạng thái ban đầu giữa các test case\n" +
+                    "mobileKeyword.launchApp();",
+            note = "Áp dụng cho nền tảng Mobile. Ứng dụng đã được cài đặt và cấu hình trong Desired Capabilities. " +
+                    "Keyword này sẽ terminate app nếu đang chạy, sau đó activate lại. " +
+                    "Tất cả session data, cache, và trạng thái trước đó sẽ bị xóa. " +
+                    "Có thể throw WebDriverException nếu không thể khởi động ứng dụng."
+    )
+    public void launchApp() {
+        execute(() -> {
+            AppiumDriver driver = getAppiumDriver();
+            // Lấy appId từ capabilities
+            String appId = null;
+            if (driver instanceof AndroidDriver) {
+                appId = (String) driver.getCapabilities().getCapability("appPackage");
+            } else if (driver instanceof IOSDriver) {
+                appId = (String) driver.getCapabilities().getCapability("bundleId");
+            }
+
+            if (appId != null) {
+                // Terminate app nếu đang chạy
+                try {
+                    ((InteractsWithApps) driver).terminateApp(appId);
+                } catch (Exception e) {
+                    logger.debug("App was not running or could not be terminated: " + e.getMessage());
+                }
+                // Activate app để khởi động lại
+                ((InteractsWithApps) driver).activateApp(appId);
+            } else {
+                throw new IllegalStateException("Cannot determine app ID. Please ensure 'appPackage' (Android) or 'bundleId' (iOS) is set in capabilities.");
+            }
+            return null;
+        });
+    }
+
+    @NetatKeyword(
+            name = "closeApp",
+            description = "Đóng ứng dụng hiện tại đang được kiểm soát bởi Appium driver. " +
+                    "Khác với terminateApp, keyword này đóng ứng dụng một cách graceful, " +
+                    "cho phép ứng dụng lưu trạng thái và thực hiện cleanup trước khi đóng. " +
+                    "Session của Appium vẫn được giữ lại, có thể khởi động lại app khác trong cùng session. " +
+                    "Hữu ích khi cần chuyển đổi giữa nhiều ứng dụng hoặc kết thúc test một cách clean.",
+            category = "Mobile",
+            subCategory = "AppLifecycle",
+            parameters = {},
+            returnValue = "void - Không trả về giá trị",
+            example = "// Đóng app sau khi hoàn thành test\n" +
+                    "mobileKeyword.tap(logoutButton);\n" +
+                    "mobileKeyword.closeApp();\n\n" +
+                    "// Đóng app hiện tại để chuyển sang app khác\n" +
+                    "mobileKeyword.closeApp();\n" +
+                    "mobileKeyword.activateApp(\"com.android.settings\");\n\n" +
+                    "// Đóng app để kiểm tra launch behavior\n" +
+                    "mobileKeyword.closeApp();\n" +
+                    "mobileKeyword.launchApp();",
+            note = "Áp dụng cho nền tảng Mobile. Ứng dụng đang chạy và được kiểm soát bởi Appium. " +
+                    "Session Appium vẫn được giữ lại sau khi đóng app. " +
+                    "Để mở lại app, sử dụng activateApp() hoặc launchApp(). " +
+                    "Có thể throw WebDriverException nếu không thể đóng ứng dụng."
+    )
+    public void closeApp() {
+        execute(() -> {
+            AppiumDriver driver = getAppiumDriver();
+            // Lấy appId từ capabilities để terminate app
+            String appId = null;
+            if (driver instanceof AndroidDriver) {
+                appId = (String) driver.getCapabilities().getCapability("appPackage");
+            } else if (driver instanceof IOSDriver) {
+                appId = (String) driver.getCapabilities().getCapability("bundleId");
+            }
+
+            if (appId != null) {
+                ((InteractsWithApps) driver).terminateApp(appId);
+            } else {
+                throw new IllegalStateException("Cannot determine app ID to close. Please ensure 'appPackage' (Android) or 'bundleId' (iOS) is set in capabilities.");
+            }
+            return null;
+        });
+    }
+
+    @NetatKeyword(
+            name = "removeApp",
+            description = "Gỡ cài đặt ứng dụng và xóa toàn bộ dữ liệu liên quan khỏi thiết bị. " +
+                    "Keyword này tương đương với uninstallApp nhưng đảm bảo xóa sạch tất cả app data, cache, và files. " +
+                    "Trên Android: xóa package và data directory. " +
+                    "Trên iOS: xóa bundle và documents directory. " +
+                    "Hữu ích cho test cleanup hoặc đảm bảo môi trường test hoàn toàn sạch.",
+            category = "Mobile",
+            subCategory = "AppLifecycle",
+            parameters = {
+                    "appId: String - Package name (Android) hoặc Bundle ID (iOS) của ứng dụng cần xóa"
+            },
+            returnValue = "void - Không trả về giá trị",
+            example = "// Xóa hoàn toàn ứng dụng để chuẩn bị test cài đặt mới\n" +
+                    "mobileKeyword.removeApp(\"com.example.myapp\");\n" +
+                    "mobileKeyword.installApp(\"C:/apps/myapp-v2.apk\");\n\n" +
+                    "// Cleanup sau khi test xong\n" +
+                    "mobileKeyword.removeApp(\"com.test.tempapp\");\n\n" +
+                    "// Xóa app và data để test fresh install experience\n" +
+                    "mobileKeyword.removeApp(\"com.example.myapp\");\n" +
+                    "mobileKeyword.installApp(\"C:/apps/myapp.apk\");\n" +
+                    "mobileKeyword.launchApp();",
+            note = "Áp dụng cho nền tảng Mobile. Có quyền gỡ cài đặt ứng dụng trên thiết bị. " +
+                    "Keyword này xóa hoàn toàn app và data, không thể khôi phục. " +
+                    "Một số ứng dụng hệ thống không thể xóa. " +
+                    "Có thể throw WebDriverException nếu không thể xóa ứng dụng."
+    )
+    public void removeApp(String appId) {
+        execute(() -> {
+            ((InteractsWithApps) DriverManager.getDriver()).removeApp(appId);
+            return null;
+        }, appId);
+    }
+
+    @NetatKeyword(
+            name = "queryAppState",
+            description = "Truy vấn trạng thái hiện tại của một ứng dụng trên thiết bị. " +
+                    "Trả về số nguyên đại diện cho trạng thái của app: " +
+                    "0 = NOT_INSTALLED (chưa cài đặt), " +
+                    "1 = NOT_RUNNING (đã cài đặt nhưng không chạy), " +
+                    "2 = RUNNING_IN_BACKGROUND_SUSPENDED (chạy nền bị tạm dừng), " +
+                    "3 = RUNNING_IN_BACKGROUND (chạy nền đang hoạt động), " +
+                    "4 = RUNNING_IN_FOREGROUND (chạy ở foreground). " +
+                    "Hữu ích để verify app state trước/sau khi thực hiện các thao tác lifecycle.",
+            category = "Mobile",
+            subCategory = "AppLifecycle",
+            parameters = {
+                    "appId: String - Package name (Android) hoặc Bundle ID (iOS) của ứng dụng cần kiểm tra"
+            },
+            returnValue = "int - Trạng thái của app (0-4)",
+            example = "// Kiểm tra app có đang chạy không trước khi activate\n" +
+                    "int state = mobileKeyword.queryAppState(\"com.example.myapp\");\n" +
+                    "if (state < 3) {\n" +
+                    "    mobileKeyword.activateApp(\"com.example.myapp\");\n" +
+                    "}\n\n" +
+                    "// Verify app chuyển sang background sau khi nhấn Home\n" +
+                    "mobileKeyword.backgroundApp(5);\n" +
+                    "int bgState = mobileKeyword.queryAppState(\"com.example.myapp\");\n" +
+                    "// bgState sẽ là 2 hoặc 3\n\n" +
+                    "// Kiểm tra app đã được cài đặt chưa\n" +
+                    "int installState = mobileKeyword.queryAppState(\"com.example.newapp\");\n" +
+                    "if (installState == 0) {\n" +
+                    "    mobileKeyword.installApp(\"C:/apps/newapp.apk\");\n" +
+                    "}",
+            note = "Áp dụng cho nền tảng Mobile. Hoạt động trên cả Android và iOS. " +
+                    "Giá trị trả về: 0=NOT_INSTALLED, 1=NOT_RUNNING, 2=RUNNING_IN_BACKGROUND_SUSPENDED, " +
+                    "3=RUNNING_IN_BACKGROUND, 4=RUNNING_IN_FOREGROUND. " +
+                    "Có thể throw WebDriverException nếu không thể truy vấn trạng thái."
+    )
+    public int queryAppState(String appId) {
+        return execute(() -> {
+            return ((InteractsWithApps) DriverManager.getDriver()).queryAppState(appId).ordinal();
+        }, appId);
+    }
+
+    @NetatKeyword(
+            name = "getCurrentAppPackage",
+            description = "Lấy định danh (identifier) của ứng dụng hiện đang chạy ở foreground. " +
+                    "Trên Android: trả về package name (ví dụ: com.example.myapp). " +
+                    "Trên iOS: trả về bundle ID (ví dụ: com.example.MyApp). " +
+                    "Hữu ích để verify đang ở đúng ứng dụng hoặc theo dõi việc chuyển đổi giữa các app.",
+            category = "Mobile",
+            subCategory = "AppLifecycle",
+            parameters = {},
+            returnValue = "String - Package name (Android) hoặc Bundle ID (iOS) của ứng dụng hiện tại",
+            example = "// Verify đang ở đúng ứng dụng sau khi activate\n" +
+                    "mobileKeyword.activateApp(\"com.example.myapp\");\n" +
+                    "String currentApp = mobileKeyword.getCurrentAppPackage();\n" +
+                    "Assert.assertEquals(currentApp, \"com.example.myapp\");\n\n" +
+                    "// Kiểm tra app có chuyển sang Settings không\n" +
+                    "mobileKeyword.tap(settingsLink);\n" +
+                    "String currentPackage = mobileKeyword.getCurrentAppPackage();\n" +
+                    "// Trên Android: com.android.settings\n" +
+                    "// Trên iOS: com.apple.Preferences\n\n" +
+                    "// Log app hiện tại để debug\n" +
+                    "System.out.println(\"Current app: \" + mobileKeyword.getCurrentAppPackage());",
+            note = "Áp dụng cho nền tảng Mobile. Hoạt động trên cả Android và iOS. " +
+                    "Trên Android: lấy từ currentPackage() method. " +
+                    "Trên iOS: lấy từ capabilities bundleId. " +
+                    "Trả về null nếu không thể xác định app hiện tại."
+    )
+    public String getCurrentAppPackage() {
+        return execute(() -> {
+            AppiumDriver driver = getAppiumDriver();
+            if (driver instanceof AndroidDriver) {
+                return ((AndroidDriver) driver).getCurrentPackage();
+            } else if (driver instanceof IOSDriver) {
+                // iOS: lấy từ capabilities
+                return (String) driver.getCapabilities().getCapability("bundleId");
+            }
+            return null;
+        });
+    }
+
+    @NetatKeyword(
+            name = "getAppVersion",
+            description = "Lấy phiên bản (version) của ứng dụng đang được test. " +
+                    "Trả về version name/string của app (ví dụ: \"1.2.3\", \"2.0.0-beta\"). " +
+                    "Hữu ích để verify đúng version đang test, ghi log trong test report, " +
+                    "hoặc thực hiện logic khác nhau dựa trên version của app.",
+            category = "Mobile",
+            subCategory = "AppLifecycle",
+            parameters = {},
+            returnValue = "String - Version string của ứng dụng (ví dụ: \"1.2.3\")",
+            example = "// Log version của app trong test report\n" +
+                    "String appVersion = mobileKeyword.getAppVersion();\n" +
+                    "System.out.println(\"Testing app version: \" + appVersion);\n\n" +
+                    "// Verify đúng version trước khi test\n" +
+                    "String version = mobileKeyword.getAppVersion();\n" +
+                    "Assert.assertEquals(version, \"2.0.0\");\n\n" +
+                    "// Thực hiện logic khác nhau dựa trên version\n" +
+                    "String currentVersion = mobileKeyword.getAppVersion();\n" +
+                    "if (currentVersion.startsWith(\"2.\")) {\n" +
+                    "    // Test features của version 2.x\n" +
+                    "}",
+            note = "Áp dụng cho nền tảng Mobile. Hoạt động trên cả Android và iOS. " +
+                    "Trên Android: lấy từ versionName trong AndroidManifest. " +
+                    "Trên iOS: lấy từ CFBundleShortVersionString trong Info.plist. " +
+                    "Trả về null nếu không thể lấy version information."
+    )
+    public String getAppVersion() {
+        return execute(() -> {
+            AppiumDriver driver = getAppiumDriver();
+            if (driver instanceof AndroidDriver) {
+                return (String) driver.getCapabilities().getCapability("appVersion");
+            } else if (driver instanceof IOSDriver) {
+                return (String) driver.getCapabilities().getCapability("CFBundleShortVersionString");
+            }
+            return null;
+        });
+    }
+
+    @NetatKeyword(
+            name = "getAppBuildNumber",
+            description = "Lấy build number của ứng dụng đang được test. " +
+                    "Build number thường là số nguyên tăng dần theo mỗi lần build (ví dụ: 42, 1523). " +
+                    "Khác với version name, build number được dùng để phân biệt các build khác nhau của cùng một version. " +
+                    "Hữu ích để verify đúng build đang test hoặc ghi log chi tiết trong test report.",
+            category = "Mobile",
+            subCategory = "AppLifecycle",
+            parameters = {},
+            returnValue = "String - Build number của ứng dụng (ví dụ: \"42\")",
+            example = "// Log build number trong test report\n" +
+                    "String buildNumber = mobileKeyword.getAppBuildNumber();\n" +
+                    "System.out.println(\"Testing build: \" + buildNumber);\n\n" +
+                    "// Verify đúng build trước khi test\n" +
+                    "String build = mobileKeyword.getAppBuildNumber();\n" +
+                    "Assert.assertEquals(build, \"1523\");\n\n" +
+                    "// Log đầy đủ app info\n" +
+                    "String version = mobileKeyword.getAppVersion();\n" +
+                    "String build = mobileKeyword.getAppBuildNumber();\n" +
+                    "System.out.println(\"Testing: v\" + version + \" build \" + build);",
+            note = "Áp dụng cho nền tảng Mobile. Hoạt động trên cả Android và iOS. " +
+                    "Trên Android: lấy từ versionCode trong AndroidManifest. " +
+                    "Trên iOS: lấy từ CFBundleVersion trong Info.plist. " +
+                    "Trả về null nếu không thể lấy build information."
+    )
+    public String getAppBuildNumber() {
+        return execute(() -> {
+            AppiumDriver driver = getAppiumDriver();
+            if (driver instanceof AndroidDriver) {
+                Object versionCode = driver.getCapabilities().getCapability("versionCode");
+                return versionCode != null ? versionCode.toString() : null;
+            } else if (driver instanceof IOSDriver) {
+                return (String) driver.getCapabilities().getCapability("CFBundleVersion");
+            }
+            return null;
+        });
     }
 
 // =================================================================================
@@ -912,6 +1202,362 @@ public class MobileKeyword extends BaseUiKeyword {
         }, textToFind);
     }
 
+    @NetatKeyword(
+            name = "swipeLeft",
+            description = "Thực hiện hành động vuốt sang trái trên màn hình. " +
+                    "Tương đương với thao tác chuyển sang mục tiếp theo trong carousel, gallery, hoặc swipe navigation. " +
+                    "Phương thức này tự động tính toán các tọa độ dựa trên kích thước màn hình thiết bị.",
+            category = "Mobile",
+            subCategory = "Gesture",
+            parameters = {
+                    "durationInMs: Integer... - (Tùy chọn) Thời gian thực hiện vuốt (ms). Mặc định là 500ms nếu không được chỉ định"
+            },
+            returnValue = "void - Không trả về giá trị",
+            example = "// Vuốt trái với tốc độ mặc định để xem ảnh tiếp theo\n" +
+                    "mobileKeyword.swipeLeft();\n\n" +
+                    "// Vuốt trái nhanh hơn\n" +
+                    "mobileKeyword.swipeLeft(300);\n\n" +
+                    "// Vuốt trái trong carousel\n" +
+                    "mobileKeyword.swipeLeft();\n" +
+                    "mobileKeyword.assertElementVisible(nextImage);",
+            note = "Áp dụng cho nền tảng Mobile. Hoạt động trên cả Android và iOS. " +
+                    "Vuốt từ 80% sang 20% chiều rộng màn hình theo chiều ngang. " +
+                    "Có thể throw WebDriverException nếu không thể thực hiện hành động vuốt."
+    )
+    public void swipeLeft(Integer... durationInMs) {
+        int duration = (durationInMs != null && durationInMs.length > 0 && durationInMs[0] != null)
+                ? durationInMs[0]
+                : 500;
+        execute(() -> {
+            Dimension size = DriverManager.getDriver().manage().window().getSize();
+            int startX = (int) (size.getWidth() * 0.8);
+            int endX = (int) (size.getWidth() * 0.2);
+            int y = size.getHeight() / 2;
+            swipe(startX, y, endX, y, duration);
+            return null;
+        }, (Object[]) durationInMs);
+    }
+
+    @NetatKeyword(
+            name = "swipeRight",
+            description = "Thực hiện hành động vuốt sang phải trên màn hình. " +
+                    "Tương đương với thao tác quay lại mục trước trong carousel, gallery, hoặc swipe navigation. " +
+                    "Phương thức này tự động tính toán các tọa độ dựa trên kích thước màn hình thiết bị.",
+            category = "Mobile",
+            subCategory = "Gesture",
+            parameters = {
+                    "durationInMs: Integer... - (Tùy chọn) Thời gian thực hiện vuốt (ms). Mặc định là 500ms nếu không được chỉ định"
+            },
+            returnValue = "void - Không trả về giá trị",
+            example = "// Vuốt phải với tốc độ mặc định để xem ảnh trước\n" +
+                    "mobileKeyword.swipeRight();\n\n" +
+                    "// Vuốt phải chậm hơn\n" +
+                    "mobileKeyword.swipeRight(800);\n\n" +
+                    "// Vuốt phải để quay lại trong carousel\n" +
+                    "mobileKeyword.swipeRight();\n" +
+                    "mobileKeyword.assertElementVisible(previousImage);",
+            note = "Áp dụng cho nền tảng Mobile. Hoạt động trên cả Android và iOS. " +
+                    "Vuốt từ 20% sang 80% chiều rộng màn hình theo chiều ngang. " +
+                    "Có thể throw WebDriverException nếu không thể thực hiện hành động vuốt."
+    )
+    public void swipeRight(Integer... durationInMs) {
+        int duration = (durationInMs != null && durationInMs.length > 0 && durationInMs[0] != null)
+                ? durationInMs[0]
+                : 500;
+        execute(() -> {
+            Dimension size = DriverManager.getDriver().manage().window().getSize();
+            int startX = (int) (size.getWidth() * 0.2);
+            int endX = (int) (size.getWidth() * 0.8);
+            int y = size.getHeight() / 2;
+            swipe(startX, y, endX, y, duration);
+            return null;
+        }, (Object[]) durationInMs);
+    }
+
+    @NetatKeyword(
+            name = "scrollToElement",
+            description = "Tự động cuộn màn hình theo hướng chỉ định cho đến khi tìm thấy element mong muốn. " +
+                    "Phương thức này sẽ thực hiện tối đa 10 lần scroll để tìm kiếm. " +
+                    "Hỗ trợ 4 hướng: up, down, left, right. " +
+                    "Trả về WebElement nếu tìm thấy, hoặc ném NoSuchElementException nếu không tìm thấy.",
+            category = "Mobile",
+            subCategory = "Gesture",
+            parameters = {
+                    "uiObject: ObjectUI - Element cần tìm và scroll đến",
+                    "direction: String - Hướng scroll (\"up\", \"down\", \"left\", \"right\")"
+            },
+            returnValue = "WebElement - Element được tìm thấy",
+            example = "// Scroll xuống để tìm button\n" +
+                    "WebElement btn = mobileKeyword.scrollToElement(submitButton, \"down\");\n" +
+                    "btn.click();\n\n" +
+                    "// Scroll lên để tìm header\n" +
+                    "mobileKeyword.scrollToElement(pageHeader, \"up\");\n\n" +
+                    "// Scroll sang phải để tìm item trong horizontal list\n" +
+                    "mobileKeyword.scrollToElement(menuItem, \"right\");",
+            note = "Áp dụng cho nền tảng Mobile. Hoạt động trên cả Android và iOS. " +
+                    "Direction không phân biệt hoa thường. " +
+                    "Nếu element đã hiển thị, trả về ngay không cần scroll. " +
+                    "Có thể throw NoSuchElementException nếu không tìm thấy sau 10 lần scroll, " +
+                    "hoặc IllegalArgumentException nếu direction không hợp lệ."
+    )
+    public WebElement scrollToElement(ObjectUI uiObject, String direction) {
+        return execute(() -> {
+            int maxScrolls = 10;
+            String dir = direction.toLowerCase();
+
+            // Check if element is already visible
+            try {
+                WebElement element = findElement(uiObject);
+                if (element.isDisplayed()) {
+                    return element;
+                }
+            } catch (Exception e) {
+                // Element not found yet, will scroll
+            }
+
+            // Scroll until element is found
+            for (int i = 0; i < maxScrolls; i++) {
+                try {
+                    WebElement element = findElement(uiObject);
+                    if (element.isDisplayed()) {
+                        return element;
+                    }
+                } catch (Exception e) {
+                    // Element not found, continue scrolling
+                }
+
+                // Perform scroll based on direction
+                switch (dir) {
+                    case "up":
+                        swipeDown(); // Swipe down to scroll up content
+                        break;
+                    case "down":
+                        swipeUp(); // Swipe up to scroll down content
+                        break;
+                    case "left":
+                        swipeRight(); // Swipe right to scroll left content
+                        break;
+                    case "right":
+                        swipeLeft(); // Swipe left to scroll right content
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Invalid direction: " + direction + ". Must be one of: up, down, left, right");
+                }
+            }
+
+            throw new NoSuchElementException("Could not find element after scrolling " + maxScrolls + " times in direction: " + direction);
+        }, uiObject, direction);
+    }
+
+    @NetatKeyword(
+            name = "scrollToTop",
+            description = "Cuộn nhanh về đầu trang/màn hình. " +
+                    "Thực hiện nhiều lần swipe down liên tiếp để đảm bảo về đến vị trí đầu tiên. " +
+                    "Hữu ích khi cần reset vị trí scroll về đầu danh sách hoặc trang.",
+            category = "Mobile",
+            subCategory = "Gesture",
+            parameters = {},
+            returnValue = "void - Không trả về giá trị",
+            example = "// Scroll về đầu danh sách\n" +
+                    "mobileKeyword.scrollToTop();\n" +
+                    "mobileKeyword.assertElementVisible(firstItem);\n\n" +
+                    "// Reset scroll position trước test\n" +
+                    "mobileKeyword.scrollToTop();\n\n" +
+                    "// Quay về đầu feed\n" +
+                    "mobileKeyword.scrollToTop();\n" +
+                    "mobileKeyword.tap(refreshButton);",
+            note = "Áp dụng cho nền tảng Mobile. Hoạt động trên cả Android và iOS. " +
+                    "Thực hiện 5 lần swipe down nhanh (200ms mỗi lần). " +
+                    "Có thể không về chính xác vị trí đầu nếu danh sách có header động. " +
+                    "Có thể throw WebDriverException nếu không thể thực hiện hành động scroll."
+    )
+    public void scrollToTop() {
+        execute(() -> {
+            // Perform multiple fast swipes down to reach top
+            for (int i = 0; i < 5; i++) {
+                swipeDown(200);
+                try {
+                    Thread.sleep(100); // Small delay between swipes
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+            return null;
+        });
+    }
+
+    @NetatKeyword(
+            name = "scrollToBottom",
+            description = "Cuộn nhanh về cuối trang/màn hình. " +
+                    "Thực hiện nhiều lần swipe up liên tiếp để đảm bảo về đến vị trí cuối cùng. " +
+                    "Hữu ích khi cần kiểm tra footer hoặc item cuối cùng trong danh sách.",
+            category = "Mobile",
+            subCategory = "Gesture",
+            parameters = {},
+            returnValue = "void - Không trả về giá trị",
+            example = "// Scroll về cuối danh sách\n" +
+                    "mobileKeyword.scrollToBottom();\n" +
+                    "mobileKeyword.assertElementVisible(loadMoreButton);\n\n" +
+                    "// Kiểm tra footer\n" +
+                    "mobileKeyword.scrollToBottom();\n" +
+                    "mobileKeyword.assertElementVisible(footerText);\n\n" +
+                    "// Load all content\n" +
+                    "mobileKeyword.scrollToBottom();\n" +
+                    "mobileKeyword.tap(lastItem);",
+            note = "Áp dụng cho nền tảng Mobile. Hoạt động trên cả Android và iOS. " +
+                    "Thực hiện 5 lần swipe up nhanh (200ms mỗi lần). " +
+                    "Với infinite scroll, có thể không về được cuối thật sự. " +
+                    "Có thể throw WebDriverException nếu không thể thực hiện hành động scroll."
+    )
+    public void scrollToBottom() {
+        execute(() -> {
+            // Perform multiple fast swipes up to reach bottom
+            for (int i = 0; i < 5; i++) {
+                swipeUp(200);
+                try {
+                    Thread.sleep(100); // Small delay between swipes
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+            return null;
+        });
+    }
+
+    @NetatKeyword(
+            name = "fling",
+            description = "Thực hiện gesture fling (vuốt nhanh mạnh) theo hướng chỉ định với vận tốc cao. " +
+                    "Khác với swipe thông thường, fling tạo hiệu ứng cuộn quán tính (momentum scrolling). " +
+                    "Velocity càng cao thì cuộn càng nhanh và xa (1-10, khuyến nghị 3-7). " +
+                    "Hữu ích cho việc cuộn nhanh qua danh sách dài.",
+            category = "Mobile",
+            subCategory = "Gesture",
+            parameters = {
+                    "direction: String - Hướng fling (\"up\", \"down\", \"left\", \"right\")",
+                    "velocity: int - Vận tốc fling (1-10), giá trị cao = nhanh hơn"
+            },
+            returnValue = "void - Không trả về giá trị",
+            example = "// Fling nhanh xuống dưới để cuộn danh sách dài\n" +
+                    "mobileKeyword.fling(\"down\", 7);\n\n" +
+                    "// Fling nhẹ lên trên\n" +
+                    "mobileKeyword.fling(\"up\", 3);\n\n" +
+                    "// Fling sang trái trong gallery\n" +
+                    "mobileKeyword.fling(\"left\", 5);\n\n" +
+                    "// Fling mạnh nhất\n" +
+                    "mobileKeyword.fling(\"down\", 10);",
+            note = "Áp dụng cho nền tảng Mobile. Hoạt động trên cả Android và iOS. " +
+                    "Velocity được map sang duration: velocity càng cao, duration càng ngắn (fling càng nhanh). " +
+                    "Direction không phân biệt hoa thường. " +
+                    "Có thể throw IllegalArgumentException nếu direction hoặc velocity không hợp lệ, " +
+                    "hoặc WebDriverException nếu không thể thực hiện gesture."
+    )
+    public void fling(String direction, int velocity) {
+        execute(() -> {
+            // Validate velocity
+            if (velocity < 1 || velocity > 10) {
+                throw new IllegalArgumentException("Velocity must be between 1 and 10, got: " + velocity);
+            }
+
+            // Calculate duration based on velocity (higher velocity = shorter duration)
+            int duration = 600 - (velocity * 50); // velocity 1 = 550ms, velocity 10 = 100ms
+
+            String dir = direction.toLowerCase();
+            switch (dir) {
+                case "up":
+                    swipeDown(duration);
+                    break;
+                case "down":
+                    swipeUp(duration);
+                    break;
+                case "left":
+                    swipeRight(duration);
+                    break;
+                case "right":
+                    swipeLeft(duration);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Invalid direction: " + direction + ". Must be one of: up, down, left, right");
+            }
+            return null;
+        }, direction, velocity);
+    }
+
+    @NetatKeyword(
+            name = "swipeOnElement",
+            description = "Thực hiện swipe trên một element cụ thể theo hướng chỉ định. " +
+                    "Khác với swipe toàn màn hình, keyword này chỉ swipe trong phạm vi element. " +
+                    "Hữu ích cho việc swipe trong ScrollView, ListView, hoặc element có scroll riêng. " +
+                    "Swipe sẽ diễn ra từ trung tâm element theo hướng chỉ định.",
+            category = "Mobile",
+            subCategory = "Gesture",
+            parameters = {
+                    "uiObject: ObjectUI - Element cần swipe trên đó",
+                    "direction: String - Hướng swipe (\"up\", \"down\", \"left\", \"right\")",
+                    "durationInMs: int - Thời gian thực hiện swipe (ms)"
+            },
+            returnValue = "void - Không trả về giá trị",
+            example = "// Swipe down trong một ScrollView cụ thể\n" +
+                    "mobileKeyword.swipeOnElement(scrollView, \"down\", 500);\n\n" +
+                    "// Swipe left trong horizontal RecyclerView\n" +
+                    "mobileKeyword.swipeOnElement(horizontalList, \"left\", 400);\n\n" +
+                    "// Swipe up nhanh trong container\n" +
+                    "mobileKeyword.swipeOnElement(container, \"up\", 300);\n\n" +
+                    "// Swipe right chậm trong gallery\n" +
+                    "mobileKeyword.swipeOnElement(gallery, \"right\", 800);",
+            note = "Áp dụng cho nền tảng Mobile. Hoạt động trên cả Android và iOS. " +
+                    "Element phải hiển thị và có kích thước đủ lớn để swipe. " +
+                    "Swipe diễn ra trong phạm vi 80%-20% của element. " +
+                    "Direction không phân biệt hoa thường. " +
+                    "Có thể throw ElementNotVisibleException nếu element không hiển thị, " +
+                    "IllegalArgumentException nếu direction không hợp lệ, " +
+                    "hoặc ElementNotInteractableException nếu element quá nhỏ để swipe."
+    )
+    public void swipeOnElement(ObjectUI uiObject, String direction, int durationInMs) {
+        execute(() -> {
+            WebElement element = findElement(uiObject);
+            Point location = element.getLocation();
+            Dimension size = element.getSize();
+
+            int centerX = location.getX() + size.getWidth() / 2;
+            int centerY = location.getY() + size.getHeight() / 2;
+
+            int startX, startY, endX, endY;
+            String dir = direction.toLowerCase();
+
+            switch (dir) {
+                case "up":
+                    startX = centerX;
+                    startY = location.getY() + (int) (size.getHeight() * 0.8);
+                    endX = centerX;
+                    endY = location.getY() + (int) (size.getHeight() * 0.2);
+                    break;
+                case "down":
+                    startX = centerX;
+                    startY = location.getY() + (int) (size.getHeight() * 0.2);
+                    endX = centerX;
+                    endY = location.getY() + (int) (size.getHeight() * 0.8);
+                    break;
+                case "left":
+                    startX = location.getX() + (int) (size.getWidth() * 0.8);
+                    startY = centerY;
+                    endX = location.getX() + (int) (size.getWidth() * 0.2);
+                    endY = centerY;
+                    break;
+                case "right":
+                    startX = location.getX() + (int) (size.getWidth() * 0.2);
+                    startY = centerY;
+                    endX = location.getX() + (int) (size.getWidth() * 0.8);
+                    endY = centerY;
+                    break;
+                default:
+                    throw new IllegalArgumentException("Invalid direction: " + direction + ". Must be one of: up, down, left, right");
+            }
+
+            swipe(startX, startY, endX, endY, durationInMs);
+            return null;
+        }, uiObject, direction, durationInMs);
+    }
+
 
 
         /**
@@ -1199,6 +1845,280 @@ public class MobileKeyword extends BaseUiKeyword {
             }, x, y, durationInSeconds);
         }
 
+    @NetatKeyword(
+            name = "doubleTap",
+            description = "Thực hiện hành động double tap (chạm nhanh 2 lần) vào một phần tử trên màn hình. " +
+                    "Hữu ích cho các thao tác như zoom in/out trên ảnh, chọn text, hoặc các tương tác đặc biệt yêu cầu double tap. " +
+                    "Phương thức sẽ tự động đợi phần tử hiển thị và có thể tương tác trước khi thực hiện.",
+            category = "Mobile",
+            subCategory = "Interaction",
+            parameters = {
+                    "uiObject: ObjectUI - Phần tử cần double tap"
+            },
+            returnValue = "void - Không trả về giá trị",
+            example = "// Double tap vào ảnh để zoom in\n" +
+                    "mobileKeyword.doubleTap(imageView);\n\n" +
+                    "// Double tap vào text để chọn từ\n" +
+                    "mobileKeyword.doubleTap(textElement);\n\n" +
+                    "// Double tap vào map để zoom\n" +
+                    "mobileKeyword.doubleTap(mapView);",
+            note = "Áp dụng cho nền tảng Mobile. Hoạt động trên cả Android và iOS. " +
+                    "Phần tử UI cần tương tác phải hiển thị trên màn hình. " +
+                    "Khoảng thời gian giữa 2 lần tap được tối ưu tự động (khoảng 100ms). " +
+                    "Có thể throw ElementNotVisibleException nếu phần tử không hiển thị, " +
+                    "hoặc NoSuchElementException nếu không tìm thấy phần tử."
+    )
+    public void doubleTap(ObjectUI uiObject) {
+        execute(() -> {
+            WebElement element = findElement(uiObject);
+            Point location = element.getLocation();
+            Dimension size = element.getSize();
+            int centerX = location.getX() + size.getWidth() / 2;
+            int centerY = location.getY() + size.getHeight() / 2;
+
+            PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
+            Sequence doubleTapSequence = new Sequence(finger, 1);
+
+            // First tap
+            doubleTapSequence.addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), centerX, centerY));
+            doubleTapSequence.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
+            doubleTapSequence.addAction(new Pause(finger, Duration.ofMillis(50)));
+            doubleTapSequence.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+
+            // Short pause between taps
+            doubleTapSequence.addAction(new Pause(finger, Duration.ofMillis(100)));
+
+            // Second tap
+            doubleTapSequence.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
+            doubleTapSequence.addAction(new Pause(finger, Duration.ofMillis(50)));
+            doubleTapSequence.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+
+            getAppiumDriver().perform(Collections.singletonList(doubleTapSequence));
+            return null;
+        }, uiObject);
+    }
+
+    @NetatKeyword(
+            name = "doubleTapByCoordinates",
+            description = "Thực hiện hành động double tap (chạm nhanh 2 lần) tại tọa độ cụ thể trên màn hình. " +
+                    "Hữu ích khi cần double tap tại vị trí chính xác mà không cần locator của element. " +
+                    "Tọa độ được tính từ góc trên bên trái của màn hình (0,0).",
+            category = "Mobile",
+            subCategory = "Interaction",
+            parameters = {
+                    "x: int - Tọa độ X (pixel từ trái sang phải)",
+                    "y: int - Tọa độ Y (pixel từ trên xuống dưới)"
+            },
+            returnValue = "void - Không trả về giá trị",
+            example = "// Double tap tại trung tâm màn hình để zoom\n" +
+                    "mobileKeyword.doubleTapByCoordinates(540, 960);\n\n" +
+                    "// Double tap tại vị trí cụ thể trên map\n" +
+                    "mobileKeyword.doubleTapByCoordinates(200, 400);\n\n" +
+                    "// Double tap sau khi tính toán tọa độ động\n" +
+                    "int centerX = screenWidth / 2;\n" +
+                    "int centerY = screenHeight / 2;\n" +
+                    "mobileKeyword.doubleTapByCoordinates(centerX, centerY);",
+            note = "Áp dụng cho nền tảng Mobile. Hoạt động trên cả Android và iOS. " +
+                    "Tọa độ phải nằm trong phạm vi màn hình thiết bị. " +
+                    "Khoảng thời gian giữa 2 lần tap được tối ưu tự động (khoảng 100ms). " +
+                    "Có thể throw InvalidCoordinatesException nếu tọa độ nằm ngoài màn hình."
+    )
+    public void doubleTapByCoordinates(int x, int y) {
+        execute(() -> {
+            PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
+            Sequence doubleTapSequence = new Sequence(finger, 1);
+
+            // First tap
+            doubleTapSequence.addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), x, y));
+            doubleTapSequence.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
+            doubleTapSequence.addAction(new Pause(finger, Duration.ofMillis(50)));
+            doubleTapSequence.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+
+            // Short pause between taps
+            doubleTapSequence.addAction(new Pause(finger, Duration.ofMillis(100)));
+
+            // Second tap
+            doubleTapSequence.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
+            doubleTapSequence.addAction(new Pause(finger, Duration.ofMillis(50)));
+            doubleTapSequence.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+
+            getAppiumDriver().perform(Collections.singletonList(doubleTapSequence));
+            return null;
+        }, x, y);
+    }
+
+    @NetatKeyword(
+            name = "pinch",
+            description = "Thực hiện gesture pinch (thu nhỏ/zoom out) trên một phần tử. " +
+                    "Mô phỏng hành động 2 ngón tay chụm lại với nhau để zoom out ảnh, map, hoặc nội dung có thể phóng to/thu nhỏ. " +
+                    "Scale càng nhỏ thì zoom out càng mạnh (0.1 = zoom out rất mạnh, 0.9 = zoom out nhẹ).",
+            category = "Mobile",
+            subCategory = "Interaction",
+            parameters = {
+                    "uiObject: ObjectUI - Phần tử cần thực hiện pinch",
+                    "scale: double - Tỷ lệ pinch (0.1 đến 0.9), giá trị nhỏ = zoom out mạnh hơn"
+            },
+            returnValue = "void - Không trả về giá trị",
+            example = "// Pinch để zoom out ảnh mạnh (scale = 0.3)\n" +
+                    "mobileKeyword.pinch(imageView, 0.3);\n\n" +
+                    "// Pinch nhẹ trên map (scale = 0.7)\n" +
+                    "mobileKeyword.pinch(mapView, 0.7);\n\n" +
+                    "// Pinch rất mạnh để zoom out tối đa\n" +
+                    "mobileKeyword.pinch(imageView, 0.1);",
+            note = "Áp dụng cho nền tảng Mobile. Hoạt động trên cả Android và iOS. " +
+                    "Phần tử phải hỗ trợ gesture pinch/zoom. " +
+                    "Scale phải nằm trong khoảng 0.1 đến 0.9 (ngoài khoảng này sẽ được điều chỉnh). " +
+                    "Gesture sẽ thực hiện từ trung tâm phần tử. " +
+                    "Có thể throw ElementNotInteractableException nếu phần tử không hỗ trợ pinch."
+    )
+    public void pinch(ObjectUI uiObject, double scale) {
+        // Ensure scale is within valid range
+        final double finalScale = (scale < 0.1) ? 0.1 : (scale > 0.9) ? 0.9 : scale;
+
+        execute(() -> {
+            WebElement element = findElement(uiObject);
+            Point location = element.getLocation();
+            Dimension size = element.getSize();
+            int centerX = location.getX() + size.getWidth() / 2;
+            int centerY = location.getY() + size.getHeight() / 2;
+
+            // Calculate start and end positions for two fingers
+            int offset = (int) (Math.min(size.getWidth(), size.getHeight()) / 2 * 0.8);
+            int endOffset = (int) (offset * finalScale);
+
+            // First finger (top)
+            PointerInput finger1 = new PointerInput(PointerInput.Kind.TOUCH, "finger1");
+            Sequence pinchSequence1 = new Sequence(finger1, 1);
+            pinchSequence1.addAction(finger1.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), centerX, centerY - offset));
+            pinchSequence1.addAction(finger1.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
+            pinchSequence1.addAction(finger1.createPointerMove(Duration.ofMillis(500), PointerInput.Origin.viewport(), centerX, centerY - endOffset));
+            pinchSequence1.addAction(finger1.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+
+            // Second finger (bottom)
+            PointerInput finger2 = new PointerInput(PointerInput.Kind.TOUCH, "finger2");
+            Sequence pinchSequence2 = new Sequence(finger2, 1);
+            pinchSequence2.addAction(finger2.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), centerX, centerY + offset));
+            pinchSequence2.addAction(finger2.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
+            pinchSequence2.addAction(finger2.createPointerMove(Duration.ofMillis(500), PointerInput.Origin.viewport(), centerX, centerY + endOffset));
+            pinchSequence2.addAction(finger2.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+
+            getAppiumDriver().perform(Arrays.asList(pinchSequence1, pinchSequence2));
+            return null;
+        }, uiObject, finalScale);
+    }
+
+    @NetatKeyword(
+            name = "zoom",
+            description = "Thực hiện gesture zoom in (phóng to) trên một phần tử. " +
+                    "Mô phỏng hành động 2 ngón tay dạng ra để zoom in ảnh, map, hoặc nội dung có thể phóng to/thu nhỏ. " +
+                    "Scale càng lớn thì zoom in càng mạnh (1.1 = zoom in nhẹ, 3.0 = zoom in rất mạnh).",
+            category = "Mobile",
+            subCategory = "Interaction",
+            parameters = {
+                    "uiObject: ObjectUI - Phần tử cần thực hiện zoom",
+                    "scale: double - Tỷ lệ zoom (1.1 đến 3.0), giá trị lớn = zoom in mạnh hơn"
+            },
+            returnValue = "void - Không trả về giá trị",
+            example = "// Zoom in ảnh mạnh (scale = 2.5)\n" +
+                    "mobileKeyword.zoom(imageView, 2.5);\n\n" +
+                    "// Zoom in nhẹ trên map (scale = 1.3)\n" +
+                    "mobileKeyword.zoom(mapView, 1.3);\n\n" +
+                    "// Zoom in tối đa\n" +
+                    "mobileKeyword.zoom(imageView, 3.0);",
+            note = "Áp dụng cho nền tảng Mobile. Hoạt động trên cả Android và iOS. " +
+                    "Phần tử phải hỗ trợ gesture zoom. " +
+                    "Scale phải nằm trong khoảng 1.1 đến 3.0 (ngoài khoảng này sẽ được điều chỉnh). " +
+                    "Gesture sẽ thực hiện từ trung tâm phần tử. " +
+                    "Có thể throw ElementNotInteractableException nếu phần tử không hỗ trợ zoom."
+    )
+    public void zoom(ObjectUI uiObject, double scale) {
+        // Ensure scale is within valid range
+        final double finalScale = (scale < 1.1) ? 1.1 : (scale > 3.0) ? 3.0 : scale;
+
+        execute(() -> {
+            WebElement element = findElement(uiObject);
+            Point location = element.getLocation();
+            Dimension size = element.getSize();
+            int centerX = location.getX() + size.getWidth() / 2;
+            int centerY = location.getY() + size.getHeight() / 2;
+
+            // Calculate start and end positions for two fingers
+            int startOffset = (int) (Math.min(size.getWidth(), size.getHeight()) / 2 * 0.2);
+            int endOffset = (int) (startOffset * finalScale);
+
+            // First finger (top)
+            PointerInput finger1 = new PointerInput(PointerInput.Kind.TOUCH, "finger1");
+            Sequence zoomSequence1 = new Sequence(finger1, 1);
+            zoomSequence1.addAction(finger1.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), centerX, centerY - startOffset));
+            zoomSequence1.addAction(finger1.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
+            zoomSequence1.addAction(finger1.createPointerMove(Duration.ofMillis(500), PointerInput.Origin.viewport(), centerX, centerY - endOffset));
+            zoomSequence1.addAction(finger1.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+
+            // Second finger (bottom)
+            PointerInput finger2 = new PointerInput(PointerInput.Kind.TOUCH, "finger2");
+            Sequence zoomSequence2 = new Sequence(finger2, 1);
+            zoomSequence2.addAction(finger2.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), centerX, centerY + startOffset));
+            zoomSequence2.addAction(finger2.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
+            zoomSequence2.addAction(finger2.createPointerMove(Duration.ofMillis(500), PointerInput.Origin.viewport(), centerX, centerY + endOffset));
+            zoomSequence2.addAction(finger2.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+
+            getAppiumDriver().perform(Arrays.asList(zoomSequence1, zoomSequence2));
+            return null;
+        }, uiObject, finalScale);
+    }
+
+    @NetatKeyword(
+            name = "tapAndHold",
+            description = "Thực hiện hành động tap và giữ tại một phần tử, sau đó kéo đến tọa độ đích. " +
+                    "Hữu ích cho các thao tác drag and drop tùy chỉnh, kéo slider, hoặc các gesture phức tạp yêu cầu tap-hold-drag. " +
+                    "Khác với dragAndDrop, keyword này cho phép chỉ định tọa độ đích chính xác thay vì element đích.",
+            category = "Mobile",
+            subCategory = "Interaction",
+            parameters = {
+                    "uiObject: ObjectUI - Phần tử cần tap và giữ",
+                    "x: int - Tọa độ X đích (pixel từ trái sang phải)",
+                    "y: int - Tọa độ Y đích (pixel từ trên xuống dưới)",
+                    "durationInSeconds: int - Thời gian giữ trước khi kéo (giây)"
+            },
+            returnValue = "void - Không trả về giá trị",
+            example = "// Kéo slider đến vị trí cụ thể\n" +
+                    "mobileKeyword.tapAndHold(sliderThumb, 800, 500, 1);\n\n" +
+                    "// Kéo item trong list đến vị trí mới\n" +
+                    "mobileKeyword.tapAndHold(listItem, 400, 800, 2);\n\n" +
+                    "// Drag element đến góc màn hình\n" +
+                    "mobileKeyword.tapAndHold(draggableElement, 100, 100, 1);",
+            note = "Áp dụng cho nền tảng Mobile. Hoạt động trên cả Android và iOS. " +
+                    "Phần tử phải hỗ trợ drag gesture. " +
+                    "Tọa độ đích phải nằm trong phạm vi màn hình. " +
+                    "Duration khuyến nghị từ 1-3 giây để đảm bảo gesture được nhận diện đúng. " +
+                    "Có thể throw ElementNotInteractableException nếu phần tử không hỗ trợ drag."
+    )
+    public void tapAndHold(ObjectUI uiObject, int x, int y, int durationInSeconds) {
+        execute(() -> {
+            WebElement element = findElement(uiObject);
+            Point location = element.getLocation();
+            Dimension size = element.getSize();
+            int startX = location.getX() + size.getWidth() / 2;
+            int startY = location.getY() + size.getHeight() / 2;
+
+            PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
+            Sequence dragSequence = new Sequence(finger, 1);
+
+            // Move to element center
+            dragSequence.addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), startX, startY));
+            // Tap and hold
+            dragSequence.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
+            dragSequence.addAction(new Pause(finger, Duration.ofSeconds(durationInSeconds)));
+            // Drag to destination
+            dragSequence.addAction(finger.createPointerMove(Duration.ofMillis(500), PointerInput.Origin.viewport(), x, y));
+            // Release
+            dragSequence.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+
+            getAppiumDriver().perform(Collections.singletonList(dragSequence));
+            return null;
+        }, uiObject, x, y, durationInSeconds);
+    }
+
 
 //    @NetatKeyword(
 //            name = "setGeoLocation",
@@ -1441,6 +2361,200 @@ public class MobileKeyword extends BaseUiKeyword {
                 return null;
             }, uiObject, expectedText, timeoutInSeconds);
         }
+
+    @NetatKeyword(
+            name = "waitForElementCount",
+            description = "Chờ đợi cho đến khi số lượng phần tử khớp với locator đạt đến số lượng mong đợi. " +
+                    "Hữu ích khi cần đợi danh sách load đủ số item, hoặc verify số lượng element sau khi thao tác. " +
+                    "Nếu timeout, sẽ ném TimeoutException.",
+            category = "Mobile",
+            subCategory = "Wait",
+            parameters = {
+                    "uiObject: ObjectUI - Đối tượng UI đại diện cho các element cần đếm",
+                    "count: int - Số lượng element mong đợi",
+                    "timeoutInSeconds: int - Thời gian chờ tối đa (giây)"
+            },
+            returnValue = "void - Không trả về giá trị",
+            example = "// Đợi danh sách có đúng 10 items\n" +
+                    "mobileKeyword.waitForElementCount(listItems, 10, 15);\n\n" +
+                    "// Đợi sau khi xóa item\n" +
+                    "int currentCount = mobileKeyword.getElementCount(items);\n" +
+                    "mobileKeyword.tap(deleteButton);\n" +
+                    "mobileKeyword.waitForElementCount(items, currentCount - 1, 10);",
+            note = "Áp dụng cho nền tảng Mobile. Hoạt động trên cả Android và iOS. " +
+                    "Có thể throw TimeoutException nếu số lượng không đạt được trong thời gian chờ."
+    )
+    public void waitForElementCount(ObjectUI uiObject, int count, int timeoutInSeconds) {
+        execute(() -> {
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds));
+            wait.until(driver -> {
+                List<WebElement> elements = findElements(uiObject);
+                return elements.size() == count;
+            });
+            return null;
+        }, uiObject, count, timeoutInSeconds);
+    }
+
+    @NetatKeyword(
+            name = "waitForAttributeValue",
+            description = "Chờ đợi cho đến khi attribute của element có giá trị mong đợi. " +
+                    "Hữu ích khi cần đợi trạng thái thay đổi (enabled/disabled), class thay đổi, hoặc attribute động khác. " +
+                    "Nếu timeout, sẽ ném TimeoutException.",
+            category = "Mobile",
+            subCategory = "Wait",
+            parameters = {
+                    "uiObject: ObjectUI - Element cần kiểm tra attribute",
+                    "attributeName: String - Tên attribute cần kiểm tra",
+                    "expectedValue: String - Giá trị mong đợi của attribute",
+                    "timeoutInSeconds: int - Thời gian chờ tối đa (giây)"
+            },
+            returnValue = "void - Không trả về giá trị",
+            example = "// Đợi button enabled\n" +
+                    "mobileKeyword.waitForAttributeValue(submitButton, \"enabled\", \"true\", 10);\n\n" +
+                    "// Đợi element có class cụ thể\n" +
+                    "mobileKeyword.waitForAttributeValue(statusLabel, \"class\", \"success\", 5);\n\n" +
+                    "// Đợi progress bar complete\n" +
+                    "mobileKeyword.waitForAttributeValue(progressBar, \"value\", \"100\", 30);",
+            note = "Áp dụng cho nền tảng Mobile. Hoạt động trên cả Android và iOS. " +
+                    "ExpectedValue so sánh chính xác (case-sensitive). " +
+                    "Có thể throw TimeoutException nếu attribute không đạt giá trị trong thời gian chờ."
+    )
+    public void waitForAttributeValue(ObjectUI uiObject, String attributeName, String expectedValue, int timeoutInSeconds) {
+        execute(() -> {
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds));
+            wait.until(driver -> {
+                WebElement element = findElement(uiObject);
+                String actualValue = element.getAttribute(attributeName);
+                return expectedValue.equals(actualValue);
+            });
+            return null;
+        }, uiObject, attributeName, expectedValue, timeoutInSeconds);
+    }
+
+    @NetatKeyword(
+            name = "waitForEnabled",
+            description = "Chờ đợi cho đến khi element được enabled (có thể tương tác). " +
+                    "Hữu ích khi button/field bị disabled và cần đợi enable sau khi điều kiện đáp ứng. " +
+                    "Nếu timeout, sẽ ném TimeoutException.",
+            category = "Mobile",
+            subCategory = "Wait",
+            parameters = {
+                    "uiObject: ObjectUI - Element cần chờ enabled",
+                    "timeoutInSeconds: int - Thời gian chờ tối đa (giây)"
+            },
+            returnValue = "void - Không trả về giá trị",
+            example = "// Đợi submit button enabled sau khi validate form\n" +
+                    "mobileKeyword.sendText(emailField, \"test@example.com\");\n" +
+                    "mobileKeyword.sendText(passwordField, \"Password123\");\n" +
+                    "mobileKeyword.waitForEnabled(submitButton, 10);\n" +
+                    "mobileKeyword.tap(submitButton);\n\n" +
+                    "// Đợi next button enabled trong wizard\n" +
+                    "mobileKeyword.tap(agreeCheckbox);\n" +
+                    "mobileKeyword.waitForEnabled(nextButton, 5);",
+            note = "Áp dụng cho nền tảng Mobile. Hoạt động trên cả Android và iOS. " +
+                    "Kiểm tra thuộc tính 'enabled' của element. " +
+                    "Có thể throw TimeoutException nếu element không enabled trong thời gian chờ."
+    )
+    public void waitForEnabled(ObjectUI uiObject, int timeoutInSeconds) {
+        execute(() -> {
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds));
+            wait.until(ExpectedConditions.elementToBeClickable(findElement(uiObject)));
+            return null;
+        }, uiObject, timeoutInSeconds);
+    }
+
+    @NetatKeyword(
+            name = "waitForDisabled",
+            description = "Chờ đợi cho đến khi element bị disabled (không thể tương tác). " +
+                    "Hữu ích khi cần verify button bị disable sau khi submit, hoặc field bị disable sau khi chọn option. " +
+                    "Nếu timeout, sẽ ném TimeoutException.",
+            category = "Mobile",
+            subCategory = "Wait",
+            parameters = {
+                    "uiObject: ObjectUI - Element cần chờ disabled",
+                    "timeoutInSeconds: int - Thời gian chờ tối đa (giây)"
+            },
+            returnValue = "void - Không trả về giá trị",
+            example = "// Đợi submit button disabled sau khi click\n" +
+                    "mobileKeyword.tap(submitButton);\n" +
+                    "mobileKeyword.waitForDisabled(submitButton, 5);\n\n" +
+                    "// Đợi input field disabled sau khi lock\n" +
+                    "mobileKeyword.tap(lockButton);\n" +
+                    "mobileKeyword.waitForDisabled(inputField, 3);",
+            note = "Áp dụng cho nền tảng Mobile. Hoạt động trên cả Android và iOS. " +
+                    "Kiểm tra thuộc tính 'enabled' = false của element. " +
+                    "Có thể throw TimeoutException nếu element không disabled trong thời gian chờ."
+    )
+    public void waitForDisabled(ObjectUI uiObject, int timeoutInSeconds) {
+        execute(() -> {
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds));
+            wait.until(driver -> {
+                WebElement element = findElement(uiObject);
+                return !element.isEnabled();
+            });
+            return null;
+        }, uiObject, timeoutInSeconds);
+    }
+
+    @NetatKeyword(
+            name = "waitForAppToLoad",
+            description = "Chờ đợi app load hoàn tất bằng cách đợi activity stable (Android) hoặc check app state (iOS). " +
+                    "Hữu ích sau khi launch app, navigate sang screen mới, hoặc sau khi background/foreground. " +
+                    "Timeout mặc định là thời gian chờ được chỉ định.",
+            category = "Mobile",
+            subCategory = "Wait",
+            parameters = {
+                    "timeoutInSeconds: int - Thời gian chờ tối đa (giây)"
+            },
+            returnValue = "void - Không trả về giá trị",
+            example = "// Đợi app load sau launch\n" +
+                    "mobileKeyword.launchApp();\n" +
+                    "mobileKeyword.waitForAppToLoad(15);\n\n" +
+                    "// Đợi app load sau khi back từ background\n" +
+                    "mobileKeyword.backgroundApp(5);\n" +
+                    "mobileKeyword.waitForAppToLoad(10);\n\n" +
+                    "// Đợi sau navigate\n" +
+                    "mobileKeyword.tap(menuItem);\n" +
+                    "mobileKeyword.waitForAppToLoad(8);",
+            note = "Áp dụng cho nền tảng Mobile. Hoạt động trên cả Android và iOS. " +
+                    "Android: Đợi activity name stable. iOS: Đợi app ở foreground state. " +
+                    "Có thể throw TimeoutException nếu app không load trong thời gian chờ."
+    )
+    public void waitForAppToLoad(int timeoutInSeconds) {
+        execute(() -> {
+            WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds));
+            AppiumDriver driver = getAppiumDriver();
+
+            if (driver instanceof AndroidDriver) {
+                // Wait for activity to be stable
+                wait.until(d -> {
+                    try {
+                        String currentActivity = ((AndroidDriver) d).currentActivity();
+                        Thread.sleep(500);
+                        String afterActivity = ((AndroidDriver) d).currentActivity();
+                        return currentActivity != null && currentActivity.equals(afterActivity);
+                    } catch (Exception e) {
+                        return false;
+                    }
+                });
+            } else if (driver instanceof IOSDriver) {
+                // Wait for app to be in foreground
+                wait.until(d -> {
+                    try {
+                        String bundleId = (String) driver.getCapabilities().getCapability("bundleId");
+                        if (bundleId != null) {
+                            int state = ((InteractsWithApps) driver).queryAppState(bundleId).ordinal();
+                            return state == 4; // RUNNING_IN_FOREGROUND
+                        }
+                        return true;
+                    } catch (Exception e) {
+                        return false;
+                    }
+                });
+            }
+            return null;
+        }, timeoutInSeconds);
+    }
 
         @NetatKeyword(
                 name = "assertTextContains",
@@ -1847,6 +2961,202 @@ public class MobileKeyword extends BaseUiKeyword {
     }
 
     @NetatKeyword(
+            name = "assertTextNotEquals",
+            description = "Khẳng định rằng văn bản của element KHÔNG bằng giá trị mong đợi. " +
+                    "Hữu ích để verify text đã thay đổi sau thao tác, hoặc đảm bảo không hiển thị giá trị cũ. " +
+                    "So sánh chính xác và phân biệt hoa thường.",
+            category = "Mobile",
+            subCategory = "Assertion",
+            parameters = {
+                    "uiObject: ObjectUI - Element cần kiểm tra text",
+                    "unexpectedText: String - Text không mong đợi",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh khi assertion thất bại"
+            },
+            returnValue = "void - Không trả về giá trị",
+            example = "// Verify text đã thay đổi sau update\n" +
+                    "String oldText = mobileKeyword.getText(statusLabel);\n" +
+                    "mobileKeyword.tap(updateButton);\n" +
+                    "mobileKeyword.assertTextNotEquals(statusLabel, oldText, \"Status phải thay đổi sau update\");\n\n" +
+                    "// Verify không hiển thị giá trị default\n" +
+                    "mobileKeyword.assertTextNotEquals(inputField, \"placeholder text\");\n\n" +
+                    "// Verify error message đã clear\n" +
+                    "mobileKeyword.assertTextNotEquals(errorMessage, \"Invalid input\");",
+            note = "Áp dụng cho nền tảng Mobile. Hoạt động trên cả Android và iOS. " +
+                    "So sánh exact match, case-sensitive. " +
+                    "Có thể throw AssertionError nếu text bằng unexpectedText."
+    )
+    public void assertTextNotEquals(ObjectUI uiObject, String unexpectedText, String... customMessage) {
+        execute(() -> {
+            WebElement element = findElement(uiObject);
+            String actualText = element.getText();
+
+            String message = customMessage.length > 0 ? customMessage[0] :
+                    "HARD ASSERT FAILED: Element '" + uiObject.getName() + "' should not have text '" + unexpectedText + "' but it does.";
+
+            Assert.assertNotEquals(actualText, unexpectedText, message);
+            return null;
+        }, uiObject, unexpectedText);
+    }
+
+    @NetatKeyword(
+            name = "assertElementNotVisible",
+            description = "Khẳng định rằng element KHÔNG hiển thị trên màn hình. " +
+                    "Element có thể tồn tại trong DOM nhưng bị ẩn (visibility=hidden, display=none). " +
+                    "Hữu ích để verify element đã bị ẩn sau thao tác.",
+            category = "Mobile",
+            subCategory = "Assertion",
+            parameters = {
+                    "uiObject: ObjectUI - Element cần kiểm tra",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh khi assertion thất bại"
+            },
+            returnValue = "void - Không trả về giá trị",
+            example = "// Verify loading spinner đã ẩn\n" +
+                    "mobileKeyword.assertElementNotVisible(loadingSpinner, \"Loading spinner phải ẩn sau khi load xong\");\n\n" +
+                    "// Verify error message đã ẩn\n" +
+                    "mobileKeyword.tap(closeErrorButton);\n" +
+                    "mobileKeyword.assertElementNotVisible(errorMessage);\n\n" +
+                    "// Verify modal đã đóng\n" +
+                    "mobileKeyword.tap(closeModalButton);\n" +
+                    "mobileKeyword.assertElementNotVisible(modal);",
+            note = "Áp dụng cho nền tảng Mobile. Hoạt động trên cả Android và iOS. " +
+                    "Element phải tồn tại trong DOM nhưng không visible. " +
+                    "Nếu element không tồn tại, sẽ pass assertion. " +
+                    "Có thể throw AssertionError nếu element đang visible."
+    )
+    public void assertElementNotVisible(ObjectUI uiObject, String... customMessage) {
+        execute(() -> {
+            try {
+                WebElement element = findElement(uiObject);
+                boolean isVisible = element.isDisplayed();
+
+                String message = customMessage.length > 0 ? customMessage[0] :
+                        "HARD ASSERT FAILED: Element '" + uiObject.getName() + "' should not be visible but it is.";
+
+                Assert.assertFalse(isVisible, message);
+            } catch (NoSuchElementException e) {
+                // Element not found = not visible, assertion passes
+                logger.debug("Element not found, considered as not visible: " + uiObject.getName());
+            }
+            return null;
+        }, uiObject);
+    }
+
+    @NetatKeyword(
+            name = "assertSelected",
+            description = "Khẳng định rằng element đang được selected/chọn. " +
+                    "Áp dụng cho dropdown option, list item, hoặc selectable element. " +
+                    "Khác với assertChecked (dành cho checkbox/radio), keyword này cho selection state.",
+            category = "Mobile",
+            subCategory = "Assertion",
+            parameters = {
+                    "uiObject: ObjectUI - Element cần kiểm tra",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh khi assertion thất bại"
+            },
+            returnValue = "void - Không trả về giá trị",
+            example = "// Verify option đã được chọn trong dropdown\n" +
+                    "mobileKeyword.tap(dropdown);\n" +
+                    "mobileKeyword.tap(option1);\n" +
+                    "mobileKeyword.assertSelected(option1, \"Option 1 phải được chọn\");\n\n" +
+                    "// Verify tab đang active\n" +
+                    "mobileKeyword.tap(settingsTab);\n" +
+                    "mobileKeyword.assertSelected(settingsTab);",
+            note = "Áp dụng cho nền tảng Mobile. Hoạt động trên cả Android và iOS. " +
+                    "Element phải hỗ trợ thuộc tính 'selected'. " +
+                    "Có thể throw AssertionError nếu element không được selected."
+    )
+    public void assertSelected(ObjectUI uiObject, String... customMessage) {
+        execute(() -> {
+            WebElement element = findElement(uiObject);
+            boolean isSelected = element.isSelected();
+
+            String message = customMessage.length > 0 ? customMessage[0] :
+                    "HARD ASSERT FAILED: Element '" + uiObject.getName() + "' should be selected but it is not.";
+
+            Assert.assertTrue(isSelected, message);
+            return null;
+        }, uiObject);
+    }
+
+    @NetatKeyword(
+            name = "assertNotSelected",
+            description = "Khẳng định rằng element KHÔNG được selected/chọn. " +
+                    "Áp dụng cho dropdown option, list item, hoặc selectable element. " +
+                    "Hữu ích để verify option khác không được chọn khi chọn option mới.",
+            category = "Mobile",
+            subCategory = "Assertion",
+            parameters = {
+                    "uiObject: ObjectUI - Element cần kiểm tra",
+                    "customMessage: String (optional) - Thông báo tùy chỉnh khi assertion thất bại"
+            },
+            returnValue = "void - Không trả về giá trị",
+            example = "// Verify option khác không được chọn\n" +
+                    "mobileKeyword.tap(dropdown);\n" +
+                    "mobileKeyword.tap(option1);\n" +
+                    "mobileKeyword.assertSelected(option1);\n" +
+                    "mobileKeyword.assertNotSelected(option2, \"Option 2 phải không được chọn\");\n" +
+                    "mobileKeyword.assertNotSelected(option3, \"Option 3 phải không được chọn\");",
+            note = "Áp dụng cho nền tảng Mobile. Hoạt động trên cả Android và iOS. " +
+                    "Element phải hỗ trợ thuộc tính 'selected'. " +
+                    "Có thể throw AssertionError nếu element đang được selected."
+    )
+    public void assertNotSelected(ObjectUI uiObject, String... customMessage) {
+        execute(() -> {
+            WebElement element = findElement(uiObject);
+            boolean isSelected = element.isSelected();
+
+            String message = customMessage.length > 0 ? customMessage[0] :
+                    "HARD ASSERT FAILED: Element '" + uiObject.getName() + "' should not be selected but it is.";
+
+            Assert.assertFalse(isSelected, message);
+            return null;
+        }, uiObject);
+    }
+
+    @NetatKeyword(
+            name = "verifyAttributeExists",
+            description = "Verify (soft assertion) rằng attribute tồn tại trên element, không quan tâm giá trị. " +
+                    "Khác với assert, verify không dừng test khi fail, chỉ log error. " +
+                    "Hữu ích để kiểm tra element có attribute hay không.",
+            category = "Mobile",
+            subCategory = "Verification",
+            parameters = {
+                    "uiObject: ObjectUI - Element cần kiểm tra",
+                    "attributeName: String - Tên attribute cần verify"
+            },
+            returnValue = "boolean - true nếu attribute tồn tại, false nếu không",
+            example = "// Verify element có attribute 'enabled'\n" +
+                    "boolean hasEnabled = mobileKeyword.verifyAttributeExists(button, \"enabled\");\n\n" +
+                    "// Verify element có attribute 'value'\n" +
+                    "boolean hasValue = mobileKeyword.verifyAttributeExists(inputField, \"value\");\n\n" +
+                    "// Chain verify để check multiple attributes\n" +
+                    "if (mobileKeyword.verifyAttributeExists(element, \"clickable\")) {\n" +
+                    "    mobileKeyword.tap(element);\n" +
+                    "}",
+            note = "Áp dụng cho nền tảng Mobile. Hoạt động trên cả Android và iOS. " +
+                    "Đây là soft assertion, không throw exception khi fail. " +
+                    "Attribute = null hoặc không tồn tại đều return false."
+    )
+    public boolean verifyAttributeExists(ObjectUI uiObject, String attributeName) {
+        return execute(() -> {
+            try {
+                WebElement element = findElement(uiObject);
+                String attributeValue = element.getAttribute(attributeName);
+                boolean exists = attributeValue != null;
+
+                if (!exists) {
+                    logger.warn("SOFT VERIFY FAILED: Attribute '{}' does not exist on element '{}'",
+                            attributeName, uiObject.getName());
+                }
+                return exists;
+            } catch (Exception e) {
+                logger.warn("SOFT VERIFY FAILED: Cannot check attribute '{}' on element '{}': {}",
+                        attributeName, uiObject.getName(), e.getMessage());
+                return false;
+            }
+        }, uiObject, attributeName);
+    }
+
+    @NetatKeyword(
             name = "assertTextWithOptions",
             description = "So sánh văn bản của phần tử với nhiều tùy chọn linh hoạt: có thể bỏ qua sự khác biệt giữa chữ hoa/thường và/hoặc cắt khoảng trắng ở đầu/cuối. " +
                     "Hữu ích khi cần kiểm tra nội dung mà không quan tâm đến định dạng chính xác. " +
@@ -2152,28 +3462,6 @@ public class MobileKeyword extends BaseUiKeyword {
                 }
                 return null;
             }, milliseconds);
-        }
-
-        @NetatKeyword(
-                name = "Get Current App Package",
-                description = "Lấy appPackage (Android) hoặc bundleId (iOS) của ứng dụng hiện tại đang được test",
-                category = "Mobile",
-                subCategory = "Applifecycle",
-                parameters = {},
-                returnValue = "String - Package name của ứng dụng Android hoặc bundle ID của ứng dụng iOS",
-                example = "String packageName = getCurrentAppPackage();",
-                note = "Keyword này hoạt động trên cả Android và iOS. Trên Android sẽ trả về package name, trên iOS sẽ trả về bundle ID từ capabilities."
-        )
-        public String getCurrentAppPackage() {
-            return execute(() -> {
-                AppiumDriver driver = (AppiumDriver) DriverManager.getDriver();
-                if (driver instanceof AndroidDriver) {
-                    return ((AndroidDriver) driver).getCurrentPackage();
-                } else { // Giả định là IOSDriver hoặc các driver khác
-                    // Lấy từ capabilities, là một cách phổ biến
-                    return (String) driver.getCapabilities().getCapability("bundleId");
-                }
-            });
         }
 
         @NetatKeyword(
@@ -2607,6 +3895,991 @@ public class MobileKeyword extends BaseUiKeyword {
                 return false;
             }
         });
+    }
+
+    // =================================================================================
+    // --- DEVICE INTERACTIONS - ADDITIONAL KEYWORDS ---
+    // =================================================================================
+
+    @NetatKeyword(
+            name = "rotateDevice",
+            description = "Xoay màn hình thiết bị sang orientation chỉ định. " +
+                    "Hỗ trợ PORTRAIT (dọc) và LANDSCAPE (ngang). " +
+                    "Hữu ích để test responsive layout, orientation-specific features, hoặc rotation handling.",
+            category = "Mobile",
+            subCategory = "Device",
+            parameters = {
+                    "orientation: String - Orientation mong muốn (\"PORTRAIT\" hoặc \"LANDSCAPE\")"
+            },
+            returnValue = "void - Không trả về giá trị",
+            example = "// Xoay sang landscape để test full-width layout\n" +
+                    "mobileKeyword.rotateDevice(\"LANDSCAPE\");\n" +
+                    "mobileKeyword.assertElementVisible(landscapeMenu);\n\n" +
+                    "// Xoay về portrait\n" +
+                    "mobileKeyword.rotateDevice(\"PORTRAIT\");\n\n" +
+                    "// Test rotation handling\n" +
+                    "mobileKeyword.sendText(inputField, \"test data\");\n" +
+                    "mobileKeyword.rotateDevice(\"LANDSCAPE\");\n" +
+                    "mobileKeyword.assertTextEquals(inputField, \"test data\", \"Data phải giữ nguyên sau rotate\");",
+            note = "Áp dụng cho nền tảng Mobile. Hoạt động trên cả Android và iOS. " +
+                    "Orientation không phân biệt hoa thường. " +
+                    "Một số app có thể lock orientation, không thể xoay. " +
+                    "Có thể throw IllegalArgumentException nếu orientation không hợp lệ."
+    )
+    public void rotateDevice(String orientation) {
+        execute(() -> {
+            String ori = orientation.toUpperCase();
+            ScreenOrientation screenOrientation;
+
+            switch (ori) {
+                case "PORTRAIT":
+                    screenOrientation = ScreenOrientation.PORTRAIT;
+                    break;
+                case "LANDSCAPE":
+                    screenOrientation = ScreenOrientation.LANDSCAPE;
+                    break;
+                default:
+                    throw new IllegalArgumentException("Invalid orientation: " + orientation + ". Must be PORTRAIT or LANDSCAPE");
+            }
+
+            AppiumDriver driver = getAppiumDriver();
+            if (driver instanceof AndroidDriver) {
+                ((AndroidDriver) driver).rotate(screenOrientation);
+            } else if (driver instanceof IOSDriver) {
+                ((IOSDriver) driver).rotate(screenOrientation);
+            }
+            return null;
+        }, orientation);
+    }
+
+    @NetatKeyword(
+            name = "pressHome",
+            description = "Nhấn nút Home để về màn hình chính của thiết bị. " +
+                    "App hiện tại sẽ chuyển sang background. " +
+                    "Hữu ích để test app resume behavior hoặc notification handling.",
+            category = "Mobile",
+            subCategory = "Device",
+            parameters = {},
+            returnValue = "void - Không trả về giá trị",
+            example = "// Nhấn Home và kiểm tra app resume\n" +
+                    "mobileKeyword.pressHome();\n" +
+                    "mobileKeyword.activateApp(\"com.example.myapp\");\n" +
+                    "mobileKeyword.assertElementVisible(mainScreen);\n\n" +
+                    "// Test notification từ home screen\n" +
+                    "mobileKeyword.pressHome();\n" +
+                    "mobileKeyword.openNotifications();",
+            note = "Áp dụng cho nền tảng Mobile. Hoạt động trên cả Android và iOS. " +
+                    "Android: Nhấn KEYCODE_HOME. iOS: Sử dụng mobile:pressButton. " +
+                    "Có thể throw WebDriverException nếu không thể thực hiện."
+    )
+    public void pressHome() {
+        execute(() -> {
+            AppiumDriver driver = getAppiumDriver();
+            if (driver instanceof AndroidDriver) {
+                ((AndroidDriver) driver).pressKey(new KeyEvent(AndroidKey.HOME));
+            } else if (driver instanceof IOSDriver) {
+                // iOS: Use mobile:pressButton
+                Map<String, Object> params = new HashMap<>();
+                params.put("name", "home");
+                driver.executeScript("mobile:pressButton", params);
+            }
+            return null;
+        });
+    }
+
+    @NetatKeyword(
+            name = "pressEnter",
+            description = "Nhấn phím Enter/Return trên keyboard. " +
+                    "Hữu ích để submit form, search, hoặc new line trong textarea.",
+            category = "Mobile",
+            subCategory = "Device",
+            parameters = {},
+            returnValue = "void - Không trả về giá trị",
+            example = "// Submit search query\n" +
+                    "mobileKeyword.sendText(searchField, \"test query\");\n" +
+                    "mobileKeyword.pressEnter();\n\n" +
+                    "// Submit login form\n" +
+                    "mobileKeyword.sendText(passwordField, \"password123\");\n" +
+                    "mobileKeyword.pressEnter();",
+            note = "Áp dụng cho nền tảng Mobile. Hoạt động trên cả Android và iOS. " +
+                    "Android: KEYCODE_ENTER. iOS: Return key. " +
+                    "Keyboard phải đang hiển thị để press key có hiệu lực."
+    )
+    public void pressEnter() {
+        execute(() -> {
+            AppiumDriver driver = getAppiumDriver();
+            if (driver instanceof AndroidDriver) {
+                ((AndroidDriver) driver).pressKey(new KeyEvent(AndroidKey.ENTER));
+            } else if (driver instanceof IOSDriver) {
+                // iOS: Simulate return key
+                Map<String, Object> params = new HashMap<>();
+                params.put("name", "return");
+                driver.executeScript("mobile:pressButton", params);
+            }
+            return null;
+        });
+    }
+
+    @NetatKeyword(
+            name = "pressSearch",
+            description = "Nhấn nút Search trên keyboard hoặc navigation bar (Android). " +
+                    "Hữu ích để trigger search action trong app.",
+            category = "Mobile",
+            subCategory = "Device",
+            parameters = {},
+            returnValue = "void - Không trả về giá trị",
+            example = "// Trigger search\n" +
+                    "mobileKeyword.sendText(searchField, \"product name\");\n" +
+                    "mobileKeyword.pressSearch();\n" +
+                    "mobileKeyword.waitForVisible(searchResults, 10);",
+            note = "Áp dụng chủ yếu cho Android. " +
+                    "iOS không có dedicated search key, có thể sử dụng pressEnter thay thế. " +
+                    "Có thể throw UnsupportedOperationException trên iOS."
+    )
+    public void pressSearch() {
+        execute(() -> {
+            AppiumDriver driver = getAppiumDriver();
+            if (driver instanceof AndroidDriver) {
+                ((AndroidDriver) driver).pressKey(new KeyEvent(AndroidKey.SEARCH));
+            } else {
+                logger.warn("pressSearch is primarily for Android. For iOS, use pressEnter instead.");
+                throw new UnsupportedOperationException("pressSearch is not supported on iOS");
+            }
+            return null;
+        });
+    }
+
+    @NetatKeyword(
+            name = "pressMenu",
+            description = "Nhấn nút Menu (Android) để mở menu options. " +
+                    "Một số device hiện đại không còn hardware menu button.",
+            category = "Mobile",
+            subCategory = "Device",
+            parameters = {},
+            returnValue = "void - Không trả về giá trị",
+            example = "// Mở menu options\n" +
+                    "mobileKeyword.pressMenu();\n" +
+                    "mobileKeyword.tap(settingsOption);",
+            note = "Chỉ áp dụng cho Android. " +
+                    "iOS không có menu button. " +
+                    "Nhiều Android devices hiện đại đã loại bỏ hardware menu button. " +
+                    "Có thể throw UnsupportedOperationException trên iOS."
+    )
+    public void pressMenu() {
+        execute(() -> {
+            AppiumDriver driver = getAppiumDriver();
+            if (driver instanceof AndroidDriver) {
+                ((AndroidDriver) driver).pressKey(new KeyEvent(AndroidKey.MENU));
+            } else {
+                logger.warn("pressMenu is only supported on Android.");
+                throw new UnsupportedOperationException("pressMenu is not supported on iOS");
+            }
+            return null;
+        });
+    }
+
+    @NetatKeyword(
+            name = "pressVolumeUp",
+            description = "Nhấn nút Volume Up để tăng âm lượng. " +
+                    "Hữu ích để test app behavior khi adjust volume.",
+            category = "Mobile",
+            subCategory = "Device",
+            parameters = {},
+            returnValue = "void - Không trả về giá trị",
+            example = "// Tăng âm lượng\n" +
+                    "mobileKeyword.pressVolumeUp();\n\n" +
+                    "// Test volume control trong media app\n" +
+                    "mobileKeyword.tap(playButton);\n" +
+                    "mobileKeyword.pressVolumeUp();\n" +
+                    "mobileKeyword.pressVolumeUp();",
+            note = "Áp dụng cho nền tảng Mobile. Hoạt động trên cả Android và iOS. " +
+                    "Android: KEYCODE_VOLUME_UP. iOS: mobile:pressButton volumeUp. " +
+                    "Có thể không work trên emulator/simulator."
+    )
+    public void pressVolumeUp() {
+        execute(() -> {
+            AppiumDriver driver = getAppiumDriver();
+            if (driver instanceof AndroidDriver) {
+                ((AndroidDriver) driver).pressKey(new KeyEvent(AndroidKey.VOLUME_UP));
+            } else if (driver instanceof IOSDriver) {
+                Map<String, Object> params = new HashMap<>();
+                params.put("name", "volumeUp");
+                driver.executeScript("mobile:pressButton", params);
+            }
+            return null;
+        });
+    }
+
+    @NetatKeyword(
+            name = "pressVolumeDown",
+            description = "Nhấn nút Volume Down để giảm âm lượng. " +
+                    "Hữu ích để test app behavior khi adjust volume.",
+            category = "Mobile",
+            subCategory = "Device",
+            parameters = {},
+            returnValue = "void - Không trả về giá trị",
+            example = "// Giảm âm lượng\n" +
+                    "mobileKeyword.pressVolumeDown();\n\n" +
+                    "// Test mute behavior\n" +
+                    "for (int i = 0; i < 5; i++) {\n" +
+                    "    mobileKeyword.pressVolumeDown();\n" +
+                    "}",
+            note = "Áp dụng cho nền tảng Mobile. Hoạt động trên cả Android và iOS. " +
+                    "Android: KEYCODE_VOLUME_DOWN. iOS: mobile:pressButton volumeDown. " +
+                    "Có thể không work trên emulator/simulator."
+    )
+    public void pressVolumeDown() {
+        execute(() -> {
+            AppiumDriver driver = getAppiumDriver();
+            if (driver instanceof AndroidDriver) {
+                ((AndroidDriver) driver).pressKey(new KeyEvent(AndroidKey.VOLUME_DOWN));
+            } else if (driver instanceof IOSDriver) {
+                Map<String, Object> params = new HashMap<>();
+                params.put("name", "volumeDown");
+                driver.executeScript("mobile:pressButton", params);
+            }
+            return null;
+        });
+    }
+
+    @NetatKeyword(
+            name = "getNetworkConnection",
+            description = "Lấy trạng thái kết nối mạng hiện tại của thiết bị (Android). " +
+                    "Trả về bitmask: 0=None, 1=Airplane, 2=Wifi, 4=Data, 6=All. " +
+                    "Hữu ích để verify network state trước test hoặc troubleshooting.",
+            category = "Mobile",
+            subCategory = "Device",
+            parameters = {},
+            returnValue = "int - Bitmask của network connection",
+            example = "// Check network state\n" +
+                    "int networkState = mobileKeyword.getNetworkConnection();\n" +
+                    "if (networkState == 0) {\n" +
+                    "    logger.warn(\"No network connection\");\n" +
+                    "}\n\n" +
+                    "// Verify wifi enabled\n" +
+                    "int state = mobileKeyword.getNetworkConnection();\n" +
+                    "Assert.assertTrue((state & 2) != 0, \"Wifi should be enabled\");",
+            note = "Chỉ áp dụng cho Android. " +
+                    "iOS không hỗ trợ network connection API. " +
+                    "Bitmask: 0=NONE, 1=AIRPLANE, 2=WIFI, 4=DATA, 6=ALL (WIFI+DATA). " +
+                    "Có thể throw UnsupportedOperationException trên iOS."
+    )
+    public int getNetworkConnection() {
+        return execute(() -> {
+            AppiumDriver driver = getAppiumDriver();
+            if (driver instanceof AndroidDriver) {
+                ConnectionState state = ((AndroidDriver) driver).getConnection();
+                // ConnectionState wraps an int value representing network state
+                // Extract the numeric value using bitwise operations
+                int value = 0;
+                if (state.isAirplaneModeEnabled()) value |= 1;
+                if (state.isWiFiEnabled()) value |= 2;
+                if (state.isDataEnabled()) value |= 4;
+                return value;
+            } else {
+                logger.warn("getNetworkConnection is only supported on Android.");
+                throw new UnsupportedOperationException("getNetworkConnection is not supported on iOS");
+            }
+        });
+    }
+
+    @NetatKeyword(
+            name = "setNetworkConnection",
+            description = "Thiết lập trạng thái kết nối mạng của thiết bị (Android). " +
+                    "ConnectionType bitmask: 0=None, 1=Airplane, 2=Wifi, 4=Data, 6=All. " +
+                    "Hữu ích để test offline mode, airplane mode, hoặc specific network scenarios.",
+            category = "Mobile",
+            subCategory = "Device",
+            parameters = {
+                    "connectionType: int - Bitmask của connection type"
+            },
+            returnValue = "void - Không trả về giá trị",
+            example = "// Enable airplane mode\n" +
+                    "mobileKeyword.setNetworkConnection(1);\n" +
+                    "mobileKeyword.assertElementVisible(offlineMessage);\n\n" +
+                    "// Enable wifi only\n" +
+                    "mobileKeyword.setNetworkConnection(2);\n\n" +
+                    "// Enable all connections\n" +
+                    "mobileKeyword.setNetworkConnection(6);\n\n" +
+                    "// Disable all connections\n" +
+                    "mobileKeyword.setNetworkConnection(0);",
+            note = "Chỉ áp dụng cho Android. " +
+                    "iOS không hỗ trợ network connection API. " +
+                    "Bitmask: 0=NONE, 1=AIRPLANE, 2=WIFI, 4=DATA, 6=ALL. " +
+                    "Cần permission SET_NETWORK để modify network. " +
+                    "Có thể throw UnsupportedOperationException trên iOS."
+    )
+    public void setNetworkConnection(int connectionType) {
+        execute(() -> {
+            AppiumDriver driver = getAppiumDriver();
+            if (driver instanceof AndroidDriver) {
+                ((AndroidDriver) driver).setConnection(new ConnectionState(connectionType));
+            } else {
+                logger.warn("setNetworkConnection is only supported on Android.");
+                throw new UnsupportedOperationException("setNetworkConnection is not supported on iOS");
+            }
+            return null;
+        }, connectionType);
+    }
+
+    @NetatKeyword(
+            name = "toggleWifi",
+            description = "Bật/tắt Wifi (toggle current state) trên Android. " +
+                    "Nếu đang bật → tắt, nếu đang tắt → bật. " +
+                    "Hữu ích để test offline/online behavior.",
+            category = "Mobile",
+            subCategory = "Device",
+            parameters = {},
+            returnValue = "void - Không trả về giá trị",
+            example = "// Test offline mode\n" +
+                    "mobileKeyword.toggleWifi(); // Tắt wifi\n" +
+                    "mobileKeyword.assertElementVisible(offlineIndicator);\n" +
+                    "mobileKeyword.toggleWifi(); // Bật lại wifi\n" +
+                    "mobileKeyword.waitForVisible(onlineIndicator, 10);",
+            note = "Chỉ áp dụng cho Android. " +
+                    "iOS không hỗ trợ programmatic wifi toggle. " +
+                    "Cần permission CHANGE_WIFI_STATE. " +
+                    "Có thể throw UnsupportedOperationException trên iOS."
+    )
+    public void toggleWifi() {
+        execute(() -> {
+            AppiumDriver driver = getAppiumDriver();
+            if (driver instanceof AndroidDriver) {
+                ConnectionState currentState = ((AndroidDriver) driver).getConnection();
+                boolean wifiEnabled = currentState.isWiFiEnabled();
+
+                // Build new connection state with toggled wifi
+                int newValue = 0;
+                if (currentState.isAirplaneModeEnabled()) newValue |= 1;
+                if (!wifiEnabled) newValue |= 2;  // Toggle: if was enabled, disable it
+                if (currentState.isDataEnabled()) newValue |= 4;
+
+                ((AndroidDriver) driver).setConnection(new ConnectionState(newValue));
+            } else {
+                logger.warn("toggleWifi is only supported on Android.");
+                throw new UnsupportedOperationException("toggleWifi is not supported on iOS");
+            }
+            return null;
+        });
+    }
+
+    @NetatKeyword(
+            name = "toggleData",
+            description = "Bật/tắt Mobile Data (toggle current state) trên Android. " +
+                    "Nếu đang bật → tắt, nếu đang tắt → bật. " +
+                    "Hữu ích để test cellular network scenarios.",
+            category = "Mobile",
+            subCategory = "Device",
+            parameters = {},
+            returnValue = "void - Không trả về giá trị",
+            example = "// Test cellular-only mode\n" +
+                    "mobileKeyword.toggleWifi(); // Tắt wifi\n" +
+                    "mobileKeyword.toggleData(); // Bật data\n" +
+                    "mobileKeyword.assertElementVisible(cellularIndicator);",
+            note = "Chỉ áp dụng cho Android. " +
+                    "iOS không hỗ trợ programmatic data toggle. " +
+                    "Cần permission CHANGE_NETWORK_STATE. " +
+                    "Có thể throw UnsupportedOperationException trên iOS."
+    )
+    public void toggleData() {
+        execute(() -> {
+            AppiumDriver driver = getAppiumDriver();
+            if (driver instanceof AndroidDriver) {
+                ConnectionState currentState = ((AndroidDriver) driver).getConnection();
+                boolean dataEnabled = currentState.isDataEnabled();
+
+                // Build new connection state with toggled data
+                int newValue = 0;
+                if (currentState.isAirplaneModeEnabled()) newValue |= 1;
+                if (currentState.isWiFiEnabled()) newValue |= 2;
+                if (!dataEnabled) newValue |= 4;  // Toggle: if was enabled, disable it
+
+                ((AndroidDriver) driver).setConnection(new ConnectionState(newValue));
+            } else {
+                logger.warn("toggleData is only supported on Android.");
+                throw new UnsupportedOperationException("toggleData is not supported on iOS");
+            }
+            return null;
+        });
+    }
+
+    // =================================================================================
+    // --- FILE & DATA MANAGEMENT - ADDITIONAL KEYWORDS ---
+    // =================================================================================
+
+    @NetatKeyword(
+            name = "setClipboard",
+            description = "Set nội dung clipboard của thiết bị. " +
+                    "Hữu ích để test paste functionality hoặc setup test data trong clipboard.",
+            category = "Mobile",
+            subCategory = "Data",
+            parameters = {
+                    "text: String - Nội dung cần set vào clipboard"
+            },
+            returnValue = "void - Không trả về giá trị",
+            example = "// Set clipboard và paste vào field\n" +
+                    "mobileKeyword.setClipboard(\"test@example.com\");\n" +
+                    "mobileKeyword.longPress(emailField, 2);\n" +
+                    "mobileKeyword.tap(pasteOption);\n\n" +
+                    "// Setup test data\n" +
+                    "mobileKeyword.setClipboard(\"https://example.com/deep-link\");",
+            note = "Áp dụng cho nền tảng Mobile. Hoạt động trên cả Android và iOS. " +
+                    "Android: Sử dụng ClipData. iOS: Sử dụng UIPasteboard. " +
+                    "Có thể throw WebDriverException nếu không thể set clipboard."
+    )
+    public void setClipboard(String text) {
+        execute(() -> {
+            ((HasClipboard) getAppiumDriver()).setClipboardText(text);
+            return null;
+        }, text);
+    }
+
+    @NetatKeyword(
+            name = "deleteFile",
+            description = "Xóa file trên thiết bị theo đường dẫn chỉ định. " +
+                    "Hữu ích để cleanup test data hoặc remove temporary files.",
+            category = "Mobile",
+            subCategory = "Data",
+            parameters = {
+                    "devicePath: String - Đường dẫn file cần xóa trên thiết bị"
+            },
+            returnValue = "void - Không trả về giá trị",
+            example = "// Xóa file test data\n" +
+                    "mobileKeyword.deleteFile(\"/sdcard/Download/test-data.txt\");\n\n" +
+                    "// Cleanup sau test\n" +
+                    "mobileKeyword.deleteFile(\"/data/local/tmp/test-image.png\");",
+            note = "Áp dụng cho nền tảng Mobile. Hoạt động trên cả Android và iOS. " +
+                    "Cần permission để xóa file ở location chỉ định. " +
+                    "Không throw exception nếu file không tồn tại. " +
+                    "Có thể throw WebDriverException nếu không có permission."
+    )
+    public void deleteFile(String devicePath) {
+        execute(() -> {
+            AppiumDriver driver = getAppiumDriver();
+            if (driver instanceof AndroidDriver) {
+                // Android: Use adb shell rm
+                driver.executeScript("mobile:shell", Map.of("command", "rm", "args", List.of("-f", devicePath)));
+            } else if (driver instanceof IOSDriver) {
+                // iOS: Use mobile:deleteFile
+                driver.executeScript("mobile:deleteFile", Map.of("remotePath", devicePath));
+            }
+            return null;
+        }, devicePath);
+    }
+
+    @NetatKeyword(
+            name = "recordScreen",
+            description = "Bắt đầu record màn hình thiết bị. " +
+                    "Recording sẽ tiếp tục cho đến khi gọi stopRecordScreen. " +
+                    "Hữu ích để capture test execution video hoặc debugging.",
+            category = "Mobile",
+            subCategory = "Data",
+            parameters = {},
+            returnValue = "void - Không trả về giá trị",
+            example = "// Record test execution\n" +
+                    "mobileKeyword.recordScreen();\n" +
+                    "mobileKeyword.tap(loginButton);\n" +
+                    "mobileKeyword.sendText(usernameField, \"test\");\n" +
+                    "String video = mobileKeyword.stopRecordScreen();\n\n" +
+                    "// Record bug reproduction\n" +
+                    "mobileKeyword.recordScreen();\n" +
+                    "// ... reproduce bug steps\n" +
+                    "mobileKeyword.stopRecordScreen();",
+            note = "Áp dụng cho nền tảng Mobile. Hoạt động trên cả Android và iOS. " +
+                    "Android: Sử dụng screenrecord utility. iOS: Sử dụng xctest framework. " +
+                    "Recording có thể bị giới hạn thời gian (Android: 3 phút mặc định). " +
+                    "Có thể throw WebDriverException nếu không thể start recording."
+    )
+    public void recordScreen() {
+        execute(() -> {
+            AppiumDriver driver = getAppiumDriver();
+            if (driver instanceof AndroidDriver) {
+                ((AndroidDriver) driver).startRecordingScreen();
+            } else if (driver instanceof IOSDriver) {
+                ((IOSDriver) driver).startRecordingScreen();
+            }
+            return null;
+        });
+    }
+
+    @NetatKeyword(
+            name = "stopRecordScreen",
+            description = "Dừng recording màn hình và trả về video dưới dạng Base64 string. " +
+                    "Video có thể được decode và lưu vào file để review sau.",
+            category = "Mobile",
+            subCategory = "Data",
+            parameters = {},
+            returnValue = "String - Base64 encoded video content",
+            example = "// Stop recording và save video\n" +
+                    "mobileKeyword.recordScreen();\n" +
+                    "// ... test steps\n" +
+                    "String base64Video = mobileKeyword.stopRecordScreen();\n" +
+                    "byte[] videoBytes = Base64.getDecoder().decode(base64Video);\n" +
+                    "Files.write(Paths.get(\"test-recording.mp4\"), videoBytes);",
+            note = "Áp dụng cho nền tảng Mobile. Hoạt động trên cả Android và iOS. " +
+                    "Phải gọi recordScreen trước khi gọi stopRecordScreen. " +
+                    "Video format: MP4 (Android), MOV (iOS). " +
+                    "Có thể throw WebDriverException nếu không có active recording."
+    )
+    public String stopRecordScreen() {
+        return execute(() -> {
+            AppiumDriver driver = getAppiumDriver();
+            if (driver instanceof AndroidDriver) {
+                return ((AndroidDriver) driver).stopRecordingScreen();
+            } else if (driver instanceof IOSDriver) {
+                return ((IOSDriver) driver).stopRecordingScreen();
+            }
+            return null;
+        });
+    }
+
+    // =================================================================================
+    // --- NOTIFICATION MANAGEMENT - ADDITIONAL KEYWORDS ---
+    // =================================================================================
+
+    @NetatKeyword(
+            name = "clearNotifications",
+            description = "Xóa tất cả notifications trong notification panel (Android). " +
+                    "Hữu ích để cleanup notifications trước test hoặc verify notification cleared.",
+            category = "Mobile",
+            subCategory = "Notification",
+            parameters = {},
+            returnValue = "void - Không trả về giá trị",
+            example = "// Clear notifications trước test\n" +
+                    "mobileKeyword.openNotifications();\n" +
+                    "mobileKeyword.clearNotifications();\n\n" +
+                    "// Verify notification và clear\n" +
+                    "mobileKeyword.openNotifications();\n" +
+                    "mobileKeyword.assertNotificationText(\"New Message\", \"You have 1 new message\", 5);\n" +
+                    "mobileKeyword.clearNotifications();",
+            note = "Chỉ áp dụng cho Android. " +
+                    "iOS không cho phép programmatic clear notifications. " +
+                    "Cần mở notification panel trước khi clear. " +
+                    "Có thể throw UnsupportedOperationException trên iOS."
+    )
+    public void clearNotifications() {
+        execute(() -> {
+            AppiumDriver driver = getAppiumDriver();
+            if (driver instanceof AndroidDriver) {
+                // Find and tap clear all button
+                try {
+                    // Different Android versions may have different clear button
+                    List<String> clearButtonTexts = Arrays.asList("Clear all", "Clear", "Xóa tất cả");
+                    for (String text : clearButtonTexts) {
+                        try {
+                            WebElement clearButton = driver.findElement(
+                                    AppiumBy.androidUIAutomator("new UiSelector().textContains(\"" + text + "\")")
+                            );
+                            clearButton.click();
+                            return null;
+                        } catch (NoSuchElementException e) {
+                            // Try next text
+                        }
+                    }
+                    logger.warn("Could not find clear notifications button");
+                } catch (Exception e) {
+                    logger.warn("Failed to clear notifications: {}", e.getMessage());
+                }
+            } else {
+                logger.warn("clearNotifications is only supported on Android.");
+                throw new UnsupportedOperationException("clearNotifications is not supported on iOS");
+            }
+            return null;
+        });
+    }
+
+    @NetatKeyword(
+            name = "getNotificationCount",
+            description = "Đếm số lượng notifications hiện có trong notification panel. " +
+                    "Hữu ích để verify số lượng notifications hoặc check notification state.",
+            category = "Mobile",
+            subCategory = "Notification",
+            parameters = {},
+            returnValue = "int - Số lượng notifications",
+            example = "// Verify số lượng notifications\n" +
+                    "mobileKeyword.openNotifications();\n" +
+                    "int count = mobileKeyword.getNotificationCount();\n" +
+                    "Assert.assertEquals(count, 3, \"Should have 3 notifications\");\n\n" +
+                    "// Check notification state\n" +
+                    "mobileKeyword.openNotifications();\n" +
+                    "if (mobileKeyword.getNotificationCount() > 0) {\n" +
+                    "    mobileKeyword.clearNotifications();\n" +
+                    "}",
+            note = "Áp dụng cho nền tảng Mobile. Hoạt động trên cả Android và iOS. " +
+                    "Cần mở notification panel trước khi count. " +
+                    "Android: Count notification items. iOS: Count notification cells. " +
+                    "Kết quả có thể không chính xác 100% do UI complexity."
+    )
+    public int getNotificationCount() {
+        return execute(() -> {
+            AppiumDriver driver = getAppiumDriver();
+            int count = 0;
+
+            try {
+                if (driver instanceof AndroidDriver) {
+                    // Android: Count notification items
+                    List<WebElement> notifications = driver.findElements(
+                            AppiumBy.androidUIAutomator("new UiSelector().className(\"android.widget.FrameLayout\").descriptionContains(\"notification\")")
+                    );
+                    count = notifications.size();
+                } else if (driver instanceof IOSDriver) {
+                    // iOS: Count notification cells
+                    List<WebElement> notifications = driver.findElements(
+                            AppiumBy.iOSClassChain("**/XCUIElementTypeCell[`label CONTAINS 'notification'`]")
+                    );
+                    count = notifications.size();
+                }
+            } catch (Exception e) {
+                logger.warn("Failed to count notifications: {}", e.getMessage());
+            }
+
+            return count;
+        });
+    }
+
+    // =================================================================================
+    // --- ADVANCED FEATURES - ADDITIONAL KEYWORDS ---
+    // =================================================================================
+
+    @NetatKeyword(
+            name = "getPerformanceData",
+            description = "Lấy dữ liệu hiệu suất của ứng dụng Android (CPU, Memory, Network, Battery). " +
+                    "DataType: cpuinfo, memoryinfo, batteryinfo, networkinfo. " +
+                    "Hữu ích để monitor performance trong quá trình test.",
+            category = "Mobile",
+            subCategory = "Advanced",
+            parameters = {
+                    "packageName: String - Package name của app cần monitor",
+                    "dataType: String - Loại data: cpuinfo, memoryinfo, batteryinfo, networkinfo",
+                    "dataReadTimeout: int - Timeout để đọc data (milliseconds)"
+            },
+            returnValue = "List<List<Object>> - Performance data dưới dạng table",
+            example = "// Monitor memory usage\n" +
+                    "List<List<Object>> memData = mobileKeyword.getPerformanceData(\"com.example.app\", \"memoryinfo\", 5000);\n" +
+                    "logger.info(\"Memory data: {}\", memData);\n\n" +
+                    "// Monitor CPU usage\n" +
+                    "List<List<Object>> cpuData = mobileKeyword.getPerformanceData(\"com.example.app\", \"cpuinfo\", 5000);\n\n" +
+                    "// Check battery consumption\n" +
+                    "List<List<Object>> batteryData = mobileKeyword.getPerformanceData(\"com.example.app\", \"batteryinfo\", 5000);",
+            note = "Chỉ áp dụng cho Android. " +
+                    "iOS không hỗ trợ performance data API. " +
+                    "Cần adb và appium-uiautomator2-driver. " +
+                    "Data format phụ thuộc vào Android version. " +
+                    "Có thể throw UnsupportedOperationException trên iOS."
+    )
+    public List<List<Object>> getPerformanceData(String packageName, String dataType, int dataReadTimeout) {
+        return execute(() -> {
+            AppiumDriver driver = getAppiumDriver();
+            if (driver instanceof AndroidDriver) {
+                return ((AndroidDriver) driver).getPerformanceData(packageName, dataType, dataReadTimeout);
+            } else {
+                logger.warn("getPerformanceData is only supported on Android.");
+                throw new UnsupportedOperationException("getPerformanceData is not supported on iOS");
+            }
+        }, packageName, dataType, dataReadTimeout);
+    }
+
+    @NetatKeyword(
+            name = "getBatteryInfo",
+            description = "Lấy thông tin pin của thiết bị (level, state, temperature). " +
+                    "Trả về Map với keys: level (0-100), state (charging/discharging/full). " +
+                    "Hữu ích để test battery optimization scenarios.",
+            category = "Mobile",
+            subCategory = "Advanced",
+            parameters = {},
+            returnValue = "Map<String, Object> - Battery info (level, state, etc.)",
+            example = "// Check battery level before test\n" +
+                    "Map<String, Object> battery = mobileKeyword.getBatteryInfo();\n" +
+                    "int level = (Integer) battery.get(\"level\");\n" +
+                    "if (level < 20) {\n" +
+                    "    logger.warn(\"Battery low: {}%\", level);\n" +
+                    "}\n\n" +
+                    "// Verify charging state\n" +
+                    "String state = (String) battery.get(\"state\");\n" +
+                    "Assert.assertEquals(state, \"charging\");",
+            note = "Áp dụng cho nền tảng Mobile. Hoạt động trên cả Android và iOS. " +
+                    "Android: Sử dụng dumpsys battery. iOS: Sử dụng IOKit framework. " +
+                    "Battery state có thể là: unknown, charging, discharging, not_charging, full. " +
+                    "Một số emulator/simulator có thể trả về mock data."
+    )
+    public Map<String, Object> getBatteryInfo() {
+        return execute(() -> {
+            AppiumDriver driver = getAppiumDriver();
+            Map<String, Object> batteryInfo = new HashMap<>();
+
+            try {
+                if (driver instanceof AndroidDriver) {
+                    // Android: Use mobile:batteryInfo command
+                    Map<String, Object> result = (Map<String, Object>) driver.executeScript("mobile: batteryInfo");
+                    batteryInfo.putAll(result);
+                } else if (driver instanceof IOSDriver) {
+                    // iOS: Use mobile:batteryInfo command
+                    Map<String, Object> result = (Map<String, Object>) driver.executeScript("mobile: batteryInfo");
+                    batteryInfo.putAll(result);
+                }
+            } catch (Exception e) {
+                logger.warn("Failed to get battery info: {}", e.getMessage());
+                // Return default values
+                batteryInfo.put("level", -1);
+                batteryInfo.put("state", "unknown");
+            }
+
+            return batteryInfo;
+        });
+    }
+
+    @NetatKeyword(
+            name = "setLocation",
+            description = "Thiết lập vị trí GPS giả lập (mock location) cho thiết bị. " +
+                    "Cho phép test location-based features mà không cần di chuyển thực tế. " +
+                    "Latitude: -90 đến 90, Longitude: -180 đến 180.",
+            category = "Mobile",
+            subCategory = "Advanced",
+            parameters = {
+                    "latitude: double - Vĩ độ (-90 đến 90)",
+                    "longitude: double - Kinh độ (-180 đến 180)"
+            },
+            returnValue = "void - Không trả về giá trị",
+            example = "// Set location to Hanoi, Vietnam\n" +
+                    "mobileKeyword.setLocation(21.0285, 105.8542);\n" +
+                    "mobileKeyword.click(refreshLocationButton);\n" +
+                    "mobileKeyword.assertTextContains(locationLabel, \"Hanoi\");\n\n" +
+                    "// Set location to Ho Chi Minh City\n" +
+                    "mobileKeyword.setLocation(10.8231, 106.6297);\n\n" +
+                    "// Test location boundary\n" +
+                    "mobileKeyword.setLocation(0.0, 0.0); // Null Island",
+            note = "Áp dụng cho nền tảng Mobile. Hoạt động trên cả Android và iOS. " +
+                    "Android: Cần enable mock location trong Developer Options. " +
+                    "iOS: Simulator luôn support, real device cần jailbreak hoặc developer mode. " +
+                    "Latitude phải trong range [-90, 90]. Longitude phải trong range [-180, 180]. " +
+                    "Có thể throw IllegalArgumentException nếu coordinates không hợp lệ."
+    )
+    public void setLocation(double latitude, double longitude) {
+        execute(() -> {
+            if (latitude < -90 || latitude > 90) {
+                throw new IllegalArgumentException("Latitude must be between -90 and 90. Got: " + latitude);
+            }
+            if (longitude < -180 || longitude > 180) {
+                throw new IllegalArgumentException("Longitude must be between -180 and 180. Got: " + longitude);
+            }
+
+            AppiumDriver driver = getAppiumDriver();
+            Location location = new Location(latitude, longitude, 0.0);
+
+            if (driver instanceof AndroidDriver) {
+                ((AndroidDriver) driver).setLocation(location);
+            } else if (driver instanceof IOSDriver) {
+                ((IOSDriver) driver).setLocation(location);
+            }
+            return null;
+        }, latitude, longitude);
+    }
+
+    // =================================================================================
+    // --- IOS-SPECIFIC FEATURES - ADDITIONAL KEYWORDS ---
+    // =================================================================================
+
+    @NetatKeyword(
+            name = "shake",
+            description = "Mô phỏng hành động lắc thiết bị iOS. " +
+                    "Hữu ích để test các tính năng shake-to-undo, shake-to-refresh. " +
+                    "Chỉ hoạt động trên iOS.",
+            category = "Mobile",
+            subCategory = "iOS",
+            parameters = {},
+            returnValue = "void - Không trả về giá trị",
+            example = "// Test shake to undo feature\n" +
+                    "mobileKeyword.sendText(textField, \"wrong text\");\n" +
+                    "mobileKeyword.shake();\n" +
+                    "mobileKeyword.click(undoButton);\n" +
+                    "mobileKeyword.assertTextEquals(textField, \"\");\n\n" +
+                    "// Test shake to refresh\n" +
+                    "mobileKeyword.shake();\n" +
+                    "mobileKeyword.waitForVisible(refreshingIndicator, 5);",
+            note = "Chỉ áp dụng cho iOS. " +
+                    "Android không hỗ trợ shake gesture thông qua Appium. " +
+                    "Shake gesture có thể không hoạt động trên một số iOS simulator versions. " +
+                    "Có thể throw UnsupportedOperationException trên Android."
+    )
+    public void shake() {
+        execute(() -> {
+            AppiumDriver driver = getAppiumDriver();
+            if (driver instanceof IOSDriver) {
+                ((IOSDriver) driver).shake();
+            } else {
+                logger.warn("shake is only supported on iOS.");
+                throw new UnsupportedOperationException("shake is not supported on Android");
+            }
+            return null;
+        });
+    }
+
+    @NetatKeyword(
+            name = "performTouchID",
+            description = "Mô phỏng Touch ID authentication trên iOS simulator. " +
+                    "Match = true: Authentication thành công. Match = false: Authentication thất bại. " +
+                    "Hữu ích để test biometric authentication flows.",
+            category = "Mobile",
+            subCategory = "iOS",
+            parameters = {
+                    "match: boolean - true = success, false = failure"
+            },
+            returnValue = "void - Không trả về giá trị",
+            example = "// Test successful Touch ID\n" +
+                    "mobileKeyword.click(loginWithTouchIDButton);\n" +
+                    "mobileKeyword.performTouchID(true);\n" +
+                    "mobileKeyword.assertVisible(dashboardScreen);\n\n" +
+                    "// Test failed Touch ID\n" +
+                    "mobileKeyword.click(loginWithTouchIDButton);\n" +
+                    "mobileKeyword.performTouchID(false);\n" +
+                    "mobileKeyword.assertVisible(errorMessage);",
+            note = "Chỉ áp dụng cho iOS Simulator. " +
+                    "Không hoạt động trên real device. " +
+                    "Cần iOS version 8+. " +
+                    "Face ID sử dụng command tương tự với key 'FaceID'. " +
+                    "Có thể throw UnsupportedOperationException trên Android hoặc real iOS device."
+    )
+    public void performTouchID(boolean match) {
+        execute(() -> {
+            AppiumDriver driver = getAppiumDriver();
+            if (driver instanceof IOSDriver) {
+                Map<String, Object> params = new HashMap<>();
+                params.put("match", match);
+                ((IOSDriver) driver).executeScript("mobile: enrollBiometric", params);
+
+                // Perform the Touch ID
+                Map<String, Object> touchParams = new HashMap<>();
+                touchParams.put("match", match);
+                ((IOSDriver) driver).executeScript("mobile: sendBiometricMatch", touchParams);
+            } else {
+                logger.warn("performTouchID is only supported on iOS.");
+                throw new UnsupportedOperationException("performTouchID is not supported on Android");
+            }
+            return null;
+        }, match);
+    }
+
+    @NetatKeyword(
+            name = "scrollIOS",
+            description = "Thực hiện scroll theo hướng chỉ định sử dụng iOS native scroll. " +
+                    "Direction: up, down, left, right. " +
+                    "Hữu ích khi standard scroll không hoạt động với iOS native components.",
+            category = "Mobile",
+            subCategory = "iOS",
+            parameters = {
+                    "direction: String - Hướng scroll: up, down, left, right"
+            },
+            returnValue = "void - Không trả về giá trị",
+            example = "// Scroll down in iOS native list\n" +
+                    "mobileKeyword.scrollIOS(\"down\");\n\n" +
+                    "// Scroll to top\n" +
+                    "mobileKeyword.scrollIOS(\"up\");\n\n" +
+                    "// Horizontal scroll\n" +
+                    "mobileKeyword.scrollIOS(\"right\");",
+            note = "Chỉ áp dụng cho iOS. " +
+                    "Sử dụng mobile:scroll command của XCUITest. " +
+                    "Direction không phân biệt hoa thường. " +
+                    "Có thể throw UnsupportedOperationException trên Android hoặc IllegalArgumentException nếu direction không hợp lệ."
+    )
+    public void scrollIOS(String direction) {
+        execute(() -> {
+            AppiumDriver driver = getAppiumDriver();
+            if (driver instanceof IOSDriver) {
+                String dir = direction.toLowerCase();
+                if (!Arrays.asList("up", "down", "left", "right").contains(dir)) {
+                    throw new IllegalArgumentException("Invalid direction: " + direction + ". Must be: up, down, left, right");
+                }
+
+                Map<String, Object> params = new HashMap<>();
+                params.put("direction", dir);
+                ((IOSDriver) driver).executeScript("mobile: scroll", params);
+            } else {
+                logger.warn("scrollIOS is only supported on iOS.");
+                throw new UnsupportedOperationException("scrollIOS is not supported on Android");
+            }
+            return null;
+        }, direction);
+    }
+
+    // =================================================================================
+    // --- ANDROID-SPECIFIC FEATURES - ADDITIONAL KEYWORDS ---
+    // =================================================================================
+
+    @NetatKeyword(
+            name = "startActivity",
+            description = "Khởi động một Activity cụ thể của ứng dụng Android. " +
+                    "Cho phép deep link vào màn hình cụ thể mà không cần navigate từ đầu. " +
+                    "Hữu ích để test individual screens hoặc specific flows.",
+            category = "Mobile",
+            subCategory = "Android",
+            parameters = {
+                    "appPackage: String - Package name của app",
+                    "appActivity: String - Activity name cần start"
+            },
+            returnValue = "void - Không trả về giá trị",
+            example = "// Start main activity\n" +
+                    "mobileKeyword.startActivity(\"com.example.app\", \".MainActivity\");\n\n" +
+                    "// Start settings activity directly\n" +
+                    "mobileKeyword.startActivity(\"com.example.app\", \".SettingsActivity\");\n\n" +
+                    "// Start activity with full package path\n" +
+                    "mobileKeyword.startActivity(\"com.example.app\", \"com.example.app.ui.LoginActivity\");",
+            note = "Chỉ áp dụng cho Android. " +
+                    "iOS không có concept của Activity. " +
+                    "Activity name có thể bắt đầu với '.' (relative) hoặc full package path. " +
+                    "Activity phải được declare trong AndroidManifest.xml. " +
+                    "Có thể throw UnsupportedOperationException trên iOS."
+    )
+    public void startActivity(String appPackage, String appActivity) {
+        execute(() -> {
+            AppiumDriver driver = getAppiumDriver();
+            if (driver instanceof AndroidDriver) {
+                ((AndroidDriver) driver).startActivity(new io.appium.java_client.android.Activity(appPackage, appActivity));
+            } else {
+                logger.warn("startActivity is only supported on Android.");
+                throw new UnsupportedOperationException("startActivity is not supported on iOS");
+            }
+            return null;
+        }, appPackage, appActivity);
+    }
+
+
+    @NetatKeyword(
+            name = "performFingerprint",
+            description = "Mô phỏng fingerprint authentication trên Android emulator. " +
+                    "FingerprintId là số identifier của fingerprint đã enroll (1-10). " +
+                    "Hữu ích để test biometric authentication flows trên Android.",
+            category = "Mobile",
+            subCategory = "Android",
+            parameters = {
+                    "fingerprintId: int - ID của fingerprint (1-10)"
+            },
+            returnValue = "void - Không trả về giá trị",
+            example = "// Test fingerprint authentication\n" +
+                    "mobileKeyword.click(loginWithFingerprintButton);\n" +
+                    "mobileKeyword.performFingerprint(1);\n" +
+                    "mobileKeyword.assertVisible(dashboardScreen);\n\n" +
+                    "// Test different fingerprints\n" +
+                    "mobileKeyword.performFingerprint(2);\n" +
+                    "mobileKeyword.assertVisible(errorMessage);",
+            note = "Chỉ áp dụng cho Android Emulator. " +
+                    "Không hoạt động trên real device. " +
+                    "Cần Android 6.0+ và emulator có fingerprint sensor. " +
+                    "FingerprintId phải được enroll trước thông qua adb command. " +
+                    "Có thể throw UnsupportedOperationException trên iOS hoặc real device."
+    )
+    public void performFingerprint(int fingerprintId) {
+        execute(() -> {
+            AppiumDriver driver = getAppiumDriver();
+            if (driver instanceof AndroidDriver) {
+                Map<String, Object> params = new HashMap<>();
+                params.put("fingerprintId", fingerprintId);
+                ((AndroidDriver) driver).executeScript("mobile: fingerprint", params);
+            } else {
+                logger.warn("performFingerprint is only supported on Android.");
+                throw new UnsupportedOperationException("performFingerprint is not supported on Android");
+            }
+            return null;
+        }, fingerprintId);
     }
 
 }
