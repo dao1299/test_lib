@@ -3,6 +3,7 @@ package com.vtnet.netat.web.keywords;
 import com.vtnet.netat.core.BaseUiKeyword;
 import com.vtnet.netat.core.annotations.NetatKeyword;
 import com.vtnet.netat.core.context.ExecutionContext;
+import com.vtnet.netat.core.secret.SecretDecryptor;
 import com.vtnet.netat.core.ui.Locator;
 import com.vtnet.netat.core.ui.ObjectUI;
 import com.vtnet.netat.driver.ConfigReader;
@@ -11,7 +12,6 @@ import com.vtnet.netat.driver.SessionManager;
 import com.vtnet.netat.web.ai.AiModelFactory;
 import dev.langchain4j.model.chat.ChatModel;
 import io.qameta.allure.Allure;
-import io.qameta.allure.Step;
 import io.qameta.allure.model.Status;
 import io.qameta.allure.model.StepResult;
 import org.apache.commons.io.FileUtils;
@@ -55,12 +55,10 @@ public class WebKeyword extends BaseUiKeyword {
     @Override
     protected WebElement findElement(ObjectUI uiObject) {
         try {
-            // 1. Thử tìm bằng logic chung of lớp cha trước (duyệt qua các locator đã định nghĩa)
             return super.findElement(uiObject);
         } catch (NoSuchElementException e) {
             logger.warn("Failed with all defined locators. Switching to AI-based self-healing search.");
 
-            // 2. Thử với cơ chế Self-Healing bằng AI
             try {
                 String aiLocatorValue = getLocatorByAI(uiObject.getName() + " :[description: " + uiObject.getDescription() + "] ", DriverManager.getDriver().getPageSource());
                 if (aiLocatorValue != null && !aiLocatorValue.isEmpty()) {
@@ -72,7 +70,6 @@ public class WebKeyword extends BaseUiKeyword {
                 logger.error("Search with AI-suggested locator also failed.", aiException);
             }
 
-            // 3. Nếu tất cả đều thất bại
             throw new NoSuchElementException("Cannot find element '" + uiObject.getName() + "' using any available method.");
         }
     }
@@ -203,7 +200,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "hoặc NullPointerException nếu uiObject is null hoặc không có locator nào được kích hoạt.",
             explainer = "Find elements: {uiObject}"
     )
-//    @Step("Find elements: {0.name}")
     public List<WebElement> findElements(ObjectUI uiObject) {
         return execute(() -> {
             By by = uiObject.getActiveLocators().get(0).convertToBy();
@@ -222,7 +218,6 @@ public class WebKeyword extends BaseUiKeyword {
             example = "web.openUrl(\"https://example.com\");\nweb.openUrl(\"https://example.com\", 60);",
             explainer = "Open URL: {url}"
     )
-//    @Step("Open URL: {0}")
     public void openUrl(String url, int... timeoutSeconds) {
         execute(() -> {
             WebDriver driver = DriverManager.getDriver();
@@ -270,7 +265,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "hoặc NoSuchSessionException nếu phiên WebDriver không còn hợp lệ.",
             explainer = "Go back to previous page"
     )
-    @Step("Go back to previous page")
     public void goBack() {
         execute(() -> {
             JavascriptExecutor js = (JavascriptExecutor) DriverManager.getDriver();
@@ -302,7 +296,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "hoặc NoSuchSessionException nếu phiên WebDriver không còn hợp lệ.",
             explainer = "Go forward to next page"
     )
-    @Step("Go forward to next page")
     public void goForward() {
         execute(() -> {
             JavascriptExecutor js = (JavascriptExecutor) DriverManager.getDriver();
@@ -327,7 +320,6 @@ public class WebKeyword extends BaseUiKeyword {
             note = "Sử dụng 'hardRefresh = true' rất hữu ích sau khi deploy code mới hoặc khi bạn nghi ngờ lỗi giao diện là do cache của trình duyệt gây ra. " +
                     "Đây là keyword được khuyên dùng để đảm bảo tính ổn định trong môi trường CI/CD."
     )
-    @Step("Refresh page using JavaScript (Hard Refresh: {0})")
     public void refresh(boolean hardRefresh) {
         execute(() -> {
             JavascriptExecutor js = (JavascriptExecutor) DriverManager.getDriver();
@@ -355,7 +347,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "NoSuchSessionException nếu phiên WebDriver không còn hợp lệ, " +
                     "hoặc UnsupportedOperationException nếu trình duyệt không hỗ trợ thay đổi kích thước."
     )
-    @Step("Maximize browser window")
     public void maximizeWindow() {
         execute(() -> {
             String headless = ConfigReader.getProperty("browser.headless", "false");
@@ -394,7 +385,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "UnsupportedOperationException nếu trình duyệt không hỗ trợ thay đổi kích thước, " +
                     "hoặc IllegalArgumentException nếu chiều rộng hoặc chiều cao is số âm."
     )
-    @Step("Resize window to {0}x{1}")
     public void resizeWindow(int width, int height) {
         execute(() -> {
             Dimension dimension = new Dimension(width, height);
@@ -428,7 +418,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "TimeoutException nếu element không xuất hiện trong thời gian chờ, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Click element: {0.name}")
     public void click(ObjectUI uiObject) {
         super.click(uiObject);
     }
@@ -488,7 +477,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "TimeoutException nếu element không xuất hiện trong thời gian chờ, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Clear text in element: {0.name}")
     public void clearText(ObjectUI uiObject) {
         execute(() -> {
             WebElement element = findElement(uiObject);
@@ -522,7 +510,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "TimeoutException nếu element không xuất hiện trong thời gian chờ, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Ensure element {0.name} is selected")
     public void check(ObjectUI uiObject) {
         execute(() -> {
             performActionWithRetry(
@@ -561,7 +548,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "TimeoutException nếu element không xuất hiện trong thời gian chờ, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Uncheck checkbox: {0.name}")
     public void uncheck(ObjectUI uiObject) {
         execute(() -> {
             performActionWithRetry(
@@ -608,7 +594,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "WebDriverException nếu có lỗi khi tương tác với trình duyệt, " +
                     "hoặc MoveTargetOutOfBoundsException nếu element nằm ngoài viewport hiện tại."
     )
-    @Step("Right-click element: {0.name}")
     public void contextClick(ObjectUI uiObject) {
         execute(() -> {
             performActionWithRetry(
@@ -646,7 +631,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "WebDriverException nếu có lỗi khi tương tác với trình duyệt, " +
                     "hoặc MoveTargetOutOfBoundsException nếu element nằm ngoài viewport hiện tại."
     )
-    @Step("Double-click element: {0.name}")
     public void doubleClick(ObjectUI uiObject) {
         execute(() -> {
             performActionWithRetry(
@@ -684,7 +668,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "WebDriverException nếu có lỗi khi tương tác với trình duyệt, " +
                     "hoặc MoveTargetOutOfBoundsException nếu element nằm ngoài viewport hiện tại."
     )
-    @Step("Hover over element: {0.name}")
     public void hover(ObjectUI uiObject) {
         execute(() -> {
             performActionWithRetry(
@@ -722,7 +705,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "TimeoutException nếu element không xuất hiện trong thời gian chờ, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Upload file '{1}' to element {0.name}")
     public void uploadFile(ObjectUI uiObject, String filePath) {
         execute(() -> {
             // Với input type="file", không cần click, chỉ cần sendKeys đường dẫn file
@@ -757,7 +739,6 @@ public class WebKeyword extends BaseUiKeyword {
 //                    "WebDriverException nếu có lỗi khi tương tác với trình duyệt, " +
 //                    "hoặc MoveTargetOutOfBoundsException nếu element đích nằm ngoài viewport hiện tại."
 //    )
-//    @Step("Drag element {0.name} and drop to {1.name}")
 //    public void dragAndDrop(ObjectUI sourceObject, ObjectUI targetObject) {
 //        execute(() -> {
 //            WebElement sourceElement = findElement(sourceObject);
@@ -794,7 +775,6 @@ public class WebKeyword extends BaseUiKeyword {
 //                    "WebDriverException nếu có lỗi khi tương tác với trình duyệt, " +
 //                    "hoặc MoveTargetOutOfBoundsException nếu vị trí đích nằm ngoài viewport hiện tại."
 //    )
-//    @Step("Drag element {0.name} by offset ({1}, {2})")
 //    public void dragAndDropByOffset(ObjectUI uiObject, int xOffset, int yOffset) {
 //        execute(() -> {
 //            WebElement element = findElement(uiObject);
@@ -820,7 +800,6 @@ public class WebKeyword extends BaseUiKeyword {
             example = "webKeyword.dragAndDrop(productItemObject, cartDropZoneObject);",
             note = "Phương pháp cơ bản sử dụng Actions.dragAndDrop(). Nếu không hoạt động, dùng dragAndDropWithPause hoặc dragAndDropHTML5."
     )
-    @Step("Drag element {0.name} and drop to {1.name}")
     public void dragAndDrop(ObjectUI sourceObject, ObjectUI targetObject) {
         execute(() -> {
             WebElement sourceElement = findElement(sourceObject);
@@ -856,7 +835,6 @@ public class WebKeyword extends BaseUiKeyword {
             note = "Phương pháp này chia nhỏ thao tác: clickAndHold -> pause -> moveToElement -> pause -> release. " +
                     "Hiệu quả với các framework như React, Angular."
     )
-    @Step("Drag {0.name} to {1.name} with {2}ms pause")
     public void dragAndDropWithPause(ObjectUI sourceObject, ObjectUI targetObject, int pauseMillis) {
         execute(() -> {
             WebElement sourceElement = findElement(sourceObject);
@@ -898,7 +876,6 @@ public class WebKeyword extends BaseUiKeyword {
             example = "// Kéo element sang phải 200px, xuống 100px\n" +
                     "webKeyword.dragAndDropByOffset(draggableItem, 200, 100);"
     )
-    @Step("Drag {0.name} by offset ({1}, {2})")
     public void dragAndDropByOffset(ObjectUI sourceObject, int xOffset, int yOffset) {
         execute(() -> {
             WebElement sourceElement = findElement(sourceObject);
@@ -929,7 +906,6 @@ public class WebKeyword extends BaseUiKeyword {
             note = "Phương pháp này sử dụng JavaScript để simulate HTML5 drag & drop events. " +
                     "Hiệu quả với các trang web sử dụng HTML5 Drag and Drop API."
     )
-    @Step("HTML5 Drag {0.name} to {1.name}")
     public void dragAndDropHTML5(ObjectUI sourceObject, ObjectUI targetObject) {
         execute(() -> {
             WebElement sourceElement = findElement(sourceObject);
@@ -994,7 +970,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "webKeyword.dragAndDropAdvanced(sourceItem, targetZone, \"javascript\");",
             note = "Strategy 'auto' sẽ thử các phương pháp theo thứ tự: Actions -> JavaScript -> HTML5"
     )
-    @Step("Advanced drag {0.name} to {1.name} (strategy: {2})")
     public void dragAndDropAdvanced(ObjectUI sourceObject, ObjectUI targetObject, String strategy) {
         execute(() -> {
             if ("auto".equalsIgnoreCase(strategy)) {
@@ -1123,7 +1098,6 @@ public class WebKeyword extends BaseUiKeyword {
             example = "// Kéo vào vị trí 10px bên phải và 5px phía dưới target\n" +
                     "webKeyword.dragAndDropWithOffset(sourceItem, targetZone, 10, 5);"
     )
-    @Step("Drag {0.name} to {1.name} with offset ({2}, {3})")
     public void dragAndDropWithOffset(ObjectUI sourceObject, ObjectUI targetObject,
                                       int xOffset, int yOffset) {
         execute(() -> {
@@ -1172,7 +1146,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "hoặc IllegalArgumentException nếu tham số keys không hợp lệ.",
             explainer = "Send key combination {keys}"
     )
-    @Step("Send key combination: {0}")
     public void pressKeys(CharSequence... keys) {
         execute(() -> {
             Actions actions = new Actions(DriverManager.getDriver());
@@ -1230,7 +1203,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "WebDriverException nếu có lỗi khi tương tác với trình duyệt, " +
                     "hoặc NoSuchSessionException nếu phiên WebDriver không còn hợp lệ."
     )
-    @Step("Click element {0.name} via JavaScript")
     public void clickWithJavascript(ObjectUI uiObject) {
         execute(() -> {
             WebElement element = findElement(uiObject);
@@ -1253,7 +1225,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "webKeyword.clickByCoordinates(150, 300);",
             note = "Tọa độ được tính so với toàn bộ trang, không phải so với viewport hiện tại. Cần đảm bảo tọa độ nằm trong phạm vi hợp lệ."
     )
-    @Step("Click at coordinates ({0}, {1})")
     public void clickByCoordinates(int x, int y) {
         execute(() -> {
             Actions actions = new Actions(DriverManager.getDriver());
@@ -1281,7 +1252,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "assertion.assertEquals(bannerWidth, 900);",
             note = "Phần tử phải hiển thị trên trang để có chiều rộng hợp lệ."
     )
-    @Step("Get width of element: {0.name}")
     public int getElementWidth(ObjectUI uiObject) {
         return execute(() -> {
             WebElement element = findElement(uiObject);
@@ -1303,7 +1273,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "System.out.println(\"Chiều cao của ô input là: \" + inputHeight);",
             note = "Phần tử phải hiển thị trên trang để có chiều cao hợp lệ."
     )
-    @Step("Get height of element: {0.name}")
     public int getElementHeight(ObjectUI uiObject) {
         return execute(() -> {
             WebElement element = findElement(uiObject);
@@ -1325,7 +1294,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "System.out.println(\"Nút bấm cách lề trái: \" + buttonX + \"px\");",
             note = "Tọa độ được tính so với viewport (khung nhìn) hiện tại của trình duyệt."
     )
-    @Step("Get X coordinate of element: {0.name}")
     public int getElementX(ObjectUI uiObject) {
         return execute(() -> {
             WebElement element = findElement(uiObject);
@@ -1347,7 +1315,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "System.out.println(\"Tiêu đề cách lề trên: \" + titleY + \"px\");",
             note = "Tọa độ được tính so với viewport (khung nhìn) hiện tại của trình duyệt."
     )
-    @Step("Get Y coordinate of element: {0.name}")
     public int getElementY(ObjectUI uiObject) {
         return execute(() -> {
             WebElement element = findElement(uiObject);
@@ -1382,7 +1349,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "TimeoutException nếu element không xuất hiện trong thời gian chờ, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Select option at index {1} for dropdown {0.name}")
     public void selectByIndex(ObjectUI uiObject, int index) {
         execute(() -> {
             Select select = new Select(findElement(uiObject));
@@ -1416,7 +1382,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "TimeoutException nếu element không xuất hiện trong thời gian chờ, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Select radio button with value '{1}' in group {0.name}")
     public void selectRadioByValue(ObjectUI uiObject, String value) {
         execute(() -> {
             By by = uiObject.getActiveLocators().get(0).convertToBy();
@@ -1458,7 +1423,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "TimeoutException nếu element không xuất hiện trong thời gian chờ, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Select option with value '{1}' for dropdown {0.name}")
     public void selectByValue(ObjectUI uiObject, String value) {
         execute(() -> {
             Select select = new Select(findElement(uiObject));
@@ -1494,7 +1458,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "TimeoutException nếu element không xuất hiện trong thời gian chờ, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Select option with text '{1}' for dropdown {0.name}")
     public void selectByVisibleText(ObjectUI uiObject, String text) {
         execute(() -> {
             Select select = new Select(findElement(uiObject));
@@ -1529,7 +1492,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "WebDriverException nếu có lỗi khi tương tác với trình duyệt, " +
                     "hoặc NoSuchElementException nếu danh sách element không tồn tại."
     )
-    @Step("Click element at index {1} in list {0.name}")
     public void clickElementByIndex(ObjectUI uiObject, int index) {
         execute(() -> {
             List<WebElement> elements = findElements(uiObject);
@@ -1567,7 +1529,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "TimeoutException nếu element không xuất hiện trong thời gian chờ, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Scroll to element: {0.name}")
     public void scrollToElement(ObjectUI uiObject) {
         execute(() -> {
             WebElement element = findElement(uiObject);
@@ -1597,7 +1558,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "Có thể throw JavascriptException nếu có lỗi khi thực thi JavaScript, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Scroll page to coordinates ({0}, {1})")
     public void scrollToCoordinates(int x, int y) {
         execute(() -> {
             JavascriptExecutor js = (JavascriptExecutor) DriverManager.getDriver();
@@ -1624,7 +1584,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "Có thể throw JavascriptException nếu có lỗi khi thực thi JavaScript, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Scroll to top of page")
     public void scrollToTop() {
         execute(() -> {
             ((JavascriptExecutor) DriverManager.getDriver()).executeScript("window.scrollTo(0, 0)");
@@ -1650,7 +1609,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "Có thể throw JavascriptException nếu có lỗi khi thực thi JavaScript, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Scroll to bottom of page")
     public void scrollToBottom() {
         execute(() -> {
             ((JavascriptExecutor) DriverManager.getDriver()).executeScript("window.scrollTo(0, document.body.scrollHeight)");
@@ -1687,7 +1645,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
             explainer = "Get text from element {uiObject}"
     )
-    @Step("Get text from element: {0.name}")
     public String getText(ObjectUI uiObject) {
         return super.getText(uiObject);
     }
@@ -1716,7 +1673,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
             explainer = "Get attribute "
     )
-    @Step("Get attribute '{1}' of element {0.name}")
     public String getAttribute(ObjectUI uiObject, String attributeName) {
         return execute(() -> findElement(uiObject).getAttribute(attributeName), uiObject, attributeName);
     }
@@ -1745,7 +1701,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "TimeoutException nếu element không xuất hiện trong thời gian chờ, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Get CSS value '{1}' of element {0.name}")
     public String getCssValue(ObjectUI uiObject, String cssPropertyName) {
         return execute(() -> findElement(uiObject).getCssValue(cssPropertyName), uiObject, cssPropertyName);
     }
@@ -1769,7 +1724,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "Có thể throw WebDriverException nếu có lỗi khi tương tác với trình duyệt, " +
                     "hoặc NoSuchSessionException nếu phiên WebDriver không còn hợp lệ."
     )
-    @Step("Get current URL")
     public String getCurrentUrl() {
         return execute(() -> DriverManager.getDriver().getCurrentUrl());
     }
@@ -1794,7 +1748,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "Có thể throw WebDriverException nếu có lỗi khi tương tác với trình duyệt, " +
                     "hoặc NoSuchSessionException nếu phiên WebDriver không còn hợp lệ."
     )
-    @Step("Get page title")
     public String getPageTitle() {
         return execute(() -> DriverManager.getDriver().getTitle());
     }
@@ -1822,7 +1775,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "NoSuchSessionException nếu phiên WebDriver không còn hợp lệ, " +
                     "hoặc InvalidSelectorException nếu locator không hợp lệ."
     )
-    @Step("Count elements of: {0.name}")
     public int getElementCount(ObjectUI uiObject) {
         return execute(() -> {
             By by = uiObject.getActiveLocators().get(0).convertToBy();
@@ -1855,7 +1807,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "TimeoutException nếu các element không xuất hiện trong thời gian chờ, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Get text from list of elements: {0.name}")
     public List<String> getTextFromElements(ObjectUI uiObject) {
         return execute(() -> {
             List<WebElement> elements = findElements(uiObject);
@@ -1891,7 +1842,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Wait for element {0.name} to be clickable")
     public void waitForElementClickable(ObjectUI uiObject) {
         execute(() -> {
             new WebDriverWait(DriverManager.getDriver(), DEFAULT_TIMEOUT)
@@ -1925,7 +1875,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Wait for element {0.name} to disappear")
     public void waitForElementNotVisible(ObjectUI uiObject) {
         execute(() -> {
             WebElement element = findElement(uiObject);
@@ -1960,7 +1909,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "InvalidSelectorException nếu locator không hợp lệ, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Wait for element {0.name} to be present in DOM trong {1} seconds")
     public void waitForElementPresent(ObjectUI uiObject, int timeoutInSeconds) {
         execute(() -> {
             WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds), POLLING_INTERVAL);
@@ -1994,7 +1942,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "JavascriptException nếu có lỗi khi thực thi JavaScript, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Wait for page to load trong {0} seconds")
     public void waitForPageLoaded(int timeoutInSeconds) {
         execute(() -> {
             WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds), POLLING_INTERVAL);
@@ -2026,7 +1973,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "Có thể throw TimeoutException nếu URL không contains chuỗi con đã chỉ định trong thời gian chờ, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Wait for URL to contain '{0}' trong {1} seconds")
     public void waitForUrlContains(String partialUrl, int timeoutInSeconds) {
         execute(() -> {
             new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds))
@@ -2058,7 +2004,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "Có thể throw TimeoutException nếu tiêu đề trang không khớp với giá trị mong đợi trong thời gian chờ, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Wait for page title to be '{0}' trong {1} seconds")
     public void waitForTitleIs(String expectedTitle, int timeoutInSeconds) {
         execute(() -> {
             new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds))
@@ -2080,7 +2025,6 @@ public class WebKeyword extends BaseUiKeyword {
             note = "LƯU Ý: Method này chờ element VISIBLE (display: block, opacity > 0, không bị che khuất), khác với waitForElementPresent chỉ cần element có trong DOM. Sẽ throw TimeoutException nếu vượt quá thời gian chờ.",
             example = "// Chờ button login hiển thị trong 10 giây\nmobileKeyword.waitForElementVisible(loginButton, 10);\n\n// Chờ popup xuất hiện trong 5 giây\nmobileKeyword.waitForElementVisible(popupDialog, 5);"
     )
-    @Step("Wait for element '{0}' to be visible within {1} seconds")
     public void waitForElementVisible(ObjectUI uiObject, int timeoutInSeconds) {
         super.waitForElementVisible(uiObject, timeoutInSeconds);
     }
@@ -2098,7 +2042,6 @@ public class WebKeyword extends BaseUiKeyword {
             note = "BEST PRACTICE: Luôn sử dụng method này trước khi click vào element để tránh ElementNotInteractableException. Element clickable = visible + enabled + không bị overlay che khuất.",
             example = "// Chờ button submit có thể click trong 15 giây\nmobileKeyword.waitForElementClickable(submitButton, 15);\nmobileKeyword.click(submitButton);\n\n// Chờ link navigation sẵn sàng click\nmobileKeyword.waitForElementClickable(navLink, 8);"
     )
-    @Step("Wait for element '{0}' to be clickable within {1} seconds")
     public void waitForElementClickable(ObjectUI uiObject, int timeoutInSeconds) {
         super.waitForElementClickable(uiObject, timeoutInSeconds);
     }
@@ -2116,7 +2059,6 @@ public class WebKeyword extends BaseUiKeyword {
             note = "QUAN TRỌNG: waitForElementNotPresent (xóa khỏi DOM) khác với waitForElementNotVisible (chỉ ẩn đi). Sử dụng khi cần đảm bảo element thực sự bị remove, không phải chỉ display:none. Thường dùng sau delete actions hoặc dynamic loading.",
             example = "// Chờ popup dialog bị xóa hoàn toàn sau khi đóng\nwebKeyword.click(closeButton);\nwebKeyword.waitForElementNotPresent(popupDialog, 10);\n\n// Chờ loading spinner biến mất sau AJAX\nwebKeyword.waitForElementNotPresent(loadingSpinner, 15);"
     )
-    @Step("Wait for element '{0}' to be removed from DOM within {1} seconds")
     public void waitForElementNotPresent(ObjectUI uiObject, int timeoutInSeconds) {
         execute(() -> {
             WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds), POLLING_INTERVAL);
@@ -2139,7 +2081,6 @@ public class WebKeyword extends BaseUiKeyword {
             note = "USE CASE: Lý tưởng cho validation messages động, notifications, counters, hoặc content được load từ API. Khác với waitForElementTextToBe (exact match), method này linh hoạt hơn với partial matching.",
             example = "// Chờ success message chứa 'thành công'\nwebKeyword.waitForElementTextContains(successMessage, \"thành công\", 10);\n\n// Chờ counter chứa số lượng items\nwebKeyword.waitForElementTextContains(itemCounter, \"items\", 8);\n\n// Validation error message\nwebKeyword.waitForElementTextContains(errorMsg, \"Invalid\", 5);"
     )
-    @Step("Wait for element '{0}' text to contain '{1}' within {2} seconds")
     public void waitForElementTextContains(ObjectUI uiObject, String expectedText, int timeoutInSeconds) {
         execute(() -> {
             WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds), POLLING_INTERVAL);
@@ -2162,7 +2103,6 @@ public class WebKeyword extends BaseUiKeyword {
             note = "COMMON ATTRIBUTES: class, data-*, disabled, checked, selected, aria-*, style, value. Đặc biệt hữu ích cho SPA applications khi attributes thay đổi theo state. Lưu ý: attribute value khác với property value.",
             example = "// Chờ button chuyển sang disabled state\nwebKeyword.waitForElementAttributeToBe(submitBtn, \"disabled\", \"true\", 10);\n\n// Chờ element có class 'active'\nwebKeyword.waitForElementAttributeToBe(menuItem, \"class\", \"menu-item active\", 8);\n\n// Chờ data attribute cập nhật\nwebKeyword.waitForElementAttributeToBe(statusDiv, \"data-status\", \"completed\", 15);"
     )
-    @Step("Wait for element '{0}' attribute '{1}' to be '{2}' within {3} seconds")
     public void waitForElementAttributeToBe(ObjectUI uiObject, String attributeName, String expectedValue, int timeoutInSeconds) {
         execute(() -> {
             WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds), POLLING_INTERVAL);
@@ -2184,7 +2124,6 @@ public class WebKeyword extends BaseUiKeyword {
             note = "ADVANCED USE CASE: Thích hợp cho SPA applications, AJAX monitoring, custom loading states. Script có thể return any type (String, Boolean, Number, null). Sử dụng khi standard WebDriver waits không đủ mạnh.",
             example = "// Chờ jQuery AJAX calls hoàn thành\nwebKeyword.waitForJavaScriptReturnsValue(\"return jQuery.active\", 0, 30);\n\n// Chờ custom loading flag\nwebKeyword.waitForJavaScriptReturnsValue(\"return window.isLoading\", false, 20);\n\n// Chờ API response được set\nwebKeyword.waitForJavaScriptReturnsValue(\"return window.apiData !== undefined\", true, 15);"
     )
-    @Step("Wait for JavaScript '{0}' to return '{1}' within {2} seconds")
     public void waitForJavaScriptReturnsValue(String script, Object expectedValue, int timeoutInSeconds) {
         execute(() -> {
             WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds), POLLING_INTERVAL);
@@ -2215,7 +2154,6 @@ public class WebKeyword extends BaseUiKeyword {
             note = "NEGATIVE VALIDATION: Hữu ích khi cần đảm bảo error messages biến mất, loading text được thay thế, hoặc unwanted content không còn xuất hiện. Thường dùng sau cleanup actions hoặc content updates.",
             example = "// Chờ error message không còn chứa 'Error'\nwebKeyword.waitForElementTextNotContains(messageDiv, \"Error\", 10);\n\n// Chờ loading text biến mất\nwebKeyword.waitForElementTextNotContains(statusLabel, \"Loading\", 15);\n\n// Validation content đã được update\nwebKeyword.waitForElementTextNotContains(titleElement, \"Draft\", 8);"
     )
-    @Step("Wait for element '{0}' text to NOT contain '{1}' within {2} seconds")
     public void waitForElementTextNotContains(ObjectUI uiObject, String unwantedText, int timeoutInSeconds) {
         execute(() -> {
             WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds), POLLING_INTERVAL);
@@ -2244,7 +2182,6 @@ public class WebKeyword extends BaseUiKeyword {
             note = "EXACT MATCH: Khác với waitForElementTextContains (partial), method này yêu cầu text phải hoàn toàn khớp. Sử dụng cho validation chính xác status, labels, hoặc khi text có format cố định.",
             example = "// Chờ status chính xác\nwebKeyword.waitForElementTextToBe(statusLabel, \"Completed\", 10);\n\n// Chờ counter có giá trị exact\nwebKeyword.waitForElementTextToBe(itemCount, \"5 items\", 8);\n\n// Validation button text\nwebKeyword.waitForElementTextToBe(submitButton, \"Submit\", 5);"
     )
-    @Step("Wait for element '{0}' text to be '{1}' within {2} seconds")
     public void waitForElementTextToBe(ObjectUI uiObject, String expectedText, int timeoutInSeconds) {
         execute(() -> {
             WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds), POLLING_INTERVAL);
@@ -2273,7 +2210,6 @@ public class WebKeyword extends BaseUiKeyword {
             note = "NEGATIVE EXACT MATCH: Hữu ích khi cần đảm bảo text đã thay đổi khỏi giá trị cũ, loading states kết thúc, hoặc placeholder text được thay thế. Thường dùng sau update actions.",
             example = "// Chờ status thay đổi khỏi 'Pending'\nwebKeyword.waitForElementTextNotToBe(statusLabel, \"Pending\", 15);\n\n// Chờ placeholder biến mất\nwebKeyword.waitForElementTextNotToBe(inputField, \"Enter text...\", 5);\n\n// Chờ loading text thay đổi\nwebKeyword.waitForElementTextNotToBe(loadingDiv, \"Loading...\", 20);"
     )
-    @Step("Wait for element '{0}' text to NOT be '{1}' within {2} seconds")
     public void waitForElementTextNotToBe(ObjectUI uiObject, String unwantedText, int timeoutInSeconds) {
         execute(() -> {
             WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds), POLLING_INTERVAL);
@@ -2303,7 +2239,6 @@ public class WebKeyword extends BaseUiKeyword {
             note = "NEGATIVE ATTRIBUTE CHECK: Thường dùng khi cần đảm bảo element đã thay đổi state, như từ disabled sang enabled, loading class đã bị remove, hoặc error states đã được clear.",
             example = "// Chờ button không còn disabled\nwebKeyword.waitForElementAttributeNotToBe(submitBtn, \"disabled\", \"true\", 10);\n\n// Chờ loading class bị remove\nwebKeyword.waitForElementAttributeNotToBe(container, \"class\", \"loading\", 15);\n\n// Chờ error state được clear\nwebKeyword.waitForElementAttributeNotToBe(inputField, \"data-error\", \"true\", 8);"
     )
-    @Step("Wait for element '{0}' attribute '{1}' to NOT be '{2}' within {3} seconds")
     public void waitForElementAttributeNotToBe(ObjectUI uiObject, String attributeName, String unwantedValue, int timeoutInSeconds) {
         execute(() -> {
             WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds), POLLING_INTERVAL);
@@ -2333,7 +2268,6 @@ public class WebKeyword extends BaseUiKeyword {
             note = "PARTIAL ATTRIBUTE MATCH: Đặc biệt hữu ích cho CSS classes (class attribute thường chứa nhiều classes), data attributes có format phức tạp, hoặc style attributes. Linh hoạt hơn so với exact match.",
             example = "// Chờ element có class 'active' (trong nhiều classes)\nwebKeyword.waitForElementAttributeContains(menuItem, \"class\", \"active\", 10);\n\n// Chờ style chứa 'display: block'\nwebKeyword.waitForElementAttributeContains(modal, \"style\", \"display: block\", 8);\n\n// Chờ data attribute chứa status\nwebKeyword.waitForElementAttributeContains(item, \"data-info\", \"status:ready\", 15);"
     )
-    @Step("Wait for element '{0}' attribute '{1}' to contain '{2}' within {3} seconds")
     public void waitForElementAttributeContains(ObjectUI uiObject, String attributeName, String partialValue, int timeoutInSeconds) {
         execute(() -> {
             WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds), POLLING_INTERVAL);
@@ -2363,7 +2297,6 @@ public class WebKeyword extends BaseUiKeyword {
             note = "NEGATIVE PARTIAL MATCH: Thường dùng khi cần đảm bảo CSS classes đã bị remove (như 'loading', 'error'), style properties đã thay đổi, hoặc data attributes đã được cleanup.",
             example = "// Chờ loading class bị remove\nwebKeyword.waitForElementAttributeNotContains(container, \"class\", \"loading\", 15);\n\n// Chờ error class biến mất\nwebKeyword.waitForElementAttributeNotContains(inputField, \"class\", \"error\", 10);\n\n// Chờ style không còn chứa 'display: none'\nwebKeyword.waitForElementAttributeNotContains(modal, \"style\", \"display: none\", 8);"
     )
-    @Step("Wait for element '{0}' attribute '{1}' to NOT contain '{2}' within {3} seconds")
     public void waitForElementAttributeNotContains(ObjectUI uiObject, String attributeName, String unwantedPartialValue, int timeoutInSeconds) {
         execute(() -> {
             WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds), POLLING_INTERVAL);
@@ -2393,7 +2326,6 @@ public class WebKeyword extends BaseUiKeyword {
             note = "NEGATIVE JS CONDITION: Thường dùng khi cần đảm bảo loading states đã kết thúc, error flags đã được clear, hoặc unwanted conditions không còn tồn tại. Complement của waitForJavaScriptReturnsValue.",
             example = "// Chờ loading flag không còn true\nwebKeyword.waitForJavaScriptNotReturnsValue(\"return window.isLoading\", true, 20);\n\n// Chờ error state được clear\nwebKeyword.waitForJavaScriptNotReturnsValue(\"return window.hasError\", true, 10);\n\n// Chờ AJAX calls không còn pending\nwebKeyword.waitForJavaScriptNotReturnsValue(\"return fetch.pending\", true, 30);"
     )
-    @Step("Wait for JavaScript '{0}' to NOT return '{1}' within {2} seconds")
     public void waitForJavaScriptNotReturnsValue(String script, Object unwantedValue, int timeoutInSeconds) {
         execute(() -> {
             WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(timeoutInSeconds), POLLING_INTERVAL);
@@ -2437,7 +2369,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Verify (Hard) element {0.name} visibility is {1}")
     public void verifyElementVisibleHard(ObjectUI uiObject, boolean isVisible, String... customMessage) {
         performVisibilityAssertion(uiObject, isVisible, false, customMessage);
     }
@@ -2506,7 +2437,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Verify (Hard) text of {0.name} is '{1}'")
     public void verifyTextHard(ObjectUI uiObject, String expectedText, String... customMessage) {
         performTextAssertion(uiObject, expectedText, false, customMessage);
     }
@@ -2537,7 +2467,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
             explainer = "Verify (Soft) text of {uiObject} is '{expectedText}'"
     )
-//    @Step("Verify (Soft) text of {0.name} is '{1}'")
     public void verifyTextSoft(ObjectUI uiObject, String expectedText, String... customMessage) {
 
         execute(() -> {
@@ -2578,7 +2507,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Verify (Hard) text of {0.name} contains '{1}'")
     public void verifyTextContainsHard(ObjectUI uiObject, String partialText, String... customMessage) {
         performTextContainsAssertion(uiObject, partialText, false, customMessage);
     }
@@ -2649,7 +2577,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Verify (Hard) attribute '{1}' of {0.name} is '{2}'")
     public void verifyElementAttributeHard(ObjectUI uiObject, String attributeName, String expectedValue, String... customMessage) {
         performAttributeAssertion(uiObject, attributeName, expectedValue, false, customMessage);
     }
@@ -2723,7 +2650,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "Có thể throw AssertionError nếu URL hiện tại không khớp với URL mong đợi, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Verify (Hard) URL of the page is '{0}'")
     public void verifyUrlHard(String expectedUrl, String... customMessage) {
         execute(() -> {
             WebDriver driver = DriverManager.getDriver();
@@ -2842,7 +2768,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "Có thể throw AssertionError nếu tiêu đề trang không khớp với tiêu đề mong đợi, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Verify (Hard) page title is '{0}'")
     public void verifyTitleHard(String expectedTitle, String... customMessage) {
         execute(() -> {
             WebDriver driver = DriverManager.getDriver();
@@ -2963,7 +2888,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
             explainer = "Verify (Hard) element '{uiObject}' is enabled"
     )
-    @Step("Verify (Hard) element {0.name} is enabled")
     public void assertElementEnabled(ObjectUI uiObject, String... customMessage) {
         execute(() -> {
             performStateAssertion(uiObject, true, false, customMessage);
@@ -2999,7 +2923,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Verify (Hard) element {0.name} is disabled")
     public void assertElementDisabled(ObjectUI uiObject, String... customMessage) {
         execute(() -> {
             performStateAssertion(uiObject, false, false, customMessage);
@@ -3032,7 +2955,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
             explainer = "Verify (Soft) element '{uiObject}' is enabled"
     )
-//    @Step("Verify (Soft) element {0.name} is enabled")
     public void verifyElementEnabledSoft(ObjectUI uiObject, String... customMessage) {
         execute(() -> {
                     performStateAssertion(uiObject, true, true, customMessage);
@@ -3069,7 +2991,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt.",
             explainer = "Verify (Soft) element '{uiObject}' is disabled"
     )
-//    @Step("Verify (Soft) element {0.name} is disabled")
     public void verifyElementDisabledSoft(ObjectUI uiObject, String... customMessage) {
         execute(() -> {
                     performStateAssertion(uiObject, false, true, customMessage);
@@ -3109,7 +3030,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "WebDriverException nếu có lỗi khi tương tác với trình duyệt, " +
                     "hoặc IllegalArgumentException nếu element không phải là checkbox hoặc radio button."
     )
-    @Step("Verify (Hard) element {0.name} is selected")
     public void assertElementSelected(ObjectUI uiObject, String... customMessage) {
         execute(() -> {
             super.performSelectionAssertion(uiObject, true, false, customMessage);
@@ -3144,7 +3064,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "WebDriverException nếu có lỗi khi tương tác với trình duyệt, " +
                     "hoặc IllegalArgumentException nếu element không phải là checkbox hoặc radio button."
     )
-    @Step("Verify (Hard) element {0.name} is not selected")
     public void assertElementNotSelected(ObjectUI uiObject, String... customMessage) {
         execute(() -> {
             super.performSelectionAssertion(uiObject, false, false, customMessage);
@@ -3181,7 +3100,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "WebDriverException nếu có lỗi khi tương tác với trình duyệt, " +
                     "hoặc PatternSyntaxException nếu biểu thức chính quy không hợp lệ."
     )
-    @Step("Verify (Hard) text of {0.name} matches regex '{1}'")
     public void verifyTextMatchesRegexHard(ObjectUI uiObject, String pattern, String... customMessage) {
         execute(() -> {
             performRegexAssertion(uiObject, pattern, false, customMessage);
@@ -3257,7 +3175,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Verify (Hard) attribute '{1}' of {0.name} contains '{2}'")
     public void verifyAttributeContainsHard(ObjectUI uiObject, String attribute, String partialValue, String... customMessage) {
         execute(() -> {
             performAttributeContainsAssertion(uiObject, attribute, partialValue, false, customMessage);
@@ -3339,7 +3256,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Verify (Hard) CSS '{1}' of {0.name} is '{2}'")
     public void verifyCssValueHard(ObjectUI uiObject, String cssName, String expectedValue, String... customMessage) {
         execute(() -> {
             performCssValueAssertion(uiObject, cssName, expectedValue, false, customMessage);
@@ -3415,7 +3331,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "Có thể throw AssertionError nếu element vẫn tồn tại trong DOM sau thời gian chờ, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Verify (Hard) element {0.name} is not present after {1} seconds")
     public void verifyElementNotPresentHard(ObjectUI uiObject, int timeoutInSeconds, String... customMessage) {
         execute(() -> {
             boolean isPresent = isElementPresent(uiObject, timeoutInSeconds);
@@ -3454,7 +3369,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "WebDriverException nếu có lỗi khi tương tác với trình duyệt, " +
                     "hoặc UnexpectedTagNameException nếu element không phải là thẻ select."
     )
-    @Step("Verify (Hard) option '{1}' được chọn trong dropdown {0.name}")
     public void verifyOptionSelectedByLabelHard(ObjectUI uiObject, String expectedLabel, String... customMessage) {
         execute(() -> {
             Select select = new Select(findElement(uiObject));
@@ -3489,7 +3403,6 @@ public class WebKeyword extends BaseUiKeyword {
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động. " +
                     "Có thể throw WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Verify existence of element {0.name} trong {1} seconds")
     public boolean isElementPresent(ObjectUI uiObject, int timeoutInSeconds) {
         return execute(() -> {
             WebDriver driver = DriverManager.getDriver();
@@ -3530,7 +3443,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "Có thể throw AssertionError nếu không có hộp thoại alert xuất hiện trong thời gian chờ, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Verify alert appears trong {0} seconds")
     public void verifyAlertPresent(int timeoutInSeconds) {
         execute(() -> {
             try {
@@ -3567,7 +3479,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "Có thể throw NoSuchWindowException nếu không tìm thấy cửa sổ nào có tiêu đề được chỉ định, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Switch to window with title: {0}")
     public void switchToWindowByTitle(String windowTitle) {
         execute(() -> {
             String currentWindow = DriverManager.getDriver().getWindowHandle();
@@ -3604,7 +3515,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "Có thể throw IndexOutOfBoundsException nếu chỉ số nằm ngoài phạm vi of số lượng cửa sổ/tab đang mở, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Switch to window at position {0}")
     public void switchToWindowByIndex(int index) {
         execute(() -> {
             ArrayList<String> tabs = new ArrayList<>(DriverManager.getDriver().getWindowHandles());
@@ -3638,7 +3548,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "StaleElementReferenceException nếu element iframe không còn gắn với DOM, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Switch to iframe: {0.name}")
     public void switchToFrame(ObjectUI uiObject) {
         execute(() -> {
             WebElement frameElement = findElement(uiObject);
@@ -3663,7 +3572,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "WebDriver đang ở trong ngữ cảnh of một iframe. " +
                     "Có thể throw WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Switch to parent frame")
     public void switchToParentFrame() {
         execute(() -> {
             DriverManager.getDriver().switchTo().parentFrame();
@@ -3686,7 +3594,6 @@ public class WebKeyword extends BaseUiKeyword {
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động. " +
                     "Có thể throw WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Switch to default content")
     public void switchToDefaultContent() {
         execute(() -> {
             DriverManager.getDriver().switchTo().defaultContent();
@@ -3714,7 +3621,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "Có thể throw WebDriverException nếu có lỗi khi tương tác với trình duyệt, " +
                     "hoặc UnsupportedCommandException nếu trình duyệt không hỗ trợ lệnh mở tab mới."
     )
-    @Step("Open new tab with URL: {0}")
     public void openNewTab(String url) {
         execute(() -> {
             DriverManager.getDriver().switchTo().newWindow(WindowType.TAB);
@@ -3748,7 +3654,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "TimeoutException nếu tab mới không mở trong thời gian chờ, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Click and switch to new tab from element: {0.name}")
     public void clickAndSwitchToNewTab(ObjectUI uiObject) {
         execute(() -> {
             WebDriver driver = DriverManager.getDriver();
@@ -3797,7 +3702,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "NoAlertPresentException nếu không có hộp thoại alert đang hiển thị, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Get text from alert")
     public String getAlertText() {
         return execute(() -> {
             Alert alert = new WebDriverWait(DriverManager.getDriver(), DEFAULT_TIMEOUT)
@@ -3830,7 +3734,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "ElementNotInteractableException nếu hộp thoại không phải is prompt và không cho phép nhập liệu, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Enter text '{0}' into prompt")
     public void sendKeysToAlert(String text) {
         execute(() -> {
             Alert alert = new WebDriverWait(DriverManager.getDriver(), DEFAULT_TIMEOUT)
@@ -3868,7 +3771,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "UnsupportedOperationException nếu trình duyệt không hỗ trợ Shadow DOM API, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Find element '{1}' inside Shadow DOM of {0.name}")
     public WebElement findElementInShadowDom(ObjectUI shadowHostObject, String cssSelectorInShadow) {
         return execute(() -> {
             WebElement shadowHost = findElement(shadowHostObject);
@@ -3898,7 +3800,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "Có thể throw JavascriptException nếu có lỗi khi thực thi JavaScript, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Write to Local Storage: key='{0}', value='{1}'")
     public void setLocalStorage(String key, String value) {
         execute(() -> {
             ((JavascriptExecutor) DriverManager.getDriver()).executeScript("localStorage.setItem(arguments[0], arguments[1]);", key, value);
@@ -3928,7 +3829,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "Có thể throw JavascriptException nếu có lỗi khi thực thi JavaScript, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Read from Local Storage with key='{0}'")
     public String getLocalStorage(String key) {
         return execute(() -> (String) ((JavascriptExecutor) DriverManager.getDriver()).executeScript("return localStorage.getItem(arguments[0]);", key), key);
     }
@@ -3953,7 +3853,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "Có thể throw JavascriptException nếu có lỗi khi thực thi JavaScript, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Clear all Local Storage")
     public void clearLocalStorage() {
         execute(() -> {
             ((JavascriptExecutor) DriverManager.getDriver()).executeScript("localStorage.clear();");
@@ -3979,7 +3878,6 @@ public class WebKeyword extends BaseUiKeyword {
             note = "Áp dụng cho nền tảng Web. WebDriver đã được khởi tạo và đang hoạt động. " +
                     "Có thể throw WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Delete all cookies")
     public void deleteAllCookies() {
         execute(() -> {
             DriverManager.getDriver().manage().deleteAllCookies();
@@ -4010,7 +3908,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "trang web đã được tải hoàn toàn. " +
                     "Có thể throw WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Get cookie with name: {0}")
     public Cookie getCookie(String cookieName) {
         return execute(() -> DriverManager.getDriver().manage().getCookieNamed(cookieName), cookieName);
     }
@@ -4046,7 +3943,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "IOException nếu có lỗi khi ghi file, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Take screenshot and save at: {0}")
     public void takeScreenshot(String filePath) {
         execute(() -> {
             try {
@@ -4090,7 +3986,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "IOException nếu có lỗi khi ghi file, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Take element screenshot {0.name} and save at: {1}")
     public void takeElementScreenshot(ObjectUI uiObject, String filePath) {
         execute(() -> {
             try {
@@ -4127,7 +4022,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "StaleElementReferenceException nếu element không còn gắn với DOM, " +
                     "hoặc WebDriverException nếu có lỗi khi tương tác với trình duyệt."
     )
-    @Step("Highlight element: {0.name}")
     public void highlightElement(ObjectUI uiObject) {
         execute(() -> {
             WebElement element = findElement(uiObject);
@@ -4194,7 +4088,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "web.isApiCalled(\"/service-stats\", params, 15);",
             note = "Hoạt động với mọi browser. Giá trị đặc biệt: '*'=ignore, '?'=not null"
     )
-    @Step("Check if API called: {0}")
     public boolean isApiCalled(String apiPath,
                                Map<String, String> expectedParams,
                                int timeoutSeconds) {
@@ -4294,7 +4187,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "boolean found = (boolean) result.get(\"found\");\n" +
                     "Integer status = (Integer) result.get(\"statusCode\");"
     )
-    @Step("Check if API called with status: {0}")
     public Map<String, Object> isApiCalledWithStatus(String apiPath,
                                                      Map<String, String> expectedParams,
                                                      int timeoutSeconds) {
@@ -4476,7 +4368,6 @@ public class WebKeyword extends BaseUiKeyword {
             },
             example = "web.verifyApiCalled(\"/api/status\", params, 15);"
     )
-    @Step("Verify API called: {0}")
     public void verifyApiCalled(String apiPath,
                                 Map<String, String> expectedParams,
                                 int timeoutSeconds) {
@@ -4541,7 +4432,6 @@ public class WebKeyword extends BaseUiKeyword {
                     "// statusCodes.get(0) = status của /api/user\n" +
                     "// statusCodes.get(1) = status của /api/data"
     )
-    @Step("Verify multiple APIs called (parallel)")
     public List<Integer> verifyMultipleApisCalledParallel(List<Map<String, Object>> apiConfigs,
                                                           int maxTimeoutSeconds) {
         return execute(() -> {
@@ -4774,6 +4664,488 @@ public class WebKeyword extends BaseUiKeyword {
     }
 
     @NetatKeyword(
+            name = "startApiMonitor",
+            description = "Bắt đầu monitor các API calls. Inject hooks để bắt fetch/XHR requests. " +
+                    "Phải gọi TRƯỚC khi thực hiện action trigger API.",
+            category = "Web",
+            subCategory = "Network",
+            parameters = {
+                    "apiPatterns: String... - Các pattern của API cần monitor. " +
+                            "Hỗ trợ {id} placeholder cho dynamic segment."
+            },
+            example = "// Monitor single API\n" +
+                    "web.startApiMonitor(\"/api/v4/download/\");\n\n" +
+                    "// Monitor multiple APIs\n" +
+                    "web.startApiMonitor(\"/api/v4/download/{id}\", \"/api/v4/user/profile\");\n\n" +
+                    "// Sau đó thực hiện action\n" +
+                    "web.click(By.id(\"downloadBtn\"));"
+    )
+    public void startApiMonitor(String... apiPatterns) {
+        execute(() -> {
+            JavascriptExecutor js = (JavascriptExecutor) DriverManager.getDriver();
+
+            StringBuilder patternsConfig = new StringBuilder("[");
+            for (int i = 0; i < apiPatterns.length; i++) {
+                String pattern = apiPatterns[i];
+                String regexPattern = pattern
+                        .replace("/", "\\/")
+                        .replace("{id}", "([^/?&#]+)");
+
+                if (i > 0) patternsConfig.append(",");
+                patternsConfig.append(String.format(
+                        "{original:'%s', regex: new RegExp('%s')}",
+                        pattern, regexPattern
+                ));
+            }
+            patternsConfig.append("]");
+
+            String script = String.format(
+                    "window.__netAtApiMonitor = {" +
+                            "  patterns: %s," +
+                            "  calls: []," +
+                            "  isActive: true" +
+                            "};" +
+
+                            "if (!window.__netAtFetchHooked) {" +
+                            "  const originalFetch = window.fetch;" +
+                            "  window.fetch = async function(...args) {" +
+                            "    const url = typeof args[0] === 'string' ? args[0] : (args[0]?.url || '');" +
+                            "    let capturedCall = null;" +
+                            "    " +
+                            "    if (window.__netAtApiMonitor?.isActive) {" +
+                            "      for (const p of window.__netAtApiMonitor.patterns) {" +
+                            "        const match = url.match(p.regex);" +
+                            "        if (match) {" +
+                            "          capturedCall = {" +
+                            "            pattern: p.original," +
+                            "            url: url," +
+                            "            method: args[1]?.method || 'GET'," +
+                            "            extractedId: match[1] || null," +
+                            "            timestamp: Date.now()," +
+                            "            type: 'fetch'" +
+                            "          };" +
+                            "          break;" +
+                            "        }" +
+                            "      }" +
+                            "    }" +
+                            "    " +
+                            "    try {" +
+                            "      const response = await originalFetch.apply(this, args);" +
+                            "      if (capturedCall) {" +
+                            "        capturedCall.statusCode = response.status;" +
+                            "        capturedCall.statusText = response.statusText;" +
+                            "        capturedCall.success = response.ok;" +
+                            "        window.__netAtApiMonitor.calls.push(capturedCall);" +
+                            "        console.log('[NetAT API Monitor] Captured:', capturedCall);" +
+                            "      }" +
+                            "      return response;" +
+                            "    } catch (error) {" +
+                            "      if (capturedCall) {" +
+                            "        capturedCall.error = error.message;" +
+                            "        capturedCall.success = false;" +
+                            "        window.__netAtApiMonitor.calls.push(capturedCall);" +
+                            "        console.log('[NetAT API Monitor] Captured (error):', capturedCall);" +
+                            "      }" +
+                            "      throw error;" +
+                            "    }" +
+                            "  };" +
+                            "  window.__netAtFetchHooked = true;" +
+                            "}" +
+
+                            "if (!window.__netAtXhrHooked) {" +
+                            "  const originalOpen = XMLHttpRequest.prototype.open;" +
+                            "  const originalSend = XMLHttpRequest.prototype.send;" +
+                            "  " +
+                            "  XMLHttpRequest.prototype.open = function(method, url, ...rest) {" +
+                            "    this.__netAtMethod = method;" +
+                            "    this.__netAtUrl = url;" +
+                            "    return originalOpen.apply(this, [method, url, ...rest]);" +
+                            "  };" +
+                            "  " +
+                            "  XMLHttpRequest.prototype.send = function(...args) {" +
+                            "    const xhr = this;" +
+                            "    " +
+                            "    xhr.addEventListener('loadend', function() {" +
+                            "      if (!window.__netAtApiMonitor?.isActive) return;" +
+                            "      " +
+                            "      const url = xhr.__netAtUrl || '';" +
+                            "      for (const p of window.__netAtApiMonitor.patterns) {" +
+                            "        const match = url.match(p.regex);" +
+                            "        if (match) {" +
+                            "          const call = {" +
+                            "            pattern: p.original," +
+                            "            url: url," +
+                            "            method: xhr.__netAtMethod || 'GET'," +
+                            "            extractedId: match[1] || null," +
+                            "            statusCode: xhr.status," +
+                            "            statusText: xhr.statusText," +
+                            "            success: xhr.status >= 200 && xhr.status < 300," +
+                            "            timestamp: Date.now()," +
+                            "            type: 'xhr'" +
+                            "          };" +
+                            "          if (xhr.status === 0) {" +
+                            "            call.error = 'Network error or CORS blocked';" +
+                            "            call.success = false;" +
+                            "          }" +
+                            "          window.__netAtApiMonitor.calls.push(call);" +
+                            "          console.log('[NetAT API Monitor] Captured (XHR):', call);" +
+                            "          break;" +
+                            "        }" +
+                            "      }" +
+                            "    });" +
+                            "    " +
+                            "    return originalSend.apply(this, args);" +
+                            "  };" +
+                            "  window.__netAtXhrHooked = true;" +
+                            "}",
+                    patternsConfig.toString()
+            );
+
+            js.executeScript(script);
+            logger.info("Started API monitor for patterns: {}", Arrays.toString(apiPatterns));
+
+            return null;
+        }, (Object) apiPatterns);
+    }
+
+    @NetatKeyword(
+            name = "waitForApiCall",
+            description = "Chờ đợi một API call matching pattern. Trả về thông tin chi tiết của call đầu tiên match.",
+            category = "Web",
+            subCategory = "Network",
+            parameters = {
+                    "apiPattern: String - Pattern của API (phải match với pattern đã register trong startApiMonitor)",
+                    "timeoutSeconds: int - Thời gian chờ tối đa"
+            },
+            returnValue = "Map<String, Object> - {found, url, method, statusCode, extractedId, success, error}",
+            example = "web.startApiMonitor(\"/api/v4/download/{id}\");\n" +
+                    "web.click(By.id(\"downloadBtn\"));\n\n" +
+                    "Map<String, Object> result = web.waitForApiCall(\"/api/v4/download/{id}\", 15);\n" +
+                    "boolean success = (boolean) result.get(\"success\");\n" +
+                    "Integer status = (Integer) result.get(\"statusCode\");\n" +
+                    "String fileId = (String) result.get(\"extractedId\");"
+    )
+    public Map<String, Object> waitForApiCall(String apiPattern, int timeoutSeconds) {
+        return execute(() -> {
+            JavascriptExecutor js = (JavascriptExecutor) DriverManager.getDriver();
+
+            long startTime = System.currentTimeMillis();
+            long timeout = timeoutSeconds * 1000L;
+
+            while ((System.currentTimeMillis() - startTime) < timeout) {
+                try {
+                    Thread.sleep(300);
+
+                    List<Map<String, Object>> calls = (List<Map<String, Object>>) js.executeScript(
+                            "return window.__netAtApiMonitor?.calls || [];"
+                    );
+
+                    for (Map<String, Object> call : calls) {
+                        if (apiPattern.equals(call.get("pattern"))) {
+                            logger.info("API call detected: {} -> Status: {}, ID: {}",
+                                    call.get("url"),
+                                    call.get("statusCode"),
+                                    call.get("extractedId"));
+
+                            Map<String, Object> result = new HashMap<>(call);
+                            result.put("found", true);
+                            return result;
+                        }
+                    }
+
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+
+            logger.warn("API call '{}' not detected within {} seconds", apiPattern, timeoutSeconds);
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("found", false);
+            result.put("pattern", apiPattern);
+            return result;
+
+        }, apiPattern, timeoutSeconds);
+    }
+
+    @NetatKeyword(
+            name = "verifyApiCalled",
+            description = "Chờ đợi và verify API call. Fail test nếu không tìm thấy hoặc status không đúng.",
+            category = "Web",
+            subCategory = "Network",
+            parameters = {
+                    "apiPattern: String - Pattern của API",
+                    "expectedStatusCode: Integer - Status code mong đợi (null = không check)",
+                    "timeoutSeconds: int - Thời gian chờ"
+            },
+            returnValue = "Map<String, Object> - Thông tin chi tiết của API call",
+            example = "web.startApiMonitor(\"/api/v4/download/{id}\");\n" +
+                    "web.click(By.id(\"downloadBtn\"));\n\n" +
+                    "// Verify API called với status 200\n" +
+                    "Map<String, Object> result = web.verifyApiCalled(\"/api/v4/download/{id}\", 200, 15);\n" +
+                    "String fileId = (String) result.get(\"extractedId\");"
+    )
+    public Map<String, Object> verifyApiCalled(String apiPattern,
+                                             String expectedStatusCode,
+                                             int timeoutSeconds) {
+        return execute(() -> {
+            Map<String, Object> result = waitForApiCall(apiPattern, timeoutSeconds);
+
+            if (!Boolean.TRUE.equals(result.get("found"))) {
+                throw new AssertionError(String.format(
+                        "API '%s' was NOT called within %d seconds",
+                        apiPattern, timeoutSeconds
+                ));
+            }
+
+            if (expectedStatusCode != null) {
+                Long actualStatus = (Long) result.get("statusCode");
+                if (!expectedStatusCode.equals(actualStatus+"")) {
+                    throw new AssertionError(String.format(
+                            "API '%s' returned status %d, expected %d. URL: %s",
+                            apiPattern, actualStatus, expectedStatusCode, result.get("url")
+                    ));
+                }
+            }
+
+            String error = (String) result.get("error");
+            if (error != null) {
+                throw new AssertionError(String.format(
+                        "API '%s' failed with error: %s",
+                        apiPattern, error
+                ));
+            }
+
+            logger.info("Verified API call: {} (Status: {})", result.get("url"), result.get("statusCode"));
+            return result;
+
+        }, apiPattern, expectedStatusCode, timeoutSeconds);
+    }
+
+    @NetatKeyword(
+            name = "getAllApiCalls",
+            description = "Lấy tất cả API calls đã được capture bởi monitor.",
+            category = "Web",
+            subCategory = "Network",
+            parameters = {
+                    "apiPattern: String - Pattern để filter (null = lấy tất cả)"
+            },
+            returnValue = "List<Map<String, Object>> - Danh sách các API calls",
+            example = "web.startApiMonitor(\"/api/v4/\");\n" +
+                    "// ... perform actions ...\n\n" +
+                    "// Lấy tất cả calls\n" +
+                    "List<Map<String, Object>> allCalls = web.getAllApiCalls(null);\n\n" +
+                    "// Lấy calls theo pattern\n" +
+                    "List<Map<String, Object>> downloadCalls = web.getAllApiCalls(\"/api/v4/download/{id}\");"
+    )
+    public List<Map<String, Object>> getAllApiCalls(String apiPattern) {
+        return execute(() -> {
+            JavascriptExecutor js = (JavascriptExecutor) DriverManager.getDriver();
+
+            List<Map<String, Object>> calls = (List<Map<String, Object>>) js.executeScript(
+                    "return window.__netAtApiMonitor?.calls || [];"
+            );
+
+            if (apiPattern == null) {
+                return new ArrayList<>(calls);
+            }
+
+            List<Map<String, Object>> filtered = new ArrayList<>();
+            for (Map<String, Object> call : calls) {
+                if (apiPattern.equals(call.get("pattern"))) {
+                    filtered.add(call);
+                }
+            }
+
+            logger.info("Found {} API calls matching pattern '{}'", filtered.size(), apiPattern);
+            return filtered;
+
+        }, apiPattern);
+    }
+
+    @NetatKeyword(
+            name = "clearApiCalls",
+            description = "Xóa tất cả API calls đã capture nhưng giữ nguyên monitor active.",
+            category = "Web",
+            subCategory = "Network",
+            example = "web.clearApiCalls();\n" +
+                    "// Monitor vẫn active, bắt đầu capture fresh"
+    )
+    public void clearApiCalls() {
+        execute(() -> {
+            JavascriptExecutor js = (JavascriptExecutor) DriverManager.getDriver();
+
+            js.executeScript(
+                    "if (window.__netAtApiMonitor) {" +
+                            "  window.__netAtApiMonitor.calls = [];" +
+                            "  console.log('[NetAT API Monitor] Calls cleared');" +
+                            "}"
+            );
+
+            logger.info("Cleared all captured API calls");
+            return null;
+        });
+    }
+
+    @NetatKeyword(
+            name = "stopApiMonitor",
+            description = "Dừng API monitor và cleanup. Nên gọi sau khi hoàn thành test.",
+            category = "Web",
+            subCategory = "Network",
+            parameters = {
+                    "restoreOriginal: boolean - true = khôi phục fetch/XHR gốc (khuyến nghị cho cleanup cuối test)"
+            },
+            example = "// Chỉ dừng monitor (giữ hooks cho lần sau)\n" +
+                    "web.stopApiMonitor(false);\n\n" +
+                    "// Cleanup hoàn toàn\n" +
+                    "web.stopApiMonitor(true);"
+    )
+    public void stopApiMonitor(boolean restoreOriginal) {
+        execute(() -> {
+            JavascriptExecutor js = (JavascriptExecutor) DriverManager.getDriver();
+
+            if (restoreOriginal) {
+
+                js.executeScript(
+                        "if (window.__netAtApiMonitor) {" +
+                                "  window.__netAtApiMonitor.isActive = false;" +
+                                "  window.__netAtApiMonitor.calls = [];" +
+                                "  window.__netAtApiMonitor.patterns = [];" +
+                                "}" +
+                                "console.log('[NetAT API Monitor] Stopped and cleaned up');"
+                );
+                logger.info("API monitor stopped and cleaned up");
+            } else {
+                js.executeScript(
+                        "if (window.__netAtApiMonitor) {" +
+                                "  window.__netAtApiMonitor.isActive = false;" +
+                                "}" +
+                                "console.log('[NetAT API Monitor] Paused');"
+                );
+                logger.info("API monitor paused");
+            }
+
+            return null;
+        }, restoreOriginal);
+    }
+
+    @NetatKeyword(
+            name = "waitForMultipleApiCalls",
+            description = "Chờ đợi nhiều API calls đồng thời. Trả về khi tất cả đều được gọi hoặc timeout.",
+            category = "Web",
+            subCategory = "Network",
+            parameters = {
+                    "apiPatterns: List<String> - Danh sách patterns cần chờ",
+                    "timeoutSeconds: int - Thời gian chờ tối đa"
+            },
+            returnValue = "Map<String, Map<String, Object>> - Map từ pattern -> call info",
+            example = "web.startApiMonitor(\"/api/v4/download/{id}\", \"/api/v4/log\");\n" +
+                    "web.click(By.id(\"downloadBtn\"));\n\n" +
+                    "Map<String, Map<String, Object>> results = web.waitForMultipleApiCalls(\n" +
+                    "    Arrays.asList(\"/api/v4/download/{id}\", \"/api/v4/log\"),\n" +
+                    "    15\n" +
+                    ");\n\n" +
+                    "Map<String, Object> downloadResult = results.get(\"/api/v4/download/{id}\");\n" +
+                    "Map<String, Object> logResult = results.get(\"/api/v4/log\");"
+    )
+    public Map<String, Map<String, Object>> waitForMultipleApiCalls(List<String> apiPatterns,
+                                                                    int timeoutSeconds) {
+        return execute(() -> {
+            JavascriptExecutor js = (JavascriptExecutor) DriverManager.getDriver();
+
+            Map<String, Map<String, Object>> results = new HashMap<>();
+            Set<String> pendingPatterns = new HashSet<>(apiPatterns);
+
+            long startTime = System.currentTimeMillis();
+            long timeout = timeoutSeconds * 1000L;
+
+            while (!pendingPatterns.isEmpty() && (System.currentTimeMillis() - startTime) < timeout) {
+                try {
+                    Thread.sleep(300);
+
+                    List<Map<String, Object>> calls = (List<Map<String, Object>>) js.executeScript(
+                            "return window.__netAtApiMonitor?.calls || [];"
+                    );
+
+                    for (Map<String, Object> call : calls) {
+                        String pattern = (String) call.get("pattern");
+                        if (pendingPatterns.contains(pattern) && !results.containsKey(pattern)) {
+                            Map<String, Object> result = new HashMap<>(call);
+                            result.put("found", true);
+                            results.put(pattern, result);
+                            pendingPatterns.remove(pattern);
+
+                            logger.info("API '{}' detected: {} (Status: {})",
+                                    pattern, call.get("url"), call.get("statusCode"));
+                        }
+                    }
+
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+
+            for (String pattern : pendingPatterns) {
+                Map<String, Object> notFound = new HashMap<>();
+                notFound.put("found", false);
+                notFound.put("pattern", pattern);
+                results.put(pattern, notFound);
+                logger.warn("API '{}' NOT detected within timeout", pattern);
+            }
+
+            logger.info("Multiple API check complete: {}/{} found",
+                    apiPatterns.size() - pendingPatterns.size(), apiPatterns.size());
+
+            return results;
+
+        }, apiPatterns, timeoutSeconds);
+    }
+
+    @NetatKeyword(
+            name = "verifyMultipleApiCalls",
+            description = "Verify nhiều API calls. Fail test nếu bất kỳ API nào không được gọi.",
+            category = "Web",
+            subCategory = "Network",
+            parameters = {
+                    "apiPatterns: List<String> - Danh sách patterns cần verify",
+                    "timeoutSeconds: int - Thời gian chờ"
+            },
+            returnValue = "Map<String, Map<String, Object>> - Kết quả của tất cả API calls",
+            example = "web.startApiMonitor(\"/api/download/{id}\", \"/api/analytics\");\n" +
+                    "web.click(By.id(\"downloadBtn\"));\n\n" +
+                    "Map<String, Map<String, Object>> results = web.verifyMultipleApiCalls(\n" +
+                    "    Arrays.asList(\"/api/download/{id}\", \"/api/analytics\"),\n" +
+                    "    15\n" +
+                    ");"
+    )
+    public Map<String, Map<String, Object>> verifyMultipleApiCalls(List<String> apiPatterns,
+                                                                   int timeoutSeconds) {
+        return execute(() -> {
+            Map<String, Map<String, Object>> results = waitForMultipleApiCalls(apiPatterns, timeoutSeconds);
+
+            List<String> missingApis = new ArrayList<>();
+            for (Map.Entry<String, Map<String, Object>> entry : results.entrySet()) {
+                if (!Boolean.TRUE.equals(entry.getValue().get("found"))) {
+                    missingApis.add(entry.getKey());
+                }
+            }
+
+            if (!missingApis.isEmpty()) {
+                throw new AssertionError(String.format(
+                        "Following APIs were NOT called within %d seconds: %s",
+                        timeoutSeconds, missingApis
+                ));
+            }
+
+            logger.info("All {} APIs verified successfully", apiPatterns.size());
+            return results;
+
+        }, apiPatterns, timeoutSeconds);
+    }
+
+    @NetatKeyword(
             name = "sendKeysSensitive",
             description = "Nhập text vào element và LUÔN ẩn giá trị trong log/report. " +
                     "Sử dụng khi field không chứa keyword nhạy cảm nhưng cần bảo vệ data.",
@@ -4788,19 +5160,20 @@ public class WebKeyword extends BaseUiKeyword {
                     "webKeyword.sendKeysSensitive(otpInputField, \"123456\");\n" +
                     "// Log hiển thị: Entering sensitive text '1*****6' into element: otpInputField"
     )
-    public void sendKeysSensitive(ObjectUI uiObject, String text) {
-        // Đăng ký giá trị vào cache để mask ở các log khác
-        protection.registerSensitiveValue(text);
+    public void sendKeysSensitive(ObjectUI uiObject, String encryptedText) {
 
-        String maskedText = protection.mask(text);
+        String plainText = SecretDecryptor.decrypt(encryptedText);
+
+        protection.registerSensitiveValue(plainText);
+
+        String maskedText = protection.mask(plainText);
         String stepName = String.format("Enter sensitive text '%s' into element: %s",
                 maskedText, uiObject != null ? uiObject.getName() : "null");
 
-        // Allure step với giá trị đã mask
         startAllureStep(stepName);
         try {
             logger.info(stepName);
-            super.sendKeys(uiObject, text);
+            super.sendKeys(uiObject, plainText);
             passAllureStep();
         } catch (Exception e) {
             failAllureStep(e);
@@ -4826,7 +5199,6 @@ public class WebKeyword extends BaseUiKeyword {
     public String getTextSensitive(ObjectUI uiObject) {
         String actualText = super.getText(uiObject);
 
-        // Đăng ký vào cache
         protection.registerSensitiveValue(actualText);
 
         String maskedText = protection.mask(actualText);
@@ -4837,7 +5209,7 @@ public class WebKeyword extends BaseUiKeyword {
         logger.info(stepName);
         passAllureStep();
 
-        return actualText; // Trả về giá trị thật
+        return actualText;
     }
 
     // ==================== VERIFY TEXT ====================
